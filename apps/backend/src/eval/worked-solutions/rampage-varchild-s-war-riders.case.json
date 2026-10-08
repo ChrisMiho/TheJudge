@@ -1,0 +1,50 @@
+{
+  "id": "rampage-varchild-s-war-riders",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "258921f2-df26-4d8a-ad34-8f44d0158ae7",
+      "name": "Varchild's War-Riders"
+    }
+  ],
+  "gameState": null,
+  "question": "After rampage's trigger has resolved, does adding or removing blockers change the rampage bonus?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the bonus is calculated only once per combat, when the triggered ability resolves.",
+    "answer": "The rampage bonus is calculated only once per combat, when the triggered ability resolves. Adding or removing blockers later in combat won't change the bonus.",
+    "decidingRuleIds": ["702.23a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Varchild's War-Riders",
+    "oracleId": "258921f2-df26-4d8a-ad34-8f44d0158ae7",
+    "rulingDate": "2007-09-16",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c636e48e76929e7b0c0eb9a3cdffaa0eee50fd8cf4fbc955d4a07bfb502b7a1e",
+      "oracle": "6273dc8c20282aae0083cc66f13c4e5a18a7475e1dc265781d17bf1567910e0d",
+      "rulings": "a95517617b94f130c683c5af2ae9ca9dddec8c5fe598dd15f28b1ba96b058fb3"
+    }
+  },
+  "whyHard": "Players expect combat bonuses to update as the number of blockers changes."
+}

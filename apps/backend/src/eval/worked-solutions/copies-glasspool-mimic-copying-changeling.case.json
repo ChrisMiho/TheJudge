@@ -1,0 +1,50 @@
+{
+  "id": "copies-glasspool-mimic-copying-changeling",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "c178953c-3888-4edd-9d0c-265bd82b1d24",
+      "name": "Glasspool Mimic // Glasspool Shore"
+    }
+  ],
+  "gameState": null,
+  "question": "Glasspool Mimic enters as a copy of a creature with changeling. Does it have changeling and all creature types?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it has changeling and all creature types.",
+    "answer": "Glasspool Mimic is a creature that reads “You may have this creature enter as a copy of a creature you control, except it’s a Shapeshifter Rogue in addition to its other types.” Glasspool Mimic enters as a copy of a creature with changeling. Glasspool Mimic will have changeling and will have all creature types.",
+    "decidingRuleIds": ["707.9d"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "707.9d",
+    "sectionTitle": "Copying Objects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "2b8502f62511d7535c29aa87d0470b141d6b3291fe0df12c1728ac8deaf82fa5",
+      "oracle": "e5aee4ff93c86bdde23b5275c0072349515e30cb66a4dc3c2c5a1494a9691c6e",
+      "rulings": "ed2e587c47c2641581408c875d3e0cd8f93b22d85f703dd7db8aa023ec2e49af"
+    }
+  },
+  "whyHard": "The 'except it's a Shapeshifter Rogue' text looks like it limits the creature types to those two."
+}

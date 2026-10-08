@@ -1,0 +1,54 @@
+{
+  "id": "triggers-dark-power-and-gaeas-cradle",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "156107a0-1657-4d04-904c-f8d19df32ff8",
+      "name": "A Display of My Dark Power"
+    },
+    {
+      "oracleId": "7c427c3d-ecd8-45ef-bebd-8f10f4a311db",
+      "name": "Gaea's Cradle"
+    }
+  ],
+  "gameState": null,
+  "question": "If I tap Gaea's Cradle for mana while I control no creatures, so it produces no mana, does the delayed triggered ability from A Display of My Dark Power still trigger?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if a land is tapped for mana but doesn't produce any, the delayed triggered ability won't trigger.",
+    "answer": "If a land is tapped for mana but doesn't produce any (for example, if you tap Gaea's Cradle for mana while you control no creatures), the delayed triggered ability won't trigger.",
+    "decidingRuleIds": ["106.12a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "A Display of My Dark Power",
+    "oracleId": "156107a0-1657-4d04-904c-f8d19df32ff8",
+    "rulingDate": "2010-06-15"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5a576f97a3142f859c7c12990770f43422112627ec90ea4fa9d333330cd93b07",
+      "oracle": "95c245e520cd9bed1cd61436c9fd5fb2fef5860a30a30ed627e6582117a6413c",
+      "rulings": "9c5e0644208681e2110deb284243e3a79cadddc0895a038c427b2356982a4e11"
+    }
+  },
+  "whyHard": "Tapping the land for mana is a mana ability, and players think the trigger cares only about the tapping."
+}

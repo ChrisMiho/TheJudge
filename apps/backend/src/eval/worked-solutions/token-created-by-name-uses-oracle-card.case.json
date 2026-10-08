@@ -1,10 +1,28 @@
 {
   "id": "token-created-by-name-uses-oracle-card",
+  "formatVersion": 2,
   "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-06",
+    "note": "approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2"
+  },
+  "cards": [
+    {
+      "oracleId": "45900b2f-f6a9-4c42-9642-008f3c1cf6dd",
+      "name": "Tarmogoyf"
+    }
+  ],
+  "gameState": null,
   "question": "An ability says 'create a Tarmogoyf token' and doesn't say anything else about what the token is like -- no power, toughness, color, or abilities are given. What are that token's actual characteristics?",
-  "expectedSupplementalRuleIds": ["111.11"],
-  "workedSolution": "Disa the Restless has the ability “Whenever one or more creatures you control deal combat damage to a player, create a Tarmogoyf token.” As that ability resolves, its controller creates a token with the same characteristics as the card named Tarmogoyf, as determined by the Oracle card reference.",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "The token has the same characteristics as the card named Tarmogoyf, per its Oracle card.",
+    "answer": "Disa the Restless has the ability “Whenever one or more creatures you control deal combat damage to a player, create a Tarmogoyf token.” As that ability resolves, its controller creates a token with the same characteristics as the card named Tarmogoyf, as determined by the Oracle card reference.",
+    "decidingRuleIds": ["111.11"]
+  },
   "source": {
+    "authority": "wotc-comprehensive-rules",
     "type": "Official Magic: The Gathering Comprehensive Rules worked example",
     "publisher": "Wizards of the Coast",
     "ruleId": "111.11",
@@ -14,6 +32,19 @@
     "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
     "retrievedOn": "2026-09-07",
     "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "352b69e02402b0256a6483de73e494d76e57c3418f8b78208628d3f43d76b0ef",
+      "oracle": "5fbab95f7d8e8c793a1bd8f4ff7f573b10698b580c561dc4fa042ad3b7b39d07",
+      "rulings": "d402021617cf21cd4bc7969c0adae998fe48c8ef5cf6ab92b4145b9b82d2a2c7"
+    }
   },
   "whyHard": "Players expect a bare 'create a [Name] token' instruction to produce a vanilla, characteristic-less token bearing only that name, or assume the game has no way to fill in the blanks. Instead the rules point at the named card's actual Oracle text and stats, so the token is a full functional copy of that printed card even though the ability never restates its power, toughness, or abilities."
 }

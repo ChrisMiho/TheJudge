@@ -1,0 +1,50 @@
+{
+  "id": "fight-primal-might",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "58d7b8b3-ac47-4805-8259-4ba8e70d7dc3",
+      "name": "Primal Might"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I cast Primal Might with X equal to 0 just to have my creature fight the other target creature?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: X can be 0 so the two creatures just fight.",
+    "answer": "You can cast Primal Might with 0 as the value of X to just have the two target creatures fight.",
+    "decidingRuleIds": ["701.14a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Primal Might",
+    "oracleId": "58d7b8b3-ac47-4805-8259-4ba8e70d7dc3",
+    "rulingDate": "2020-06-23",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "791a5e44e8fdbe9fb5af07c775f907b09f2c3c627a26517704232022d057799e",
+      "oracle": "9fc1b299b883fa019b2b426a84ca11640e4b52e404efa3a4e758ae971afd4f33",
+      "rulings": "614ac88de02aab3f679e4ecb4f742fe973046b2797cf144622313b4421f1a357"
+    }
+  },
+  "whyHard": "Players think a spell with a pump effect has to give the pump to be worth casting."
+}

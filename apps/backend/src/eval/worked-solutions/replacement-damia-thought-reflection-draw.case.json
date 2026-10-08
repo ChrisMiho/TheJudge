@@ -1,0 +1,54 @@
+{
+  "id": "replacement-damia-thought-reflection-draw",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "eb7ae3e8-0489-4f3a-8343-7e7ec2fe3f01",
+      "name": "Damia, Sage of Stone"
+    },
+    {
+      "oracleId": "692a6833-3014-42f6-b1ad-333bb3292c65",
+      "name": "Thought Reflection"
+    }
+  ],
+  "gameState": null,
+  "question": "If I control Thought Reflection and have four cards in hand, and Damia, Sage of Stone makes me draw until I have seven, do I draw six cards?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: effects can modify the number of cards you draw, so with Thought Reflection you draw six.",
+    "answer": "Effects can modify the number of cards you’ll draw. For example, if you have four cards in your hand and control Thought Reflection (“If you would draw a card, draw two cards instead.”), you’ll draw six cards.",
+    "decidingRuleIds": ["614.1a", "614.11"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Damia, Sage of Stone",
+    "oracleId": "eb7ae3e8-0489-4f3a-8343-7e7ec2fe3f01",
+    "rulingDate": "2011-09-22"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "1c150903e1d38bb87a29f1eb8210bf72fba7386502571f39729dd4650435939a",
+      "oracle": "2daafd5c7d872b756ef6d5ed064b519ac90e14d684a100c11e8b59c47412d137",
+      "rulings": "ff6f932f3b2c91f1c6f01f5bd2e4d03956a8d895f7620ac2c49a1070ff4d7c1e"
+    }
+  },
+  "whyHard": "The number of cards to draw is worked out first, and players think the replacement effect cannot change that count."
+}

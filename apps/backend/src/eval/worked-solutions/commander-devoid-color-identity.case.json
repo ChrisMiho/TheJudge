@@ -1,0 +1,54 @@
+{
+  "id": "commander-devoid-color-identity",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "60d0c941-39f6-4144-abef-02b0a84d602e",
+      "name": "Angelic Aberration"
+    },
+    {
+      "oracleId": "61a23402-3244-4b5e-9134-98e1f82eda65",
+      "name": "Abstruse Appropriation"
+    }
+  ],
+  "gameState": null,
+  "question": "Abstruse Appropriation is colorless because it has devoid. Can it go in a Commander deck whose commander's color identity has no white or black?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: devoid doesn't affect color identity, which is still white and black, so it can't be in that deck.",
+    "answer": "Devoid doesn't affect the color identity of the card for the purposes of the Commander variant. For example, while Abstruse Appropriation is colorless because it has devoid, its color identity is still white and black, and it can't be included in a Commander deck where the commander's color identity doesn't include both white and black.",
+    "decidingRuleIds": ["903.4", "702.114a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Angelic Aberration",
+    "oracleId": "60d0c941-39f6-4144-abef-02b0a84d602e",
+    "rulingDate": "2024-06-07"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d5c5866e3bc32184b0a1c4a6014e4ae707f7dc9447f9f0fa8a5c979c0ba4648d",
+      "oracle": "18546ce092ed19d07c2fc064aed18ba555f1d6e55d62fe7ffb62c33446b7deca",
+      "rulings": "f637d83b5b311236bfd141cf677c0b6262b748535bb8d72c879ad31705184113"
+    }
+  },
+  "whyHard": "A colorless card looks like it fits any deck, but color identity looks at the mana symbols."
+}

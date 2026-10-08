@@ -1,0 +1,50 @@
+{
+  "id": "changeling-crib-swap",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "2987c385-011a-4032-a516-a46d1e9dc9e8",
+      "name": "Crib Swap"
+    }
+  ],
+  "gameState": null,
+  "question": "Does changeling apply in zones other than the battlefield, such as in my hand or on the stack?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: changeling applies in all zones, not just the battlefield.",
+    "answer": "Changeling applies in all zones, not just the battlefield.",
+    "decidingRuleIds": ["702.73a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Crib Swap",
+    "oracleId": "2987c385-011a-4032-a516-a46d1e9dc9e8",
+    "rulingDate": "2020-08-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8407ae79b2e300ddc6c17021508c7bfbaf2265554c7e0ad11a51e3773ddedef8",
+      "oracle": "ede6095cbdde7403aad836e89701f6ed023bc10dd5c42787836d77b8adaf9e83",
+      "rulings": "02f023a4e0295273a0c59b98f548295eeb7b2a67d615c5a6ce584987653060ab"
+    }
+  },
+  "whyHard": "Creature types usually matter only on the battlefield, so players expect changeling to work only there."
+}

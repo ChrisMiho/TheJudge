@@ -1,7 +1,8 @@
 // Answer-quality rubric (REQ-187).
 //
-// Four axes, each scored 0-2 against the gold case's published worked
-// solution. Only Correctness becomes the run's headline figure; the other
+// Four axes, each scored 0-2 against the case's approved reference answer
+// (official text for tiers 1 and 2, the owner-approved ruling for tier 3).
+// Only Correctness becomes the run's headline figure; the other
 // three are diagnostic -- they explain why a score moved, they never define
 // it. No axis is ever combined into a single weighted composite: a weighted
 // score hides which axis moved and invites tuning the weights instead of the
@@ -32,9 +33,9 @@ export const RUBRIC_AXES: readonly RubricAxis[] = [
     id: "correctness",
     title: "Correctness",
     levels: {
-      0: "Reaches a different outcome than the published worked solution.",
+      0: "Reaches a different outcome than the case's approved reference answer.",
       1: "Partially right, or right with a material error or omission.",
-      2: "Reaches the same outcome as the published worked solution."
+      2: "Reaches the same outcome as the case's approved reference answer."
     }
   },
   {
@@ -52,7 +53,7 @@ export const RUBRIC_AXES: readonly RubricAxis[] = [
     levels: {
       0: "Refuses a question the reference answers, or states a firm answer the reference does not support.",
       1: "Over-hedged, or mildly overconfident relative to the reference.",
-      2: "As definite as the published solution is, and no more."
+      2: "As definite as the approved reference answer is, and no more."
     }
   },
   {
@@ -73,7 +74,11 @@ export const RUBRIC_AXIS_IDS: readonly RubricAxisId[] = RUBRIC_AXES.map((axis) =
  * comparable only when their judge model AND rubric revision match
  * (REQ-186, REQ-189).
  */
-export const RUBRIC_REVISION = "2026-09-07.1";
+export const RUBRIC_REVISION = "2026-10-07.1";
+// 2026-10-07.1: the judge's inputs changed (REQ-186) -- it now receives the text of
+// the excerpts the answer prompt carried and the deciding rule ids under a separate
+// label -- so the revision moved, and grades under 2026-10-06.1 are never compared
+// per case with grades under this one (REQ-187, REQ-189).
 
 /** Renders the rubric as the exact text sent to the judge (REQ-186 layer 2). */
 export function formatRubricForJudge(): string {
@@ -91,9 +96,12 @@ export function formatRubricForJudge(): string {
 export type AxisScores = Record<RubricAxisId, 0 | 1 | 2>;
 
 /**
- * The run's single headline figure (REQ-187): the count of gold cases
- * scoring Correctness 2, out of the total. No other axis ever produces a
- * headline number, and no axis is ever folded into a weighted composite.
+ * The run's single headline figure (REQ-187): the count of cases scoring
+ * Correctness 2. The caller passes only the scores of approved, non-stale
+ * cases whose latest record was judged against the case's current reference
+ * answer, per tier group, and reports the count beside the number of such
+ * cases, the ungraded count and the stale count. No other axis ever produces
+ * a headline number, and no axis is ever folded into a weighted composite.
  */
 export function countFullyCorrect(scoresByCase: readonly AxisScores[]): number {
   return scoresByCase.filter((scores) => scores.correctness === 2).length;

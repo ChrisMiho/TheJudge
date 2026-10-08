@@ -1,0 +1,50 @@
+{
+  "id": "hideaway-cemetery-tampering",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "9babcd0a-531f-417d-905e-b916a87112bb",
+      "name": "Cemetery Tampering"
+    }
+  ],
+  "gameState": null,
+  "question": "After a card has been exiled with a hideaway ability, can any player who has controlled the permanent that exiled it since then look at that card?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: any player who has controlled a permanent with a hideaway ability since the card was exiled with it may look at it.",
+    "answer": "Any player who has controlled a permanent with a hideaway ability since a card was exiled with it may look at that card.",
+    "decidingRuleIds": ["702.75a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Cemetery Tampering",
+    "oracleId": "9babcd0a-531f-417d-905e-b916a87112bb",
+    "rulingDate": "2022-04-29",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ee044393797624077b2475aff2d940363b06af816c01c84f69d525899a00fe63",
+      "oracle": "9d4f552ae3842e6d15ef8f9d96be976cf24fbd90810dd9a2d4acd033b871072e",
+      "rulings": "0d06c554c99a42439f1861a8cd68cea2cff38780ff87176a7780d87a111f6cce"
+    }
+  },
+  "whyHard": "The card is exiled face down, so players think only the player who exiled it can ever look."
+}

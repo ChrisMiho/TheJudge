@@ -1,0 +1,54 @@
+{
+  "id": "combat-vengeful-archon-prevent-which-damage",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "c3ef4311-c7f1-45ae-8bd5-9c05bdf2ae88",
+      "name": "Vengeful Archon"
+    },
+    {
+      "oracleId": "637c5583-4683-4ae4-8b4e-f5da42a772c7",
+      "name": "Scroll Thief"
+    }
+  ],
+  "gameState": null,
+  "question": "If several attacking creatures would deal combat damage to me and Vengeful Archon prevents X of it, do I choose which creatures' damage to prevent?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you choose which of that damage to prevent, deciding at the point the creatures would deal damage.",
+    "answer": "If you would be dealt combat damage by multiple attacking creatures, you choose which of that damage to prevent. For example, if X is 3 and you’d be dealt combat damage by a 1/3 Scroll Thief and a 3/5 Siege Mastodon, you might choose to prevent 1 damage from the Scroll Thief and 2 damage from the Siege Mastodon. You don’t decide until the point at which the creatures would deal their damage.",
+    "decidingRuleIds": ["615.1", "616.1"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Vengeful Archon",
+    "oracleId": "c3ef4311-c7f1-45ae-8bd5-9c05bdf2ae88",
+    "rulingDate": "2010-08-15"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ddbee8d7c97e5e7fc44def3f57b04fcf4b12106510f7a76ee848d10a59814923",
+      "oracle": "d28ed35cc9441450f21d0cc2790f6c2fcbb093b008b0a2638c16ac9a312169d5",
+      "rulings": "a0720427a3cee049ef523adc0664977a86d5da31dbfac369beeaffdfcd9cc29f"
+    }
+  },
+  "whyHard": "Prevention usually applies to a single source, and players think the effect picks the damage for them."
+}

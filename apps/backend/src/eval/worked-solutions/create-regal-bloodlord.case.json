@@ -1,0 +1,50 @@
+{
+  "id": "create-regal-bloodlord",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "ce9d3382-23ca-4d35-ad30-5e2b75517012",
+      "name": "Regal Bloodlord"
+    }
+  ],
+  "gameState": null,
+  "question": "Regal Bloodlord makes a Bat token at the beginning of each end step if I gained life this turn. If I gained life three separate times this turn, do I create three Bats?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you create only one Bat, however much life you gained.",
+    "answer": "You create only one Bat token, no matter how much life you gained.",
+    "decidingRuleIds": ["701.7a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Regal Bloodlord",
+    "oracleId": "ce9d3382-23ca-4d35-ad30-5e2b75517012",
+    "rulingDate": "2018-07-13",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "dd591b54ed3bfc786edf938b8cf090352c6da80a06fd6e6797bc7c1cc897386e",
+      "oracle": "2ffbf91275ddaa9a328811c114f1b84ec613648d6f873cb8b8fe40841e76c4fb",
+      "rulings": "cf7cc3ed089c6031bf1d5514e8dd175854f5526b98bd31e9367aa9968551e5da"
+    }
+  },
+  "whyHard": "Players count the life-gain events instead of reading the 'if you gained life this turn' condition, which only asks whether it happened."
+}

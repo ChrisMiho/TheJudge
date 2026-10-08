@@ -1,0 +1,50 @@
+{
+  "id": "vanishing-tidewalker",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "3cc857b4-3cc7-44d5-9c51-ef819d1289c6",
+      "name": "Tidewalker"
+    }
+  ],
+  "gameState": null,
+  "question": "Tidewalker's toughness equals the number of time counters on it, and vanishing sacrifices it when the last counter is removed. Is it sacrificed to vanishing at that moment?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it is put into the graveyard as a state-based action for 0 toughness before it can be sacrificed.",
+    "answer": "Unless something is boosting Tidewalker's toughness, when the last time counter is removed, it will be put into the graveyard as a state-based action for having 0 toughness before it can be sacrificed as the result of vanishing.",
+    "decidingRuleIds": ["702.63a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Tidewalker",
+    "oracleId": "3cc857b4-3cc7-44d5-9c51-ef819d1289c6",
+    "rulingDate": "2007-02-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "af489c7501f4d86639d75351c41a1c0efc6d70a3e9bd2ada77f6377d8cfdf3ab",
+      "oracle": "47ff00a5f8beb0b1592532784df367d385cf73a919bb161de54a05fe31250de9",
+      "rulings": "54c287eb4d4f4f41e6a7467123622b510046f018c69fbd8f91bc650fde49de02"
+    }
+  },
+  "whyHard": "Players expect the vanishing trigger to be what removes the creature, not the state-based action."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "copies-shattering-spree-replicate-countered",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "fe725b27-49ef-41bc-91f9-9cd9871ad863",
+      "name": "Shattering Spree"
+    }
+  ],
+  "gameState": null,
+  "question": "If Shattering Spree was cast with replicate and the original is countered, do I still copy Shattering Spree for each time I paid its replicate cost?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: as the replicate trigger resolves, you copy it for each time you paid, even if the original is no longer on the stack.",
+    "answer": "As the replicate triggered ability resolves, you'll copy Shattering Spree for each time you paid its replicate cost, even if the original spell is no longer on the stack at that time (perhaps because it was countered).",
+    "decidingRuleIds": ["702.56a", "707.10"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Shattering Spree",
+    "oracleId": "fe725b27-49ef-41bc-91f9-9cd9871ad863",
+    "rulingDate": "2024-01-12"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "11d4ed97fcd859a59b6281124a648288e9ff1dc5954dd9be1ec42522d4256d9c",
+      "oracle": "566d0ca4a6c9b1e1e02b85ef56b86099c9639fb7b398bbdd3948f1d5b807e8a3",
+      "rulings": "95ad5f4140401c8b6dcdc4e6bee8295b9e0943edbab1f46c62362f50bedc0bde"
+    }
+  },
+  "whyHard": "The replicate copies are made by a separate trigger, so they feel like they depend on the original spell still being on the stack."
+}

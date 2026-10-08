@@ -1,0 +1,50 @@
+{
+  "id": "waterbend-flexible-waterbender",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "8cf88fa8-2f47-4125-a59d-9c2b2d4765a7",
+      "name": "Flexible Waterbender"
+    }
+  ],
+  "gameState": null,
+  "question": "While paying a waterbend cost, can I tap an untapped artifact or creature I control instead of paying each generic mana?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: for each generic mana in the cost you may tap an untapped artifact or creature instead.",
+    "answer": "\"Waterbend [cost]\" means \"Pay [cost]. For each generic mana in that cost, you may tap an untapped artifact or creature you control rather than pay that mana.\"",
+    "decidingRuleIds": ["701.67a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Flexible Waterbender",
+    "oracleId": "8cf88fa8-2f47-4125-a59d-9c2b2d4765a7",
+    "rulingDate": "2025-10-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8a54d59abfb6758d6da6364beede639d69cefa524adf0a1218e985f52be792cc",
+      "oracle": "171a0765649ff6e69080ded45912510646ef62b03885ba4fbc102b82db3e9c2e",
+      "rulings": "22ea2a7c05fa28fdb45d696fd992b6a184418ac5fb7bd86c8a5e742bd45c908d"
+    }
+  },
+  "whyHard": "Tapping creatures to pay a cost looks like convoke, which has different rules."
+}

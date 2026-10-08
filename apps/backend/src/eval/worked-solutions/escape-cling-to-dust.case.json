@@ -1,0 +1,50 @@
+{
+  "id": "escape-cling-to-dust",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "9c44e556-4c7a-48bf-a108-c584f69c2cfa",
+      "name": "Cling to Dust"
+    }
+  ],
+  "gameState": null,
+  "question": "Does escape's permission to cast a card from my graveyard change when I may cast the spell?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: escape's permission does not change when you may cast the spell from your graveyard.",
+    "answer": "Escape’s permission doesn’t change when you may cast the spell from your graveyard.",
+    "decidingRuleIds": ["702.138a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Cling to Dust",
+    "oracleId": "9c44e556-4c7a-48bf-a108-c584f69c2cfa",
+    "rulingDate": "2020-01-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d24a7af7cdd3eb7d0991ab3acde10522ab2a13e3d6312cd1d66960b46a16ae55",
+      "oracle": "c7ada17d389479fbdc73abfcabc0577bf36b21e11bf95d94d68e1bcf116234fe",
+      "rulings": "cee29200ccf1035cac1e2b73698e078e9dbe7d4f36c26cbb2edd164458893a79"
+    }
+  },
+  "whyHard": "Casting from the graveyard looks like it might ignore timing restrictions."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "replacement-sutured-ghoul-cannot-exile-entering-cards",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "8b4715b0-63d9-4ff8-a667-21a762518687",
+      "name": "Sutured Ghoul"
+    }
+  ],
+  "gameState": null,
+  "question": "Sutured Ghoul and Runeclaw Bear enter the battlefield from my graveyard at the same time. Can I exile either of them with Sutured Ghoul's replacement effect?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you can't choose to exile either of them when applying Sutured Ghoul's replacement effect.",
+    "answer": "Sutured Ghoul says, in part, “As this creature enters, exile any number of creature cards from your graveyard.” If Sutured Ghoul and Runeclaw Bear enter the battlefield from your graveyard at the same time, you can’t choose to exile either of them when applying Sutured Ghoul’s replacement effect.",
+    "decidingRuleIds": ["614.13a"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "614.13a",
+    "sectionTitle": "Replacement Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d5bfdc79c4642caf3705b43bf1b3f56d3c9b996439e496d254ae1b2da8ab3355",
+      "oracle": "34735535ff61ca14ef8cdce3f50c73173de7d9b6f5ca9924835a85820c8daae8",
+      "rulings": "48232bb572236ecdb55aa8aa0749d3291b3da5acc8c7b27f26cfa51a00cee89a"
+    }
+  },
+  "whyHard": "Both cards are in the graveyard when the effect is set up, so players think they are legal choices."
+}

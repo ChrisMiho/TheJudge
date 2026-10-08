@@ -1,0 +1,54 @@
+{
+  "id": "combat-wither-applies-to-noncombat-damage",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "15febce7-8320-4591-9535-ef11c8adecc2",
+      "name": "Barbed Bloodletter"
+    },
+    {
+      "oracleId": "ecf574a5-6410-466d-a726-732134f904b2",
+      "name": "Assert Perfection"
+    }
+  ],
+  "gameState": null,
+  "question": "The creature equipped by Barbed Bloodletter has wither until end of turn. Does wither also apply to noncombat damage that creature deals, such as from Assert Perfection?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: wither applies to any damage the creature deals to creatures, including noncombat damage.",
+    "answer": "Wither applies to any damage dealt to creatures by the affected creature. This includes combat damage as well as anything that causes that creature to deal noncombat damage, such as the effect of Assert Perfection.",
+    "decidingRuleIds": ["702.80a", "120.3"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Barbed Bloodletter",
+    "oracleId": "15febce7-8320-4591-9535-ef11c8adecc2",
+    "rulingDate": "2025-11-17"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "032b0fd41f529ca75382a0a8bb8ecac789d00229d91b7d836fe4b648364e16ed",
+      "oracle": "ce3b23258e155e9f0e950967e11e767757f0bc0ec0d79ed9e5a376e9f6cccad5",
+      "rulings": "520dafb193163e5544a0bc15248ab84c61978bee56e20daadf91dd68774da2cd"
+    }
+  },
+  "whyHard": "Wither is usually described in combat terms, so players think it only changes combat damage."
+}

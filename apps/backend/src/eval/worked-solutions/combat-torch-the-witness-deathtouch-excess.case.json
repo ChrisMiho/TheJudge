@@ -1,0 +1,54 @@
+{
+  "id": "combat-torch-the-witness-deathtouch-excess",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "51473069-68dc-4e87-b345-d7cbcfdeea74",
+      "name": "Torch the Witness"
+    },
+    {
+      "oracleId": "e86c965b-ac10-4fff-b682-dddd6d9747c6",
+      "name": "Judith, Carnage Connoisseur"
+    }
+  ],
+  "gameState": null,
+  "question": "If Torch the Witness has deathtouch, is excess damage dealt only when the total damage dealt to a creature this turn is greater than its toughness?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: any amount of damage from a source with deathtouch greater than 1 counts as excess, even if the total isn't greater than the creature's toughness.",
+    "answer": "Even 1 damage dealt to a creature from a source with deathtouch is considered lethal damage. If Torch the Witness has deathtouch (perhaps due to the effect of Judith, Carnage Connoisseur), any amount greater than 1 damage will cause excess damage to be dealt, even if the total amount of damage dealt to that creature this turn isn't greater than the creature's toughness.",
+    "decidingRuleIds": ["702.2b", "120.4a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Torch the Witness",
+    "oracleId": "51473069-68dc-4e87-b345-d7cbcfdeea74",
+    "rulingDate": "2024-02-02"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e8cd7d59bd88811301e9f5cbbb0150922c4011219a6c7fbe635a876727618ef4",
+      "oracle": "c33505d75886267f9b0ad54a93ec1edf0e630133342b6541f4c8747f96ee78fb",
+      "rulings": "8230af3a1d39fef813378ea645c659e4d3c2413cdecb474c5ac0f9ead28f9452"
+    }
+  },
+  "whyHard": "Excess damage is usually measured against toughness, but deathtouch makes 1 damage lethal."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "prowl-auntie-s-snitch",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "d2964a68-36d9-4b05-8f34-540969b410bf",
+      "name": "Auntie's Snitch"
+    }
+  ],
+  "gameState": null,
+  "question": "A Goblin I control deals combat damage to a player while Auntie's Snitch is in my graveyard. Can I return it to my hand and then cast it for its prowl cost that turn?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you can return it to your hand and then cast it for its prowl cost that turn.",
+    "answer": "If a Goblin or Rogue you control deals combat damage to a player while Auntie's Snitch is in your graveyard, you can return Auntie's Snitch to your hand, then you can cast it for its prowl cost that turn.",
+    "decidingRuleIds": ["702.76a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Auntie's Snitch",
+    "oracleId": "d2964a68-36d9-4b05-8f34-540969b410bf",
+    "rulingDate": "2008-04-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a2a437c6e3dcc4bbb6b6ac15b6d69f76f1b9afea8803363d91c4d810ea6e47f4",
+      "oracle": "6f6c17ddedea3ba62b91616acef902755c3307308a6c6a816b68d5a5407f3d50",
+      "rulings": "6139732c78e554729db9a24c32d900a907c91a4407d6c5f6478c2e6d937ab069"
+    }
+  },
+  "whyHard": "Prowl asks about damage already dealt this turn, and players forget the card can come back after the damage."
+}

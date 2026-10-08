@@ -1,0 +1,50 @@
+{
+  "id": "double-faced-melded-host-dies",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "6923cf6b-7d3e-4d95-abaf-1df1a04ac7c1",
+      "name": "Chittering Host"
+    }
+  ],
+  "gameState": null,
+  "question": "Chittering Host, a melded permanent, dies. Does an ability that triggers 'whenever a creature dies' trigger only once?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it triggers once, while a 'whenever a card is put into a graveyard' ability triggers twice.",
+    "answer": "Chittering Host, a melded permanent, dies. An ability that triggers “whenever a creature dies” triggers once. An ability that triggers “whenever a card is put into a graveyard from anywhere” triggers twice.",
+    "decidingRuleIds": ["712.21"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "712.21",
+    "sectionTitle": "Double-Faced Cards"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "946b85136f8aadb0b4a0b00202356ab1e5abe7788485b646d29ddce67c00763c",
+      "oracle": "8ee68471ab87da51a7d213f56a2b3b8199edba0a1690bf6a35f6ca89034f5b34",
+      "rulings": "42f19feae06142a9ac2ec16e23555d77cb6a48952c6929cb2b63e4a46467eb7a"
+    }
+  },
+  "whyHard": "Two cards go to the graveyard, so players expect two creature triggers."
+}

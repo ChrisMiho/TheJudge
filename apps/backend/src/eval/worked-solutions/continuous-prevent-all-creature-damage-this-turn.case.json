@@ -1,0 +1,45 @@
+{
+  "id": "continuous-prevent-all-creature-damage-this-turn",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [],
+  "gameState": null,
+  "question": "An effect says 'Prevent all damage creatures would deal this turn.' Does it apply to damage from permanents that become creatures later in the turn?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it modifies the rules of the game, so it applies even to damage from creatures that were not there when it began.",
+    "answer": "An effect that reads “Prevent all damage creatures would deal this turn” doesn’t modify any object’s characteristics, so it’s modifying the rules of the game. That means the effect will apply even to damage from creatures that weren’t on the battlefield when the continuous effect began. It also affects damage from permanents that become creatures later in the turn.",
+    "decidingRuleIds": ["611.2c"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "611.2c",
+    "sectionTitle": "Continuous Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "2561dee477d22dbd0780bf99d1463fb16ac55405e29d228b1aca4500292779b0",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "whyHard": "It looks like the one-shot effect on creatures, but it doesn't change any object's characteristics."
+}

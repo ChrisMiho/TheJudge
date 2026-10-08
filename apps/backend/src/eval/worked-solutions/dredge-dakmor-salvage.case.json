@@ -1,0 +1,50 @@
+{
+  "id": "dredge-dakmor-salvage",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "cdc4048a-73ec-4ec1-a179-2b36c397bf1a",
+      "name": "Dakmor Salvage"
+    }
+  ],
+  "gameState": null,
+  "question": "I would draw one card and I have two cards with dredge in my graveyard. Can I dredge more than one of them to replace that single draw?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: one card draw cannot be replaced by multiple dredge abilities.",
+    "answer": "One card draw can't be replaced by multiple dredge abilities.",
+    "decidingRuleIds": ["702.52a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Dakmor Salvage",
+    "oracleId": "cdc4048a-73ec-4ec1-a179-2b36c397bf1a",
+    "rulingDate": "2024-01-12",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "79823802f4fc33b7759311bc28d627282beeaabce752b4f6bf70301a298bf22f",
+      "oracle": "6b5ce9f3a1c4f7e3476f2da34ec7fb74a1913297fc0d0c6d8af53d7c594ed6a5",
+      "rulings": "efb194112e0a6ed4f22e3ce3c6fe3c28b56f43ec71abb998e0a87b32a00a5e7d"
+    }
+  },
+  "whyHard": "Dredge is a replacement effect, and players think replacement effects can be applied one after another without limit."
+}

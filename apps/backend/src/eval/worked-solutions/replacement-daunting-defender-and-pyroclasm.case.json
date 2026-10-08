@@ -1,0 +1,54 @@
+{
+  "id": "replacement-daunting-defender-and-pyroclasm",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "618f29e1-0ea0-4457-91a6-7210f7619c9a",
+      "name": "Daunting Defender"
+    },
+    {
+      "oracleId": "e4bcd4ea-e7cd-4471-8f3b-18bb51d3d70c",
+      "name": "Pyroclasm"
+    }
+  ],
+  "gameState": null,
+  "question": "Daunting Defender prevents 1 damage from any source dealt to Cleric creatures I control. When Pyroclasm deals 2 damage to each creature, does each of my Clerics take only 1 damage?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: each Cleric you control takes 1 damage, and every other creature takes 2.",
+    "answer": "Daunting Defender says “If a source would deal damage to a Cleric creature you control, prevent 1 of that damage.” Pyroclasm says “Pyroclasm deals 2 damage to each creature.” Pyroclasm will deal 1 damage to each Cleric creature controlled by Daunting Defender’s controller. It will deal 2 damage to each other creature.",
+    "decidingRuleIds": ["615.10"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "615.10",
+    "sectionTitle": "Prevention Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "28da31765457a4c518082f47cf2d49653c46be09e46b655a40352451cc449834",
+      "oracle": "422b672384d49c147a64bbd74eb370a952df12c103430106b0ded27ef8caa033",
+      "rulings": "75e40f3b872a6e417f21a5d15e81c6a47e738bd552d1f88fbd61da86fd09fdef"
+    }
+  },
+  "whyHard": "Prevention applies to each damage event, not once for the whole spell."
+}

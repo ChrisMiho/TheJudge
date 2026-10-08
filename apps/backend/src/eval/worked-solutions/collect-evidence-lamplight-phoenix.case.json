@@ -1,0 +1,50 @@
+{
+  "id": "collect-evidence-lamplight-phoenix",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "c6f7efad-381c-45ba-9976-159b7e78f7ed",
+      "name": "Lamplight Phoenix"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I exile Lamplight Phoenix from my graveyard to pay for the collect evidence cost of its own triggered ability?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you cannot exile the Phoenix itself to pay that cost.",
+    "answer": "You can't exile Lamplight Phoenix from your graveyard to pay the collect evidence cost of its triggered ability.",
+    "decidingRuleIds": ["701.59a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Lamplight Phoenix",
+    "oracleId": "c6f7efad-381c-45ba-9976-159b7e78f7ed",
+    "rulingDate": "2024-02-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9ae355d5a377522354cb46ba13b183723b37c5c9d77f46d69f74324e7ce0054b",
+      "oracle": "e8b811739e389247e81d3d6c8f3eb29cd01374b0122c097aac1d5a6ce62e0fee",
+      "rulings": "2aa36ca4d685558202197e9cf98161cb265ae7407074e84471e4a1140c78801d"
+    }
+  },
+  "whyHard": "The Phoenix is in the graveyard when its trigger resolves, so it looks like a legal card to exile."
+}

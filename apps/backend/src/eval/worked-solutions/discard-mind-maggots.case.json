@@ -1,0 +1,50 @@
+{
+  "id": "discard-mind-maggots",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "fcaa5a54-eb73-4d78-96a3-826d1902f642",
+      "name": "Mind Maggots"
+    }
+  ],
+  "gameState": null,
+  "question": "Mind Maggots lets me discard any number of creature cards when it enters. Can I choose to discard no creature cards at all?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you can choose to discard zero creature cards.",
+    "answer": "You can choose to discard zero creature cards.",
+    "decidingRuleIds": ["701.9a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Mind Maggots",
+    "oracleId": "fcaa5a54-eb73-4d78-96a3-826d1902f642",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ef230c6f84e92d84da9db3934f1ebcc7564edb186ac1241e3b1fb7f4b70b4a23",
+      "oracle": "cf161643e303bf61e5a84551f3a5fd123046e9e81d889b507837e40c8777bb92",
+      "rulings": "b255c8044a74b9e6704d40005c491b92ce487e6f0830c3812974f3ef245acfca"
+    }
+  },
+  "whyHard": "'Any number' makes players wonder whether zero is a legal choice."
+}

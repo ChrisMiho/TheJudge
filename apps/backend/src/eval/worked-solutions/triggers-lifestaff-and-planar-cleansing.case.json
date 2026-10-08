@@ -1,0 +1,54 @@
+{
+  "id": "triggers-lifestaff-and-planar-cleansing",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e69b8388-1311-427f-9300-42badd5338ff",
+      "name": "Sylvok Lifestaff"
+    },
+    {
+      "oracleId": "a98c2d81-4add-4292-bbdd-e1b69ff936d4",
+      "name": "Planar Cleansing"
+    }
+  ],
+  "gameState": null,
+  "question": "If Sylvok Lifestaff and the equipped creature are put into their owners' graveyards at the same time, such as by Planar Cleansing, does the Lifestaff's triggered ability still gain me 3 life?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the triggered ability still triggers and you gain 3 life.",
+    "answer": "If Sylvok Lifestaff and the equipped creature are put into their owners’ graveyards at the same time (due to Planar Cleansing, perhaps), the triggered ability will still trigger. You’ll gain 3 life.",
+    "decidingRuleIds": ["603.10a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Sylvok Lifestaff",
+    "oracleId": "e69b8388-1311-427f-9300-42badd5338ff",
+    "rulingDate": "2011-01-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8e629e2749f07e9cc70f6fb44cc858fe31af8df58068a640635f5045edca473c",
+      "oracle": "553a6789e6fb35358206f572e8d6c3d027e9f6d11e7ac4cbb20c6fbe9822ccd2",
+      "rulings": "0e79f62f33ff19c864a2e6b1e0ebec636b6d6bbb900269fa4f317cc2fc58f475"
+    }
+  },
+  "whyHard": "The Lifestaff leaves at the same moment as the creature, and players think it can no longer see the creature dying."
+}

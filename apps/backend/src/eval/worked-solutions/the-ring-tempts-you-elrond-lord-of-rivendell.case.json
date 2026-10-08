@@ -1,0 +1,50 @@
+{
+  "id": "the-ring-tempts-you-elrond-lord-of-rivendell",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "099ae8f2-5c84-43ab-aaa1-ea69f2bba784",
+      "name": "Elrond, Lord of Rivendell"
+    }
+  ],
+  "gameState": null,
+  "question": "When the Ring tempts me and I control a creature, can I choose not to pick a Ring-bearer?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: each time the Ring tempts you, you must choose a creature if you control one.",
+    "answer": "Each time the Ring tempts you, you must choose a creature if you control one.",
+    "decidingRuleIds": ["701.54a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Elrond, Lord of Rivendell",
+    "oracleId": "099ae8f2-5c84-43ab-aaa1-ea69f2bba784",
+    "rulingDate": "2023-06-16",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "64b5638b3c21576e8613ade50802e74918eec2f6e583d72216cc16ea2bc472a7",
+      "oracle": "30187a2b8f31f94521cc03ca7f624e8124b0191c37dc738a8c3a57ea17757264",
+      "rulings": "b64bcd3685ce1e59c23b914f4493ca35fb0a28d01ba687c3ad4398efb6c02a48"
+    }
+  },
+  "whyHard": "Choosing a creature reads as optional, since the Ring tempts you in a moment of temptation, not an order."
+}

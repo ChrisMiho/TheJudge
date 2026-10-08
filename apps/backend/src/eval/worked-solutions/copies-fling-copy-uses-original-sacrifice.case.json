@@ -1,0 +1,50 @@
+{
+  "id": "copies-fling-copy-uses-original-sacrifice",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "24227761-b50e-4b9e-93a2-e82d053b3e3d",
+      "name": "Fling"
+    }
+  ],
+  "gameState": null,
+  "question": "How much damage does a copy of Fling deal: does it check the power of the creature sacrificed to pay for the original Fling?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: a copy checks the power of the creature sacrificed to pay for the original Fling.",
+    "answer": "Fling is an instant that reads, “As an additional cost to cast this spell, sacrifice a creature” and “Fling deals damage equal to the sacrificed creature’s power to any target.” When determining how much damage a copy of Fling deals, it checks the power of the creature sacrificed to pay for the original Fling.",
+    "decidingRuleIds": ["707.10"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "707.10",
+    "sectionTitle": "Copying Objects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5d195126665f2f15cae2fb0be6cc1fb4da9713309b788bed48e92739cc382efd",
+      "oracle": "7e0197bd184307b206acab5f4d5d49d2b8f256c5720705627736815cdc99e6d2",
+      "rulings": "24128779114fff6a9bc5c9dabe735fdba68f018577228ead4df962bf53f8a701"
+    }
+  },
+  "whyHard": "The copy never paid a cost, so players think it has no sacrificed creature to look at."
+}

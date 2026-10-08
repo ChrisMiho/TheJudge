@@ -1,0 +1,50 @@
+{
+  "id": "start-your-engines-avishkar-raceway",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e2c35551-1ba5-4424-baf9-821b49bbcc8c",
+      "name": "Avishkar Raceway"
+    }
+  ],
+  "gameState": null,
+  "question": "I have no speed and gain control of an opponent's Avishkar Raceway. Does my speed become 1 right away, without a trigger?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: start your engines! isn't a trigger, so your speed becomes 1 as a state-based action as soon as you control the Raceway, even one you took from an opponent.",
+    "answer": "Start your engines! isn’t a triggered ability. Increasing your speed to 1 is something that happens as a state-based action as soon as you control a permanent with the ability. Notably, this includes gaining control of a permanent with the ability that another player controls.",
+    "decidingRuleIds": ["702.179a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Avishkar Raceway",
+    "oracleId": "e2c35551-1ba5-4424-baf9-821b49bbcc8c",
+    "rulingDate": "2025-02-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "30a5150b724c939fe6da269baed9614842348038076f6f35874b4cd6debfae8e",
+      "oracle": "50482e91921aed381705f136d6f51e4266f229124183ccdc8939500c78215044",
+      "rulings": "d14d1bb3a1ff7b118155fff1e251fc6409e8e715e950efd00d64bd1a26b86b41"
+    }
+  },
+  "whyHard": "Start your engines! reads like an enters-the-battlefield trigger, but gaining speed 1 is a state-based action that also fires when you steal the permanent."
+}

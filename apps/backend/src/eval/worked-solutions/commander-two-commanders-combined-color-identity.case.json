@@ -1,0 +1,54 @@
+{
+  "id": "commander-two-commanders-combined-color-identity",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "248cafe8-cc37-4cf3-8239-ac10e55ced13",
+      "name": "Evie Frye"
+    },
+    {
+      "oracleId": "31af65c3-602b-4ac9-a25f-dccb88f8f751",
+      "name": "Jacob Frye"
+    }
+  ],
+  "gameState": null,
+  "question": "If Evie Frye and Jacob Frye are my two commanders, can my deck contain cards with white in their color identity?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the deck may contain cards with blue and/or black in their color identity, but not white, red or green.",
+    "answer": "If your Commander deck has two commanders, you can only include cards whose own color identities are also found in your commanders’ combined color identities. If Evie Frye and Jacob Frye are your commanders, your deck may contain cards with blue and/or black in their color identity, but not white, red, or green.",
+    "decidingRuleIds": ["903.4"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Evie Frye",
+    "oracleId": "248cafe8-cc37-4cf3-8239-ac10e55ced13",
+    "rulingDate": "2024-07-05"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "86e5904d8afff7f941079c3d09b7ca9642d25dcb570ea1f2a762aa5acd13d38c",
+      "oracle": "ad8066e4dded82a1b517fb094ba1b4ca65df406ca2e1dd7e7ae8163d16488578",
+      "rulings": "3fae4a132bd1d97a3f430e24341be6c43a4db0fe85db15109a910f96153f844f"
+    }
+  },
+  "whyHard": "Two commanders widen the allowed colors, but only to the colors they share between them."
+}

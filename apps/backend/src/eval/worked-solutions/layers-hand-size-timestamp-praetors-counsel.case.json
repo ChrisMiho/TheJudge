@@ -1,0 +1,54 @@
+{
+  "id": "layers-hand-size-timestamp-praetors-counsel",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "83d8eda7-b8d2-479a-b1ec-de56833a3182",
+      "name": "Praetor's Counsel"
+    },
+    {
+      "oracleId": "7077ee9a-59c6-4b8e-bf33-9b094412ad38",
+      "name": "Null Profusion"
+    }
+  ],
+  "gameState": null,
+  "question": "If I put Null Profusion onto the battlefield and then resolve Praetor's Counsel, do I have no maximum hand size, while the opposite order would leave my maximum at two?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: effects that modify your hand size are applied in timestamp order, so the order they happen decides the result.",
+    "answer": "If multiple effects modify your hand size, apply them in timestamp order. For example, if you put Null Profusion (an enchantment that says your maximum hand size is two) onto the battlefield and then resolve Praetor's Counsel, you have no maximum hand size. However, if those events happened in the opposite order, your maximum hand size would be two.",
+    "decidingRuleIds": ["613.7", "402.2"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Praetor's Counsel",
+    "oracleId": "83d8eda7-b8d2-479a-b1ec-de56833a3182",
+    "rulingDate": "2011-06-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8c9b32c5630f63c604b357a169323be8588d199cad88227453bccfbb90d7900e",
+      "oracle": "75d173bda6f27c2871c581c7c56eb1370d38d84b554d4900f86169aef2fd7a43",
+      "rulings": "b3545938e3028941a3d05856edd65ad6e30d03c5782cec11dc0ee7f0f957f83f"
+    }
+  },
+  "whyHard": "Players think an effect that removes the limit always beats one that sets it."
+}

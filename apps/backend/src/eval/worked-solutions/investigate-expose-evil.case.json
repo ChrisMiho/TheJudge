@@ -1,0 +1,50 @@
+{
+  "id": "investigate-expose-evil",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "b5483037-5dd2-4282-a201-de2e08aaa76e",
+      "name": "Expose Evil"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I cast Expose Evil with no targets if all I want is to investigate?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you can cast it with no targets just to investigate.",
+    "answer": "You can cast Expose Evil with no targets if you only want to investigate.",
+    "decidingRuleIds": ["701.16a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Expose Evil",
+    "oracleId": "b5483037-5dd2-4282-a201-de2e08aaa76e",
+    "rulingDate": "2016-04-08",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4c18c2ed67e97ef39cc6d08ac3391bf7f88cc5bc0e1ea8e17fba01f4dd9410c5",
+      "oracle": "b506ee9316fb2281d78cecffb42007b93c7831ef58069d96b6c41493e575d084",
+      "rulings": "7a30b8119d0482a88be6433a867215b769b75ffe7ce7c3285e9c35d4ec493864"
+    }
+  },
+  "whyHard": "Players think a spell that taps targets needs at least one target to be cast."
+}

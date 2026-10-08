@@ -1,0 +1,50 @@
+{
+  "id": "behold-celestial-reunion",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "ba0a815c-1dfe-47c1-890f-496c670124f3",
+      "name": "Celestial Reunion"
+    }
+  ],
+  "gameState": null,
+  "question": "Celestial Reunion lets me behold two creatures of a chosen type as an additional cost. Can I behold kindred cards or kindred permanents to pay it?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: this spell's behold is limited to creatures, not kindred cards or permanents.",
+    "answer": "Notably, Celestial Reunion's behold instruction is limited to \"creatures.\" It doesn't allow you to behold kindred cards or kindred permanents, which are permitted for most other behold instructions.",
+    "decidingRuleIds": ["701.4a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Celestial Reunion",
+    "oracleId": "ba0a815c-1dfe-47c1-890f-496c670124f3",
+    "rulingDate": "2025-11-17",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "85844b5b9c94362268904899a0070a43db95120686f8d9eadfe75711642166af",
+      "oracle": "ca98c0a0c11701ad8335606deede22d9fb45e15f55566c36761d5c6c2893351c",
+      "rulings": "bcbb0c9f640ed13988ecd117bede8c60bdeda0e82793ee024d432680941d11cc"
+    }
+  },
+  "whyHard": "Most other behold effects accept kindred cards, so players assume this one does too."
+}

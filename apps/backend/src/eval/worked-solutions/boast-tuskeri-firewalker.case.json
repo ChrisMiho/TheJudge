@@ -1,0 +1,50 @@
+{
+  "id": "boast-tuskeri-firewalker",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "36dda03b-a3c1-4ef4-ae62-da318028a39e",
+      "name": "Tuskeri Firewalker"
+    }
+  ],
+  "gameState": null,
+  "question": "Is the card exiled with a boast ability exiled face up?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the card exiled with boast is exiled face up.",
+    "answer": "The card you exile with the boast ability is exiled face up.",
+    "decidingRuleIds": ["702.142a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Tuskeri Firewalker",
+    "oracleId": "36dda03b-a3c1-4ef4-ae62-da318028a39e",
+    "rulingDate": "2021-02-05",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3c30a469acbc87ba2f6aa099441ac92fa9e5f2f8c7e5aba3c61dccd7a2e7948c",
+      "oracle": "bc53e47e0c7b38e3e859794e527721ef2735b726ce4730d5331430788f9b0e82",
+      "rulings": "8c93083457c7bf176927ff6ae5ea8393061a01619955c33471d615c1ed59de7a"
+    }
+  },
+  "whyHard": "Cards exiled from the top of a library are often assumed to be face down."
+}

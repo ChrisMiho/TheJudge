@@ -1,0 +1,50 @@
+{
+  "id": "surge-boulder-salvo",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "16df20e2-5228-4543-84b7-74a3170d9d31",
+      "name": "Boulder Salvo"
+    }
+  ],
+  "gameState": null,
+  "question": "Does casting a spell for its surge cost change its mana cost or its mana value?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: casting a spell for its surge cost does not change its mana cost or mana value.",
+    "answer": "Casting a spell for its surge cost doesn’t change its mana cost or its mana value.",
+    "decidingRuleIds": ["702.117a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Boulder Salvo",
+    "oracleId": "16df20e2-5228-4543-84b7-74a3170d9d31",
+    "rulingDate": "2016-01-22",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "fd01d3bc4ffb08bca0f00b920200b99af0d9f33795935cbdc20b55d70a598413",
+      "oracle": "4b0dcac964216b4dbc7f6844f81c4bd086e1d857ef68ac2e9f1a4d4fab1b0abb",
+      "rulings": "2b12c59b37195182f0d3d8f93023705af98d1fec93ea3e3d0cb845b683bb1803"
+    }
+  },
+  "whyHard": "Because surge changes what you pay, players think it changes the spell's mana value."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "splice-consuming-vortex",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "863bb8d8-4571-4775-87e3-d6f3ec88c835",
+      "name": "Consuming Vortex"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I splice the same Consuming Vortex onto a single spell more than once?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: each individual card can be spliced only once onto any one spell, and all are revealed at once.",
+    "answer": "You reveal all cards you intend to splice at the same time. Each individual card can be spliced only once onto any one spell.",
+    "decidingRuleIds": ["702.47a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Consuming Vortex",
+    "oracleId": "863bb8d8-4571-4775-87e3-d6f3ec88c835",
+    "rulingDate": "2013-06-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c5d254c67f1a134298afc13cf33b3576bb9381d4cd52653ebbedd9a530eb4748",
+      "oracle": "ba65a819819491c6fab57a86764860cc12b864ef8d4a9d5907696fc4f3752344",
+      "rulings": "083e14b52fed1c7d9db275896fe439784d70b0c9ed43aa243b4cdfc566c5fed1"
+    }
+  },
+  "whyHard": "Splice looks like a repeatable add-on, so players try to attach more than one copy."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "afflict-ammit-eternal",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "c2f6ddc2-86bc-43da-9bdd-0c2af79c62fd",
+      "name": "Ammit Eternal"
+    }
+  ],
+  "gameState": null,
+  "question": "If several creatures block a creature with afflict, does afflict trigger once for each blocking creature?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: afflict triggers only once, however many creatures block.",
+    "answer": "If multiple creatures block a creature with afflict, afflict triggers only once.",
+    "decidingRuleIds": ["702.130a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Ammit Eternal",
+    "oracleId": "c2f6ddc2-86bc-43da-9bdd-0c2af79c62fd",
+    "rulingDate": "2017-07-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f054363cbb62b9a4cf15a5c2edd93af37935dc5cf8843a26d1d8343361c38578",
+      "oracle": "d76080ac6287bec8303c43d9b7bde8a5de4fdba6231398cc0635b261abdded3c",
+      "rulings": "89f6d393a217594e1efcbfcc516819a08123cdeeb270a2624318021a3f9f7bcc"
+    }
+  },
+  "whyHard": "Players read 'whenever this creature becomes blocked' as 'for each blocker'."
+}

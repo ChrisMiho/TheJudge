@@ -1,0 +1,50 @@
+{
+  "id": "disguise-alley-assailant",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "57eba48e-87bd-4b54-8635-7348020f2ba4",
+      "name": "Alley Assailant"
+    }
+  ],
+  "gameState": null,
+  "question": "If a face-down creature loses its abilities, can it still be turned face up with a disguise ability?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it no longer has a disguise ability or a disguise cost once face up, so it cannot be turned face up that way.",
+    "answer": "If a face-down creature loses its abilities, it can't be turned face up with a disguise ability because it will no longer have a disguise ability (or a disguise cost) once face up.",
+    "decidingRuleIds": ["702.168a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Alley Assailant",
+    "oracleId": "57eba48e-87bd-4b54-8635-7348020f2ba4",
+    "rulingDate": "2024-02-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b09851f744b26b91545bf71371fc14654126ec5af88630338c4eddfa60528e0e",
+      "oracle": "da0530136183267bdbc9aa69a29d7873b3b1658a913b40326350f31e1a6b495e",
+      "rulings": "843121b59869298c75a576c481eee70dccc976c1a2d14c662e5c460b25f95dd1"
+    }
+  },
+  "whyHard": "The face-down creature seems to carry the disguise cost with it, but abilities are looked up from the face-up card."
+}

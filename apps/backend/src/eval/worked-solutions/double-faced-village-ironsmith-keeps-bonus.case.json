@@ -1,0 +1,50 @@
+{
+  "id": "double-faced-village-ironsmith-keeps-bonus",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "c7b1aaff-e2c3-427c-8478-1fd053f7ffb2",
+      "name": "Village Ironsmith // Ironfang"
+    }
+  ],
+  "gameState": null,
+  "question": "An effect gives Village Ironsmith +2/+2 until end of turn, and then it transforms into Ironfang. Does Ironfang keep the +2/+2 until end of turn?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: Ironfang continues to get +2/+2 until end of turn.",
+    "answer": "An effect gives Village Ironsmith (the front face of a double-faced card) +2/+2 until end of turn and then Village Ironsmith transforms into Ironfang. Ironfang will continue to get +2/+2 until end of turn.",
+    "decidingRuleIds": ["712.18"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "712.18",
+    "sectionTitle": "Double-Faced Cards"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d8b6b0cf1be55b3e5a9c2605ab814b6b741f068bbb5423587815a8129722f53e",
+      "oracle": "2fdd9a6d9c465d1b27962c40a0f1639e555daae804caaf414da09a029e267fa9",
+      "rulings": "9ef236dbb617041a45fd8a0256d3d44b08bada6bef65a80aa20f0d3dcfb65169"
+    }
+  },
+  "whyHard": "Transforming changes the permanent's face, and players think it becomes a new object without earlier effects."
+}

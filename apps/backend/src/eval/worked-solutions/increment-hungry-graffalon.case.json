@@ -1,0 +1,50 @@
+{
+  "id": "increment-hungry-graffalon",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "9494c499-6ead-491f-aeb0-6dbfac4d960c",
+      "name": "Hungry Graffalon"
+    }
+  ],
+  "gameState": null,
+  "question": "Does increment resolve even if the spell that caused it to trigger is countered?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: increment resolves before the spell, even if the spell is countered or otherwise leaves the stack.",
+    "answer": "The increment ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack.",
+    "decidingRuleIds": ["702.191a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Hungry Graffalon",
+    "oracleId": "9494c499-6ead-491f-aeb0-6dbfac4d960c",
+    "rulingDate": "2026-03-20",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4efdae53f774f2fb74ab00c4b44645472268bacbfa96b69bf5bf965dc6c05f8e",
+      "oracle": "3abe23a909b9f1a4d49019094c15c2bb3a36b606ee3a0819461a1bac56839b67",
+      "rulings": "f7094f226f5f9ed5e7b9404ffe9963ffaec15458d802c6ba8638a7cd7f6d71bd"
+    }
+  },
+  "whyHard": "Players think the counter-spell stops the increment trigger, but it is a separate ability that resolves first."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "shuffle-sylvan-primordial",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "52b88034-bf0f-4d29-b776-40ce421f1107",
+      "name": "Sylvan Primordial"
+    }
+  ],
+  "gameState": null,
+  "question": "Sylvan Primordial destroys target noncreature permanents and then searches for a Forest for each one destroyed. Do I search and shuffle my library separately for each permanent?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you search and shuffle your library only once.",
+    "answer": "You search and shuffle your library only once.",
+    "decidingRuleIds": ["701.24a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Sylvan Primordial",
+    "oracleId": "52b88034-bf0f-4d29-b776-40ce421f1107",
+    "rulingDate": "2013-01-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "88e2674c744bcde2f1dc33cc97b4475b2a35aed94fe8f89b5efb76e8be4552af",
+      "oracle": "23e5565b9354ddb96f75f6487ef2b507d7e006fbd50e85b57f31459850d73cc3",
+      "rulings": "57768c9a144b23766def30d64d21c347429c05e7aa62ff53717308a7ce2dfc64"
+    }
+  },
+  "whyHard": "'For each' makes players expect a separate search for every permanent."
+}

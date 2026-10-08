@@ -1,0 +1,50 @@
+{
+  "id": "kicker-academy-drake",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "65f3ebeb-1ca5-4923-b681-032579991c8a",
+      "name": "Academy Drake"
+    }
+  ],
+  "gameState": null,
+  "question": "Once I have paid Academy Drake's kicker cost, is the spell considered kicked?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: if the kicker cost was paid, the spell is kicked.",
+    "answer": "If a spell's kicker cost was paid, the spell is \"kicked.\"",
+    "decidingRuleIds": ["702.33a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Academy Drake",
+    "oracleId": "65f3ebeb-1ca5-4923-b681-032579991c8a",
+    "rulingDate": "2024-11-08",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8af441a1f207b7c845534b1a673b7327b0c586753ff9a3ad615c4277773cad4f",
+      "oracle": "ab6826a84c0736d16df35ff6f78f285eb14d5b72aed2b8496470f8daad390fd7",
+      "rulings": "9f2673f1b000e7dc6049c1a4a94301569682304acfffe506d89347b6b99a96c3"
+    }
+  },
+  "whyHard": "Players separate paying the cost from being kicked, as if more than payment were needed."
+}

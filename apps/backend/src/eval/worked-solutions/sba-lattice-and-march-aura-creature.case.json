@@ -1,0 +1,54 @@
+{
+  "id": "sba-lattice-and-march-aura-creature",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "ae1f2ab5-c6a5-4d49-a746-3cb4668bf805",
+      "name": "Mycosynth Lattice"
+    },
+    {
+      "oracleId": "51092634-308e-4779-aa51-182715dbc734",
+      "name": "March of the Machines"
+    }
+  ],
+  "gameState": null,
+  "question": "With Mycosynth Lattice and March of the Machines, Auras become artifact creatures. Is an Aura that is also a creature unattached and then put into its owner's graveyard by state-based actions?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it can't enchant anything, so it is unattached the next time state-based actions are checked and then put into the graveyard.",
+    "answer": "The Lattice’s first ability causes Auras to become artifacts. Combined with March of the Machines from the Mirrodin set, this can then make those Auras become creatures. An Aura that’s also a creature can’t enchant anything. It’s unattached the next time state-based actions are checked, and then immediately put into its owner’s graveyard as a second state-based action.",
+    "decidingRuleIds": ["704.5m", "303.4d"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Mycosynth Lattice",
+    "oracleId": "ae1f2ab5-c6a5-4d49-a746-3cb4668bf805",
+    "rulingDate": "2009-10-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "32c37af2d546c16d8fb930800e9cbba0330b8834fa839ad365179c235fe666b2",
+      "oracle": "0701cae5a233525b413d0ae52116abd691f44451b9b8c09d0438f9912dba9d25",
+      "rulings": "44fe9629f39c93129a4a9382b982e6e6e53eff9d63dd3570b46405293baa775d"
+    }
+  },
+  "whyHard": "It takes two state-based action checks, and players expect it to go straight to the graveyard."
+}

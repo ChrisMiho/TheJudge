@@ -1,0 +1,54 @@
+{
+  "id": "copies-clone-of-animated-staff",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "771f5e29-b4d1-4466-8510-ce3f89ad7173",
+      "name": "Chimeric Staff"
+    },
+    {
+      "oracleId": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "name": "Clone"
+    }
+  ],
+  "gameState": null,
+  "question": "After Chimeric Staff has become a 5/5 Construct artifact creature, a Clone enters as a copy of it. Is the Clone a 5/5 Construct artifact creature?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the Clone is an artifact, not a 5/5 Construct artifact creature, though it has the Staff's ability.",
+    "answer": "Chimeric Staff is an artifact that reads, “{X}: This artifact becomes an X/X Construct artifact creature until end of turn.” Clone is a creature that reads, “You may have this creature enter as a copy of any creature on the battlefield.” After a Staff has become a 5/5 Construct artifact creature, a Clone enters the battlefield as a copy of it. The Clone is an artifact, not a 5/5 Construct artifact creature. (The copy has the Staff’s ability, however, and will become a creature if that ability is activated.)",
+    "decidingRuleIds": ["707.2"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "707.2",
+    "sectionTitle": "Copying Objects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4642e1bae16502c7bb21c1b60587d437764ef7c172a89917c07d966dd5370572",
+      "oracle": "4c69a5e7a00966e0c958f80b19c86526e64ef4e4d0ce65f91b20795aabf8912b",
+      "rulings": "162f3d5c1f8f8730df41cd5f82c945cbce0151d44e508c5bb17ece04626e6076"
+    }
+  },
+  "whyHard": "A copy copies the printed values, not the effects that changed the original."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "phasing-ertai-s-familiar",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "711cd80d-c58d-4c2a-87db-d2e4c75f60d3",
+      "name": "Ertai's Familiar"
+    }
+  ],
+  "gameState": null,
+  "question": "Does activating Ertai's Familiar's ability stop it from phasing out for any reason, or only because of its own phasing?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it stops it from phasing out for any reason, not just its own phasing ability.",
+    "answer": "Activating the activated ability will prevent Ertai’s Familiar from phasing out for any reason, not just due to its own phasing ability.",
+    "decidingRuleIds": ["702.26a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Ertai's Familiar",
+    "oracleId": "711cd80d-c58d-4c2a-87db-d2e4c75f60d3",
+    "rulingDate": "2008-04-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "716990e55e32e58f12181679b5aae34333281808c7c6e0de3a4866b7d6de4822",
+      "oracle": "699e6ac2b55ac52b5074f8b6dd5f7bc9253260f44e102ba3b2c46f1fe96e6403",
+      "rulings": "08bdb14f0cf5b06cd0e0195e4f6b23b9fb7912feb249c67b15e4d07c459fa8b0"
+    }
+  },
+  "whyHard": "Players read the text as only protecting against the creature's own keyword."
+}

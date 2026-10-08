@@ -1,0 +1,50 @@
+{
+  "id": "monstrosity-hydra-broodmaster",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "9e4fb4b1-9b28-4a49-b4ac-d5549c08594d",
+      "name": "Hydra Broodmaster"
+    }
+  ],
+  "gameState": null,
+  "question": "I activate Hydra Broodmaster's monstrosity ability with X equal to 3. Do the X values in its 'becomes monstrous' trigger use the 3 I chose when I activated the ability?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: each X equals the value chosen for X when the monstrosity ability was activated.",
+    "answer": "The value of each X in Hydra Broodmaster's last ability is equal to the value chosen for X when its monstrosity ability was activated.",
+    "decidingRuleIds": ["701.37a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Hydra Broodmaster",
+    "oracleId": "9e4fb4b1-9b28-4a49-b4ac-d5549c08594d",
+    "rulingDate": "2014-04-26",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ac3d27607b606be750eed8f296c80fd7923828e3d02c7be502d5a1c72b5140e5",
+      "oracle": "15024742e6f34b1bc5f10e499655c6baf7f27d60448058501f05f6b3622ea64d",
+      "rulings": "1cb961d50c1e8b6572ac81e1133fd2e35f7d16d4869b3c1e289b314c06923a7b"
+    }
+  },
+  "whyHard": "The trigger is a separate ability with its own X, so players do not know where its value comes from."
+}

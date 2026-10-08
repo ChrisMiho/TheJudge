@@ -1,0 +1,50 @@
+{
+  "id": "bushido-sensei-golden-tail",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "63305fd4-068f-498b-a01e-0b375c592797",
+      "name": "Sensei Golden-Tail"
+    }
+  ],
+  "gameState": null,
+  "question": "If a creature has bushido twice, does each instance of bushido trigger separately?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: multiple instances of bushido each trigger separately.",
+    "answer": "Note that multiple instances of the bushido ability each trigger separately.",
+    "decidingRuleIds": ["702.45a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Sensei Golden-Tail",
+    "oracleId": "63305fd4-068f-498b-a01e-0b375c592797",
+    "rulingDate": "2004-12-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "21f443cb61ee2d5c13c2fc0d1345168df7d3c2f6d00f976b6aa9e468a8348636",
+      "oracle": "429b88c42724b40683bcc090c2460aef41a13fd69954e1415eb61c5f503a0b4c",
+      "rulings": "69ee0b996c7499ff97e86a8de0c71ae6bb57c375b98d1e180792d3434cf1d83b"
+    }
+  },
+  "whyHard": "Players treat repeated keywords as redundant, which is true for some keywords but not for bushido."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "training-apprentice-sharpshooter",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "40d6e1ff-995b-42fc-8146-8d5e5f1adcd9",
+      "name": "Apprentice Sharpshooter"
+    }
+  ],
+  "gameState": null,
+  "question": "Once a creature's training ability has triggered, can destroying the other attacking creature stop it from getting the +1/+1 counter?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: destroying the other creature or reducing its power does not stop the creature with training from getting the counter.",
+    "answer": "Once a creature's training ability has triggered, destroying the other attacking creature or reducing its power won't stop the creature with training from getting a +1/+1 counter.",
+    "decidingRuleIds": ["702.149a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Apprentice Sharpshooter",
+    "oracleId": "40d6e1ff-995b-42fc-8146-8d5e5f1adcd9",
+    "rulingDate": "2021-11-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5f8e8faaa6f3ad1b0c517f97d10e6d12728050d62869f17be3ae8a2d20628ec0",
+      "oracle": "f811193b4332f7f234c750a452c95d8ac33f6f39d36f6a38b1d8b5ccfad47112",
+      "rulings": "6f8889e0dac5b5e32a04ae514439685f531747b2f8daede7fbcccfe31e6ac924"
+    }
+  },
+  "whyHard": "The trigger compares power when it triggers, and players think it is checked again on resolution."
+}

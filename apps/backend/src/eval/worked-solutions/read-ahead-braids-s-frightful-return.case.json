@@ -1,0 +1,50 @@
+{
+  "id": "read-ahead-braids-s-frightful-return",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "4567a42a-aa1c-4ca2-b5e2-b09acac3f276",
+      "name": "Braids's Frightful Return"
+    }
+  ],
+  "gameState": null,
+  "question": "When a Saga with read ahead enters and I choose a chapter, can my opponents respond to that choice?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: neither choosing the number nor putting the counters on the Saga uses the stack, so it cannot be responded to.",
+    "answer": "As a Saga with read ahead enters the battlefield, its controller chooses a number from one to that Saga’s greatest chapter number. The Saga enters the battlefield with the chosen number of lore counters. Neither choosing the number nor putting the counters on the Saga use the stack, and neither can be responded to.",
+    "decidingRuleIds": ["702.155a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Braids's Frightful Return",
+    "oracleId": "4567a42a-aa1c-4ca2-b5e2-b09acac3f276",
+    "rulingDate": "2022-09-09",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "96704737999286fadd0f12706abb42aedabc193b3494031c94ca881f89b957a2",
+      "oracle": "f431ee225daeff96aa3dcd2c25abc97016a7f1d3eda3d1b614cad09cfbb13e2f",
+      "rulings": "b604c516e68968f2b9152bbaa3fbd394d3fb7a0058a7fcefca2b8897e8750aee"
+    }
+  },
+  "whyHard": "Players think a choice that sets up a chapter ability gets a window for responses."
+}

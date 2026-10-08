@@ -1,0 +1,54 @@
+{
+  "id": "double-faced-clone-of-back-face-cannot-transform",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "27c2bb87-7e50-4a80-b41c-ff0237a3d648",
+      "name": "Instigator Gang // Wildblood Pack"
+    },
+    {
+      "oracleId": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "name": "Clone"
+    }
+  ],
+  "gameState": null,
+  "question": "A Clone enters as a copy of Wildblood Pack, the back face of a double-faced card. Can the Clone transform?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the Clone is a copy of the Wildblood Pack but is itself not a double-faced card, so it can't transform.",
+    "answer": "A Clone enters the battlefield as a copy of Wildblood Pack (the back face of a double-faced card). The Clone will be a copy of the Wildblood Pack. Because the Clone is itself not a double-faced card, it can’t transform.",
+    "decidingRuleIds": ["712.9"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "712.9",
+    "sectionTitle": "Double-Faced Cards"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b5058bbb4e6f1411745cc092d1e2950176706595ac3d327eb9de47dcd28327e2",
+      "oracle": "9bb2fcfca949fa8f8b31ab22664bf41e5ba76854ded40e2800206825f745644c",
+      "rulings": "3bce97a3817b3ffa0c5e36a4993d54c8496e4084a3033c8eef3efaec14807548"
+    }
+  },
+  "whyHard": "Copying one face looks like copying a card that can turn over."
+}

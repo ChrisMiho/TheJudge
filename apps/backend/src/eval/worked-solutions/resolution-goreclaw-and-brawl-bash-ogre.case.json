@@ -1,0 +1,54 @@
+{
+  "id": "resolution-goreclaw-and-brawl-bash-ogre",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "befb211f-37ca-4083-98d4-9ff1f28be3f2",
+      "name": "Goreclaw, Terror of Qal Sisma"
+    },
+    {
+      "oracleId": "0156bfbc-26bc-4699-a7ff-437f7c043716",
+      "name": "Brawl-Bash Ogre"
+    }
+  ],
+  "gameState": null,
+  "question": "If another creature has an ability that changes its power when it attacks, such as Brawl-Bash Ogre, may I have that ability resolve before Goreclaw's last ability?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may have that ability resolve before Goreclaw's last ability.",
+    "answer": "If another creature has an ability that changes its power when it attacks, such as Brawl-Bash Ogre, you may have that ability resolve before Goreclaw's last ability.",
+    "decidingRuleIds": ["603.3b"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Goreclaw, Terror of Qal Sisma",
+    "oracleId": "befb211f-37ca-4083-98d4-9ff1f28be3f2",
+    "rulingDate": "2018-07-13"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "40a613c5fb4a4f70f07fc7129ac780aa4607c73997fdc4f01b09bc0685197125",
+      "oracle": "b6fb9eac4f49e4f4ceccece2c3cb78b616b66bc7ede058f7e4a7c57cc3c1e6c5",
+      "rulings": "1713af6ef6b686f486256cf326a9dbb6f0d25387861ee06037b45749866db79f"
+    }
+  },
+  "whyHard": "Players think the order of two attack triggers is fixed."
+}

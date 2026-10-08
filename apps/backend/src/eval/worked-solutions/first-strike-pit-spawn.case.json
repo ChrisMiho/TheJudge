@@ -1,0 +1,50 @@
+{
+  "id": "first-strike-pit-spawn",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "f536acf3-ff8e-48da-8509-00e7ce4a1678",
+      "name": "Pit Spawn"
+    }
+  ],
+  "gameState": null,
+  "question": "Pit Spawn has first strike and exiles any creature it damages. Can it exile a creature before that creature deals combat damage back?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it often deals first-strike damage and exiles the creature before it can deal damage back.",
+    "answer": "Since this card has First Strike it will often deal damage during first strike damage dealing and its ability will exile the creature it damages before that creature can deal damage back.",
+    "decidingRuleIds": ["702.7a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Pit Spawn",
+    "oracleId": "f536acf3-ff8e-48da-8509-00e7ce4a1678",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8d60ef9fdd479cd135fccf0ffa0e3c00f0d9d5641c97a421e2d1c97f046a4457",
+      "oracle": "940bd6c7ae8602a4412a9b91fc02825df9c393aa72b542c08c5c55189bd546ee",
+      "rulings": "e83646b2c7a1cf494d9ac32803c68b3181836712b0b0d57e6383af6294ed7856"
+    }
+  },
+  "whyHard": "Players do not see that the trigger resolves before regular combat damage when first strike is involved."
+}

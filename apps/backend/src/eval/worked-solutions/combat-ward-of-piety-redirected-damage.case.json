@@ -1,0 +1,54 @@
+{
+  "id": "combat-ward-of-piety-redirected-damage",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "0fe4767b-2023-49fc-bc93-b73b43f70b76",
+      "name": "Ward of Piety"
+    },
+    {
+      "oracleId": "ea1af948-686d-4b40-ad4e-cb48a0258269",
+      "name": "Slith Firewalker"
+    }
+  ],
+  "gameState": null,
+  "question": "If I redirect combat damage from Slith Firewalker with Ward of Piety, redirecting it to my opponent, does Slith Firewalker's ability that triggers on combat damage to a player still trigger?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: redirected damage retains its information, so the Slith's ability triggers during the combat damage step.",
+    "answer": "Redirected damage retains its information. For example, your opponent attacks you with Slith Firewalker (which reads, in part, “Whenever Slith Firewalker deals combat damage to a player, put a +1/+1 counter on it.”) and you block with a creature enchanted with Ward of Piety. If you activate Ward of Piety, targeting your opponent, the Slith’s ability triggers during the combat damage step and it gets a +1/+1 counter. It’s still combat damage.",
+    "decidingRuleIds": ["615.1", "510.2"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Ward of Piety",
+    "oracleId": "0fe4767b-2023-49fc-bc93-b73b43f70b76",
+    "rulingDate": "2005-02-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8fba24a42681ffcfc04e2ee06bfa31ca2d4d8324698005a04d1218a83d88cc6f",
+      "oracle": "194068b5368479da6d78bb7a995cb28e2be5f31aaf507a3358c927faad9809d1",
+      "rulings": "2d71ca521c645cda79666d854742c55e2ebca6b1e1ed74347b60cc0dea85a9bc"
+    }
+  },
+  "whyHard": "Players think a redirected hit becomes a different event that no longer counts for the source's abilities."
+}

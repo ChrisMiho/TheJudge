@@ -1,0 +1,50 @@
+{
+  "id": "storm-fiery-encore",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "921e7f6b-bf49-46f1-9fdd-b0e5fde5a5a1",
+      "name": "Fiery Encore"
+    }
+  ],
+  "gameState": null,
+  "question": "I cast Fiery Encore, which has storm. Does each copy created by storm make my magecraft abilities trigger?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: each copy you create because of storm causes your magecraft abilities to trigger.",
+    "answer": "Each copy you create because of storm will cause your magecraft abilities to trigger.",
+    "decidingRuleIds": ["702.40a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Fiery Encore",
+    "oracleId": "921e7f6b-bf49-46f1-9fdd-b0e5fde5a5a1",
+    "rulingDate": "2021-04-16",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "37687278cb8a6f999447ed2e30e9a2d3d4a92d6abbb3bade84b404708608c762",
+      "oracle": "c356f822223176a19ccaa648abe921aac9347ec477ac408919926c3eee0fb1a8",
+      "rulings": "6b3c2d82cf164bbb2ab8d60711c712f695fb7580761058a85ac7eacf55a45aa9"
+    }
+  },
+  "whyHard": "Copies are not cast, so players think only the original spell can trigger casting abilities, but magecraft also triggers on copies."
+}

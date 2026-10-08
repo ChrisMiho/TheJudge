@@ -1,11 +1,12 @@
 // Worked-solutions retrieval check (NFR-018).
 //
-// For each committed real-world hard rules case under
+// For each non-rejected rules test case under
 // apps/backend/src/eval/worked-solutions/*.case.json, builds the same
-// mode: "lookup" request a real player's question would produce -- a tier-2
-// case with its cited card attached (scripts/lib/prompt-fidelity.mjs,
-// REQ-185) -- and runs it through preparePromptInput, the unmodified
-// production prompt-preparation function, with the inputs the route handler
+// request a real player's question would produce -- every card the case
+// names attached, or an In-Depth request for a case with a game state
+// (buildCaseRequest in scripts/lib/prompt-fidelity.mjs, REQ-185) -- and runs
+// it through preparePromptInput, the unmodified production
+// prompt-preparation function, with the inputs the route handler
 // supplies: the committed card-detail and card-rulings indexes and the
 // question embedded by EMBEDDING_PROVIDER (default `local`, what production
 // runs; `mock` for a deliberately lexical pass). It checks whether the
@@ -55,14 +56,16 @@ export function parseArgs(argv) {
  * Reads every `*.case.json` file in the worked-solutions directory through
  * the shared gold-case loader (REQ-185), so this retrieval check and the
  * answer-quality run never diverge into separate readers of the same files.
+ * A rejected case stays in the corpus but is not checked.
  */
 export async function loadCases(casesDir = CASES_DIR) {
-  return loadGoldCases(casesDir);
+  const cases = await loadGoldCases(casesDir);
+  return cases.filter((caseEntry) => caseEntry.review.status !== "rejected");
 }
 
 /** One case's retrieval-recall result. `usedSemantic` says which ranking produced it (absent = unknown). */
 export function evaluateCaseRecall(caseEntry, retrievedRuleIds, { usedSemantic } = {}) {
-  const expected = caseEntry.expectedSupplementalRuleIds ?? [];
+  const expected = caseEntry.expected?.decidingRuleIds ?? [];
   const hit = expected.filter((ruleId) => retrievedRuleIds.has(ruleId));
   const missed = expected.filter((ruleId) => !retrievedRuleIds.has(ruleId));
   const result = { id: caseEntry.id, expected, hit, missed, passed: expected.length > 0 && missed.length === 0 };
@@ -117,7 +120,7 @@ async function runLive() {
       queryEmbedding: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
       collectEnrichmentDebug: true
     });
-    const retrieval = describeRetrieval(prepared.enrichmentDebug?.supplemental, caseEntry.expectedSupplementalRuleIds, {
+    const retrieval = describeRetrieval(prepared.enrichmentDebug?.supplemental, caseEntry.expected?.decidingRuleIds, {
       requireSemantic: embedder.mode !== "mock",
       caseId: caseEntry.id
     });

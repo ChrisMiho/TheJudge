@@ -1,0 +1,50 @@
+{
+  "id": "lifelink-vish-kal-blood-arbiter",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "ba3bfe0c-2bd6-469c-802c-440b7caf7fb5",
+      "name": "Vish Kal, Blood Arbiter"
+    }
+  ],
+  "gameState": null,
+  "question": "Vish Kal's last ability gives a creature -1/-1 for each counter I remove. Do I gain life from Vish Kal's lifelink when that happens?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the ability does not deal damage, so lifelink gains you no life.",
+    "answer": "Vish Kal's last ability doesn't deal damage. It doesn't cause you to gain any life from its lifelink ability.",
+    "decidingRuleIds": ["702.15a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Vish Kal, Blood Arbiter",
+    "oracleId": "ba3bfe0c-2bd6-469c-802c-440b7caf7fb5",
+    "rulingDate": "2020-08-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "feacc56d4dd001a75a0eade026ec1f2de8300d153fbd08b1706d8f38c1b05662",
+      "oracle": "2afcfd4f869cc43e1ee03203169a745dd4aad82cc272420fb5e42e8e75cc6b91",
+      "rulings": "a5b69fd193afbdaea05fba4a812a66d05420f277ac28c97d13100b350c561a2b"
+    }
+  },
+  "whyHard": "Lifelink on the same card as a damage-like effect makes players think any effect it causes counts."
+}

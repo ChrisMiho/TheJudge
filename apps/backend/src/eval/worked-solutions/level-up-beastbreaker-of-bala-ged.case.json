@@ -1,0 +1,50 @@
+{
+  "id": "level-up-beastbreaker-of-bala-ged",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "8c77f436-81ab-4200-b76d-58b1f91fc3d0",
+      "name": "Beastbreaker of Bala Ged"
+    }
+  ],
+  "gameState": null,
+  "question": "When a creature with level up has level abilities that grant it other abilities, do those grants overwrite its level up ability?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the abilities a leveler grants itself do not overwrite its other abilities, including level up.",
+    "answer": "The abilities a leveler grants to itself don’t overwrite any other abilities it may have. In particular, they don’t overwrite the creature’s level up ability; it always has that.",
+    "decidingRuleIds": ["702.87a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Beastbreaker of Bala Ged",
+    "oracleId": "8c77f436-81ab-4200-b76d-58b1f91fc3d0",
+    "rulingDate": "2010-06-15",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "699b461f014b65f56c61d902dc6090f80a14e8f875996914055c182f70d047b9",
+      "oracle": "d4e23b9279ba2efe4a0784889a02dfe1e12de0065f44e01958a5a5fa86f7dcd5",
+      "rulings": "da103fc4895290eede5e478e58c0ac99e6c42fa3ba8692398542ddf14927ecbe"
+    }
+  },
+  "whyHard": "The level bands set a new set of characteristics, so players expect them to replace the card's printed abilities."
+}

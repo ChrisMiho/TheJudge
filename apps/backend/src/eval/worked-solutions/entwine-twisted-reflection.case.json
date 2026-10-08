@@ -1,0 +1,50 @@
+{
+  "id": "entwine-twisted-reflection",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "57fdf496-c31e-4a3b-a8a6-4f053b808267",
+      "name": "Twisted Reflection"
+    }
+  ],
+  "gameState": null,
+  "question": "If I pay Twisted Reflection's entwine cost of {B}, does the spell become black as well as blue?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Twisted Reflection is always a blue spell, even if the entwine cost was paid.",
+    "answer": "Twisted Reflection is always a blue spell. It’s not also black if you paid its entwine cost.",
+    "decidingRuleIds": ["702.42a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Twisted Reflection",
+    "oracleId": "57fdf496-c31e-4a3b-a8a6-4f053b808267",
+    "rulingDate": "2019-06-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "01133b8cd667f99a2f1a2b39f609cb32c771974bf2a82c15e338ddf5f9d4bf13",
+      "oracle": "f4e7aa6dd085f10536bad264bf0af3b4430b96cb0341bd20934e9ebed1853bdb",
+      "rulings": "2f5f50b059535d315a75f73e9d9a5d1a4468e690a3c522e4b466cc37a686f283"
+    }
+  },
+  "whyHard": "Paying mana of another color makes players think the spell takes on that color, but a spell's color comes from its mana cost."
+}

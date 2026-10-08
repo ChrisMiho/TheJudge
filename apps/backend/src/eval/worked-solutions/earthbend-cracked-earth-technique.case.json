@@ -1,0 +1,50 @@
+{
+  "id": "earthbend-cracked-earth-technique",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "d5314006-afe0-4cdc-88f0-ff1f7d85fba9",
+      "name": "Cracked Earth Technique"
+    }
+  ],
+  "gameState": null,
+  "question": "Cracked Earth Technique earthbends 3 twice. Can I target the same land both times?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you can target the same land or two different lands.",
+    "answer": "You can target the same land or two different lands with the multiple instances of earthbend from Cracked Earth Technique.",
+    "decidingRuleIds": ["701.66a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Cracked Earth Technique",
+    "oracleId": "d5314006-afe0-4cdc-88f0-ff1f7d85fba9",
+    "rulingDate": "2025-10-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "fd033392a5d1f835070cb40215cf82de3d849841775d74ae5badfc05f28c2fe8",
+      "oracle": "e3bbe8619f90568ed4a948af29e26c474b3147cc9672268510619e575a8fb82e",
+      "rulings": "dd0a2449e2430a0cebb4d4006fb662bd3ec6eb565e263ce6f1b97d2debfd6c78"
+    }
+  },
+  "whyHard": "Players think 'target' effects within one spell must hit different objects."
+}

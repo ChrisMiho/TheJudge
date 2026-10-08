@@ -1,0 +1,50 @@
+{
+  "id": "proliferate-contagion-engine",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "482bd55a-ba73-4722-8643-94fa12818515",
+      "name": "Contagion Engine"
+    }
+  ],
+  "gameState": null,
+  "question": "Contagion Engine can proliferate twice. Can my opponent respond between the first and the second proliferate?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: players cannot respond between the two proliferate actions.",
+    "answer": "Players can't respond between the first and the second proliferate actions.",
+    "decidingRuleIds": ["701.34a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Contagion Engine",
+    "oracleId": "482bd55a-ba73-4722-8643-94fa12818515",
+    "rulingDate": "2011-01-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d9374b0c3685b1b37678e7c40076254b741c19a049663b68a718fe08ab220e54",
+      "oracle": "94e0ffdd94207c671aba375de78148984e044286b1aeac5372f06796f1c32775",
+      "rulings": "2251779bb394b692ba70b5dd81870caca3b1661f251ec3300ec2e562bfbdb42b"
+    }
+  },
+  "whyHard": "Doing the same action twice makes players think each one is its own ability on the stack."
+}

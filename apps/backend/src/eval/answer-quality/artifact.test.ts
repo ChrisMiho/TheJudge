@@ -5,7 +5,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
+import { RUBRIC_REVISION } from "./rubric.js";
 import {
+  compareRecords,
   compareRuns,
   readResultsFile,
   validateResultsShape,
@@ -117,6 +119,45 @@ describe("Backend - Eval - Answer quality - artifact (REQ-189)", () => {
       expect(existsSync(resultsPath)).toBe(false);
     });
 
+    it("refuses a record carrying shortAnswer: the reviewer's one-line summary is prose too", async () => {
+      const dir = makeTempDir();
+      const resultsPath = path.join(dir, "results.json");
+      const withShortAnswer = {
+        ...sampleResults(),
+        caseLegScores: [{ ...sampleResults().caseLegScores[0], shortAnswer: "Yes: it still triggers." } as never]
+      };
+
+      await expect(writeResultsFile(withShortAnswer, resultsPath)).rejects.toThrow(/shortAnswer is disallowed model prose/);
+      expect(existsSync(resultsPath)).toBe(false);
+    });
+
+    it("keeps workedSolution on the no-prose list so the version-1 field name can never leak in", async () => {
+      const dir = makeTempDir();
+      const withOldName = {
+        ...sampleResults(),
+        caseLegScores: [{ ...sampleResults().caseLegScores[0], workedSolution: "leaked" } as never]
+      };
+      await expect(writeResultsFile(withOldName, path.join(dir, "results.json"))).rejects.toThrow(/workedSolution/);
+    });
+
+    it("accepts the per-case fields a graded record carries: hashes, judge usage, unknown rule ids, timestamp and commit", async () => {
+      const dir = makeTempDir();
+      const resultsPath = path.join(dir, "results.json");
+      const graded = {
+        ...sampleResults().caseLegScores[0],
+        tier: 1 as const,
+        unknownRuleIds: ["999.9z"],
+        promptHash: "a".repeat(64),
+        referenceAnswerHash: "b".repeat(64),
+        judgeInputTokens: 1500,
+        judgeOutputTokens: 800,
+        gradedAt: "2026-10-06T00:00:00.000Z",
+        commit: "abc1234"
+      };
+      await writeResultsFile(sampleResults({ caseLegScores: [graded] }), resultsPath);
+      expect((await readResultsFile(resultsPath)).caseLegScores[0]).toEqual(graded);
+    });
+
     it("validateResultsShape reports every missing required field", () => {
       const incomplete = sampleResults();
       // @ts-expect-error -- deliberately constructing an invalid shape
@@ -218,6 +259,83 @@ describe("Backend - Eval - Answer quality - artifact (REQ-189)", () => {
     it("reports incomparable when EMBEDDING_PROVIDER differs", () => {
       const other: RunMetadata = { ...base, embeddingProvider: "mock" };
       expect(compareRuns(base, other)).toEqual({ comparable: false, reason: "EMBEDDING_PROVIDER differs" });
+    });
+  });
+
+  describe("compareRecords (REQ-189: compared per case)", () => {
+    const base = {
+      ...sampleResults().caseLegScores[0],
+      referenceAnswerHash: "r".repeat(64),
+      judgeModel: "gpt-5",
+      rubricRevision: "2026-09-07.1",
+      embeddingProvider: "local"
+    };
+
+    it("is comparable when only the record's own run differs", () => {
+      expect(compareRecords(base, { ...base })).toEqual({ comparable: true, kind: "same-model" });
+    });
+
+    it("is a model comparison, never incomparable, when only the answer model differs", () => {
+      expect(compareRecords(base, { ...base, model: "gpt-4.1" })).toEqual({
+        comparable: true,
+        kind: "model-comparison",
+        models: ["gpt-4.1-mini", "gpt-4.1"]
+      });
+    });
+
+    it("is incomparable when the reference answer, judge model, rubric revision or embedding provider differs", () => {
+      expect(compareRecords(base, { ...base, referenceAnswerHash: "s".repeat(64) })).toEqual({
+        comparable: false,
+        reason: "reference answers differ"
+      });
+      expect(compareRecords(base, { ...base, judgeModel: "gpt-5-thinking" })).toEqual({
+        comparable: false,
+        reason: "judge models differ"
+      });
+      expect(compareRecords(base, { ...base, rubricRevision: "2026-10-01.1" })).toEqual({
+        comparable: false,
+        reason: "rubric revisions differ"
+      });
+      expect(compareRecords(base, { ...base, embeddingProvider: "mock" })).toEqual({
+        comparable: false,
+        reason: "EMBEDDING_PROVIDER differs"
+      });
+    });
+
+    it("refuses a per-case comparison between grades under the previous rubric revision and the current one (REQ-187)", () => {
+      const previous = { ...base, rubricRevision: "2026-10-06.1" };
+      const current = { ...base, rubricRevision: RUBRIC_REVISION };
+      expect(RUBRIC_REVISION).not.toBe("2026-10-06.1");
+      expect(compareRecords(previous, current)).toEqual({ comparable: false, reason: "rubric revisions differ" });
+      expect(compareRecords(current, { ...current })).toEqual({ comparable: true, kind: "same-model" });
+    });
+
+    it("accepts the new record fields beside the unchanged goldRuleInPrompt, and marks an unknown cost as unpriced, not zero (REQ-189, REQ-227)", () => {
+      const record = {
+        ...base,
+        goldRuleInPrompt: true,
+        allDecidingRulesInPrompt: false,
+        reasoningTokens: 1500,
+        judgeReasoningTokens: 900,
+        reportedEffort: "medium",
+        unpriced: true
+      };
+      const results = sampleResults({ caseLegScores: [record] });
+      results.runMetadata.comboCatalogLoaded = true;
+      results.runMetadata.answerClientTimeoutMs = "sdk-default";
+      results.runMetadata.answerClientMaxRetries = "sdk-default";
+      results.runMetadata.totalReasoningTokens = 1500;
+      results.runMetadata.unpricedModels = ["gpt-6-luna"];
+      expect(validateResultsShape(results)).toEqual([]);
+      expect(record.goldRuleInPrompt).toBe(true);
+      expect(record.allDecidingRulesInPrompt).toBe(false);
+      expect(record.unpriced).toBe(true);
+      expect("costUsd" in record).toBe(false);
+    });
+
+    it("never claims a legacy record (no hashes) comparable to one that carries them", () => {
+      const legacy = { ...base, referenceAnswerHash: undefined };
+      expect(compareRecords(legacy, base).comparable).toBe(false);
     });
   });
 

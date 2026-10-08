@@ -1,0 +1,50 @@
+{
+  "id": "fear-inkfathom-witch",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "60b6e96a-63e6-4520-b2dd-b20b7dfbcd57",
+      "name": "Inkfathom Witch"
+    }
+  ],
+  "gameState": null,
+  "question": "Inkfathom Witch gives each unblocked creature base power and toughness 4/1. Do those creatures lose their abilities, such as fear?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Inkfathom Witch does not cause creatures to lose their abilities.",
+    "answer": "Inkfathom Witch doesn't cause creatures to lose their abilities.",
+    "decidingRuleIds": ["702.36a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Inkfathom Witch",
+    "oracleId": "60b6e96a-63e6-4520-b2dd-b20b7dfbcd57",
+    "rulingDate": "2008-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "533dd1ea2b5135ae23d4a32fce64a6bc784fe64a346ee0d9c7507204884a098d",
+      "oracle": "c62b30cd053f4e6ac2aadfae8702ee877215dd6fdb661b90019b26979053ec5b",
+      "rulings": "a4024c2e59013f1a3d450a6aea4447356ae1b123feb967653d63d2ec74c9a8b0"
+    }
+  },
+  "whyHard": "Setting base power and toughness can look like a 'become a vanilla 4/1' effect."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "overload-eldritch-immunity",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "7dce1e8c-5cfd-4626-9f23-7bb3f1b10c1e",
+      "name": "Eldritch Immunity"
+    }
+  ],
+  "gameState": null,
+  "question": "Does overload change when I can cast the spell, such as letting me cast an instant at a different time?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: overload does not change when you can cast the spell.",
+    "answer": "Overload doesn't change when you can cast the spell.",
+    "decidingRuleIds": ["702.96a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Eldritch Immunity",
+    "oracleId": "7dce1e8c-5cfd-4626-9f23-7bb3f1b10c1e",
+    "rulingDate": "2024-06-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c25dfa24adaaf4be839f73b04c78617a19961d60d63b1ffd803d2aefe3477a52",
+      "oracle": "fd267f508eca0a237b56eed2cb9385a9b6a054b1a013881fdc1a11faf6551808",
+      "rulings": "537ed9f760c124db04aa2a739f96a770a1f94d5e36a3465fb7dd1c456879694b"
+    }
+  },
+  "whyHard": "Overload changes what the spell does, and players assume it changes its timing as well."
+}

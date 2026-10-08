@@ -1,0 +1,50 @@
+{
+  "id": "deathtouch-wurmcoil-engine",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "d1a60f44-7696-49ee-91fb-cab5b3102962",
+      "name": "Wurmcoil Engine"
+    }
+  ],
+  "gameState": null,
+  "question": "After Wurmcoil Engine dies and I get its two 3/3 tokens, do players need to be able to tell which token has deathtouch and which one has lifelink?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it must be clear to all players which token has deathtouch and which has lifelink.",
+    "answer": "It must be clear to all players which token has deathtouch and which token has lifelink.",
+    "decidingRuleIds": ["702.2a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Wurmcoil Engine",
+    "oracleId": "d1a60f44-7696-49ee-91fb-cab5b3102962",
+    "rulingDate": "2011-01-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "2992e54810470eea97b0cced7c5a618588e2083e780299435ce40e9657d83de8",
+      "oracle": "7776b597632da1d716a53a72b561d0f2030aa36387ba41a9c8cf986b519ffb93",
+      "rulings": "ed3d6132cd026dcb6c619bcd41eb8c3c37ed9d55600289d53968429d412f3e69"
+    }
+  },
+  "whyHard": "Two identical-looking tokens with different abilities make players think it is fine to keep track privately."
+}

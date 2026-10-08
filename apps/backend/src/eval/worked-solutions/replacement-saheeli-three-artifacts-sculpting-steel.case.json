@@ -1,0 +1,54 @@
+{
+  "id": "replacement-saheeli-three-artifacts-sculpting-steel",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "5f3fe679-aff1-41b3-8d75-c78c2c0636f0",
+      "name": "Saheeli Rai"
+    },
+    {
+      "oracleId": "6c85271c-c711-49b0-a72e-9e576c33714d",
+      "name": "Sculpting Steel"
+    }
+  ],
+  "gameState": null,
+  "question": "Saheeli Rai's last ability puts three artifacts onto the battlefield at once. Can Sculpting Steel, as it enters, see the other two artifacts as already on the battlefield?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: all three enter at the same time, and replacement effects such as Sculpting Steel's don't see the others as they are being applied.",
+    "answer": "As Saheeli's last ability resolves, all three artifacts enter the battlefield at the same time. Triggered abilities of any of those artifacts will see all three entering the battlefield. Replacement effects, such as that of Sculpting Steel, won't see the others on the battlefield as they are being applied.",
+    "decidingRuleIds": ["614.12", "603.6a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Saheeli Rai",
+    "oracleId": "5f3fe679-aff1-41b3-8d75-c78c2c0636f0",
+    "rulingDate": "2016-09-20"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "46e2ad6a5e8cb3fba0ddcedc59b30b43e329d00198b7c6478edc6a46b891087b",
+      "oracle": "81c45e370eeedc5a08b8063fd05d920c5a88c5fe28ecda7eff5aa99e383b7673",
+      "rulings": "73a7744c2fad3999bf080c32349b8e07ddc379898be2ad59b47c1adb58f040f4"
+    }
+  },
+  "whyHard": "Triggered abilities see everything that entered together, so players expect replacement effects to as well."
+}

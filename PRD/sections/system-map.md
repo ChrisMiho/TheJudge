@@ -470,9 +470,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Eval harness
 
 - Status: shipped
-- Summary: Context-evaluation harness with fixtures, golden comparisons, labeled retrieval-relevance checks over prompt assembly and retrieval, and an on-demand answer-quality baseline that scores the model's final answer against published worked solutions.
+- Summary: Context-evaluation harness with fixtures, golden comparisons, labeled retrieval-relevance checks over prompt assembly and retrieval, an offline gate over the rules test corpus that checks every attached card and deciding rule reaches the prompt and every real mechanic has a case, and an on-demand answer-quality baseline that scores the model's final answer against each case's approved answer.
 - Lives in: `apps/backend/src/eval/`
-- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NFR-018, REQ-185
+- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NFR-018, REQ-185, REQ-222, REQ-223, REQ-224, REQ-225
 
 ### Context evaluation harness
 
@@ -498,9 +498,16 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Answer-quality baseline
 
 - Status: shipped
-- Summary: On-demand, confirmation-gated run that asks each model in a configured lineup every gold case and scores the returned answer against that case's published solution — deterministic assertions, a reference-grounded judge model stronger than every contestant, scoring alone and ranking blind side by side over four 0–2 axes, then a human review pass. Never in `quality:check`, never asserted against a golden, never a build gate. Answers each case once per System 3 excerpt cap so the deployed ten-excerpt limit can be compared against a larger one on the same questions; production is ten, and the run's default legs are ten and fifteen. Writes a small committed scores file and gitignored transcripts.
-- Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/`, `scripts/eval-answer-quality.mjs`
-- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190
+- Summary: On-demand, confirmation-gated run that asks the selected approved cases of the rules test corpus — by default the cases whose prompt or reference answer changed since they were last graded, or whose last graded record predates those hashes, answered by the deployed model at the deployed ten-excerpt cap — and scores each answer against that case's approved reference answer: deterministic assertions (including rule ids the answer cites that are not in the committed rule index), a reference-grounded judge model stronger than every contestant, a blind side-by-side ranking when two or more models answer, over four 0–2 axes, then a human review pass. The four-model bake-off and other excerpt caps are explicit options. Never in `quality:check`, never asserted against a golden, never a build gate. A routine run writes a small committed scores file merged per case and gitignored transcripts; tier-3 scores are always reported apart from the official tiers. Experiment runs (REQ-226) answer a fixed manifest of cases, optionally repeated and optionally regraded from an earlier run's stored answers, save each record as it completes and stop at an owner-set spending cap (REQ-227), and write only to their own gitignored run folder; a paired comparison report reads two runs (REQ-228); an offline evidence trace shows where each deciding rule ranks and whether it reaches the prompt (REQ-229); labelled diagnostic prompt arms run only on a committed diagnostic case set, apart from a held-out set (REQ-230).
+- Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/` (including `manifests/`), `scripts/eval-answer-quality.mjs`, and the compare and evidence-trace scripts beside it
+- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190, REQ-226, REQ-227, REQ-228, REQ-229, REQ-230
+
+### Rules test corpus gates and review
+
+- Status: shipped
+- Summary: Offline checks over the rules test corpus that run in `quality:check` with no provider or live embedding call: every attached card's oracle text and rulings reach the prompt (absolute), each case's deciding rule reaches it at least as often as the recorded baseline (ratchet, frozen query vectors), stated game states are valid In-Depth game contexts and their facts reach it, and every real mechanic in the committed rule index has a case. Also the owner review command that turns `draft` cases into `approved` ones, the coverage report, and the staleness report that flags cases whose rule, oracle, or ruling text changed.
+- Lives in: `apps/backend/src/eval/worked-solutions/` (the cases), `apps/backend/src/eval/` (the offline gate's tests, run by `coverage:check`, and the frozen query vectors), `scripts/lib/gold-cases.mjs`, and the vector-build, baseline-raise, review, coverage, and staleness commands under `scripts/`
+- Backed by: REQ-185, REQ-222, REQ-223, REQ-224, REQ-225, NFR-018
 
 ## AWS production deployment
 

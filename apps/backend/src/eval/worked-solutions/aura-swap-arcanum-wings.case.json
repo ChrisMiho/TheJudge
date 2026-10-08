@@ -1,0 +1,50 @@
+{
+  "id": "aura-swap-arcanum-wings",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "b8cc7a78-a627-4e56-b1fc-0b2bd844ef68",
+      "name": "Arcanum Wings"
+    }
+  ],
+  "gameState": null,
+  "question": "If I activate Aura swap and the only Aura in my hand cannot enchant that permanent, does half of the exchange still happen?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if half the exchange cannot be completed on resolution, nothing happens.",
+    "answer": "If on resolution, half the exchange can’t be completed (such as if the only Aura in your hand can’t enchant the permanent), nothing happens.",
+    "decidingRuleIds": ["702.65a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Arcanum Wings",
+    "oracleId": "b8cc7a78-a627-4e56-b1fc-0b2bd844ef68",
+    "rulingDate": "2007-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a249a51534aa1d8b87a515df75d464048bdbe8f9ddc2c0d98c9c3bd551b5c0fc",
+      "oracle": "de82c98ee08a4313dfe3b44851fd7337c7a9f955f93505fcf9e20063fe6a38a4",
+      "rulings": "375880ca6f80d17bc68d39877aff79b8d42c4fb02199558454001d81c4a1adac"
+    }
+  },
+  "whyHard": "Players think the Aura on the battlefield can still be put into the hand even if the other half fails."
+}

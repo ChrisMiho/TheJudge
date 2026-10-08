@@ -1,0 +1,50 @@
+{
+  "id": "enchant-rancor",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "9d2d6479-531c-4ce1-b52b-00e36fa63b64",
+      "name": "Rancor"
+    }
+  ],
+  "gameState": null,
+  "question": "I cast Rancor targeting my only creature, and in response my opponent destroys that creature. When Rancor ends up in my graveyard, does its ability return it to my hand?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Rancor's target is illegal when it tries to resolve, so the Aura spell doesn't resolve, never enters the battlefield, and its return-to-hand ability doesn't trigger.",
+    "answer": "If the creature this Aura would enchant is an illegal target by the time Rancor tries to resolve, the Aura spell doesn't resolve. It won't enter the battlefield, so it won't be put into a graveyard from the battlefield and its ability won't trigger.",
+    "decidingRuleIds": ["702.5a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Rancor",
+    "oracleId": "9d2d6479-531c-4ce1-b52b-00e36fa63b64",
+    "rulingDate": "2018-03-16",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "70bde518b62e0cd2a54fd2fe61ffed49d85c78f3616442713f390c6c3efc183a",
+      "oracle": "4752a5f79d7c62d4bc07ed7dd231c7ccec0d593071403099395d1828fb479034",
+      "rulings": "b4557b69e22dadfe99a87e6099dea274ddd2f48ea4274ec68488f494ad575a7a"
+    }
+  },
+  "whyHard": "Rancor really does land in the graveyard, so players assume its return trigger fires, but a fizzled Aura spell never touched the battlefield."
+}

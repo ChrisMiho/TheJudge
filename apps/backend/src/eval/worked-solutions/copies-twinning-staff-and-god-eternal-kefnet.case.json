@@ -1,0 +1,54 @@
+{
+  "id": "copies-twinning-staff-and-god-eternal-kefnet",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "3ca8113b-f5b8-41a7-aae6-ebb32554dfe3",
+      "name": "Twinning Staff"
+    },
+    {
+      "oracleId": "41d11144-32fc-4e45-a8db-3edb9dc0ce80",
+      "name": "God-Eternal Kefnet"
+    }
+  ],
+  "gameState": null,
+  "question": "If an effect copies a card rather than a spell, as God-Eternal Kefnet's does, does Twinning Staff create an additional copy?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: copying a card rather than a spell doesn't cause an additional copy to be created.",
+    "answer": "If an effect copies a card rather than a spell (such as that of God-Eternal Kefnet), this doesn't cause an additional copy to be created.",
+    "decidingRuleIds": ["707.10"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Twinning Staff",
+    "oracleId": "3ca8113b-f5b8-41a7-aae6-ebb32554dfe3",
+    "rulingDate": "2020-04-17"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5d195126665f2f15cae2fb0be6cc1fb4da9713309b788bed48e92739cc382efd",
+      "oracle": "54b900cb172cfd21f937fbb5d6985e55e8ae4b3382898a3701df5fdef98f856f",
+      "rulings": "f931e963fb1e1bdbe5395aa391faa4874964c91011954e23beefaed440bf61a0"
+    }
+  },
+  "whyHard": "A copy of a card is cast, and players assume casting it counts as casting a spell that can be copied again."
+}

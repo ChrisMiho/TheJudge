@@ -1,0 +1,58 @@
+{
+  "id": "double-faced-cytoshape-copy-and-moonmist",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "14221c18-7801-49c9-a2c8-53b8c5181d63",
+      "name": "Cytoshape"
+    },
+    {
+      "oracleId": "cf518f59-f083-42a0-9953-fac2757bf804",
+      "name": "Kruin Outlaw // Terror of Kruin Pass"
+    },
+    {
+      "oracleId": "2c306e87-e3c8-4066-9be5-570e2f2d6bad",
+      "name": "Moonmist"
+    }
+  ],
+  "gameState": null,
+  "question": "Cytoshape makes Kruin Outlaw a copy of Elite Vanguard, a 2/1 Human Soldier creature, until end of turn, and then I cast Moonmist, which transforms all Humans. Does the copy transform?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: because it is a double-faced card it transforms, but it is still a copy of Elite Vanguard that turn.",
+    "answer": "A player casts Cytoshape, causing a Kruin Outlaw (the front face of a double-faced card) to become a copy of Elite Vanguard (a 2/1 Human Soldier creature) until end of turn. The player then casts Moonmist, which reads, in part, “Transform all Humans.” Because the copy of Elite Vanguard is a double-faced card, it will transform. The resulting permanent will have its back face up, but it will still be a copy of Elite Vanguard that turn.",
+    "decidingRuleIds": ["712.9"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "712.9",
+    "sectionTitle": "Double-Faced Cards"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b5058bbb4e6f1411745cc092d1e2950176706595ac3d327eb9de47dcd28327e2",
+      "oracle": "b56e062f0f90d77c02afa5f74b8f53a3d49677fceffb6854156ae43a0504cd31",
+      "rulings": "3010536bb61a341a3e8df8053813ffb497341c54d90050b5eb2937901fa358c9"
+    }
+  },
+  "whyHard": "Players think the copy effect removes the card's ability to transform."
+}

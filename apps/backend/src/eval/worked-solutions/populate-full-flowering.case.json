@@ -1,0 +1,50 @@
+{
+  "id": "populate-full-flowering",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "cb3328b5-a759-4c30-8b1f-202980bb6f6d",
+      "name": "Full Flowering"
+    }
+  ],
+  "gameState": null,
+  "question": "I cast Full Flowering with X equal to 0. Do I populate at all?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if X is 0 you do not populate at all.",
+    "answer": "If X is 0, you don't populate at all.",
+    "decidingRuleIds": ["701.36a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Full Flowering",
+    "oracleId": "cb3328b5-a759-4c30-8b1f-202980bb6f6d",
+    "rulingDate": "2019-08-23",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ad023f3bfdbc9fd4ec644c3547cc2f69ad65234e60a3ba2a40706d6af6281070",
+      "oracle": "802c2fa421972c166c69adabacb567ab3ef53b0d0869027c063da4a47aadffb8",
+      "rulings": "24ba25faf25983d0e8180585c3d6ffd53d140433c77dbd1a1c03f18acb5499ff"
+    }
+  },
+  "whyHard": "Players expect a populate effect to happen at least once whenever the spell resolves."
+}

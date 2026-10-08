@@ -1,0 +1,50 @@
+{
+  "id": "infinity-infinity-the-soul-stone",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "92cfba68-12f6-4f97-9187-0f6a39656a0f",
+      "name": "The Soul Stone"
+    }
+  ],
+  "gameState": null,
+  "question": "Does The Soul Stone have its infinity ability before it has been harnessed?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: until it is harnessed it does not have that ability, and it never has it outside the battlefield.",
+    "answer": "Until it is harnessed, The Soul Stone doesn't have the ability listed after the infinity symbol. It also doesn't have that ability in zones other than the battlefield.",
+    "decidingRuleIds": ["702.186a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "The Soul Stone",
+    "oracleId": "92cfba68-12f6-4f97-9187-0f6a39656a0f",
+    "rulingDate": "2025-09-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ded4371a56e34449efc7a29b76f81449e6b6e1285eb6334f874dc8f8cd9d94b9",
+      "oracle": "f67a2fa48d29665ccfde5a8ae6965a541d474a6464d11b655714e1379f648b71",
+      "rulings": "f7e144c49d8b300b0084880602a4eaad1821bdf816bb743c6c766f8a270ffdbd"
+    }
+  },
+  "whyHard": "The ability is printed on the card, so players think it is always active."
+}

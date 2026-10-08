@@ -1,0 +1,50 @@
+{
+  "id": "exhaust-afterburner-expert",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "b4d19e3a-c2f8-4503-bcfa-1b46bde972e5",
+      "name": "Afterburner Expert"
+    }
+  ],
+  "gameState": null,
+  "question": "Can exhaust abilities be activated any time I could normally activate an ability?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: exhaust abilities can be activated any time you could normally activate an ability.",
+    "answer": "Exhaust abilities can be activated any time you could normally activate an ability.",
+    "decidingRuleIds": ["702.177a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Afterburner Expert",
+    "oracleId": "b4d19e3a-c2f8-4503-bcfa-1b46bde972e5",
+    "rulingDate": "2025-02-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e9b1d0899dbd7c7742dcedcde5705aa082365f5eca869f8a37db20bed8e12eda",
+      "oracle": "d71e5664aeaa8913c7ff7bb321d7a96897163f4b985f871a5e8f4540bd5fddc2",
+      "rulings": "241d79bcb6bc94c9998b06761b461dc4131d83fa476959a3289a74054ff53581"
+    }
+  },
+  "whyHard": "Some abilities are limited to sorcery timing, and players assume exhaust, which can be used once, is one of them."
+}

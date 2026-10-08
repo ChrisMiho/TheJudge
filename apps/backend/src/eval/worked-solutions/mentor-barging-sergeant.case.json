@@ -1,0 +1,50 @@
+{
+  "id": "mentor-barging-sergeant",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "af422a4b-087c-4753-9288-c31fb3457740",
+      "name": "Barging Sergeant"
+    }
+  ],
+  "gameState": null,
+  "question": "If the creature with mentor leaves the battlefield while mentor is on the stack, is its power as it last existed used to decide whether the target has lesser power?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you use its power as it last existed on the battlefield.",
+    "answer": "If the creature with mentor leaves the battlefield with mentor on the stack, use its power as that creature last existed on the battlefield to determine whether the target creature has less power.",
+    "decidingRuleIds": ["702.134a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Barging Sergeant",
+    "oracleId": "af422a4b-087c-4753-9288-c31fb3457740",
+    "rulingDate": "2018-10-05",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "2bc8928cc38127068fef83520c1afce335fa6fca111eda84dbdb7c3f3b551bf9",
+      "oracle": "5829242522711a0dd3e6d0db5ba1c7cb77c5a7b83e4fe501ec10118f9f62fdec",
+      "rulings": "3650ebe409afe9e02135f1ebdd900e25e52c7e3c434d218a3d5c4509d2076bd5"
+    }
+  },
+  "whyHard": "Players think the ability fizzles or checks the creature's current stats, but the creature is gone."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "reconfigure-acquisition-octopus",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "234ff22f-2ff1-4a73-a7c5-e9c53557c4c6",
+      "name": "Acquisition Octopus"
+    }
+  ],
+  "gameState": null,
+  "question": "Can an Equipment creature with reconfigure be attached to a creature by an effect other than its own reconfigure ability?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: other effects, such as Brass Squire's ability, can attach it to a creature.",
+    "answer": "An Equipment creature with reconfigure can be attached to creatures by effects other than its reconfigure ability, such as the activated ability of Brass Squire.",
+    "decidingRuleIds": ["702.151a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Acquisition Octopus",
+    "oracleId": "234ff22f-2ff1-4a73-a7c5-e9c53557c4c6",
+    "rulingDate": "2022-02-18",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5ddb6ad9ee40f647801268567a91af41234d1a30b290451ec4e75d6177291491",
+      "oracle": "25528e9b62974ff23ac918d4c827c1866762714166ea149c16c8b402e79610ef",
+      "rulings": "95eaf1255b282100eccefcb98a651df46d2283c1b39ca4e7a6aaca2e0f9d2894"
+    }
+  },
+  "whyHard": "Reconfigure looks like the only way to attach an Equipment creature."
+}

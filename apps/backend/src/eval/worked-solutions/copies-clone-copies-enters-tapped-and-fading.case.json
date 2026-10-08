@@ -1,0 +1,54 @@
+{
+  "id": "copies-clone-copies-enters-tapped-and-fading",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "name": "Clone"
+    },
+    {
+      "oracleId": "77bee041-6f96-44e3-a18c-b52e508b9bdf",
+      "name": "Skyshroud Behemoth"
+    }
+  ],
+  "gameState": null,
+  "question": "A Clone enters as a copy of Skyshroud Behemoth. Does the Clone enter tapped with two fade counters on it?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it also enters the battlefield tapped with two fade counters on it.",
+    "answer": "Skyshroud Behemoth reads, “Fading 2 (This creature enters with two fade counters on it. At the beginning of your upkeep, remove a fade counter from it. If you can’t, sacrifice it.)” and “This creature enters tapped.” A Clone that enters the battlefield as a copy of a Skyshroud Behemoth will also enter the battlefield tapped with two fade counters on it.",
+    "decidingRuleIds": ["707.5"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "707.5",
+    "sectionTitle": "Copying Objects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "2e67606895d3aa7c09836062f69cb31f18d18e369194d54bac5be2afb5736ae8",
+      "oracle": "9c32158804b05ea1cd15520bf4052a149c568ff9bb2a22076b31322d77374f35",
+      "rulings": "088516e08c2b5079da9de311232c911b8f8c9ef630bb7193fe6d9bcc394a51d0"
+    }
+  },
+  "whyHard": "Players know Clone copies abilities but forget that replacement effects like 'enters tapped' are copied too."
+}

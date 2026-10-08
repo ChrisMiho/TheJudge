@@ -1,0 +1,54 @@
+{
+  "id": "triggers-satoru-and-aven-interrupter",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "7555c429-5f2d-4171-b6b0-8e3c8da7f314",
+      "name": "Satoru, the Infiltrator"
+    },
+    {
+      "oracleId": "d31fd12f-b4dd-4bc3-ace4-703dabd0f607",
+      "name": "Aven Interrupter"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast a creature spell without paying its mana cost but pay mana for extra costs, such as the cost increase from Aven Interrupter, does Satoru's last ability trigger?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if you paid mana for additional costs or cost increases, the ability won't trigger.",
+    "answer": "If you cast a creature spell without paying its mana cost but you paid mana for additional costs or cost increases (such as from Aven Interrupter), Satoru's last ability won't trigger.",
+    "decidingRuleIds": ["118.9"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Satoru, the Infiltrator",
+    "oracleId": "7555c429-5f2d-4171-b6b0-8e3c8da7f314",
+    "rulingDate": "2024-04-12"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f372313b7a9f3525821529fb82e8566a3d8abd61ec60bdd476c7c63fd7a600a0",
+      "oracle": "c5b0f42e8fbe1951fc42e299b4f85ab9c73644290052554b11c032070cf5faf1",
+      "rulings": "7c79d29428db73515f0eedab2505baebe3cf9d5cd0ba133123006a8541a9266e"
+    }
+  },
+  "whyHard": "Players think the mana cost alone decides whether the spell was cast for free."
+}

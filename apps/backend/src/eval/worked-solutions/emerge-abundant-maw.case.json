@@ -1,0 +1,50 @@
+{
+  "id": "emerge-abundant-maw",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "3676b745-001d-46e6-880f-2fe26476a38d",
+      "name": "Abundant Maw"
+    }
+  ],
+  "gameState": null,
+  "question": "Can emerge reduce the colored part of an emerge cost?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: colored mana components of emerge costs cannot be reduced with emerge.",
+    "answer": "Colored mana components of emerge costs can’t be reduced with emerge.",
+    "decidingRuleIds": ["702.119a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Abundant Maw",
+    "oracleId": "3676b745-001d-46e6-880f-2fe26476a38d",
+    "rulingDate": "2025-01-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ad5612fe5821b0eddb232bb6e0f54cfff5255d9c6216db0e3aedf92c4791a1ed",
+      "oracle": "978c9701751ffa67b86d114944001a0b540a64eee57b9e1b303532380f8a4a2d",
+      "rulings": "9c233793b470fa5341cecd4397ffff1887823d2276b80e0b14ae88d16a8a626d"
+    }
+  },
+  "whyHard": "A sacrificed creature's mana value looks like it can pay for any part of the cost."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "miracle-banishing-stroke",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "a6898364-c29e-4b97-a500-344efa3ec24a",
+      "name": "Banishing Stroke"
+    }
+  ],
+  "gameState": null,
+  "question": "If I draw a card with miracle as the first card I draw this turn, do I have to reveal it and cast it for its miracle cost?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you do not have to reveal a drawn card with miracle if you do not want to cast it at that time.",
+    "answer": "You don’t have to reveal a drawn card with miracle if you don’t wish to cast it at that time.",
+    "decidingRuleIds": ["702.94a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Banishing Stroke",
+    "oracleId": "a6898364-c29e-4b97-a500-344efa3ec24a",
+    "rulingDate": "2018-07-13",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d133f82b86ec505384cd39bf10345c707713ae44be4e3d960633e3e1a322a684",
+      "oracle": "dacc9d1418d25563b0af44cb56368a1f72f6de2edf74484d84a76fb3ce6214a9",
+      "rulings": "c620138f15cf36b103003df385c66b7075158c94692bce42e9f36d61f25bc768"
+    }
+  },
+  "whyHard": "Miracle is a trigger that sounds like it forces the reveal."
+}

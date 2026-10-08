@@ -1,0 +1,50 @@
+{
+  "id": "sba-lichs-mirror-replaces-game-loss",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e81da4a7-4b03-4107-b7d9-4b635faa615d",
+      "name": "Lich's Mirror"
+    }
+  ],
+  "gameState": null,
+  "question": "I control Lich's Mirror, have one card in my library and 1 life, and a spell makes me draw two cards and lose 2 life. When state-based actions are checked, do I lose the game?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Lich's Mirror replaces the game loss and you keep playing.",
+    "answer": "You control Lich’s Mirror, which says “If you would lose the game, instead shuffle your hand, your graveyard, and all permanents you own into your library, then draw seven cards and your life total becomes 20.” There’s one card in your library and your life total is 1. A spell causes you to draw two cards and lose 2 life. The next time state-based actions are checked, you’d lose the game due to rule 704.5a and rule 704.5b. Instead, Lich’s Mirror replaces that game loss and you keep playing.",
+    "decidingRuleIds": ["704.7"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "704.7",
+    "sectionTitle": "State-Based Actions"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "cf8405e94f2b413e2d97e9a9c428d6f58501fa82349cefea33e011e424299db9",
+      "oracle": "fc19a38cb67f4c0f28c04964e6c08e21a7462f40d69590bf47f19c5656f4a706",
+      "rulings": "11c7a3b374ad37d222d38eff1a95f96f854318d8e0ff93a8bda233719b25ac90"
+    }
+  },
+  "whyHard": "Two separate ways to lose happen at once, and players expect the replacement to cover only one."
+}

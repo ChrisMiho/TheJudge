@@ -1,0 +1,50 @@
+{
+  "id": "annihilator-it-that-betrays",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "b11187ab-f8a8-422b-b550-4495f96de0f2",
+      "name": "It That Betrays"
+    }
+  ],
+  "gameState": null,
+  "question": "Does the second ability of It That Betrays trigger only when its annihilator forces a sacrifice?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it triggers whenever an opponent sacrifices a nontoken permanent, for any reason.",
+    "answer": "The second ability triggers whenever an opponent sacrifices a nontoken permanent for any reason, not just due to the annihilator ability.",
+    "decidingRuleIds": ["702.86a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "It That Betrays",
+    "oracleId": "b11187ab-f8a8-422b-b550-4495f96de0f2",
+    "rulingDate": "2010-06-15",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4d800bf7395c7b2b3b8bfb40ed0ed7b509f61449a5383bb5498d4d05b50cead5",
+      "oracle": "c1cceb2bd50bf49019b5e0638a1a457982c7aae5bb3bb4aace3134f417fb3862",
+      "rulings": "aa90c75286791240498e04fa2b5eb44699a4d28f80fd0cc23b070488f091fc4b"
+    }
+  },
+  "whyHard": "Because the two abilities are on the same card, players expect them to connect."
+}

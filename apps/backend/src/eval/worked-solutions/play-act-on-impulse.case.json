@@ -1,0 +1,50 @@
+{
+  "id": "play-act-on-impulse",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "19ad338a-c89f-406d-ad1a-222c22044e1b",
+      "name": "Act on Impulse"
+    }
+  ],
+  "gameState": null,
+  "question": "Act on Impulse exiles the top three cards of my library and lets me play them until end of turn. Do the cards I did not play go back to my library at end of turn?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the cards you do not play remain exiled.",
+    "answer": "Any cards you don't play will remain exiled.",
+    "decidingRuleIds": ["701.18a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Act on Impulse",
+    "oracleId": "19ad338a-c89f-406d-ad1a-222c22044e1b",
+    "rulingDate": "2014-07-18",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a739303f8d434c85f4efb6e5d0fce8787745f802c07472adcedba86061638455",
+      "oracle": "2fe789098d8c3d67b0a05dda2f3a03ff13013f0d645f1aca6e04bd701287d4b0",
+      "rulings": "8772e59e5441128804dc4a08552e3d52f4c6e84fe2f7573750795d5a4613cdf7"
+    }
+  },
+  "whyHard": "Effects that give a time limit make players assume the cards return when the time runs out."
+}

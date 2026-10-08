@@ -1,0 +1,50 @@
+{
+  "id": "poisonous-virulent-sliver",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "767c896d-4ff6-4cd4-b3a4-80179e84e1cd",
+      "name": "Virulent Sliver"
+    }
+  ],
+  "gameState": null,
+  "question": "If a creature has several instances of poisonous, does each instance trigger separately?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: each instance of poisonous triggers separately.",
+    "answer": "If a creature has multiple instances of poisonous, each triggers separately.",
+    "decidingRuleIds": ["702.70a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Virulent Sliver",
+    "oracleId": "767c896d-4ff6-4cd4-b3a4-80179e84e1cd",
+    "rulingDate": "2021-03-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b06011ff1f8049f75a531a68aafe1896252d3824f5ef01a991d81ce3b3845546",
+      "oracle": "3acd644dbcd18cd166b2de1941edbb8e542541dfc1893577ceca9049dbf5b1ed",
+      "rulings": "fdbed09160c1120f56b129256d29f9673c24871471293c54b275000843e7c427"
+    }
+  },
+  "whyHard": "Players treat repeated keywords as redundant, which is true for some keywords but not for poisonous."
+}

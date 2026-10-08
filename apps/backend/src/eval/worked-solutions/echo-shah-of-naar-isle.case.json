@@ -1,0 +1,54 @@
+{
+  "id": "echo-shah-of-naar-isle",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "31c978b4-06d7-4e9d-82da-bfa4ef16f470",
+      "name": "Shah of Naar Isle"
+    },
+    {
+      "oracleId": "e7436973-9ac8-45b2-9d79-769bfacef4b9",
+      "name": "Thick-Skinned Goblin"
+    }
+  ],
+  "gameState": null,
+  "question": "If I use Thick-Skinned Goblin to pay {0} instead of the echo cost of Shah of Naar Isle, does the Shah's 'when its echo cost is paid' ability still trigger?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the Shah's last ability triggers even if the echo cost is paid with Thick-Skinned Goblin's help.",
+    "answer": "If you use Thick-Skinned Goblin’s ability to pay {0} instead of Shah of Naar Isle’s echo cost, the Shah’s last ability will trigger.",
+    "decidingRuleIds": ["702.30a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Shah of Naar Isle",
+    "oracleId": "31c978b4-06d7-4e9d-82da-bfa4ef16f470",
+    "rulingDate": "2007-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "0e683b77974885c3dd62da8102ddafdc9335eb85acf96b917947b475fd350551",
+      "oracle": "c8a9b97cc7e47fc63c0b1e521cf02f26c9bcdd45091c47cf706ab3cddb393cc6",
+      "rulings": "c5348c881ccb37c3c4a944aa15b53e166f6a212fc8f68e7d7f3cd703fcd35da4"
+    }
+  },
+  "whyHard": "Paying {0} through Thick-Skinned Goblin looks like skipping the echo cost, but it still counts as paying it, so the Shah's trigger fires."
+}

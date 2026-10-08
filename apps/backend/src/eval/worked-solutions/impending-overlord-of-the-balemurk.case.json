@@ -1,0 +1,50 @@
+{
+  "id": "impending-overlord-of-the-balemurk",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "652e87af-7cf0-407f-9fb7-1a630fb8dd47",
+      "name": "Overlord of the Balemurk"
+    }
+  ],
+  "gameState": null,
+  "question": "If a permanent enters as a copy of a permanent that was cast with its impending cost, does it enter with time counters?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it does not enter with time counters, and it will be a creature.",
+    "answer": "If an object enters as a copy of a permanent that was cast with its impending cost, it won't enter with time counters, and it will be a creature.",
+    "decidingRuleIds": ["702.176a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Overlord of the Balemurk",
+    "oracleId": "652e87af-7cf0-407f-9fb7-1a630fb8dd47",
+    "rulingDate": "2024-09-20",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4be31c7ebf9ea7587bf02b3ff34717391b1c5a60f16dee17c9f7bac61cc131c4",
+      "oracle": "8d4a785e67746dfff6718c2c58dd88fd33e4bf8022c519d07c13229c31c8d0bf",
+      "rulings": "cc024ed1a374978c65970089e8d3bd40e4dfbe16d180f17873a6e093aee0d4c2"
+    }
+  },
+  "whyHard": "Impending changes how the original was cast, and players expect a copy to inherit the same state."
+}

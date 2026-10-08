@@ -1,0 +1,50 @@
+{
+  "id": "exert-ahn-crop-champion",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "c03d073e-ea59-4873-952a-bcf2730f1115",
+      "name": "Ahn-Crop Champion"
+    }
+  ],
+  "gameState": null,
+  "question": "I attack with two Ahn-Crop Champions and exert both. Does each Champion untap the other?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: each Champion untaps the other.",
+    "answer": "If you attack with two Ahn-Crop Champions and exert both, each will untap the other.",
+    "decidingRuleIds": ["701.43a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Ahn-Crop Champion",
+    "oracleId": "c03d073e-ea59-4873-952a-bcf2730f1115",
+    "rulingDate": "2017-04-18",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "186a94657ad083aa2b4941feb27e8117681704e68f4878ae93bab68abab657d0",
+      "oracle": "ed834abecb540de2b94669d2ad087e6f8c9e9181944b9bb4166d622360c9e50d",
+      "rulings": "86201886a97763af00ced394390d92f7534bb8069c956d26cfaf883752670e13"
+    }
+  },
+  "whyHard": "An exerted creature will not untap normally, so players think exerting both leaves both tapped."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "job-select-bard-s-bow",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "4aceb786-960d-4719-9de8-79dffd491a51",
+      "name": "Bard's Bow"
+    }
+  ],
+  "gameState": null,
+  "question": "If job select creates two Hero tokens because of a doubling effect, is the Equipment attached to both of them?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the Equipment becomes attached to only one of them.",
+    "answer": "If the job select ability causes two Hero tokens to be created (due to an effect such as that of Doubling Season), the Equipment becomes attached to only one of them.",
+    "decidingRuleIds": ["702.182a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Bard's Bow",
+    "oracleId": "4aceb786-960d-4719-9de8-79dffd491a51",
+    "rulingDate": "2025-06-06",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c5655f104e443d7f47e745dc1ad4592cf50877276dc6d2771a01878908b9f21f",
+      "oracle": "927fb38875098096d1d6dd0f80cbcdd3bd5e731b79e61f672ad534154e223c8d",
+      "rulings": "c6f3a11dbbc7683ab40644ab6075452a47ea857f0f375a5de1810059741bc141"
+    }
+  },
+  "whyHard": "Two tokens look like they can share the Equipment, but an Equipment is attached to one object."
+}

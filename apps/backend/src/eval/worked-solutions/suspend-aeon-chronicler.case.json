@@ -1,0 +1,50 @@
+{
+  "id": "suspend-aeon-chronicler",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "a1399cb8-f22a-487e-b539-2db47b09a790",
+      "name": "Aeon Chronicler"
+    }
+  ],
+  "gameState": null,
+  "question": "Are cards exiled with suspend exiled face up?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: cards exiled with suspend are exiled face up.",
+    "answer": "Cards exiled with suspend are exiled face up.",
+    "decidingRuleIds": ["702.62a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Aeon Chronicler",
+    "oracleId": "a1399cb8-f22a-487e-b539-2db47b09a790",
+    "rulingDate": "2024-02-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "1070729edcd1165cda231f2a56906324ead8e7325e47b33c4c5853f7c22878de",
+      "oracle": "952ab6b7b6122fc9095e9be965bbc9afcc797e3f0d51505279f48e6f0d6131dd",
+      "rulings": "67416fb459ecbcc2ddbbb43da83476451341e453dab5a127a51646fe786d6be8"
+    }
+  },
+  "whyHard": "Suspended cards waiting in exile feel hidden, so players assume they are face down."
+}

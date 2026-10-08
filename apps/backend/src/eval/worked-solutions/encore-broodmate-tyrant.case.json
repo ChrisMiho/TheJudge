@@ -1,0 +1,50 @@
+{
+  "id": "encore-broodmate-tyrant",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "9b984236-39cf-4552-827b-e81c26cfb388",
+      "name": "Broodmate Tyrant"
+    }
+  ],
+  "gameState": null,
+  "question": "After I announce encore, can an opponent stop it by removing the card from my graveyard?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: exiling the card is a cost, so no player can try to remove it from your graveyard to stop you.",
+    "answer": "Exiling the card with encore is a cost to activate the encore ability. Once you announce that you're activating it, no player may take actions until you've finished. They can't try to remove the card from your graveyard to stop you from paying the cost.",
+    "decidingRuleIds": ["702.141a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Broodmate Tyrant",
+    "oracleId": "9b984236-39cf-4552-827b-e81c26cfb388",
+    "rulingDate": "2024-06-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8138f9b38bd1ebc7e08d516906b211dcf79b63f45c9f78cf0c6cf73e4c650b42",
+      "oracle": "31a7445e840f8b37858db04d1395f0a6659c6163f68246357a6248fd519c2247",
+      "rulings": "9cd8aadfd2f7cceb16ab42743fd17ac4e75314a34a2ebe52271c7c8a06759bf6"
+    }
+  },
+  "whyHard": "Players think the card stays a target in the graveyard until the ability resolves."
+}

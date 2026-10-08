@@ -1,0 +1,50 @@
+{
+  "id": "extort-basilica-guards",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "24d2e266-2dcb-40f1-a465-cfc63e9aa6ae",
+      "name": "Basilica Guards"
+    }
+  ],
+  "gameState": null,
+  "question": "Does extort target any player?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the extort ability does not target any player.",
+    "answer": "The extort ability doesn't target any player.",
+    "decidingRuleIds": ["702.101a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Basilica Guards",
+    "oracleId": "24d2e266-2dcb-40f1-a465-cfc63e9aa6ae",
+    "rulingDate": "2024-01-12",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "63830d56722875e9d4da054a58bfb4d677c88a0e9e3890f39608ba750304e4a9",
+      "oracle": "1c677e797f33f2d71e558557ad80ef3bf9ff909bb6c481db6196ce8a45e92dc2",
+      "rulings": "dc7949e6c82cb23729af3c971898a27e912b5b8769fae0ffa1b4169a17d08299"
+    }
+  },
+  "whyHard": "It drains each opponent, which looks like targeting, and players worry about hexproof."
+}

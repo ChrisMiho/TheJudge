@@ -1,0 +1,50 @@
+{
+  "id": "skulk-farbog-revenant",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "6d32139f-839f-441b-930f-151816143142",
+      "name": "Farbog Revenant"
+    }
+  ],
+  "gameState": null,
+  "question": "If a creature's power changes after blockers are chosen, can that make an attacking creature with skulk become unblocked?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: skulk matters only as blockers are chosen, so later changes do not unblock it.",
+    "answer": "Skulk matters only as blockers are chosen. Modifying either creature’s power after blockers are chosen won’t cause the attacking creature to become unblocked.",
+    "decidingRuleIds": ["702.118a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Farbog Revenant",
+    "oracleId": "6d32139f-839f-441b-930f-151816143142",
+    "rulingDate": "2016-04-08",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a8a2b46c313ff6a62ff51277e3ce62d6a3a68e6f0dd99d341d308148a7616c43",
+      "oracle": "8a07f28c1354c2e1e1db239ff06bdd2f05ee9ddfa4df5fc5abac657156cb6f82",
+      "rulings": "654e697989ea7d16a167a0b2da61f840f1baaea50bd6083f846e397b6259039f"
+    }
+  },
+  "whyHard": "Evasion restrictions look like they are checked all through combat."
+}

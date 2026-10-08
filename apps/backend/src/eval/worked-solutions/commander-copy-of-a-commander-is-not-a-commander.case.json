@@ -1,0 +1,50 @@
+{
+  "id": "commander-copy-of-a-commander-is-not-a-commander",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "895527a6-e3b2-454d-a3be-c0036630ec73",
+      "name": "Body Double"
+    }
+  ],
+  "gameState": null,
+  "question": "Is a permanent that is copying a commander, such as Body Double copying a commander in a graveyard, itself a commander?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: a permanent that is copying a commander is not a commander.",
+    "answer": "A commander that’s been turned face down (due to Ixidron’s effect, for example) is still a commander. A commander that’s copying another card (due to Cytoshape’s effect, for example) is still a commander. A permanent that’s copying a commander (such as a Body Double, for example, copying a commander in a player’s graveyard) is not a commander.",
+    "decidingRuleIds": ["903.3"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "903.3",
+    "sectionTitle": "Commander"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "58685c012943b78e80e83059f31ffb97799e8c42fd8be7c74a4c9edf141088a6",
+      "oracle": "1dcb648232fc66b34429d960c9f77ce87d74b7267bc7c124600e0d8f960401f0",
+      "rulings": "e83374c6b5445bfe3bb5fc1651523b424d1435662d207fe5b3041d97662fc512"
+    }
+  },
+  "whyHard": "A commander that copies another card or is turned face down stays a commander, which makes players think the reverse also holds."
+}

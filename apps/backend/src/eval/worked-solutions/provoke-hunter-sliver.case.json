@@ -1,0 +1,50 @@
+{
+  "id": "provoke-hunter-sliver",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "f28b2ebe-49ef-4585-9bf2-7340abf3f0d3",
+      "name": "Hunter Sliver"
+    }
+  ],
+  "gameState": null,
+  "question": "If Hunter Sliver stops being a Sliver, does it still have provoke itself?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it is no longer affected by its own ability, though its ability still affects other Slivers.",
+    "answer": "If the creature type of a Sliver changes so it’s no longer a Sliver, it will no longer be affected by its own ability. Its ability will continue to affect other Sliver creatures.",
+    "decidingRuleIds": ["702.39a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Hunter Sliver",
+    "oracleId": "f28b2ebe-49ef-4585-9bf2-7340abf3f0d3",
+    "rulingDate": "2013-07-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b096f4fab24d95307d884bb8c5ccc37d0b5fad91d9170f98da411b3ccd4a683d",
+      "oracle": "0788567da2dc0ac3513623bb39d7ad7cb5f2b2c47717f6798ee2f4f335a87f03",
+      "rulings": "8936c70b422e899d1713f1365f737bfef9b61d98e2e44268fc3ad348c3eb86f2"
+    }
+  },
+  "whyHard": "The Sliver gives provoke to all Slivers, and players do not expect it to leave itself out when it changes type."
+}

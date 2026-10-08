@@ -1,0 +1,50 @@
+{
+  "id": "undaunted-coastal-breach",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e42b6bd7-8fdf-4452-85cc-9aed790ff682",
+      "name": "Coastal Breach"
+    }
+  ],
+  "gameState": null,
+  "question": "If an opponent loses the game after I announce a spell with undaunted and determine its total cost, do I have to pay more mana?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: causing an opponent to lose after the cost is determined does not make you pay more.",
+    "answer": "Causing an opponent to lose the game after you’ve announced that you’re casting a spell with undaunted and determined its total cost won’t cause you to have to pay more mana.",
+    "decidingRuleIds": ["702.125a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Coastal Breach",
+    "oracleId": "e42b6bd7-8fdf-4452-85cc-9aed790ff682",
+    "rulingDate": "2016-11-08",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ec36f47c513f6ab4855ea65a097cb63c8819bc6fb906c87bd10f2b3904866668",
+      "oracle": "0bb8cadbc2a770765b9dd0cd85696585f5224222bf5c14018619bba2f0f8a3e2",
+      "rulings": "1b9a38f2dae0c002c2897f64aa64b4cc022feabc0f82226cd2a555eaf3d24d25"
+    }
+  },
+  "whyHard": "Undaunted counts opponents, and players think the count is rechecked as the spell is paid for."
+}

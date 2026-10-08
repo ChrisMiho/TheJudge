@@ -1,0 +1,50 @@
+{
+  "id": "convert-soundwave-sonic-spy-soundwave-superior-captain",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "cc18e782-a965-404f-96f1-348f3ed799fd",
+      "name": "Soundwave, Sonic Spy // Soundwave, Superior Captain"
+    }
+  ],
+  "gameState": null,
+  "question": "Another card tells me to transform a Soundwave, Sonic Spy. Because Soundwave converts instead, does that effect convert it?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: an instruction to transform one of these cards makes you convert it.",
+    "answer": "Similarly, an ability of another card that instructs you to \"transform\" one of these cards will cause you to convert it, even if that ability doesn't use the word \"convert.\"",
+    "decidingRuleIds": ["701.28a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Soundwave, Sonic Spy // Soundwave, Superior Captain",
+    "oracleId": "cc18e782-a965-404f-96f1-348f3ed799fd",
+    "rulingDate": "2022-10-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "32c9e2f26feafdc835a2b7b9e4b23fc53d10ec29328e8dfd96b2281527181276",
+      "oracle": "b1630e826ccdd243850fff080beaa6450580fb21a7bd3dfd789eb46533dc2a4b",
+      "rulings": "d0c46b85c485e3ac15a9346212605bf029fb9654d8035c75a04e55a6604b1fad"
+    }
+  },
+  "whyHard": "The effect never says 'convert', so players think it does nothing to these double-faced cards."
+}

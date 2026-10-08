@@ -1,0 +1,50 @@
+{
+  "id": "cumulative-upkeep-mwonvuli-ooze",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "42b2c6d0-e0da-41b0-8876-f17dbe5db79a",
+      "name": "Mwonvuli Ooze"
+    }
+  ],
+  "gameState": null,
+  "question": "Does Mwonvuli Ooze's size change as soon as its cumulative upkeep trigger goes on the stack?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: its power and toughness change when the cumulative upkeep resolves, not when it triggers.",
+    "answer": "Its power/toughness changes when the cumulative upkeep resolves, not when it triggers.",
+    "decidingRuleIds": ["702.24a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Mwonvuli Ooze",
+    "oracleId": "42b2c6d0-e0da-41b0-8876-f17dbe5db79a",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "20bb43ff9ad682868f1b1a221e70444b0ea75dc9d9b54be7ab5855dae50040cb",
+      "oracle": "b1e37a236aeac7f24d5eb1e3495c2890913596b238680059c693e6380fe71acb",
+      "rulings": "80f0c8d5fd9fd170ff2fc30d0ae85a615eed5b061c0378b172634813307f7eff"
+    }
+  },
+  "whyHard": "Putting the age counter is the first step of the trigger, but the counter is added on resolution."
+}

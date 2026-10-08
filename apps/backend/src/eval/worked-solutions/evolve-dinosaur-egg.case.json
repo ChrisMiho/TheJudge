@@ -1,0 +1,50 @@
+{
+  "id": "evolve-dinosaur-egg",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "ac4d5a97-6177-4eac-b0f2-cf10531ad879",
+      "name": "Dinosaur Egg"
+    }
+  ],
+  "gameState": null,
+  "question": "When evolve compares two creatures, do I compare power to power and toughness to toughness?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you always compare power to power and toughness to toughness.",
+    "answer": "When comparing the stats of the two creature for evolve, you always compare power to power and toughness to toughness.",
+    "decidingRuleIds": ["702.100a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Dinosaur Egg",
+    "oracleId": "ac4d5a97-6177-4eac-b0f2-cf10531ad879",
+    "rulingDate": "2023-11-10",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "91816432784cc95f585847ebfd7bf90e1bb1b88b786376a4932af6fb6103408d",
+      "oracle": "4d11d338b01ef572124d65069fbb787fa5fd685f00b3d475c70ae7e0ed2885b0",
+      "rulings": "328da030e22df1d7c29d4bb7a754f2d6dcfa566c560310ce458b06ce54828a03"
+    }
+  },
+  "whyHard": "Players think a creature with more total stats evolves the creature, even when neither stat is bigger."
+}

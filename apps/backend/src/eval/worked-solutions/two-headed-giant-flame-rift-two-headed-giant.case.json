@@ -1,0 +1,50 @@
+{
+  "id": "two-headed-giant-flame-rift-two-headed-giant",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "28479aa8-d1cd-421a-8bbb-0594bb4dd410",
+      "name": "Flame Rift"
+    }
+  ],
+  "gameState": null,
+  "question": "In a Two-Headed Giant game, a player casts Flame Rift, which deals 4 damage to each player. Is each team dealt a total of 8 damage?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: each team is dealt a total of 8 damage.",
+    "answer": "In a Two-Headed Giant game, a player casts Flame Rift, which reads, “Flame Rift deals 4 damage to each player.” Each team is dealt a total of 8 damage.",
+    "decidingRuleIds": ["810.9"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "810.9",
+    "sectionTitle": "Two-Headed Giant Variant"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5292847eabbfbfcf3376dcb83bb5702d77bc93ece1e6e455f1db99b32039a979",
+      "oracle": "ce6c0cfefa927386a63a0b2d1b4251915912497d59c5ffd86999f711a724d240",
+      "rulings": "100fb69c9b2b8553044bebe913bae874944c4601dce1e56b52e47e11179c5134"
+    }
+  },
+  "whyHard": "Players think damage to each player is divided between the teammates instead of dealt to both."
+}

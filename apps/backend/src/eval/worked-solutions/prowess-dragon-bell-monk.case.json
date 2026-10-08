@@ -1,0 +1,50 @@
+{
+  "id": "prowess-dragon-bell-monk",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "83f7e8e5-d485-4571-9fa6-47b5e962d221",
+      "name": "Dragon Bell Monk"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast a spell that is both an artifact and an instant, does prowess trigger twice?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: prowess triggers only once for any spell, even if the spell has multiple types.",
+    "answer": "Prowess triggers only once for any spell, even if that spell has multiple types.",
+    "decidingRuleIds": ["702.108a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Dragon Bell Monk",
+    "oracleId": "83f7e8e5-d485-4571-9fa6-47b5e962d221",
+    "rulingDate": "2014-11-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "96c9bbea6b8c68d75b31fd15129bd9a09d09e9673cc1f691715dc8fba47a3ee9",
+      "oracle": "94ed44417c29038143f0c0c93f24fc46f3282fc26a86eafff0d847d4db417641",
+      "rulings": "962a72f61741b22be8906d5bc77ac9d929bae306ef6badc6e3679155a9cdabbc"
+    }
+  },
+  "whyHard": "The trigger says 'noncreature spell', so players count the types instead of the spell."
+}

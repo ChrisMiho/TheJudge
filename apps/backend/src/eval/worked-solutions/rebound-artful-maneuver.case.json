@@ -1,0 +1,50 @@
+{
+  "id": "rebound-artful-maneuver",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "7b58920e-3e90-44ed-a0e9-4cb1b7359a5b",
+      "name": "Artful Maneuver"
+    }
+  ],
+  "gameState": null,
+  "question": "Does rebound do anything for a copy of a spell that has rebound?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: rebound has no effect on copies, because you do not cast them from your hand.",
+    "answer": "Rebound will have no effect on copies of spells because you don’t cast them from your hand.",
+    "decidingRuleIds": ["702.88a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Artful Maneuver",
+    "oracleId": "7b58920e-3e90-44ed-a0e9-4cb1b7359a5b",
+    "rulingDate": "2015-02-25",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f5494562e4b03bfddf33168004904fba4f6143c74f4c7f12ef7b042122b49fcd",
+      "oracle": "6f7545f731ed0fd58b12f6b0779d227bba7394091bdd1fab0086b5719bbb18c1",
+      "rulings": "35f0262de51a09ac0821f9f0505f5e88b4aa6440a2841d92f26100523bb54ac0"
+    }
+  },
+  "whyHard": "Copies share the spell's text, so players expect them to be exiled and cast again."
+}

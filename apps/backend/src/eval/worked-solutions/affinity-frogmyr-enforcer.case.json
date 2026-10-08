@@ -1,0 +1,50 @@
+{
+  "id": "affinity-frogmyr-enforcer",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "ccc7de36-aafc-4d87-80f7-fc2effc976eb",
+      "name": "Frogmyr Enforcer"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast Frogmyr Enforcer for its prototype cost, does its affinity for artifacts still reduce what I pay?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: affinity for artifacts still applies when it is cast prototyped.",
+    "answer": "When casting Frogmyr Enforcer prototyped, its affinity for artifacts ability will still apply.",
+    "decidingRuleIds": ["702.41a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Frogmyr Enforcer",
+    "oracleId": "ccc7de36-aafc-4d87-80f7-fc2effc976eb",
+    "rulingDate": "2024-06-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "54f589b92e5310bd629f6411e53211e53ddc01625f62c671d8a2e8ce6248bd1e",
+      "oracle": "089ddef8cfb5a7d9a0749d4bd0e4a19f525fc88f42ce67e055abbbd59e2eabca",
+      "rulings": "dce7761649b2d39699728e4b7a7038e914d0184f52912c8473c36cfa6e5073dd"
+    }
+  },
+  "whyHard": "Prototype changes the mana cost, so players think the other cost-changing abilities are switched off."
+}

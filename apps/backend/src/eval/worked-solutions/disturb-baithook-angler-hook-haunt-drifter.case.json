@@ -1,0 +1,50 @@
+{
+  "id": "disturb-baithook-angler-hook-haunt-drifter",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "c6bb4b41-8dae-429a-b928-ae9d39c74711",
+      "name": "Baithook Angler // Hook-Haunt Drifter"
+    }
+  ],
+  "gameState": null,
+  "question": "Can the back face of a double-faced card have disturb?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: disturb is found only on the front faces of some double-faced cards.",
+    "answer": "Disturb is found only on the front faces of some double-faced cards.",
+    "decidingRuleIds": ["702.146a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Baithook Angler // Hook-Haunt Drifter",
+    "oracleId": "c6bb4b41-8dae-429a-b928-ae9d39c74711",
+    "rulingDate": "2021-09-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "136c62312c5a0fab11910ac7422fcb8e072ee807351fff09188710fbcc484316",
+      "oracle": "9c99b8349009eb65db76209326c054e5f8883cba3b1d451cad0b00117eb917f7",
+      "rulings": "7fdd4f9f49f49830e5fb61421eea3e559676bd147ca33c60de4ee7c36972fe0a"
+    }
+  },
+  "whyHard": "Disturb casts the card from the graveyard transformed, so players expect it to appear on the back."
+}

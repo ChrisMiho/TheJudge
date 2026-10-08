@@ -1,0 +1,50 @@
+{
+  "id": "transfigure-fleshwrither",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "49815e6d-b9c5-4e45-949e-34d34b3543e8",
+      "name": "Fleshwrither"
+    }
+  ],
+  "gameState": null,
+  "question": "Transmute can be activated from my hand. Can I activate transfigure from my hand in the same way?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: transfigure works only if the permanent with it is on the battlefield, and it fetches only a creature.",
+    "answer": "Transfigure is similar to Transmute, though it can be activated only if the permanent with Transfigure is on the battlefield, and it can fetch only a creature.",
+    "decidingRuleIds": ["702.71a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Fleshwrither",
+    "oracleId": "49815e6d-b9c5-4e45-949e-34d34b3543e8",
+    "rulingDate": "2007-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b0f314ebc0802e28583392bf3923199f0a9595ec08905df5b7b1bd77b62e3389",
+      "oracle": "a13de87b9ccd19f3a8399238d45a2635b6fb846f0469729097028467fae764ed",
+      "rulings": "21b0c2df5e07f5c9bd1154410994c68e9432782452c6d13a87a4e958b36d7838"
+    }
+  },
+  "whyHard": "Transfigure looks like transmute, but it is activated from the battlefield and sacrifices the permanent."
+}

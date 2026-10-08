@@ -1,0 +1,50 @@
+{
+  "id": "spectacle-blade-juggler",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "34400cf5-b8c4-4cf2-9186-51f12037cc51",
+      "name": "Blade Juggler"
+    }
+  ],
+  "gameState": null,
+  "question": "Does the spectacle cost of a card change depending on how much life my opponents lost?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the spectacle cost is the same no matter how much life was lost or by how many opponents.",
+    "answer": "A card's spectacle cost is the same no matter how much life your opponents lost or how many opponents lost life.",
+    "decidingRuleIds": ["702.137a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Blade Juggler",
+    "oracleId": "34400cf5-b8c4-4cf2-9186-51f12037cc51",
+    "rulingDate": "2024-01-12",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "831e47e69236ace32a80d9c196ef8071e5adb260c98f0a3b24adf6e2d2a43dc3",
+      "oracle": "f4e979059a306697ef88999f744464a9e9976a4d3b1fa4803a689c7d34d18355",
+      "rulings": "a3efed1a93aeabf1dcd25f5bb89d29c1bf4b64df5e538f7f9daa7386c82ec0bf"
+    }
+  },
+  "whyHard": "Spectacle is tied to life loss, so players think more life loss means a bigger discount."
+}

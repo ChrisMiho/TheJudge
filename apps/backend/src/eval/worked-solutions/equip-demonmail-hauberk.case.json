@@ -1,0 +1,50 @@
+{
+  "id": "equip-demonmail-hauberk",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "dac85722-d741-4584-8b98-8ac220958a38",
+      "name": "Demonmail Hauberk"
+    }
+  ],
+  "gameState": null,
+  "question": "Demonmail Hauberk has equip—sacrifice a creature. Can I sacrifice the creature it is already equipping in order to equip it to another creature?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you can sacrifice the creature the Equipment is attached to as the cost to move it.",
+    "answer": "You can sacrifice the creature Demonmail Hauberk is equipping in order to equip it to another creature.",
+    "decidingRuleIds": ["702.6a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Demonmail Hauberk",
+    "oracleId": "dac85722-d741-4584-8b98-8ac220958a38",
+    "rulingDate": "2011-09-22",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "94e0db76968135e9493cdc3b5bfb3eb3707076c7e22128a517ebbd34df23a1c3",
+      "oracle": "e6ecfc9c4b288795951b677a3059e167c632800099c3416fa2ea801742840784",
+      "rulings": "5eb5d50016d342f355b7850f6e06ab2d8b7af7a37ffffaca6425c9d22eaf5c3b"
+    }
+  },
+  "whyHard": "Players assume that removing the equipped creature as a cost leaves nothing for the Equipment to attach from."
+}

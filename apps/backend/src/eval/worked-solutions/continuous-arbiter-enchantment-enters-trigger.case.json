@@ -1,0 +1,50 @@
+{
+  "id": "continuous-arbiter-enchantment-enters-trigger",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "a6cefecd-459e-439a-a62c-689c2919b689",
+      "name": "Arbiter of the Ideal"
+    }
+  ],
+  "gameState": null,
+  "question": "Arbiter of the Ideal puts a permanent onto the battlefield that is an enchantment in addition to its other types. Does an ability that triggers when an enchantment enters the battlefield trigger for it?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the permanent enters as an enchantment, it does not enter and then become one.",
+    "answer": "Arbiter of the Ideal puts an artifact, creature, or land card onto the battlefield and says, in part, “That permanent is an enchantment in addition to its other types.” An ability that triggers whenever an enchantment enters the battlefield would trigger. The permanent doesn’t enter the battlefield and then become an enchantment.",
+    "decidingRuleIds": ["611.2e"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "611.2e",
+    "sectionTitle": "Continuous Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d8434faa05aaf7db34de3dfac6b03ad47ec1de6da8c3b93e463576162fc7ce22",
+      "oracle": "45fec6961aacb74c49a55c053adb82aeec124ea57de3973f555a45b78d6c0857",
+      "rulings": "478243e97de3deb67c0bf4197c967830ea9e2c1830aa08519d7b366f2e88ce74"
+    }
+  },
+  "whyHard": "Players picture the permanent entering and the effect applying a moment later."
+}

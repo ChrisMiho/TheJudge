@@ -1,0 +1,50 @@
+{
+  "id": "fuse-alive-well",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "57ad3c3a-6ac7-4a35-bc07-00f6ea0988c5",
+      "name": "Alive // Well"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I cast both halves of Alive // Well with fuse from my graveyard?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: from any zone other than your hand, you can cast only one half or the other.",
+    "answer": "If you’re casting a split card with fuse from any zone other than your hand, you can’t cast both halves. You’ll only be able to cast one half or the other.",
+    "decidingRuleIds": ["702.102a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Alive // Well",
+    "oracleId": "57ad3c3a-6ac7-4a35-bc07-00f6ea0988c5",
+    "rulingDate": "2013-04-15",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "1aa59c33a6ae1456bd9f6e5977b9d7da07a1d54ef4a27af4ac2577896666c1f0",
+      "oracle": "2d9e6c6785775a972b992698953cde5c1312132b9fc341edbb1a5ed0e4befbb6",
+      "rulings": "be902aeaafe66d9894ec0cab1c80b1153ba6509dfd82b6a19f5adcb55d63720a"
+    }
+  },
+  "whyHard": "Fuse is a property of the whole card, so players expect it to work in any zone it can be cast from."
+}

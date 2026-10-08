@@ -1,0 +1,50 @@
+{
+  "id": "eternalize-adorned-pouncer",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "80b8ee3d-4174-4f47-a533-a3db1e703382",
+      "name": "Adorned Pouncer"
+    }
+  ],
+  "gameState": null,
+  "question": "Once I activate eternalize, can an opponent stop it by exiling the card from my graveyard in response?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the card is immediately exiled as a cost, so opponents cannot try to stop the ability by exiling it.",
+    "answer": "Once you've activated an eternalize ability, the card is immediately exiled. Opponents can't try to stop the ability by exiling the card with an effect such as that of Crook of Condemnation.",
+    "decidingRuleIds": ["702.129a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Adorned Pouncer",
+    "oracleId": "80b8ee3d-4174-4f47-a533-a3db1e703382",
+    "rulingDate": "2017-07-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "558523a6cd3cb2f8f9af6197ca780ccbde26cbe5d3cb6c0306f4ada6e59f5590",
+      "oracle": "6a701c6b70e43cee56e6a7b784b9b67275ced8413439896822049f3a6676b420",
+      "rulings": "ef24dbfedacb3cf3baa5f52137cd4444c034d33b455ae6a82b35c001f25484b6"
+    }
+  },
+  "whyHard": "The card is in the graveyard when the ability starts, and players expect it to stay there until the ability resolves."
+}

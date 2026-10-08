@@ -1,0 +1,50 @@
+{
+  "id": "sneak-dark-leo-shredder",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "c3ea6af5-48b9-45d2-9576-46cacb2db5b0",
+      "name": "Dark Leo & Shredder"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I cast a spell for its sneak cost during the declare blockers step on my turn?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: spells can be cast for their sneak costs any time you could play an instant during the declare blockers step on your turn, after your opponent has decided whether to block.",
+    "answer": "Spells can only be cast for their sneak costs any time you could play an instant during the declare blockers step on your turn (after your opponent has decided whether to block).",
+    "decidingRuleIds": ["702.190a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Dark Leo & Shredder",
+    "oracleId": "c3ea6af5-48b9-45d2-9576-46cacb2db5b0",
+    "rulingDate": "2026-01-27",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f3b2f8f30a0a7df7c8dca67bbb26df8a7c8679f413f03a35d4c06945f1d6764c",
+      "oracle": "a7515f43268b93daa4e9539dff1154651e4dc15b208a828cee071f8e725e440f",
+      "rulings": "c32ee6a5ed33f1446742a4ee4d20b4a39409a40764b64ab32c9cb011081dd809"
+    }
+  },
+  "whyHard": "Sneak looks like a combat trick, but it is limited to a specific moment in the turn."
+}

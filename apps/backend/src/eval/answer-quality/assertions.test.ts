@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { computeDeterministicAssertions, namesGoldRuleId, namesRuleId } from "./assertions.js";
+import {
+  citedRuleIds,
+  computeDeterministicAssertions,
+  findUnknownRuleIds,
+  namesGoldRuleId,
+  namesRuleId
+} from "./assertions.js";
 
 describe("Backend - Eval - Answer quality - assertions (REQ-186 layer 1)", () => {
   describe("namesRuleId", () => {
@@ -64,6 +70,35 @@ describe("Backend - Eval - Answer quality - assertions (REQ-186 layer 1)", () =>
       const result = computeDeterministicAssertions("The delayed ability never triggers.", ["603.7a"]);
       expect(result.namesGoldRuleId).toBe(false);
       expect(result.nonEmpty).toBe(true);
+    });
+  });
+
+  describe("unknown rule ids (the free made-up-rule-number check)", () => {
+    const known = new Set(["603.7a", "613.9", "702.19b", "100.1"]);
+
+    it("lists a cited rule id the committed index lacks, and records an empty list for ids that all exist", () => {
+      const withUnknown = computeDeterministicAssertions(
+        "Per rule 613.9 and rule 999.9z, the creature is white.",
+        ["613.9"],
+        known
+      );
+      expect(withUnknown.unknownRuleIds).toEqual(["999.9z"]);
+
+      const allKnown = computeDeterministicAssertions("Per rule 613.9 (and 702.19b), the creature is white.", ["613.9"], known);
+      expect(allKnown.unknownRuleIds).toEqual([]);
+    });
+
+    it("leaves the field off when the caller supplies no rule index", () => {
+      expect(computeDeterministicAssertions("Cites 999.9z.", ["613.9"])).not.toHaveProperty("unknownRuleIds");
+    });
+
+    it("finds each distinct cited id once, in order, including one ending a sentence", () => {
+      expect(citedRuleIds("See 603.7a, then 603.7a again, and finally 702.19b.")).toEqual(["603.7a", "702.19b"]);
+      expect(findUnknownRuleIds("See 603.7a, 888.1 and 888.1.", known)).toEqual(["888.1"]);
+    });
+
+    it("does not read a longer number, a decimal or a further dotted number as a rule id", () => {
+      expect(citedRuleIds("It costs 1603.7 and 0.603 and 603.7.1 mana and 603.7a9.")).toEqual([]);
     });
   });
 });

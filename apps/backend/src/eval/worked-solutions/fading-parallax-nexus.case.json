@@ -1,0 +1,50 @@
+{
+  "id": "fading-parallax-nexus",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "40fbcf4b-d79e-4e6b-bcec-1d1544b3c4a2",
+      "name": "Parallax Nexus"
+    }
+  ],
+  "gameState": null,
+  "question": "Parallax Nexus makes a target opponent exile a card from their hand. Does the opponent choose which card to exile?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the target opponent chooses which card to exile.",
+    "answer": "The target opponent chooses which card to exile.",
+    "decidingRuleIds": ["702.32a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Parallax Nexus",
+    "oracleId": "40fbcf4b-d79e-4e6b-bcec-1d1544b3c4a2",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "df0a4424f35a7eda3f6cf156d253eab2a300c42ec2154bfc0ab74b671cbfac2d",
+      "oracle": "d0856881a1c4323205eac6b9af26894f932ada0412a7ad75d0f169251099d3a6",
+      "rulings": "c2ebdf4d4f536b0fe246a966ad15f470bc8a240874e5c5f0e28c8797df52b636"
+    }
+  },
+  "whyHard": "Players think the controller of the ability chooses the card, as with many exile effects."
+}

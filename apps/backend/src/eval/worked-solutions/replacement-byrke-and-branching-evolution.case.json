@@ -1,0 +1,54 @@
+{
+  "id": "replacement-byrke-and-branching-evolution",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e9c6e4e6-0c3f-4048-93e6-161a1221ea36",
+      "name": "Byrke, Long Ear of the Law"
+    },
+    {
+      "oracleId": "28fe909b-06e0-424c-9f75-c824a25f5865",
+      "name": "Branching Evolution"
+    }
+  ],
+  "gameState": null,
+  "question": "Byrke doubles the +1/+1 counters on a creature. Do replacement effects that change how many counters I put, such as Branching Evolution, apply to that ability as normal?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: replacement effects that modify the number of counters being placed apply to this ability as normal.",
+    "answer": "To double the number of +1/+1 counters on a creature, put a number of +1/+1 counters on it equal to the number it already has. Replacement effects that modify the number of counters being placed on creatures you control, such as the effect of Branching Evolution, apply to this ability as normal.",
+    "decidingRuleIds": ["614.1a", "122.6"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Byrke, Long Ear of the Law",
+    "oracleId": "e9c6e4e6-0c3f-4048-93e6-161a1221ea36",
+    "rulingDate": "2024-07-26"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "840856e522e8bec97602a6a668412027949628cfdfc07465d1ea0e20d64ef4e7",
+      "oracle": "337e4c7df91781049967117fb16cc11efa6c2aa5f961b433c64baa3aa667c238",
+      "rulings": "db3c5a09701b268746324670d2d4cf75f55b1497a35ecd7e7c277a481eb6b7b1"
+    }
+  },
+  "whyHard": "Doubling counters reads like a special case that skips normal counter modifiers."
+}

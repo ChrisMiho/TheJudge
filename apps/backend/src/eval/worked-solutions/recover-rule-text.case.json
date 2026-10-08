@@ -1,0 +1,45 @@
+{
+  "id": "recover-rule-text",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [],
+  "gameState": null,
+  "question": "Does recover work while the card with recover is on the battlefield?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: recover is a triggered ability that functions only while the card is in a graveyard.",
+    "answer": "702.59a Recover is a triggered ability that functions only while the card with recover is in a player’s graveyard. “Recover [cost]” means “When a creature is put into your graveyard from the battlefield, you may pay [cost]. If you do, return this card from your graveyard to your hand. Otherwise, exile this card.”",
+    "decidingRuleIds": ["702.59a"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "pool": "mechanic",
+    "type": "Official Magic: The Gathering Comprehensive Rules text",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "702.59a",
+    "sectionTitle": "Keyword Abilities",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of what the cited rule states; the answer is the rule's own text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "64aecb606436439a1f8992a3efec67bc7934273f130816460095e555bf53d9a6",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "whyHard": "Most abilities work from the battlefield, and recover is an unusual one that works from the graveyard."
+}

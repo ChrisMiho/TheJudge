@@ -1,0 +1,50 @@
+{
+  "id": "myriad-caller-of-the-pack",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "3b6cbd2a-02ba-4afb-a081-0f25d830a8ee",
+      "name": "Caller of the Pack"
+    }
+  ],
+  "gameState": null,
+  "question": "If myriad creates more than one token for a given player, can I choose separately for each token whether it attacks the player or a planeswalker they control?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you choose separately for each token whether it attacks the player or a planeswalker.",
+    "answer": "If myriad creates more than one token for any given player (due to an effect such as the one Doubling Season creates), you may choose separately for each token whether it’s attacking the player or a planeswalker they control.",
+    "decidingRuleIds": ["702.116a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Caller of the Pack",
+    "oracleId": "3b6cbd2a-02ba-4afb-a081-0f25d830a8ee",
+    "rulingDate": "2015-11-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5c5a3b4742de1f7244c8107b6a5e2a5f634133e5f76da926cdb9cb7b991d7a74",
+      "oracle": "3aff4142bede395c5102f15d3d026671813b83293965a8be9f12e2aa233670cc",
+      "rulings": "e7a3b37e65bd4f2f53ba45c7f88f8160132d1f8e23aa61b2f063d1604806b5a3"
+    }
+  },
+  "whyHard": "Doubling effects create several tokens at once, and players assume one choice applies to all."
+}

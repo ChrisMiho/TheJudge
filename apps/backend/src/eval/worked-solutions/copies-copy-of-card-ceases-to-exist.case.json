@@ -1,0 +1,54 @@
+{
+  "id": "copies-copy-of-card-ceases-to-exist",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "18e421c0-2879-4ad8-b027-397f168dfbc2",
+      "name": "Krark, the Thumbless"
+    },
+    {
+      "oracleId": "56de4cdc-4db0-48ec-8a16-f66086507233",
+      "name": "Mnemonic Deluge"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast a copy of an instant or sorcery card, such as one created by Mnemonic Deluge, and the spell is returned to its owner's hand, can I cast it again?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the copy of a card ceases to exist, so you can't cast it again.",
+    "answer": "If you cast a copy of an instant or sorcery card (for example, one created by Mnemonic Deluge), and the spell is returned to its owner's hand, it will cease to exist. You won't be able to cast it again.",
+    "decidingRuleIds": ["707.10"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Krark, the Thumbless",
+    "oracleId": "18e421c0-2879-4ad8-b027-397f168dfbc2",
+    "rulingDate": "2020-11-10"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5d195126665f2f15cae2fb0be6cc1fb4da9713309b788bed48e92739cc382efd",
+      "oracle": "1cf26535aea3d02a16bad5f5dd1195c29743d012479aa28bcea510e047d12320",
+      "rulings": "545b32f586b927936ae874c9324608467f4a44eaa84ce16dd86a979f91198452"
+    }
+  },
+  "whyHard": "The returned copy feels like a card in hand that could be replayed."
+}

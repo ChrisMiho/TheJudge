@@ -1,0 +1,45 @@
+{
+  "id": "replacement-prevention-too-late-after-resolution",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [],
+  "gameState": null,
+  "question": "Can I activate an ability that prevents damage after a spell that would deal damage has already resolved?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you must do it in response to the spell, because once it resolves it is too late.",
+    "answer": "A player can activate an ability that prevents damage in response to a spell that would deal damage. Once the spell resolves, though, it’s too late to prevent the damage.",
+    "decidingRuleIds": ["615.4"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "615.4",
+    "sectionTitle": "Prevention Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "0781f9bb132569897b948fea845aa127f61e15004f45fb8404c30f6bdccffae0",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "whyHard": "Damage feels like something that happens later, but it is dealt as the spell resolves."
+}

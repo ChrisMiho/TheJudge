@@ -1,0 +1,50 @@
+{
+  "id": "umbra-armor-bear-umbra",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "44661108-d72f-4d02-9303-7e4b0ecf7e9c",
+      "name": "Bear Umbra"
+    }
+  ],
+  "gameState": null,
+  "question": "If a creature enchanted by Bear Umbra would be destroyed, can I choose not to use umbra armor?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: umbra armor's effect is mandatory, so you remove the damage and destroy the Aura instead.",
+    "answer": "Umbra armor's effect is mandatory. If the enchanted creature would be destroyed, you must remove all damage from it (if it has any) and destroy the Aura that has umbra armor instead.",
+    "decidingRuleIds": ["702.89a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Bear Umbra",
+    "oracleId": "44661108-d72f-4d02-9303-7e4b0ecf7e9c",
+    "rulingDate": "2024-06-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c0966138e90800d4eddb09e4eb4112cd703abe8648172bf7a0f2599bf8dc4352",
+      "oracle": "646108727c912edb23c62b15230d717ed0fa2101d8db7442319e708ff6aed9d9",
+      "rulings": "214229fc29346dcc13c63a3638b4c5580e456410d53ccadc4b737369c4db148b"
+    }
+  },
+  "whyHard": "Replacement effects that protect a permanent look optional, and players expect to be able to decline."
+}

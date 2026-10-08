@@ -1,0 +1,50 @@
+{
+  "id": "triple-tifa-s-limit-break",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "d0d90dd8-0642-489f-9afc-11c307f258f2",
+      "name": "Tifa's Limit Break"
+    }
+  ],
+  "gameState": null,
+  "question": "Tifa's Limit Break triples a target creature's power and toughness with Final Heaven. Does that give the creature a bonus equal to its current power and toughness, the way doubling does?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: tripling gives it twice its current power and toughness as the bonus.",
+    "answer": "To double a creature's power and toughness, that creature gets +X/+Y, where X is that creature's power and Y is that creature's toughness when Tifa's Limit Break resolves. To triple a creature's power, that creature gets +X/+Y, where X is twice that creature's power and Y is twice that creature's toughness when Tifa's Limit Break resolves.",
+    "decidingRuleIds": ["701.11a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Tifa's Limit Break",
+    "oracleId": "d0d90dd8-0642-489f-9afc-11c307f258f2",
+    "rulingDate": "2025-06-06",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "7065d7a105360a627d8e4eb10652ea0c3a69b6779c90e3749ddfaf5664572b33",
+      "oracle": "0d5b9925866d3605bde37077007a9ca1cbbcc1c35d02735fe440e7978af78da4",
+      "rulings": "ef81ec10b617e9f9bec57c686cc6de8eb9e71de634ac2a9c5d5e8d1190e1eb6f"
+    }
+  },
+  "whyHard": "Doubling and tripling look like the same kind of change, but the bonus for tripling is twice the current value, not the current value."
+}

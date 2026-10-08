@@ -1,0 +1,50 @@
+{
+  "id": "time-travel-all-of-history-all-at-once",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "48f80047-a4f9-4ebb-a97a-cad157b9bb64",
+      "name": "All of History, All at Once"
+    }
+  ],
+  "gameState": null,
+  "question": "When I time travel, can I decide on one permanent's counters, have that change happen, and only then decide on the next?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you choose for every card and permanent first, and then all the changes happen at once.",
+    "answer": "To time travel, look at each permanent you control with a time counter on it and each suspended card you own in exile with a time counter on it. For each of them, you choose whether you want to put a time counter on that card or permanent, remove a time counter from it, or do neither. Then those changes all happen simultaneously.",
+    "decidingRuleIds": ["701.56a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "All of History, All at Once",
+    "oracleId": "48f80047-a4f9-4ebb-a97a-cad157b9bb64",
+    "rulingDate": "2023-10-13",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ad578e66d40a7d9a8badaf8f3a991c4e0321b75cd32e7ed7592d43075c28c776",
+      "oracle": "f8f20d84fed18f140844e19cd275304e28bcf5b820499a8ba25570506273e931",
+      "rulings": "72d03faa9cbd31577332c4c56bc7e556e207b84a38274b84fc1f3cde9b24ff42"
+    }
+  },
+  "whyHard": "Players expect a sequential 'for each' where each choice can see the result of the last."
+}

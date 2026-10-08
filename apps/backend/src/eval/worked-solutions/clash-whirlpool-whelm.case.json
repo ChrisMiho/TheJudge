@@ -1,0 +1,50 @@
+{
+  "id": "clash-whirlpool-whelm",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "7f527852-bf7d-43a3-be0b-784c73ed88aa",
+      "name": "Whirlpool Whelm"
+    }
+  ],
+  "gameState": null,
+  "question": "Whirlpool Whelm clashes with an opponent and returns a target creature. Do I choose the target creature after seeing the clash result?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you choose the target when you cast it, not when you clash.",
+    "answer": "You choose the target when you play Whirlpool Whelm, not when you clash.",
+    "decidingRuleIds": ["701.30a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Whirlpool Whelm",
+    "oracleId": "7f527852-bf7d-43a3-be0b-784c73ed88aa",
+    "rulingDate": "2007-10-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5557a5f01e60c5e3a373517c2f27806b7d9aa69aea4d13f66a8d269ffca75c9d",
+      "oracle": "77c61f6d85bf7e163c8c2591725d38a0170f768e4c960ac0dacc9acf27e104f2",
+      "rulings": "3170d094aba9284280a11b16bc29736c40b6bb0f0f30bac9f0083c8146c87841"
+    }
+  },
+  "whyHard": "Because the clash comes first in the text, players think the target is chosen after it."
+}

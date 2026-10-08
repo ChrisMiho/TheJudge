@@ -1,0 +1,50 @@
+{
+  "id": "partner-blaring-captain",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "1675476c-25b1-46c2-81ce-fef9a2360bcc",
+      "name": "Blaring Captain"
+    }
+  ],
+  "gameState": null,
+  "question": "Can a nonlegendary creature with a 'partner with' ability be my commander?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: a nonlegendary creature cannot be your commander, even with a 'partner with' ability.",
+    "answer": "A nonlegendary creature can’t be your commander, even if it has a “partner with” ability.",
+    "decidingRuleIds": ["702.124a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Blaring Captain",
+    "oracleId": "1675476c-25b1-46c2-81ce-fef9a2360bcc",
+    "rulingDate": "2018-06-08",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "0a823b35d33cd7916a8cfd44b3a668e226b391773da7f5a6bc426fce72ff1151",
+      "oracle": "c2839f2ecd31e1b8a688a3c3ee01a64adb7935c6ebd10da7ab050a10418fdca5",
+      "rulings": "84acf0b4c6610e2b582f3965fdd7e60cb07ef8c90bf50a5843f07ff63067c48c"
+    }
+  },
+  "whyHard": "Partner abilities change deck construction, so players assume they also relax the legendary requirement."
+}

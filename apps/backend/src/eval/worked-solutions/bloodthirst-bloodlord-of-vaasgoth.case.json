@@ -1,0 +1,50 @@
+{
+  "id": "bloodthirst-bloodlord-of-vaasgoth",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "d8560ee9-8cbb-440b-a132-e102a1eb3e89",
+      "name": "Bloodlord of Vaasgoth"
+    }
+  ],
+  "gameState": null,
+  "question": "Bloodlord of Vaasgoth gives bloodthirst 3 to Vampire creature spells I cast. Do Vampire creature tokens I put onto the battlefield get bloodthirst 3 too?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: only Vampire creature spells you cast gain it, not Vampires put directly onto the battlefield.",
+    "answer": "Vampire creatures you put directly onto the battlefield without casting them and Vampire creature tokens you put onto the battlefield will not gain bloodthirst 3 from Bloodlord of Vaasgoth.",
+    "decidingRuleIds": ["702.54a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Bloodlord of Vaasgoth",
+    "oracleId": "d8560ee9-8cbb-440b-a132-e102a1eb3e89",
+    "rulingDate": "2011-09-22",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a2572ebb08edfe8801531809b680509668d31748be2a5c573e42d4932f5a7f33",
+      "oracle": "ac86a2e15bec5623c06032da3f0bd1565e5a72c090024fa0240a4eb9f290ea95",
+      "rulings": "6ca2111c81d2a65cce29b331ce68221006442036a41e214e4698d1ee15642b53"
+    }
+  },
+  "whyHard": "The text says Vampire creature spells, and players read it as all Vampire creatures you control or put in."
+}

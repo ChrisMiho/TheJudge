@@ -1,0 +1,446 @@
+{
+  "formatVersion": 1,
+  "kind": "held-out",
+  "seed": 20261007,
+  "command": "npm run eval:answer-quality:manifests",
+  "selectionRule": "a seeded sample of the approved cases not in the diagnostic manifest, allocated to Comprehensive Rules sections in proportion to their size (largest remainder), then drawn within each section by seed",
+  "sampleSizeChange": null,
+  "selection": {
+    "requested": 80,
+    "poolSize": 346,
+    "sections": {
+      "106": 0,
+      "111": 0,
+      "113": 1,
+      "118": 0,
+      "120": 0,
+      "305": 0,
+      "400": 0,
+      "502": 0,
+      "508": 1,
+      "509": 1,
+      "510": 1,
+      "603": 3,
+      "605": 0,
+      "608": 2,
+      "610": 0,
+      "611": 1,
+      "613": 1,
+      "614": 2,
+      "615": 1,
+      "616": 1,
+      "701": 14,
+      "702": 41,
+      "704": 1,
+      "707": 4,
+      "712": 2,
+      "801": 1,
+      "810": 1,
+      "903": 1
+    },
+    "caseCount": 80
+  },
+  "caseCount": 80,
+  "cases": [
+    {
+      "id": "affinity-frogmyr-enforcer",
+      "questionSha256": "1ef3e3aaf8a423067afb935f7422b78ff17cd03a6158aa9a6285917a1a7ec06a",
+      "answerSha256": "b3c820dd98f378197c408ee9a16cbb9d17aa42de714f7d826088e7d39027e29a"
+    },
+    {
+      "id": "afterlife-debtors-transport",
+      "questionSha256": "2b58f9edf21bbae196b478d1bedcf9f6121ab42229198a4ecf8532078b8e6797",
+      "answerSha256": "0f11e7037e53f03db9c0ba4c182f4d709147de1a892dd19d72dddda9bbee84ff"
+    },
+    {
+      "id": "amplify-canopy-crawler",
+      "questionSha256": "e0fbe222b15720abad21028cd4383e7cc7d951a321cf448eb30c991ddd00837d",
+      "answerSha256": "50052a373f57e296d5e4b099da5a5994696f15f89f118034d5abe53fda83c4a9"
+    },
+    {
+      "id": "blight-auntie-ool-cursewretch",
+      "questionSha256": "70c86930555414dbffe0516f7997aedadc8de990b744b6bfbbaccdad53806c63",
+      "answerSha256": "653c84275166e95ff6cc4cbf0ea3bf30fbfd23c38dfd938efe95be944887f815"
+    },
+    {
+      "id": "cast-voidstone-gargoyle",
+      "questionSha256": "f4de6ea4128984332be5540b2aeea24da5cc00a062e06367bfdb5c1251ffb03b",
+      "answerSha256": "e85d940e60199a45ebb4e7fc83b9b19455ae9e51d1b1159e32297b5b679a8f06"
+    },
+    {
+      "id": "clash-whirlpool-whelm",
+      "questionSha256": "53b9b1ccdd49e2095e578a2e0a3752d7e4a0834af99ed98b76c4e1c1479d957d",
+      "answerSha256": "6b24bd08906a48ba9dcd5b0689309a6e5ba68dc0c1570ab8c7b2d3df92821a6d"
+    },
+    {
+      "id": "collect-evidence-lamplight-phoenix",
+      "questionSha256": "9f3a181745528f63c8c050d0c5d9e348549a2a54d6067f005324a69e728065ee",
+      "answerSha256": "4c2a8dff1249dd021b8bd678af90f53cf894d007d15671019c4e2f61b9de2d7d"
+    },
+    {
+      "id": "combat-blocked-by-creature-later-turned-white",
+      "questionSha256": "cc87715cb91d78d68ff5c4bb2711b9ca3dafdd61792540cae5cc57d415c14525",
+      "answerSha256": "01443573bc1d98def79ac6a9dd8c77cc67b60e4cbed3e4a04b183608c5d1e7d9"
+    },
+    {
+      "id": "combat-only-one-creature-can-attack",
+      "questionSha256": "3f7d38f9dc7913638f324b9cb4c5dbf92c3944d8e0c12474cf207812f6dae7de",
+      "answerSha256": "6b36dd7c701cb6cf1872bfb16c5aa879d26966164fbf3f36c91479fc351a1f25"
+    },
+    {
+      "id": "combat-torch-the-witness-deathtouch-excess",
+      "questionSha256": "002ea12a232ee75a2443633bf52892893c251dd44128813fdb218861d547b5d8",
+      "answerSha256": "8c898c3faaf2bb52818590f94687dd8c37e48833459291b118f666feb55ec543"
+    },
+    {
+      "id": "combat-ward-of-piety-redirected-damage",
+      "questionSha256": "69b1f2874f4fd8e4045745ad5ab4cdbaab767bd259fb5c40aab872e2f27d00a9",
+      "answerSha256": "fa83db33f3ea1b63ba2177511511b6dbe0fbfaa138be21c9bea51ced65216971"
+    },
+    {
+      "id": "combat-wicker-warcrawler-counter-after-damage",
+      "questionSha256": "7280fb69e01dafe596b4355470bf83e41f70434b3b5175ad9d4b7ae7d6c1fec9",
+      "answerSha256": "e9324874733669bac9580fb5d4f6e8e6de48dae30a2ab79dc6be664ec6dc8133"
+    },
+    {
+      "id": "commander-civilized-scholar-color-identity",
+      "questionSha256": "5e7ee37c026efe2b10d6b8f7025a30201536d4ff9b07a395fb83e003112f9897",
+      "answerSha256": "8ee5e8975f4c01af88d2eedbe002f210eb4701b787e3254c2a7a10e014c12872"
+    },
+    {
+      "id": "continuous-all-white-creatures-until-end-of-turn",
+      "questionSha256": "064ef46684b747182ad39c0f09048b389c5d3ac603c3e3065c8561bd9aa3d574",
+      "answerSha256": "50865e83ccac58b2d5ba9e9bfbbd3e6990e871fd4ea6c21bda85f2c95789c8f8"
+    },
+    {
+      "id": "copies-clone-copies-enters-tapped-and-fading",
+      "questionSha256": "ccc6d955d13e232517e82298b0426410bb62f4e32f5e41c406063ae61d9aa53f",
+      "answerSha256": "48b6b67d66513fbd44a37c1a3ee803b4b54e0650e0eb248fd6151c90d18b4709"
+    },
+    {
+      "id": "copies-copy-of-card-ceases-to-exist",
+      "questionSha256": "849fd96b271edbf6b0651059b60bacf2588d25f17ba00d02edae2ad4acc7dc85",
+      "answerSha256": "beaa6df71b9897aa56853aedc875ea396a6e1a8503d02a13dd2168f06337b3bf"
+    },
+    {
+      "id": "copies-glasspool-mimic-copying-changeling",
+      "questionSha256": "364d0f68110c3c2db02703c9ce2597ba414253c6279512f0d5f8d04af9a82ab7",
+      "answerSha256": "7fe469e78c21536a88ec80d124e850b642d9c0a4513c87d4f5eabee46dd28bc7"
+    },
+    {
+      "id": "copies-null-profusion-and-isochron-scepter",
+      "questionSha256": "220baf52cde863fcb2c64b31d07a2c13c0bfe8caf28041202d5c20b333937c19",
+      "answerSha256": "3152abf04ea05fad18da2258ef6309b3770cd01284e3abf04f687981f0b41503"
+    },
+    {
+      "id": "copy-effect-modification-becomes-copiable",
+      "questionSha256": "13a008c9c3060e4e1b390bfff94e50b5d392acf998845d127ea24275ce85ce09",
+      "answerSha256": "9ab0789e6b985fb540b0f7a9308613b56430c2b63fd737923c7f82b851e410b0"
+    },
+    {
+      "id": "create-regal-bloodlord",
+      "questionSha256": "7e3ec80678814ab83035a6e257805d96018b4663872227e14f375f564249f8eb",
+      "answerSha256": "1f948e040f0d09842001f45a51f9ec2956d3a4dcf6695d894a81d6212e057395"
+    },
+    {
+      "id": "dash-alesha-s-vanguard",
+      "questionSha256": "fb22cd3452346416b361cbadd8886bf3c61a2daf2df8da6189f015d7ffe441b2",
+      "answerSha256": "11efd012279298caf26683b2fe215e6ab33f7f8cbd989a7867e8f298de2e1f49"
+    },
+    {
+      "id": "daybound-and-nightbound-shady-traveler-stalking-predator",
+      "questionSha256": "530c19d53b4daab403b263edd3d088049f49d2a8b7a4c77852b05291df9bd8b3",
+      "answerSha256": "9e0e52eabe15b18a43444d981b6fd944a83d3b48d8eb841468e61888530a17a6"
+    },
+    {
+      "id": "delve-become-immense",
+      "questionSha256": "949ffba89a991f788167af4b7efc6c2cd1780c7e306a5a7cd554420d6be1deac",
+      "answerSha256": "b7d5be1f1f355a05237458df602ed71d67423f7fc69083461d3d7bfb166e3149"
+    },
+    {
+      "id": "demonstrate-excavation-technique",
+      "questionSha256": "03ae2ba85406b957040bd20b9868482441e8e1bb3165c1d8e9f32f2ec858794b",
+      "answerSha256": "af2375b7018952744696a470d69d8363f66edb635ec69d82043471a4dacfc85e"
+    },
+    {
+      "id": "destroy-knight-of-the-mists",
+      "questionSha256": "1bed4c62a279f67cfda07721ec5274558600ee177ed2807ebb452a33e9bd246c",
+      "answerSha256": "c70127b9d915eca9ce81d1ef12e36ebeb97761809e5118e6f7fbb84b8bab6720"
+    },
+    {
+      "id": "disturb-baithook-angler-hook-haunt-drifter",
+      "questionSha256": "8980f106fda2b452f38ae2dcdfd6489949da65a48078f97c7a626c5cb71c8b5b",
+      "answerSha256": "7f42db55d5c7ef9bfbb44b6046e5765bbcd1d5002127cc52bc951b3970df0663"
+    },
+    {
+      "id": "double-faced-clone-of-back-face-cannot-transform",
+      "questionSha256": "83ad4eb6c2b5c23fdebe4ef7b4bdf544359be9117c7e7fe1a2580e45c5d583c3",
+      "answerSha256": "b392ea3d03f59e87da4f26046125b448aa71f6ad3cb95d7afb28246fbb5f339c"
+    },
+    {
+      "id": "double-faced-village-ironsmith-keeps-bonus",
+      "questionSha256": "31bfe874fb7e284f169159fba1412f657ada0fb7c2bfe67e959f1319d3f345bb",
+      "answerSha256": "429c0e22e833aed11f127f2933a9f0f03ead4e4e56053ae47427a2017273b535"
+    },
+    {
+      "id": "enchant-rancor",
+      "questionSha256": "667098c6fa2c2d581bbfb12e2f185a4ff20e8e8b5c9aca990a96cddaa16e6f4b",
+      "answerSha256": "8790d710285871479c035d65a2ddd25cd24d60ce41fced66cdacfca9c304efb6"
+    },
+    {
+      "id": "escalate-blessed-alliance",
+      "questionSha256": "08e0625711b6315e2feef1de29c354a94343bedf16b137074de89520f16552ad",
+      "answerSha256": "fcd2c21389637d4ab7b89ec9049346dbb77e3badf5a4f8be7b26cf2400aa3461"
+    },
+    {
+      "id": "exchange-arcanum-wings",
+      "questionSha256": "ef8c9e31714c3d2c60a23423e8618e107ccfdf4ec4c5a25ac4587c70c9c0f347",
+      "answerSha256": "21ee09e719a6626abe6c9a752196c767fd1ad085d06a04d0da6f0522076025e9"
+    },
+    {
+      "id": "fight-primal-might",
+      "questionSha256": "b159f7e7b15e517724fe47e3582d1078bd41e29928dd40e19995e1ce1c391658",
+      "answerSha256": "e7464dfb92865e2cd673ceb91f1be16a0bc7549a295e9b186e7680fd80429c58"
+    },
+    {
+      "id": "first-strike-pit-spawn",
+      "questionSha256": "3b5522f96c35c06f48b9ebfb0c3ba16b4cc2d18c494118be7737059d7c75eabb",
+      "answerSha256": "3c58af0c8b1e9aa72cf04000e5ed5d0a96cd20af83009f9df6fa2b20b163257b"
+    },
+    {
+      "id": "flanking-knight-of-valor",
+      "questionSha256": "43e5c5c4049880a9414e84fe6031549b7de686205aa879a53535f6e7cba702aa",
+      "answerSha256": "254e137da54e25e954b3b88d27646286dc155634c6a481482930564ce34cd338"
+    },
+    {
+      "id": "flash-slitherwisp",
+      "questionSha256": "9ba44babc95c7fcf0e556aed96957ac36e42fa982049055fa0bd8e50126eeca8",
+      "answerSha256": "b6118382350957cbb1f446984d59fc71eb0aa0a6ebadc82895e5d1a7572d35da"
+    },
+    {
+      "id": "forage-curious-forager",
+      "questionSha256": "df89bd8f73fe94900626f860840319aacaf9863967f4ffc2ccf2cea1c8b75576",
+      "answerSha256": "4c047f4664822f7be82a53e35cc626825ec86cb2e67547ba3098eada5a2252a9"
+    },
+    {
+      "id": "horsemanship-barbarian-general",
+      "questionSha256": "ac9636c79a235a0527073c34c0bbce29eee33674ce5aeeeb0f185acd3069ded8",
+      "answerSha256": "f25e61f0291177f255c17436217027a0be1469f32480a74eaed106e92d4e24be"
+    },
+    {
+      "id": "illegal-target-partial-resolution",
+      "questionSha256": "797d9dbdb3ad82e534e396c2de361d7fb47521f9555edee95e4caf7eaccb104b",
+      "answerSha256": "25301227d21cb980e9009f9b091346625ef14c58b01a77cae41aadbecba2f1ff"
+    },
+    {
+      "id": "increment-hungry-graffalon",
+      "questionSha256": "e1b3060900f1f83006ff2da3291c8f4896e53af157c275460faaad4d1e857e21",
+      "answerSha256": "f2c8acc67e57d31cc348ab3c53f56e604d1da0ce1080f8ce55c1d680255d7dd7"
+    },
+    {
+      "id": "indestructible-darksteel-axe",
+      "questionSha256": "53a1f714175f702bb9dcf7ca8c83ce652ac356af803cdd84709419bef73a9ef9",
+      "answerSha256": "0ea041933f9f1339320d47728176a924108c5d7a2c7111007ac0c4a66331bf15"
+    },
+    {
+      "id": "intimidate-bladetusk-boar",
+      "questionSha256": "5a3f3bfa4540d1922c298ff30df95e68182665e6e7691154db0beb7a99ae1a48",
+      "answerSha256": "0c7cb47eb925c8005bda18a16665e903594aa1174347d4a2b88f6d2639acec48"
+    },
+    {
+      "id": "jump-start-chemister-s-insight",
+      "questionSha256": "fb1f7f9078f036c9e33efa9f5da9b0cba04745c132297b85ab6d04dfac426740",
+      "answerSha256": "da805c39c0027c1cbdef3ba1323185981f0e5f12d921ffd8e81954349b74be4d"
+    },
+    {
+      "id": "last-known-information-simultaneous-sba",
+      "questionSha256": "943bc46ecdcb8505d541d4cc343691f107eb68bbc903911a345c5bfe94d3d5a5",
+      "answerSha256": "0a08c81d24489e31c5ed6670fbc6b50c6243aaaae1ae469b36ca3d4def5cbe0c"
+    },
+    {
+      "id": "layers-two-switches-cancel",
+      "questionSha256": "4dea02af0c775135e3700a2d622993764693810dbccb4ce67c912bce35f2f28a",
+      "answerSha256": "f96c5d52088082c49453c5666c9e950c28763e7efe8f91e87e8b601c16e18066"
+    },
+    {
+      "id": "level-up-beastbreaker-of-bala-ged",
+      "questionSha256": "94fe52fa3aef3a2a127a18037f8962a336a902624a383a99ae34ee994dea22e0",
+      "answerSha256": "e2fa75244cbae9e73dbbcaf32ce0cd03964aeddc99e8a7eca7d6b982d686eb32"
+    },
+    {
+      "id": "living-metal-arcee-sharpshooter-arcee-acrobatic-coupe",
+      "questionSha256": "da8fd8d8cc46fe7f1dee967df4853c6d271d8aa841af51bce4f7c59da734cb12",
+      "answerSha256": "8dce538ba89732d0a3e62871535bea9b7326ddb4a8d2cc3eb26540e60200e8bd"
+    },
+    {
+      "id": "menace-boggart-brute",
+      "questionSha256": "b8b604966906dcb35e7f1340cf564037461f3775abccb353721276033bb74696",
+      "answerSha256": "cd398a7fdd828332bea5930718cac520d768e74e3d2921f6f807504dde497a4d"
+    },
+    {
+      "id": "modular-zabaz-the-glimmerwasp",
+      "questionSha256": "5b9704d33bab16dc5eb4cb6475e428fe3c2c601372269d7f31cf991f7df3c855",
+      "answerSha256": "feff88b8f5d40b76c3870d9707c097e607898dcaa880122ce742553727fdc7e1"
+    },
+    {
+      "id": "multiplayer-player-leaves-range-expands",
+      "questionSha256": "647d895f071ffdddc5e395145a58a3084d5adb42515983720bb216a4f8c68f35",
+      "answerSha256": "59ae2064faccc2b5d009c474d8085575542e224eadc2855239e6aa12ecdb625e"
+    },
+    {
+      "id": "paradigm-decorum-dissertation",
+      "questionSha256": "15d737233ca3962ced477e25da3991c2473bb1a7ea90263fdaffba551352eddf",
+      "answerSha256": "16fd1d44fe7355b8f517cc25cea6e51052c968d60665934e3a4aba346409ce51"
+    },
+    {
+      "id": "partner-blaring-captain",
+      "questionSha256": "845da63e7ee658634ca9901d49febac55c06845017b35266bfa512ae705d3d15",
+      "answerSha256": "6d32ed8517aad7e33006cf1427b17dc1d3cd560fc0c49e9925898f1badf8e3e2"
+    },
+    {
+      "id": "plot-fblthp-lost-on-the-range",
+      "questionSha256": "a34aa1828c269b07e23180ad9691f87250c9d3d1741f4ae4a190453b4fcb846d",
+      "answerSha256": "59655284459b9ad522eb930f55c22933ddf8b320ba69c898ba7373d26e3362fe"
+    },
+    {
+      "id": "populate-full-flowering",
+      "questionSha256": "0477fbf3d72261fbf9a5b20dd059f7f63034d5dbdc79628936496bca1d04e741",
+      "answerSha256": "b2406b23fc52cd2a38ab82acc83838e5971c984cabb5c08a802bb1ca0a593d43"
+    },
+    {
+      "id": "read-ahead-braids-s-frightful-return",
+      "questionSha256": "565b257f4c8a80703d3f23a9075e6cc907248b4b338126f9a65ab08096dbc9c7",
+      "answerSha256": "9e2b83709f246f0b05047ecd070ad0f1b693ad73a4b649dd5314942d44780554"
+    },
+    {
+      "id": "replacement-effect-single-application",
+      "questionSha256": "c73f6574f0355e266e24e2e2a5b3bccf510bfda00128f182be878906ac98d5d1",
+      "answerSha256": "7e8100378d000b42d6b11c92a16762f802584c024067ccafdc55a25dda56f6fe"
+    },
+    {
+      "id": "replacement-lifegain-and-draw-replacements-combine",
+      "questionSha256": "c43861bd69f7f1e131ccac34e249840fc3fc94ff9376e0e0e7862e9b9b0bcd62",
+      "answerSha256": "6b3ed7579779dbb25550f2c3edd07ea118c40721bee7165c0d2375a2189d3195"
+    },
+    {
+      "id": "replacement-regenerate-planeswalker-loyalty-zero",
+      "questionSha256": "eb23373423b706c52f4fbdecc5e90c2c5f2cbb77f1f9e1720abd451c85b34c29",
+      "answerSha256": "2d3a45e590d6037e169ce3f8941a2503a49c4febd6f94a777bf1f2727813e93c"
+    },
+    {
+      "id": "replacement-sutured-ghoul-cannot-exile-entering-cards",
+      "questionSha256": "79f3194065c3572d00b6246025aeebbdd8e572243c30450666e39f74220a8104",
+      "answerSha256": "e2085f2b8860dd09ad4115d9fb68fcc50faeca319fb67511e656badbcc1d79b0"
+    },
+    {
+      "id": "replicate-stream-of-thought",
+      "questionSha256": "777e619d36cb31124936e4b5e8426fb9b62956d3531992938178b9ebbe3c6145",
+      "answerSha256": "c13498d855c65ab9cc2078bbf86082c19b47680bc5891e02c3d7093393abf287"
+    },
+    {
+      "id": "resolution-scroll-of-isildur-illegal-target",
+      "questionSha256": "905429efd0f42f57c9c502b1be456fc7976f0d22531a7a67a619ac5522dc9b73",
+      "answerSha256": "5ce4713848624b8c45af31f22edc90c67100f2b9fbce8b54b13204b3c915e202"
+    },
+    {
+      "id": "riot-spider-punk",
+      "questionSha256": "ed6c8bbd95f1cbcd59d1e1a4db85922907e49a1e7332fbb4f2a4496885ee6e13",
+      "answerSha256": "d793c7db65cac48e94385c9f6453bd4f48c24b3428decf8382dfaed004e6825d"
+    },
+    {
+      "id": "sacrifice-fallen-angel",
+      "questionSha256": "7f8a8accb242f3223f0e5472136f5217a2777ba4a2dc0fe82d0d7413ceacec65",
+      "answerSha256": "9d8e578d440edb1240e7a37e00d8fe1a1d31838d2ea51e5126839e84a90cb97a"
+    },
+    {
+      "id": "sensei-top-leaves-battlefield-ability-on-stack",
+      "questionSha256": "40a1e20dbb34e3f52383d555820da59b676f8753f1fc2574289a27b3153cdc97",
+      "answerSha256": "799e9c981cb7994b35b8caa1ceef89a8fb9b3a95c546927f90fbebd8d9b7ab82"
+    },
+    {
+      "id": "shroud-autumn-willow",
+      "questionSha256": "f51abf91bc5f9728e4cae72498b983d5d1c190e1428a75469b4724653ed2f2d7",
+      "answerSha256": "bb016745b8776b084f5621b5b4870dae7150a2090d548df4e919aa1bc325a72d"
+    },
+    {
+      "id": "solved-case-of-the-crimson-pulse",
+      "questionSha256": "d98a526a383c0507e33cd358b33948660506a28395e4992d68dce9ece5f60972",
+      "answerSha256": "20f4b4ca00ce22aa6f99a453e1c2d9088ca48954dbdb000fb8e12653a4aa86ad"
+    },
+    {
+      "id": "split-second-inventory-management",
+      "questionSha256": "f06eb6cc5f6638e1f9fdf43bb94dfff1c16b5b34a79620a8a1978e5c3fc8d190",
+      "answerSha256": "eac7b4e466f5399e13dae21c2c7835a391691ed65124909c0d2164753f5f4457"
+    },
+    {
+      "id": "station-adagia-windswept-bastion",
+      "questionSha256": "965e7bd3cdf70abc1d29461c4a3678f8e6cd4d657646eddb4174d68abed234cb",
+      "answerSha256": "8186dbbddea403807cbfc16246f32f35cc829164f347a44da86ace4978e8a320"
+    },
+    {
+      "id": "sunburst-arcbound-wanderer",
+      "questionSha256": "59ebe81b47b7506f8bead963e0ad4f500a10cc1d0a52ad87bd20d1c8b534082b",
+      "answerSha256": "f79d40f34a185db0727df01cbd60e19afd036708257f3a05aad90e071cf0de15"
+    },
+    {
+      "id": "tiered-cloud-s-limit-break",
+      "questionSha256": "79ab4a23da5481fb2bebc34911cc0f3900f929586a44458859553131c82d4f59",
+      "answerSha256": "938ce4400977cffdcea61c1d2062427185b4a17b4f698e366b73570f3185e8ee"
+    },
+    {
+      "id": "trample-over-planeswalkers-assignment",
+      "questionSha256": "0d798f942b8aa99f9ab161543113ed24769d56afac92fa0acba6fb7d919163c4",
+      "answerSha256": "bbb4c59309ef24343262baa91b7edbaa01d4aa2080a926a1597d1270bfe8bff9"
+    },
+    {
+      "id": "triggers-becomes-tapped-not-entering-tapped",
+      "questionSha256": "75e3ada8173cd129925bb8bcec9ea7ff6d4e49a0aeb9a0428c8f016da4e3b465",
+      "answerSha256": "bdfcd6afdf70fbaff9f5a179662b20577182ead1c0022b27aefe7db3b710dea6"
+    },
+    {
+      "id": "triggers-reflexive-trigger-only-for-its-own-sacrifice",
+      "questionSha256": "b86f3c41c2a715eb26437ef7529ff51da95ab505ad1dcb998c63495aea1ab995",
+      "answerSha256": "56adc29ae4f5edca6dda841215c4b5f52de939c2bdcf8bab96ca95cb51d3f5f4"
+    },
+    {
+      "id": "triple-tifa-s-limit-break",
+      "questionSha256": "e32e2b7fe63f693933f6cd32dde339b45cc838367d5c93a638c6ff90f587b782",
+      "answerSha256": "0eedfcb5caa1bb8fab2e859abafc88e68f9697234265edd280032d63d55a1c5d"
+    },
+    {
+      "id": "two-headed-giant-transcendence-two-headed-giant",
+      "questionSha256": "a97123d0f5f56168eb248b5916a127b31679fb6654fe3dfda9afb19ae3042c65",
+      "answerSha256": "68a1d608952f7cb88141b3097638cb4e05d558c21d9baf271e9c983b8c1a9e2a"
+    },
+    {
+      "id": "undying-demonlord-of-ashmouth",
+      "questionSha256": "8f7feaded44fe7863d655d330407b56d225a27543abf7b20bf18c270a89c4a83",
+      "answerSha256": "3fde9f5d3a74021a5fd69232b4e34f0b6c588609527c7310b71f5b9d9a9b1eb3"
+    },
+    {
+      "id": "unearth-dregscape-zombie",
+      "questionSha256": "64a1106607960561f81042a602a8c75332c7d1eb6673d6aa68c5428971fab05b",
+      "answerSha256": "953d6cdd7d8bd1146d0ccc1dbda9c3c538f45fe2907734e081d0dd9209bb0d08"
+    },
+    {
+      "id": "vanishing-tidewalker",
+      "questionSha256": "21b75b7332ad3699114a27b7457a3352f23ceb0ed990c8d60dbcd11b3e801914",
+      "answerSha256": "aeef630e5184b11de3ac0529c2fe2c46727e7d530a42033e74940b9a85f97bde"
+    },
+    {
+      "id": "ward-winter-cursed-rider",
+      "questionSha256": "daab0abf03e272995cc07185d4051846c3cafc17ac20e51bad954e1a50aed945",
+      "answerSha256": "83b6d0db45439d5b24407b5726598fbe836688ef9145dd0f9bf6d9a64e8e7904"
+    },
+    {
+      "id": "waterbend-flexible-waterbender",
+      "questionSha256": "b2fe9cb3883968306ee0ce37e36ed1dbf566cb30bf496d37a85f859a9b39a598",
+      "answerSha256": "bb029ff2f801b4a70dcf4ceb4c0b15058bcddc2db8fc518d64c1721fd4cbcfdd"
+    },
+    {
+      "id": "wither-hateflayer",
+      "questionSha256": "3efb5005fcaddbf90df5b2060fb1078011879a820ba2e63a00bafbbd15ed029f",
+      "answerSha256": "d3ba966a3ff263aa3e148e6d455e82d0249299593ca217f6198a4533ee537595"
+    }
+  ]
+}

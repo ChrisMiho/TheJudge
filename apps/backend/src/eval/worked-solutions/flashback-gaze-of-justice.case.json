@@ -1,0 +1,50 @@
+{
+  "id": "flashback-gaze-of-justice",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "07c7e4d4-6452-437b-9f17-b0ec1fd9f702",
+      "name": "Gaze of Justice"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast Gaze of Justice from my graveyard with flashback, do I still have to pay its additional cost of tapping three untapped white creatures?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the additional cost must be paid when it is cast with flashback.",
+    "answer": "The additional cost must be paid if Gaze of Justice is cast with flashback.",
+    "decidingRuleIds": ["702.34a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Gaze of Justice",
+    "oracleId": "07c7e4d4-6452-437b-9f17-b0ec1fd9f702",
+    "rulingDate": "2006-09-25",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "56e26314a18ede3a4bce853f29d6141ba04b5c7aeb047427c6f564ca47630aab",
+      "oracle": "c7067f6056e38d428c0902ed63cf38038f39661bb16ecb09c50403a4a2ed446f",
+      "rulings": "e4dad3eda7790d9f45b5a1e016c0cfee4da8a93c2a4d3e2442004591bc63bc6e"
+    }
+  },
+  "whyHard": "Players think flashback replaces all of a spell's costs, but it replaces only the mana cost."
+}

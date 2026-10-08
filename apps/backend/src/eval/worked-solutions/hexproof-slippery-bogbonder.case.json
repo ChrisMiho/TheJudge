@@ -1,0 +1,50 @@
+{
+  "id": "hexproof-slippery-bogbonder",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "2f946c13-cfab-415f-9df7-6d621761b2fc",
+      "name": "Slippery Bogbonder"
+    }
+  ],
+  "gameState": null,
+  "question": "If Slippery Bogbonder puts a hexproof counter on an opponent's creature, can I still move counters onto that creature?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you can still move counters onto the creature.",
+    "answer": "If Slippery Bogbonder's triggered ability puts a hexproof counter on a creature an opponent controls, you can still move counters onto that creature.",
+    "decidingRuleIds": ["702.11a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Slippery Bogbonder",
+    "oracleId": "2f946c13-cfab-415f-9df7-6d621761b2fc",
+    "rulingDate": "2020-04-17",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "648701ed9d5103b9cf6aa209e931a606667b6fadc886d2766dd5acd61524e243",
+      "oracle": "f1055311c38ec915ae961e2874030762f02c587e17a6cdff66718975d4a011ed",
+      "rulings": "29e8d0f0c55d845608ea9c3df838513bd0c8f8f110764ef33a94febd5f85e1ea"
+    }
+  },
+  "whyHard": "Players forget that moving counters is part of the same resolving ability and is not targeted again."
+}

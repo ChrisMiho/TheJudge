@@ -1,0 +1,50 @@
+{
+  "id": "devour-voracious-dragon",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "7f39bbae-6c84-4cb3-9a58-d746a723ad35",
+      "name": "Voracious Dragon"
+    }
+  ],
+  "gameState": null,
+  "question": "Can Voracious Dragon devour creatures that are not Goblins?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it can devour any type of creature, not just Goblins.",
+    "answer": "Voracious Dragon can devour any type of creatures, not just Goblins.",
+    "decidingRuleIds": ["702.82a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Voracious Dragon",
+    "oracleId": "7f39bbae-6c84-4cb3-9a58-d746a723ad35",
+    "rulingDate": "2009-02-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "acfa6b4bff3114f22e6bb92e311a7072ae6359f55959c284ce55159408e85ad6",
+      "oracle": "09923e08e9fc768555e98824df5a0e283e7152c6b11419d367d2f2b3eed175db",
+      "rulings": "44522ad3b233f54eb286e3a8b6c20f5269eabec1dd868ddbbce8438da6b075ee"
+    }
+  },
+  "whyHard": "Its damage trigger counts Goblins devoured, so players think only Goblins can be devoured."
+}

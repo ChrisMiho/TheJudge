@@ -1,0 +1,50 @@
+{
+  "id": "face-a-villainous-choice-the-dalek-emperor",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "07799012-7051-400e-adde-b54b41b80c70",
+      "name": "The Dalek Emperor"
+    }
+  ],
+  "gameState": null,
+  "question": "If one of the options of a villainous choice is to sacrifice a creature and I control no creatures, can I still choose that option?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: a player facing a villainous choice can always choose either option, even if an option is impossible.",
+    "answer": "A player facing a villainous choice can always choose either option, even if one or both of the options are impossible. For example, if one of the options is to sacrifice a creature, a player who controls no creatures can still choose that option.",
+    "decidingRuleIds": ["701.55a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "The Dalek Emperor",
+    "oracleId": "07799012-7051-400e-adde-b54b41b80c70",
+    "rulingDate": "2023-10-13",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "1371894356492951aa261529da4c05badb7c56707ade298cef08ab1b1ae23df7",
+      "oracle": "c55d19f558aefe728c47e503a172a5e1b0da674e0784d06be1ec9eebaa676dbb",
+      "rulings": "9f0eb890ec2f9c93fb12c47825f8ee04ecca4ae9bc01b010e81a89a70975bc7e"
+    }
+  },
+  "whyHard": "Players assume an option they cannot perform is not a legal choice."
+}

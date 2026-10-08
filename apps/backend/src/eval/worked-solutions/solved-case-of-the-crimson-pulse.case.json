@@ -1,0 +1,50 @@
+{
+  "id": "solved-case-of-the-crimson-pulse",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "955504bc-050a-42a2-b2e4-ab213183b2be",
+      "name": "Case of the Crimson Pulse"
+    }
+  ],
+  "gameState": null,
+  "question": "When a Case becomes solved, does it lose its other abilities?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Cases do not lose their other abilities when they become solved.",
+    "answer": "Cases don't lose their other abilities when they become solved.",
+    "decidingRuleIds": ["702.169a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Case of the Crimson Pulse",
+    "oracleId": "955504bc-050a-42a2-b2e4-ab213183b2be",
+    "rulingDate": "2024-02-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "728e6ad15b2b6a40c2d03dbf120f037ab9c1a5f2e639b72b66889725c0b62c65",
+      "oracle": "859a0c0a3d9d82fc10f04d366336c193d1fa103c040bbf4fa66c62d0567f2415",
+      "rulings": "6d0ac761b06aee8ce63957578c87e13d51b062d2a2d4c7dfc15e507495b9543e"
+    }
+  },
+  "whyHard": "Solved reads like a new state that replaces the old one."
+}

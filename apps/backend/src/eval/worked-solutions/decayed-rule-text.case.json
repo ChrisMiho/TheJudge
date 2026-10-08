@@ -1,0 +1,45 @@
+{
+  "id": "decayed-rule-text",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [],
+  "gameState": null,
+  "question": "Does decayed mean a creature cannot block and has to be sacrificed at the end of combat when it attacks?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: decayed means the creature can't block and that it is sacrificed at end of combat when it attacks.",
+    "answer": "702.147a Decayed represents a static ability and a triggered ability. “Decayed” means “This creature can’t block” and “When this creature attacks, sacrifice it at end of combat.”",
+    "decidingRuleIds": ["702.147a"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "pool": "mechanic",
+    "type": "Official Magic: The Gathering Comprehensive Rules text",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "702.147a",
+    "sectionTitle": "Keyword Abilities",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of what the cited rule states; the answer is the rule's own text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "7a0abc28699acdff0f86ba164806bedec75634a89fa86f4a52f723841f0c5ea4",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "whyHard": "Decayed is one keyword with a static part and a triggered part, and players remember only one of the two."
+}

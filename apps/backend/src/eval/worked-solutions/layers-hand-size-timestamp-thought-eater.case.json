@@ -1,0 +1,54 @@
+{
+  "id": "layers-hand-size-timestamp-thought-eater",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "88e18dc9-8b11-4369-9860-a687925cdcb4",
+      "name": "Thought Eater"
+    },
+    {
+      "oracleId": "4f04603f-8f91-405b-b6ac-d2b66f05e32f",
+      "name": "Cursed Rack"
+    }
+  ],
+  "gameState": null,
+  "question": "If I am affected by Cursed Rack and then put Thought Eater onto the battlefield, is my maximum hand size one, while the opposite order would make it four?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: effects are applied in timestamp order, so the permanent that entered last sets the maximum.",
+    "answer": "If multiple effects modify your hand size, apply them in timestamp order. For example, if you are affected by Cursed Rack (an artifact that sets a player's maximum hand size to four) and then put Thought Eater onto the battlefield, your maximum hand size would be one. However, if those permanents entered in the opposite order, your maximum hand size would be four.",
+    "decidingRuleIds": ["613.7", "402.2"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Thought Eater",
+    "oracleId": "88e18dc9-8b11-4369-9860-a687925cdcb4",
+    "rulingDate": "2009-10-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8c9b32c5630f63c604b357a169323be8588d199cad88227453bccfbb90d7900e",
+      "oracle": "211a0f5c9b03e8d6437c83e72b9112f7db19c342ed9aca167757f3881c8f5bca",
+      "rulings": "5f4f429e5a5de611cd41ec2c2d8e78de2921636fdac346236d8f3b10c6abaa73"
+    }
+  },
+  "whyHard": "Two effects that set a number look like the smaller one should win."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "commander-wort-commander-basic-land-types",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "d6b67c7e-3b24-4f60-8e3a-c6ca45229d7f",
+      "name": "Wort, the Raidmother"
+    }
+  ],
+  "gameState": null,
+  "question": "Wort, the Raidmother's color identity is red and green. Can a Wort Commander deck include land cards with the basic land type Plains?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it can't include any land cards with the basic land types Plains, Island or Swamp.",
+    "answer": "Wort, the Raidmother’s color identity is red and green. A Wort Commander deck may include land cards with the basic land types Mountain and/or Forest. It can’t include any land cards with the basic land types Plains, Island, or Swamp.",
+    "decidingRuleIds": ["903.5d"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "903.5d",
+    "sectionTitle": "Commander"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c0194501808863281be09757161f35665757fab98ac27e632bfb8986f33fecb5",
+      "oracle": "0ce13607ddde396556caa2e485139cb4a17c4f899bdc20296f3406d0f1ee5123",
+      "rulings": "b4e49f09d8ee287905f64ad054315eb6a8828a19c3226c1939923fe214f288f1"
+    }
+  },
+  "whyHard": "Lands have no color, so players think any land fits any deck."
+}

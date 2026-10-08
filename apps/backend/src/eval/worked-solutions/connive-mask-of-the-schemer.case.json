@@ -1,0 +1,50 @@
+{
+  "id": "connive-mask-of-the-schemer",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "584f9c45-9737-47bb-8ba4-a7cd9b0b2c1f",
+      "name": "Mask of the Schemer"
+    }
+  ],
+  "gameState": null,
+  "question": "Mask of the Schemer makes the equipped creature connive X. Do I put the +1/+1 counters on the creature before I draw and discard?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you draw X cards, discard X cards, and then put counters for the nonland cards discarded.",
+    "answer": "Connive X is a variant of connive. If a creature connives X, its controller will draw X cards, discard X cards, then then put a number of +1/+1 counters on the conniving permanent equal to the number of nonland cards discarded this way.",
+    "decidingRuleIds": ["701.50a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Mask of the Schemer",
+    "oracleId": "584f9c45-9737-47bb-8ba4-a7cd9b0b2c1f",
+    "rulingDate": "2022-04-29",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "266767cdd7eb1547c610fb469e156f0ddeabf30d1adfc6b5c2e4563ae04948e2",
+      "oracle": "c0af49095ee084f1d4d970713348dbe14d8f1c279733c7dcd27da698ce9e4821",
+      "rulings": "ac3a84dc506a1916728d401f32181886e9f80118f91b2a1d59de4d3251111f85"
+    }
+  },
+  "whyHard": "The counters are the visible result, so players expect them first."
+}

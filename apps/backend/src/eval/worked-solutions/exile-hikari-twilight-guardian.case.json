@@ -1,0 +1,50 @@
+{
+  "id": "exile-hikari-twilight-guardian",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "98a89d5c-871c-4da6-a502-9fdb7bdfccff",
+      "name": "Hikari, Twilight Guardian"
+    }
+  ],
+  "gameState": null,
+  "question": "Whenever I cast a Spirit or Arcane spell, Hikari, Twilight Guardian may exile itself. Am I forced to exile Hikari every time?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you may choose not to exile Hikari.",
+    "answer": "You may choose not to exile Hikari.",
+    "decidingRuleIds": ["701.13a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Hikari, Twilight Guardian",
+    "oracleId": "98a89d5c-871c-4da6-a502-9fdb7bdfccff",
+    "rulingDate": "2004-12-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e52e370ebfffd9df827682aedb93301869644a6ee933bd8bfbda84da35027cf9",
+      "oracle": "69ffa601d1e6c7d31c7078df4666379295ab6cd58a7975a51e98c140153538aa",
+      "rulings": "47a81f14c7702508a4dad8799aab94a1c1bd77f1b4922b97da8f6563e35bee0e"
+    }
+  },
+  "whyHard": "A triggered ability that triggers automatically can look mandatory, but the 'may' decides it."
+}

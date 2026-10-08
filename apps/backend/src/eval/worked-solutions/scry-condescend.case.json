@@ -1,0 +1,50 @@
+{
+  "id": "scry-condescend",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "96cf3c10-733d-4110-9dab-43d0cd4e6629",
+      "name": "Condescend"
+    }
+  ],
+  "gameState": null,
+  "question": "I cast Condescend and my opponent pays {X} so the spell is not countered. Do I still scry 2?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you scry 2 even if the spell's controller pays.",
+    "answer": "You scry 2 even if the spell’s controller pays {X}.",
+    "decidingRuleIds": ["701.22a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Condescend",
+    "oracleId": "96cf3c10-733d-4110-9dab-43d0cd4e6629",
+    "rulingDate": "2017-11-17",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "7fa4c64af09ebb6ad834dd45f36848ba72f5ec76a68aeb34dec5e1a4e69d9bc3",
+      "oracle": "06a2e8b50f9de3ba613d9e6ae473069d73bb8b10f6fc49f7007e7f6c0becb9ef",
+      "rulings": "2e515214999ef0b077318b80d6ec6b6efc98f3de647769d6ca18b33ced096f13"
+    }
+  },
+  "whyHard": "Players link the scry to the counter succeeding, but it is a separate instruction."
+}

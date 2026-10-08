@@ -1,0 +1,50 @@
+{
+  "id": "blight-auntie-ool-cursewretch",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e3cd53c1-86bd-4177-adb0-a1fa693b44c6",
+      "name": "Auntie Ool, Cursewretch"
+    }
+  ],
+  "gameState": null,
+  "question": "If I control no creatures, can I still choose to blight to pay Auntie Ool's ward cost?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if you cannot put -1/-1 counters on any creature you control, you cannot choose to blight.",
+    "answer": "If you can't place -1/-1 counters on any creatures you control (probably because you control no creatures), you can't choose to blight.",
+    "decidingRuleIds": ["701.68a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Auntie Ool, Cursewretch",
+    "oracleId": "e3cd53c1-86bd-4177-adb0-a1fa693b44c6",
+    "rulingDate": "2025-11-17",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b66324151a8292d9b0119fa4f6759d04970bd8c557e4173c14e325230d91efe7",
+      "oracle": "6a2f1319ec3642d8bcf2bd7779a82c719c9da9bc114110192f1e7ef3296bcc59",
+      "rulings": "05aac5e6bae304a301a3040c0cc477e0ef13bca9bca1a8b25722acdff8bf5c73"
+    }
+  },
+  "whyHard": "Blight can be named as a cost, so players think it can be paid with nothing to put counters on."
+}

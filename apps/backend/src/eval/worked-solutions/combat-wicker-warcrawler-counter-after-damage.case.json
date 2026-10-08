@@ -1,0 +1,54 @@
+{
+  "id": "combat-wicker-warcrawler-counter-after-damage",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "0acadb47-17b2-47d8-9aad-5436931bc38c",
+      "name": "Wicker Warcrawler"
+    },
+    {
+      "oracleId": "1c2cc166-dc59-44ce-86d5-ed6013b0bf67",
+      "name": "Dusk Urchins"
+    }
+  ],
+  "gameState": null,
+  "question": "Wicker Warcrawler puts its -1/-1 counter on itself at end of combat. Does it shrink before combat damage is dealt, as Dusk Urchins does?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the -1/-1 counter is put on at end of combat, after combat damage has already been dealt.",
+    "answer": "The -1/-1 counter is put on Wicker Warcrawler at end of combat, after combat damage has already been dealt. (Note that this is different from how Dusk Urchins works.)",
+    "decidingRuleIds": ["510.2", "603.2"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Wicker Warcrawler",
+    "oracleId": "0acadb47-17b2-47d8-9aad-5436931bc38c",
+    "rulingDate": "2008-05-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "38a9abbac25d4c46fa12f1d65272c607979f2c54c00717cf11ec07471d044a42",
+      "oracle": "5d89fcb7ea60ff46e799a8472e8ceb55d6c615f167881b07082ba2d3a8b91730",
+      "rulings": "1b3510de45d8d7394874324328e954abf65d4710ca11fb4e7aeb15af33e098d4"
+    }
+  },
+  "whyHard": "Two similar cards put counters at different moments, and players mix them up."
+}

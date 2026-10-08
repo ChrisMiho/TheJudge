@@ -1,0 +1,54 @@
+{
+  "id": "triggers-devouring-hellion-and-kronch-wrangler",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "8f6620c3-2c15-467c-92ca-fdf9042a63f7",
+      "name": "Devouring Hellion"
+    },
+    {
+      "oracleId": "635dda8c-3761-4c87-8723-8cd09878516b",
+      "name": "Kronch Wrangler"
+    }
+  ],
+  "gameState": null,
+  "question": "Devouring Hellion makes me sacrifice permanents as it enters. If a sacrificed permanent, like Kronch Wrangler, has an ability that triggers when Devouring Hellion enters, does it trigger?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: those abilities won't trigger, because the permanents are sacrificed before Devouring Hellion has entered.",
+    "answer": "If any of the sacrificed permanents have abilities that trigger when Devouring Hellion enters the battlefield (such as that of Kronch Wrangler), those abilities won’t trigger.",
+    "decidingRuleIds": ["603.6a", "614.12"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Devouring Hellion",
+    "oracleId": "8f6620c3-2c15-467c-92ca-fdf9042a63f7",
+    "rulingDate": "2019-05-03"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "46e2ad6a5e8cb3fba0ddcedc59b30b43e329d00198b7c6478edc6a46b891087b",
+      "oracle": "2efc00196d5a6109b2572a26243ad24be69bddb1b7dfcb4cfbee399217f8eee9",
+      "rulings": "e445027d97ffd1182b276bd4bcb7028fd770999626aab55a5acdf1b5ad732fbf"
+    }
+  },
+  "whyHard": "Players think the Hellion is on the battlefield as the sacrifice happens."
+}

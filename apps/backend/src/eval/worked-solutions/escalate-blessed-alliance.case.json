@@ -1,0 +1,50 @@
+{
+  "id": "escalate-blessed-alliance",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "48b67778-6616-4563-8456-62f302649768",
+      "name": "Blessed Alliance"
+    }
+  ],
+  "gameState": null,
+  "question": "If an effect reduces the cost of my spell, does the reduction apply to the total cost, including escalate costs I added?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: cost reduction applies to the total cost, including any escalate costs added.",
+    "answer": "Effects that reduce the cost of spells reduce the total cost, including any escalate costs added.",
+    "decidingRuleIds": ["702.120a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Blessed Alliance",
+    "oracleId": "48b67778-6616-4563-8456-62f302649768",
+    "rulingDate": "2016-07-13",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "61ad4897aef616d67d9db64e0a63862f04ffa72d97c265992e25499ccc0b8eef",
+      "oracle": "bdf65d1078ad2c44f7a7157147a82598820b17f35182416f92cfb0e82f4a6a7e",
+      "rulings": "bee07f3b231dedf2aeab04ffaf8759fcedb25f948b40bc8f295c6aefb2e9eb64"
+    }
+  },
+  "whyHard": "Escalate costs are added per extra mode, and players think they are separate from the spell's own cost."
+}

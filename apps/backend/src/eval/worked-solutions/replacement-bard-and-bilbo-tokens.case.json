@@ -1,0 +1,54 @@
+{
+  "id": "replacement-bard-and-bilbo-tokens",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "d05db2c1-a19a-4803-8e8a-fa2f9b798181",
+      "name": "Bard, King of Dale"
+    },
+    {
+      "oracleId": "d273f87d-1271-49d2-a628-2d1bd888f56c",
+      "name": "Bilbo, Fellow Conspirator"
+    }
+  ],
+  "gameState": null,
+  "question": "If I control Bilbo, Fellow Conspirator and Bard, King of Dale and I create a Food token, do I get two Food tokens and two Treasure tokens no matter which replacement effect I apply first?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you create twice as many of each kind of token, whichever order you apply the replacement effects.",
+    "answer": "If an effect creates more than one kind of token, it'll create twice as many of each kind. For example, if you control Bilbo, Fellow Conspirator and Bard, King of Dale and you create a Food token, you'll create two Food tokens and two Treasure tokens (regardless of the order you chose to apply the replacement effects).",
+    "decidingRuleIds": ["616.1", "616.1f"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Bard, King of Dale",
+    "oracleId": "d05db2c1-a19a-4803-8e8a-fa2f9b798181",
+    "rulingDate": "2026-06-29"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a4126cd3659f04ebbf4b8e8c65643c423f86d9e774d1207e0ae5581561de077c",
+      "oracle": "86f6769e6965edd86f073f1f4003ef6c74cf50d290b400ca3df7c34df9d9aa67",
+      "rulings": "846a182a24b2776f75af7a70843cbed3efc030f8762de624cc764465d1e37c05"
+    }
+  },
+  "whyHard": "Two effects that each add tokens look like their order should change the result."
+}

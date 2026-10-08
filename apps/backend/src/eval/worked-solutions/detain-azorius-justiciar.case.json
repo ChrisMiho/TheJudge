@@ -1,0 +1,50 @@
+{
+  "id": "detain-azorius-justiciar",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "cba0eae3-73ea-4ea9-87bf-1015e490da90",
+      "name": "Azorius Justiciar"
+    }
+  ],
+  "gameState": null,
+  "question": "Azorius Justiciar lets me detain up to two target creatures my opponents control. Do both creatures have to be controlled by the same opponent?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the two creatures can be controlled by the same opponent or by different opponents.",
+    "answer": "The two creatures can be controlled by the same opponent or by different opponents.",
+    "decidingRuleIds": ["701.35a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Azorius Justiciar",
+    "oracleId": "cba0eae3-73ea-4ea9-87bf-1015e490da90",
+    "rulingDate": "2012-10-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4550d684b34ac905bf5b6556ed4b283802668d5a766e259f4f211ea547c28937",
+      "oracle": "41c1b297e3db20ff500266dd9031e372c67e456c5fbf87db413fe2f181b301d7",
+      "rulings": "97f204b27dc51e02b9e90e43f507c284c54d2129e439f1ed6c4be600f0dd42db"
+    }
+  },
+  "whyHard": "Players assume 'up to two target creatures your opponents control' has to mean one opponent at a time in a multiplayer game."
+}

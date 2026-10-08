@@ -1,0 +1,50 @@
+{
+  "id": "hidden-agenda-double-stroke",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e25ab152-e166-44df-8f92-668bab0e9619",
+      "name": "Double Stroke"
+    }
+  ],
+  "gameState": null,
+  "question": "I cast the instant I secretly named for my face-down Double Stroke, then turn Double Stroke face up while that spell is still on the stack. Does Double Stroke's ability trigger and copy the spell?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Double Stroke must be face up before you cast the named spell, and turning it face up afterward has no effect on that spell.",
+    "answer": "A conspiracy with hidden agenda that has a triggered ability must be face up before that ability's trigger condition is met in order for it to trigger. Turning it face up afterward won't have any effect.",
+    "decidingRuleIds": ["702.106a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Double Stroke",
+    "oracleId": "e25ab152-e166-44df-8f92-668bab0e9619",
+    "rulingDate": "2016-08-23",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5645b95ca65ba07302db39bed7e77572e2d9b511009e78f1d68307832b4158ec",
+      "oracle": "42697f2772d753877bb228f33b0beab974b0f7217e58a1c60ef10eead9dcc9d3",
+      "rulings": "0ea74283110d5135558b318550a304be19c22019a7f35b2cea3b7634c274a7f6"
+    }
+  },
+  "whyHard": "Hidden agenda lets you flip the conspiracy at any time, so players think it can catch up on triggers it missed."
+}

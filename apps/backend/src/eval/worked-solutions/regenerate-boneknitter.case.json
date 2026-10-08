@@ -1,0 +1,50 @@
+{
+  "id": "regenerate-boneknitter",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "34b2f465-0b15-428a-a1c2-bcd41af07d01",
+      "name": "Boneknitter"
+    }
+  ],
+  "gameState": null,
+  "question": "Boneknitter can regenerate target Zombie. Can Boneknitter target itself with that ability?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: Boneknitter can regenerate itself.",
+    "answer": "It can regenerate itself.",
+    "decidingRuleIds": ["701.19a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Boneknitter",
+    "oracleId": "34b2f465-0b15-428a-a1c2-bcd41af07d01",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3fea09bc72758fb95d80869976a5ef9470ffc9926438e9f1261b3532a58417f5",
+      "oracle": "4fa02d7f52861419e1a04ca707cf6b2bf9bc3a58078af34a50e12e211ee4190a",
+      "rulings": "6a9d6e23fd2f93ee2a472cee0150266fbbb8d28cbec222557be6c6d0e066b95e"
+    }
+  },
+  "whyHard": "Players wonder whether a card that regenerates 'target Zombie' counts itself as one."
+}

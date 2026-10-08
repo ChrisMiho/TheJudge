@@ -1,0 +1,50 @@
+{
+  "id": "demonstrate-excavation-technique",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "bcd3e6a1-7b76-408d-9236-3791c3e1064a",
+      "name": "Excavation Technique"
+    }
+  ],
+  "gameState": null,
+  "question": "If an opponent copies a spell with demonstrate, does their copy go on top of the stack?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you choose an opponent immediately, and if they copy it, their copy goes on top of the stack.",
+    "answer": "If you copy a spell with demonstrate, you then immediately choose an opponent. If they copy the spell, it goes on top of the stack.",
+    "decidingRuleIds": ["702.144a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Excavation Technique",
+    "oracleId": "bcd3e6a1-7b76-408d-9236-3791c3e1064a",
+    "rulingDate": "2021-04-16",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "bff8923950b074cd43f3ebd26de4201060a409676c0fc1b3121fd1cfb47e5252",
+      "oracle": "1048f3ec64ebd3fc4557610ee57de4f428c517c1b38cdd15854931068bc9062b",
+      "rulings": "0994884c6fa48301bcc9bcd517e18d6839141a38853141a00ade2f87a33644fc"
+    }
+  },
+  "whyHard": "Copies are made as the spell is cast, so players expect them to go below it."
+}

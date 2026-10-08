@@ -1,0 +1,50 @@
+{
+  "id": "resolution-intellect-devourer-leaves-before-resolving",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "a06fa827-900b-46d4-8f48-b4e15964951a",
+      "name": "Intellect Devourer"
+    }
+  ],
+  "gameState": null,
+  "question": "If Intellect Devourer leaves the battlefield before its Devour Intellect ability resolves, do opponents exile any cards from their hands?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: opponents won't exile any cards from their hands.",
+    "answer": "If Intellect Devourer leaves the battlefield before the Devour Intellect ability resolves, opponents won't exile any cards from their hands.",
+    "decidingRuleIds": ["610.3b"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Intellect Devourer",
+    "oracleId": "a06fa827-900b-46d4-8f48-b4e15964951a",
+    "rulingDate": "2022-06-10"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "035d4ec2475c10970c0af132906b142eceafa27d56c3b2b8e796735fd3889585",
+      "oracle": "c78ec75b2f157e991dc6e8a4393db5dbe315d86e7840943382d0880532dac1d6",
+      "rulings": "6a6faf54e26346f3244b186ab0d55392983b5b3085c061ba7862b72ea800c229"
+    }
+  },
+  "whyHard": "The ability is on the stack and independent of its source, so players think it still gets its full effect."
+}

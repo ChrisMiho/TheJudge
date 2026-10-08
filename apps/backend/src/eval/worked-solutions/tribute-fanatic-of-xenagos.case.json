@@ -1,0 +1,50 @@
+{
+  "id": "tribute-fanatic-of-xenagos",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "f1072af9-9e6f-45ce-8c4b-8e678e7da8ce",
+      "name": "Fanatic of Xenagos"
+    }
+  ],
+  "gameState": null,
+  "question": "If the creature with tribute is no longer on the battlefield when its 'tribute wasn't paid' ability resolves, does the ability still resolve?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the triggered ability resolves even if the creature is no longer on the battlefield.",
+    "answer": "The triggered ability will resolve even if the creature with tribute isn’t on the battlefield at that time.",
+    "decidingRuleIds": ["702.104a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Fanatic of Xenagos",
+    "oracleId": "f1072af9-9e6f-45ce-8c4b-8e678e7da8ce",
+    "rulingDate": "2014-02-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "1fcb159ef3fc1ac3fdaeb3aa8c5b67eb82049e090823918f4d4a794d7bcd3937",
+      "oracle": "b001d1072eda841d51107e0abde22b68cfc86b7e0764a3fe594446e659388227",
+      "rulings": "d2402d8b50fb312e9808fe747d21548cb2d208c48fb3db726300e40e47a252e7"
+    }
+  },
+  "whyHard": "The ability gives the creature a bonus, so players think there is nothing for it to do once the creature is gone."
+}

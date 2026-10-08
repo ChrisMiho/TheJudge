@@ -1,0 +1,54 @@
+{
+  "id": "combat-quest-for-pure-flame-divided-damage",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "71220cc2-5f3d-4c97-ae66-05b1b79adef1",
+      "name": "Quest for Pure Flame"
+    },
+    {
+      "oracleId": "131dc114-cd48-43d9-93b3-88df85640e09",
+      "name": "Arrow Volley Trap"
+    }
+  ],
+  "gameState": null,
+  "question": "If a spell divides damage among several recipients, as Arrow Volley Trap does, is the damage divided before Quest for Pure Flame's effect doubles it?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the damage is divided first, and the doubling applies afterward, which is also true for combat damage.",
+    "answer": "If a spell or ability divides damage among multiple recipients (such as Arrow Volley Trap does), the damage is divided before Quest for Pure Fire’s effect doubles it. The same is true for combat damage.",
+    "decidingRuleIds": ["601.2d", "614.1a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Quest for Pure Flame",
+    "oracleId": "71220cc2-5f3d-4c97-ae66-05b1b79adef1",
+    "rulingDate": "2009-10-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "879fdaf59b2b432329a66380f1517ad4f1e36ba33bf104f520baf2c8884d62d4",
+      "oracle": "e726e833900efaba1daa30bc1cb084a8b5072e881f2708c33dfa521138d06fce",
+      "rulings": "d8a453dc91720390a89b9d32495bce2e9e490d9bdae8d620794026e4cc26614a"
+    }
+  },
+  "whyHard": "Doubling looks like it should apply to the total before it is divided."
+}

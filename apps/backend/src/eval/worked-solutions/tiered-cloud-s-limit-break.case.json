@@ -1,0 +1,50 @@
+{
+  "id": "tiered-cloud-s-limit-break",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "93df61b5-6abe-4603-9a6e-cba90a834173",
+      "name": "Cloud's Limit Break"
+    }
+  ],
+  "gameState": null,
+  "question": "After I choose the mode for a tiered spell as I cast it, can I change it?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you choose the mode as you cast the spell and cannot change it afterward.",
+    "answer": "You choose the mode as you cast the spell with tiered. Once the mode is chosen, it can't be changed.",
+    "decidingRuleIds": ["702.183a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Cloud's Limit Break",
+    "oracleId": "93df61b5-6abe-4603-9a6e-cba90a834173",
+    "rulingDate": "2025-06-06",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "cbb3e246961d28c340926bbef9ab5be19594f66b1e0ebf0e37335d57bf588edf",
+      "oracle": "2dfeb813710df2bdb9f69a3789b85014042ee1f6c5d01f8b07cf0c2885f0e671",
+      "rulings": "8b950969b61bf4baf31dd0fb717b66299334f28a9245a05df195ac1431f33087"
+    }
+  },
+  "whyHard": "The tier is an additional cost, and players think they can still back out while paying."
+}

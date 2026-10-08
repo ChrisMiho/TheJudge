@@ -1,0 +1,50 @@
+{
+  "id": "saddle-alacrian-jaguar",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "caeb4ec1-a8ba-4ac4-ad32-edbc671e5a39",
+      "name": "Alacrian Jaguar"
+    }
+  ],
+  "gameState": null,
+  "question": "Can a creature with saddle attack or block as normal even if it has not been saddled?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: creatures with saddle can attack or block as normal even if they are not saddled.",
+    "answer": "Creatures with saddle can attack or block as normal even if they aren’t saddled.",
+    "decidingRuleIds": ["702.171a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Alacrian Jaguar",
+    "oracleId": "caeb4ec1-a8ba-4ac4-ad32-edbc671e5a39",
+    "rulingDate": "2025-02-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a4483135b4c257cbda4f01d703a76a01cf7afd10ef27c9ed41bb59f87df730af",
+      "oracle": "cc8b4ac32724ab36a857f1f56ac1ae8e9ab6e65615dff77b2146564114562369",
+      "rulings": "08e86a246fe974855cdd4490ccc01011058709ff12cadc61512e658da29c725a"
+    }
+  },
+  "whyHard": "Mounts feel like they need riders, but saddle only grants an extra bonus when saddled."
+}

@@ -1,0 +1,54 @@
+{
+  "id": "copies-bloodlord-and-phantasmal-image",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "d8560ee9-8cbb-440b-a132-e102a1eb3e89",
+      "name": "Bloodlord of Vaasgoth"
+    },
+    {
+      "oracleId": "bde94af8-faea-41ff-8eed-ba642eac9968",
+      "name": "Phantasmal Image"
+    }
+  ],
+  "gameState": null,
+  "question": "Bloodlord of Vaasgoth gives bloodthirst to Vampire creature spells. If I cast Phantasmal Image, which enters as a copy of a Vampire creature, is it a Vampire creature spell?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: a creature spell that may enter as a copy of a creature isn't a Vampire creature spell, even if you copy a Vampire.",
+    "answer": "A creature spell like Phantasmal Image that may enter as a copy of a creature is not a Vampire creature spell, even if you intend on copying a Vampire creature when that creature enters.",
+    "decidingRuleIds": ["707.2"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Bloodlord of Vaasgoth",
+    "oracleId": "d8560ee9-8cbb-440b-a132-e102a1eb3e89",
+    "rulingDate": "2011-09-22"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4642e1bae16502c7bb21c1b60587d437764ef7c172a89917c07d966dd5370572",
+      "oracle": "92a2d476a77ccb64cf9b007aa8137a71cc6bbc9759eab20717212dc6e13db4d0",
+      "rulings": "922027c250442e50f88b1b9ca313692da0194b79d66945543cbb276ef7168e7e"
+    }
+  },
+  "whyHard": "The spell becomes a Vampire on the battlefield, but as a spell it is not one."
+}

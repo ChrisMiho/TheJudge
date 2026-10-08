@@ -1,0 +1,50 @@
+{
+  "id": "epic-undying-flames",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "5db128ed-69c0-41f3-b8b4-fb7cefdb236c",
+      "name": "Undying Flames"
+    }
+  ],
+  "gameState": null,
+  "question": "If I have no cards in my library when I cast Undying Flames, does it deal any damage?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No damage is dealt: there is no card to exile, so there is no mana value to deal. The spell still resolves, though, so the epic lock and the upkeep copies still apply.",
+    "answer": "If you have no cards in your library, Undying Flames does nothing.",
+    "decidingRuleIds": ["702.50a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Undying Flames",
+    "oracleId": "5db128ed-69c0-41f3-b8b4-fb7cefdb236c",
+    "rulingDate": "2005-06-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "50704c982ed1db4eb1c4420522046959e04afaa860836ea50ca5c556a651f177",
+      "oracle": "4d187bf14f320889ac9047600194d7a8dd338121a827511a900192202e20c78c",
+      "rulings": "ac9a53db6be638783821f49b73f0090f8106c763295ad26268b405b7783f0c24"
+    }
+  },
+  "whyHard": "Players expect a minimum effect from a spell with epic instead of a spell that needs a card to exile, and the ruling's \"does nothing\" tempts them to treat the spell as if it never resolved, which would wrongly lift the epic lock."
+}

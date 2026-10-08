@@ -1,0 +1,55 @@
+{
+  "id": "copies-conjurers-ban-and-card-copies",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "rejected",
+    "reviewedOn": "2026-10-07",
+    "note": "The 2006 ruling says Conjurer's Ban only affects cards, but the current Oracle text reads 'spells with the chosen name can't be cast'; a copy cast with Eye of the Storm is a spell with that name (707.10, 707.12), so under current wording it is stopped. Stale ruling that contradicts the shown Oracle text."
+  },
+  "cards": [
+    {
+      "oracleId": "5e6cbe03-6d6a-413e-9f3c-2770d408cc79",
+      "name": "Conjurer's Ban"
+    },
+    {
+      "oracleId": "01f8db27-1191-488e-b0d5-172821613c15",
+      "name": "Eye of the Storm"
+    }
+  ],
+  "gameState": null,
+  "question": "Conjurer's Ban only affects cards. Does it stop a copy of a card, such as one created by Eye of the Storm, from being played?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: a copy of a card isn't a card, so it can be played.",
+    "answer": "Conjurer's Ban only affects cards. A copy of a card (for example, one created by Eye of the Storm isn't a card, so it can be played.",
+    "decidingRuleIds": ["707.10"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Conjurer's Ban",
+    "oracleId": "5e6cbe03-6d6a-413e-9f3c-2770d408cc79",
+    "rulingDate": "2006-02-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5d195126665f2f15cae2fb0be6cc1fb4da9713309b788bed48e92739cc382efd",
+      "oracle": "a5b8384c632a8f53fb7544f72382f8e3f25e1ccfaad0682183fadd5e048b7858",
+      "rulings": "76c8c83bf46069979566e9bacb0c76a243f128e33b04705b96bcbbefc7be5431"
+    }
+  },
+  "whyHard": "A copy of a card looks like the card itself when it is cast."
+}

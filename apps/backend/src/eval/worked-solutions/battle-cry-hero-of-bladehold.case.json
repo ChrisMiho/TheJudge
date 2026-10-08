@@ -1,0 +1,50 @@
+{
+  "id": "battle-cry-hero-of-bladehold",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "454a8902-8120-4373-96ee-bbf352b04e8d",
+      "name": "Hero of Bladehold"
+    }
+  ],
+  "gameState": null,
+  "question": "If Hero of Bladehold's token-creating ability resolves before its battle cry ability, do the new Soldier tokens get +1/+0?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: if the token-creating ability resolves first, the tokens get +1/+0 from battle cry.",
+    "answer": "Whenever Hero of Bladehold attacks, both abilities will trigger. You can put them onto the stack in any order. If the token-creating ability resolves first, the tokens each get +1/+0 until end of turn from the battle cry ability.",
+    "decidingRuleIds": ["702.91a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Hero of Bladehold",
+    "oracleId": "454a8902-8120-4373-96ee-bbf352b04e8d",
+    "rulingDate": "2011-06-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a5c8e22cb80517c9b52a355f9a55d7a3fa6a4a516e57bc1ec1f79b1f215ce5b4",
+      "oracle": "a5535fb406b829b3a06ef114d7301b7082b0726cdbcc1e693cd5734cf53015c2",
+      "rulings": "afa4cdde93160b16f40c2700c12b6882394950872b2b7ef496187dec0e2d94ec"
+    }
+  },
+  "whyHard": "Both triggers happen together, so the order they are put on the stack matters, and players think it does not."
+}

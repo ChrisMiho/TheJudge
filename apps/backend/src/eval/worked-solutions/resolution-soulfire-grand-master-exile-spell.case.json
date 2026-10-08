@@ -1,0 +1,54 @@
+{
+  "id": "resolution-soulfire-grand-master-exile-spell",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e65769f4-50ae-482b-933b-ac5cf3843f2a",
+      "name": "Soulfire Grand Master"
+    },
+    {
+      "oracleId": "c216b924-88ac-4853-9e95-0c345c09eeb6",
+      "name": "Temporal Trespass"
+    }
+  ],
+  "gameState": null,
+  "question": "If a spell tells me to exile it as it resolves, like Temporal Trespass, does Soulfire Grand Master put it into my hand?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the spell isn't put into your graveyard as it resolves, so it won't be put into your hand.",
+    "answer": "A spell that instructs you to exile it (for example, Temporal Trespass) won’t be put into your hand because it’s not put into your graveyard as it resolves.",
+    "decidingRuleIds": ["608.2n"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Soulfire Grand Master",
+    "oracleId": "e65769f4-50ae-482b-933b-ac5cf3843f2a",
+    "rulingDate": "2014-11-24"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b5b0f3bb312b9fb00c9b7697cfa4903c01a44049b2c322472c0e46b5c62ea454",
+      "oracle": "fbbc95f93111b2c7232a61d3b2b68011a3e71958c9f4fa96d3d721c9129c982f",
+      "rulings": "0c1f680753468050607c4f369c161d1723c0a4ad5953b9bc96d3f34bcd842cf6"
+    }
+  },
+  "whyHard": "The Grand Master cares about the graveyard, and players forget a spell that exiles itself never goes there."
+}

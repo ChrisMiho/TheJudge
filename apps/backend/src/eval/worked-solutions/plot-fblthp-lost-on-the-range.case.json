@@ -1,0 +1,50 @@
+{
+  "id": "plot-fblthp-lost-on-the-range",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "764f6412-c4ff-4eec-9a9d-870661f97f8b",
+      "name": "Fblthp, Lost on the Range"
+    }
+  ],
+  "gameState": null,
+  "question": "If the top card of my library normally has plot, may I plot it using its own plot cost or the plot cost Fblthp gives it?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may use its own plot cost or the plot cost given to it by Fblthp.",
+    "answer": "If the top card of your library normally has plot, you may plot that card using its own plot cost or the plot cost given to it by Fblthp.",
+    "decidingRuleIds": ["702.170a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Fblthp, Lost on the Range",
+    "oracleId": "764f6412-c4ff-4eec-9a9d-870661f97f8b",
+    "rulingDate": "2024-04-12",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a96f596d386ec4b68131900c89f92099b376f3ca6a815e3ff51be0f1ccafb736",
+      "oracle": "4a9fa1918010ea2eb12f0046adbdcd75dc0086c7dc30f3f20f312c75e2309a08",
+      "rulings": "dd81c0ed52a2c78a2b253cb9b1a61e692c8438182bb4781c31a62bedbf0f244c"
+    }
+  },
+  "whyHard": "Two sources of a plot cost for the same card make players think only one applies."
+}

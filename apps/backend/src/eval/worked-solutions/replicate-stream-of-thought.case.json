@@ -1,0 +1,50 @@
+{
+  "id": "replicate-stream-of-thought",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e5b29094-0bb4-4c18-ad47-dce4d4379a4f",
+      "name": "Stream of Thought"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast Stream of Thought with replicate and it is countered, do I still get the copies for each time I paid the replicate cost?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you copy the spell for each time you paid the replicate cost, even if it is countered.",
+    "answer": "You’ll copy Stream of Thought for each time you paid its replicate cost, even if it’s countered.",
+    "decidingRuleIds": ["702.56a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Stream of Thought",
+    "oracleId": "e5b29094-0bb4-4c18-ad47-dce4d4379a4f",
+    "rulingDate": "2019-06-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "77d5c41777be1d01f9cc46243db960ec2f35dee5220b61d4d376471d5bab3e15",
+      "oracle": "97f01923f38851870776ac21d93ae079abc3f846b2fd7d4f256044dbc2683e4a",
+      "rulings": "fb253a91529105545e0a7f5fd0d525e05c87ddaff2ad6f30086ab8f5610eac34"
+    }
+  },
+  "whyHard": "The copies are made when the replicate trigger resolves, which can be after the original was countered in response to that trigger, so players expect the counter to take the copies with it."
+}

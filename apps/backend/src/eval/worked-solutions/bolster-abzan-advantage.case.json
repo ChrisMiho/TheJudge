@@ -1,0 +1,50 @@
+{
+  "id": "bolster-abzan-advantage",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e7b2f844-2ba2-4465-bb80-358a4d915f36",
+      "name": "Abzan Advantage"
+    }
+  ],
+  "gameState": null,
+  "question": "Abzan Advantage makes a player sacrifice an enchantment, and then I bolster 1. Is that enchantment already off the battlefield by the time I bolster?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the enchantment has already left the battlefield when you bolster 1.",
+    "answer": "The enchantment will have already left the battlefield when you bolster 1.",
+    "decidingRuleIds": ["701.39a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Abzan Advantage",
+    "oracleId": "e7b2f844-2ba2-4465-bb80-358a4d915f36",
+    "rulingDate": "2014-11-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e55b1389ee91dda1d2d4992e8efc855a71cc93dec208324eb1084cf77a2d9433",
+      "oracle": "5609c30bd50b4dc0954caae78ff6c1fabd992363bbacef5e3cac6d1ab96e337b",
+      "rulings": "c87923276d9e57f64a953148d85321b5174d374fa2313700d0227d7cc6fc6e90"
+    }
+  },
+  "whyHard": "Players wonder whether the order of the two effects changes which creature has the least toughness."
+}

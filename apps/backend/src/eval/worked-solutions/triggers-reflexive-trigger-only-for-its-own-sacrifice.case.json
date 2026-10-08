@@ -1,0 +1,50 @@
+{
+  "id": "triggers-reflexive-trigger-only-for-its-own-sacrifice",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "253bec96-108c-4880-9c04-8bc99ceafa64",
+      "name": "Heart-Piercer Manticore"
+    }
+  ],
+  "gameState": null,
+  "question": "Heart-Piercer Manticore lets me sacrifice another creature when it enters, and when I do it deals damage equal to that creature's power. Does the damage trigger also happen if I sacrifice a creature for some other reason?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the reflexive trigger works only when you sacrifice a creature because of the original triggered ability.",
+    "answer": "Heart-Piercer Manticore has an ability that reads “When this creature enters, you may sacrifice another creature. When you do, this creature deals damage equal to that creature’s power to any target.” The reflexive triggered ability triggers only when you sacrifice another creature due to the original triggered ability, and not if you sacrifice a creature for any other reason.",
+    "decidingRuleIds": ["603.12"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "603.12",
+    "sectionTitle": "Handling Triggered Abilities"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e9c8e315a90babbb6ce53da3381f5d3ef640a61aa592d8f92c25c4f8f60d1a89",
+      "oracle": "8dd30fe788c6ede2d2f90dca0ea65d07d593c5ea35a2ddba443079cb4608a903",
+      "rulings": "4d38f57bddd09b7631773162cb2ccdfc8ebddc42ba3ad3737f0eae97a16a7fb3"
+    }
+  },
+  "whyHard": "'When you do' sounds like it covers any sacrifice, but it is tied to the first ability."
+}

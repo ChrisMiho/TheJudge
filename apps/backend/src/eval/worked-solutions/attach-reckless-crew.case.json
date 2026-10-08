@@ -1,0 +1,50 @@
+{
+  "id": "attach-reckless-crew",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "ced584a8-7548-4b4e-8ccf-04b66d255539",
+      "name": "Reckless Crew"
+    }
+  ],
+  "gameState": null,
+  "question": "Reckless Crew creates tokens and lets me attach an Equipment I control to each of them. If I attach several Equipment to the tokens, do they all become attached at the same moment?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: every Equipment you choose becomes attached at the same time.",
+    "answer": "All Equipment you decide to attach to tokens become attached at the same time.",
+    "decidingRuleIds": ["701.3a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Reckless Crew",
+    "oracleId": "ced584a8-7548-4b4e-8ccf-04b66d255539",
+    "rulingDate": "2021-02-05",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b2d3ca9d66cc4c1dc60706de960de09d0fa441378fb13504ea3f6c8aea9e8bc0",
+      "oracle": "d26bae7745b685214e5f51fc93eedf084bb11c4c21c1ab2f8010b09ebe145682",
+      "rulings": "d335bdcfb2d978d43ab71ba4a512dfb84885948324b4862542766a06bb969402"
+    }
+  },
+  "whyHard": "Players assume attaching happens one piece of Equipment at a time, which would leave room for something to happen in between."
+}

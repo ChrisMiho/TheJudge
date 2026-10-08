@@ -1,0 +1,50 @@
+{
+  "id": "casualty-a-little-chat",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "1167fe30-32b8-4381-8067-a05cd345977b",
+      "name": "A Little Chat"
+    }
+  ],
+  "gameState": null,
+  "question": "If I pay a spell's casualty cost, does the copy resolve before the original spell?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the copy resolves before the original spell.",
+    "answer": "If you pay the casualty cost of a spell, the copy will resolve before the original spell.",
+    "decidingRuleIds": ["702.153a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "A Little Chat",
+    "oracleId": "1167fe30-32b8-4381-8067-a05cd345977b",
+    "rulingDate": "2022-04-29",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e2f40d4dfc1b795d2aff67ed0161060cf463b594c13b7684a19db9919edf41c7",
+      "oracle": "ee2ecc74c573e8cbf89db6a9a8e5549388d5906f4ec703ac0fc35be1cb2c1928",
+      "rulings": "44d9cd6babf76726504dda163a8e5ad3c42a0ef1a3f9e814918b5b5769d94655"
+    }
+  },
+  "whyHard": "The copy is made after the spell is cast, but copies of spells go on the stack above the original."
+}

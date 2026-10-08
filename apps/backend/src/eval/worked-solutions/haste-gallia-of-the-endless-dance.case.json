@@ -1,0 +1,50 @@
+{
+  "id": "haste-gallia-of-the-endless-dance",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "43f135b5-d33e-4873-bc5a-8c939582d624",
+      "name": "Gallia of the Endless Dance"
+    }
+  ],
+  "gameState": null,
+  "question": "If Gallia of the Endless Dance leaves the battlefield, can Satyrs that came under my control this turn and were relying on Gallia's haste still attack?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the Satyrs lose haste, so ones that have not been under your control since the turn began cannot attack, and ones already attacking remain attacking.",
+    "answer": "If Gallia leaves the battlefield, Satyrs you control lose haste. If they haven’t been under your control since the turn began and don’t otherwise have haste, they can’t attack this turn. If they’ve already attacked, they remain attacking creatures.",
+    "decidingRuleIds": ["702.10a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Gallia of the Endless Dance",
+    "oracleId": "43f135b5-d33e-4873-bc5a-8c939582d624",
+    "rulingDate": "2020-01-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "6af6aeea7b3399f6590ee09b65c2380d5ced1fa79b903ab3db8f0ce1c7f7947f",
+      "oracle": "a3a7ec958cd51bc0c695ec5dc96796581e65b7efb6f36d4484a652d1dfd46422",
+      "rulings": "3dcef34d636a509303df7b09eee409ee73e96144d527ce04e3d3fe98d922c6f4"
+    }
+  },
+  "whyHard": "Haste granted by another permanent seems to last for the turn, but it stops when the source leaves."
+}

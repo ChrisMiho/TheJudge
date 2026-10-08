@@ -1,0 +1,50 @@
+{
+  "id": "offering-patron-of-the-kitsune",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "e75356a8-6268-4355-a0bd-114a5243d527",
+      "name": "Patron of the Kitsune"
+    }
+  ],
+  "gameState": null,
+  "question": "Patron of the Kitsune lets me gain 1 life whenever a creature attacks. If several creatures attack in the same declare attackers step, do I gain one life for each attacking creature?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may gain one life per attacking creature when the ability resolves during each declare attackers step.",
+    "answer": "You may gain one life per attacking creature when the ability resolves during each declare attackers step.",
+    "decidingRuleIds": ["702.48a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Patron of the Kitsune",
+    "oracleId": "e75356a8-6268-4355-a0bd-114a5243d527",
+    "rulingDate": "2005-02-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ba31d99453ea0fa7b91f57051c8f2e060824126b3e1c0e672f9d2a0b8f8377aa",
+      "oracle": "a07b2b469a6b8b4ab425f67cf7f140e3dc3f2f97ce6dbbb17c4f0e1a4778fa0d",
+      "rulings": "1d057fb486087783065f1154c2317c774be0b10b7b3f56a4239bb8ad86973d2c"
+    }
+  },
+  "whyHard": "Players think a trigger like this happens once for the whole declare attackers step, not for each creature."
+}

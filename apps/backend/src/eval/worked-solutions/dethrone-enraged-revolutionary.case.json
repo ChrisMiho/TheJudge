@@ -1,0 +1,50 @@
+{
+  "id": "dethrone-enraged-revolutionary",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "f4b8e856-17a9-44db-bce6-312a6bd2af32",
+      "name": "Enraged Revolutionary"
+    }
+  ],
+  "gameState": null,
+  "question": "In a Two-Headed Giant game, does dethrone trigger when the creature attacks either player on the team with the most life?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it triggers if the creature attacks either player on the team with the most life or tied for the most life.",
+    "answer": "In a Two-Headed Giant game, dethrone will trigger if the creature attacks either player on the team with the most life or tied for the most life.",
+    "decidingRuleIds": ["702.105a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Enraged Revolutionary",
+    "oracleId": "f4b8e856-17a9-44db-bce6-312a6bd2af32",
+    "rulingDate": "2014-05-29",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "42a022d449f09fe3f8cde52f953a766838f8a8bee67b8b883a83b4ff08fbecf9",
+      "oracle": "cf09bb7391217484b428f876ff4833edb0f96be8d92a470262c816305a374aa0",
+      "rulings": "8b50b4e601a373de92349ea04c7f00245e43c4cfc3ca657dd6cf7b0c1eb6f66c"
+    }
+  },
+  "whyHard": "Life is shared in Two-Headed Giant but attacks are still against one player, so players are unsure which life total counts."
+}

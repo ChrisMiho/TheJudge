@@ -1,0 +1,50 @@
+{
+  "id": "firebending-azula-on-the-hunt",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "89f96032-5cba-404d-82b0-38d2be963e4b",
+      "name": "Azula, On the Hunt"
+    }
+  ],
+  "gameState": null,
+  "question": "Is a firebending ability a mana ability that opponents cannot respond to?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: firebending abilities are not mana abilities; they use the stack and can be responded to.",
+    "answer": "Firebending abilities aren't mana abilities. They use the stack and can be responded to.",
+    "decidingRuleIds": ["702.189a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Azula, On the Hunt",
+    "oracleId": "89f96032-5cba-404d-82b0-38d2be963e4b",
+    "rulingDate": "2025-10-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "2a0c0bd8ca861742239ee7b5fec55592ce5095f51d733b87abb43497de087182",
+      "oracle": "675a10f21f538f33d15a94366b0777aebcf9dc0cef5b061ccfdc8d0e01603aef",
+      "rulings": "653d73998176418b59d82e6e44f9b2ec6cdb1a87d4ddd54e16182548f782fc9b"
+    }
+  },
+  "whyHard": "Adding mana looks like a mana ability, but firebending is a triggered ability that adds mana."
+}

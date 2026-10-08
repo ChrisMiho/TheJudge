@@ -1,0 +1,50 @@
+{
+  "id": "activate-chronatog",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "bb300e38-32d7-4152-9a82-88d43af99f19",
+      "name": "Chronatog"
+    }
+  ],
+  "gameState": null,
+  "question": "I control two copies of Chronatog, and its ability can be activated only once each turn. Can I activate the ability once on each Chronatog in the same turn?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the once-per-turn limit applies to each Chronatog separately.",
+    "answer": "You can only activate the ability once each turn for each Chronatog.",
+    "decidingRuleIds": ["701.2a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Chronatog",
+    "oracleId": "bb300e38-32d7-4152-9a82-88d43af99f19",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d6828802e809ed4568251fb71c7c6654aa622bb7c0c58f281657d5da1861cbe1",
+      "oracle": "df7b38539a50a23aebb05c909fd55659b83b1a900eb916a836225ddc081a5def",
+      "rulings": "04f0f9cb5eedcff4b1ef57bd514b6f47ce8b2c8fe777bdca0268e6bf3afbca5d"
+    }
+  },
+  "whyHard": "Players read the limit as a limit on the ability's wording for the whole turn, not on each object that has the ability."
+}

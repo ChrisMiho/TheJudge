@@ -1,0 +1,50 @@
+{
+  "id": "devoid-abstruse-appropriation",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "61a23402-3244-4b5e-9134-98e1f82eda65",
+      "name": "Abstruse Appropriation"
+    }
+  ],
+  "gameState": null,
+  "question": "Does devoid work in all zones, not just on the battlefield?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: devoid works in all zones.",
+    "answer": "Devoid works in all zones, not just on the battlefield.",
+    "decidingRuleIds": ["702.114a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Abstruse Appropriation",
+    "oracleId": "61a23402-3244-4b5e-9134-98e1f82eda65",
+    "rulingDate": "2024-06-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d7e112dcc9b19059cdb6bb1807d8cafb1ce7508c1828c806c73ee06da8c2c9ff",
+      "oracle": "c92ab6918e2268e338a4a17461c072aa9e7d4915127290ae3a0e8332cd9d0c55",
+      "rulings": "be1302e0ab5801e31a9a90b3fedc79cdc07c0e25b281e8c0373ea5955e44672a"
+    }
+  },
+  "whyHard": "Colors are often thought of as battlefield properties, but devoid is a characteristic-defining ability."
+}

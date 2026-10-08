@@ -1,0 +1,45 @@
+{
+  "id": "combat-only-one-creature-can-attack",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [],
+  "gameState": null,
+  "question": "I control one creature that attacks each turn if able and one creature with no abilities, and an effect says no more than one creature can attack each turn. Can I attack with just the other creature, with both, or with no creature at all?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the only legal attack is the creature that attacks if able attacking alone.",
+    "answer": "A player controls two creatures: one that “attacks if able” and one with no abilities. An effect states “No more than one creature can attack each turn.” The only legal attack is for just the creature that “attacks if able” to attack. It’s illegal to attack with the other creature, attack with both, or attack with neither.",
+    "decidingRuleIds": ["508.1d"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "508.1d",
+    "sectionTitle": "Declare Attackers Step"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "908c72ab11a9cb10df6c5df504d4827cc7ea5680a08970b10bc53fb4c63d6d5e",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "whyHard": "A requirement and a limit pull against each other, and players think they can satisfy the limit by not attacking."
+}

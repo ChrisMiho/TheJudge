@@ -1,0 +1,54 @@
+{
+  "id": "sba-constricting-sliver-returning-creature",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "fd26f893-6f45-44df-aa4e-c919fc118aff",
+      "name": "Constricting Sliver"
+    },
+    {
+      "oracleId": "07d0bd24-7731-4abb-9dc6-912aa17943f2",
+      "name": "Mercurial Pretender"
+    }
+  ],
+  "gameState": null,
+  "question": "When Constricting Sliver leaves the battlefield and the creature it exiled returns, can the returning creature, such as Mercurial Pretender, enter as a copy of the Sliver?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the card returns right after the Sliver leaves, with nothing in between, so they are never on the battlefield together.",
+    "answer": "The exiled card returns to the battlefield immediately after the Sliver leaves the battlefield. Nothing happens between the two events, including state-based actions. The two creatures aren’t on the battlefield at the same time. For example, if the returning creature is a Mercurial Pretender, it can’t enter the battlefield as a copy of the Sliver.",
+    "decidingRuleIds": ["610.3"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Constricting Sliver",
+    "oracleId": "fd26f893-6f45-44df-aa4e-c919fc118aff",
+    "rulingDate": "2014-07-18"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "bd794e8422a7586dc5288606742e4b6c8e20bcdb3f7c767da37e36137042319c",
+      "oracle": "ff0d137436115e7d5a810f65a72c7e194d0430b413994bf7079c83451f12da80",
+      "rulings": "b5eafa8cd57080188c15c03d9375e4f2183d302d14c41cbff138043c1d17ea83"
+    }
+  },
+  "whyHard": "The Sliver seems to leave the battlefield first and still be available to copy."
+}

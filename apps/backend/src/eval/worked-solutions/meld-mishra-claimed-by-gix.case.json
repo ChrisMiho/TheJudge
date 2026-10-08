@@ -1,0 +1,50 @@
+{
+  "id": "meld-mishra-claimed-by-gix",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "26a623a1-60c9-47e3-af96-616e29551865",
+      "name": "Mishra, Claimed by Gix"
+    }
+  ],
+  "gameState": null,
+  "question": "If I control more than one object with the name Mishra needs for its meld ability, do I get to choose which one to exile and meld?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you select one object with that name to exile.",
+    "answer": "One card in each pair of meld cards has an ability that instructs you to exile the two cards and meld them. If you control more than one object with one of those names, you select one object with that name to exile.",
+    "decidingRuleIds": ["701.42a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Mishra, Claimed by Gix",
+    "oracleId": "26a623a1-60c9-47e3-af96-616e29551865",
+    "rulingDate": "2022-10-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "798de8776b9611e46a4632d2d853cd0815b42595fa0e602b9ff3c6667b1de195",
+      "oracle": "f95d69131a85dcbcf4cb13ee8e3684f21cce6c03bc616940c9851b479905fa7f",
+      "rulings": "bbfb263e35805cfc5ed5d5b375071276d6f124497fb7d893f6d9379135c89e35"
+    }
+  },
+  "whyHard": "Meld asks for exactly two named cards, and players do not know what happens when there are extra copies."
+}

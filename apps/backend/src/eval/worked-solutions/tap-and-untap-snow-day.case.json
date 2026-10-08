@@ -1,0 +1,50 @@
+{
+  "id": "tap-and-untap-snow-day",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "057729d0-f7ed-465b-91aa-fb2c6d6612b2",
+      "name": "Snow Day"
+    }
+  ],
+  "gameState": null,
+  "question": "Snow Day taps up to two target creatures and stops them untapping. Can I choose creatures that are already tapped?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may choose tapped creatures, and they will not untap during their controller's next untap step.",
+    "answer": "You may choose tapped creatures as targets. Those creatures won’t untap during their controller’s next untap step.",
+    "decidingRuleIds": ["701.26a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Snow Day",
+    "oracleId": "057729d0-f7ed-465b-91aa-fb2c6d6612b2",
+    "rulingDate": "2021-04-16",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "7282cab81317e1a76e219bf21a103a63c09ffb6788246ba2eef805811907882d",
+      "oracle": "ea229b87647e6825a0532cf046b6b83224785f3bd5ff24ab72bd74dd6f102c3e",
+      "rulings": "128ec0cf5edd607ca106411fcf53d35fa6799999e89ce13563d6bf454570ff67"
+    }
+  },
+  "whyHard": "Players think tapping an already tapped creature does nothing, which would make the whole spell a bad target choice."
+}

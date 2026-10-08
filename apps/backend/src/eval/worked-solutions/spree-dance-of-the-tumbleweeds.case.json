@@ -1,0 +1,50 @@
+{
+  "id": "spree-dance-of-the-tumbleweeds",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "7c57d4aa-d221-4b36-a544-9fa89d63ffbe",
+      "name": "Dance of the Tumbleweeds"
+    }
+  ],
+  "gameState": null,
+  "question": "After I choose the modes for a spree spell as I cast it, can I change them?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you choose the modes as you cast the spell and cannot change them afterward.",
+    "answer": "You choose the modes as you cast the spell with spree. Once modes are chosen, they can’t be changed.",
+    "decidingRuleIds": ["702.172a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Dance of the Tumbleweeds",
+    "oracleId": "7c57d4aa-d221-4b36-a544-9fa89d63ffbe",
+    "rulingDate": "2024-04-12",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "194ddaa602fc11a87713cff082008157647b6d64b69fab6ed867a825d53dd078",
+      "oracle": "6b100b9c211402a11cb581e0a919ac8de7e12e7ad60c8893433079f0353a99c0",
+      "rulings": "1ed607beeb4b03a5d4fd29e9500b34cf917313256ae8064f3555b0e978cef036"
+    }
+  },
+  "whyHard": "Spree modes are paid for with additional costs, so players think they can be adjusted during payment."
+}

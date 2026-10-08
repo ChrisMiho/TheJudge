@@ -1,0 +1,50 @@
+{
+  "id": "delve-become-immense",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "40e5b83e-5f53-4b15-8bfd-c0c0b8355a6f",
+      "name": "Become Immense"
+    }
+  ],
+  "gameState": null,
+  "question": "If I exile cards from my graveyard to pay for a spell with delve, does that change the spell's mana cost or mana value?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: delve does not change a spell's mana cost or mana value.",
+    "answer": "Delve doesn't change a spell's mana cost or mana value. For example, Treasure Cruise's mana value is 8 even if you exiled three cards to cast it.",
+    "decidingRuleIds": ["702.66a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Become Immense",
+    "oracleId": "40e5b83e-5f53-4b15-8bfd-c0c0b8355a6f",
+    "rulingDate": "2021-03-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "fa82f46050de8ab835f75b9503627bde83ff7b1352fb9ee06d4ae0f1d520d381",
+      "oracle": "1e77c05d6538a74074f4cafab44353f3f6a6fcbedcb7df17a16bb79a0573e2d6",
+      "rulings": "060f38847965645fd38c3bd92a2fa64972598874e301aed2fa9fc642dd8819c1"
+    }
+  },
+  "whyHard": "Because delve pays for generic mana, players think it lowers the spell's mana value."
+}

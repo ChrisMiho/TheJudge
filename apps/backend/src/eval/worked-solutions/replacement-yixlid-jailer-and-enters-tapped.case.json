@@ -1,0 +1,54 @@
+{
+  "id": "replacement-yixlid-jailer-and-enters-tapped",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "1f55303e-1369-4e42-9ed4-36609887c7c1",
+      "name": "Yixlid Jailer"
+    },
+    {
+      "oracleId": "874b944a-8d08-4143-b477-685087396a88",
+      "name": "Scarwood Treefolk"
+    }
+  ],
+  "gameState": null,
+  "question": "Yixlid Jailer says cards in graveyards lose all abilities, and Scarwood Treefolk says it enters tapped. If a Scarwood Treefolk is put onto the battlefield from a graveyard, does it still enter tapped?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the replacement effect works even though the card lost its abilities in the graveyard.",
+    "answer": "Yixlid Jailer says “Cards in graveyards lose all abilities.” Scarwood Treefolk says “This creature enters tapped.” A Scarwood Treefolk that’s put onto the battlefield from a graveyard enters the battlefield tapped.",
+    "decidingRuleIds": ["614.12"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "614.12",
+    "sectionTitle": "Replacement Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c3092e80b6d5d9d7b4580ea94f715c8146c34b421e7df24f8a371d34a070f691",
+      "oracle": "df9e283717904e4acbef3c41500f0fa2a06a59bec8d1a3ef4f996a4f5b88f9ff",
+      "rulings": "3c4e6ab96a78206ae83e0b725dbcf44b3c12b1236ea5316bf1db0bdfc23e8ea7"
+    }
+  },
+  "whyHard": "The Jailer seems to remove the ability before the card enters, but the ability applies as the permanent enters."
+}

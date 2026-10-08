@@ -1,0 +1,50 @@
+{
+  "id": "melee-wulfgar-of-icewind-dale",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "b19d1459-eb08-4e75-95f4-402d86371a78",
+      "name": "Wulfgar of Icewind Dale"
+    }
+  ],
+  "gameState": null,
+  "question": "Does Wulfgar of Icewind Dale's last ability make its own melee ability trigger an additional time?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: Wulfgar's last ability causes its melee ability to trigger an additional time.",
+    "answer": "Wulfgar's last ability will cause its melee ability to trigger an additional time.",
+    "decidingRuleIds": ["702.121a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Wulfgar of Icewind Dale",
+    "oracleId": "b19d1459-eb08-4e75-95f4-402d86371a78",
+    "rulingDate": "2021-07-23",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4fe7ae00c91f42096cb5f31495e7de1229d687643de33a6b7e99e65e9d6991a8",
+      "oracle": "bec03a5a1c369c3558584ce3d5afb514bef1a8d94a4b07612d755b56d2936c7a",
+      "rulings": "696f04685563388b07423dc570e9537ca317dc7a1ea4ad6c2ede156201a1cf9d"
+    }
+  },
+  "whyHard": "Players assume a trigger-doubling effect applies only to other permanents' abilities."
+}

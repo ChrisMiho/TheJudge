@@ -1,0 +1,50 @@
+{
+  "id": "amplify-canopy-crawler",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "7fc60ae2-75fc-49e1-9d56-aa5a43844210",
+      "name": "Canopy Crawler"
+    }
+  ],
+  "gameState": null,
+  "question": "Canopy Crawler's tap ability gives a creature +1/+1 for each +1/+1 counter on the Crawler. Is the number of counters checked when that ability resolves rather than when I activate it?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the number of counters is checked when the ability resolves.",
+    "answer": "The number of +1/+1 counters for the ability is checked when the ability resolves.",
+    "decidingRuleIds": ["702.38a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Canopy Crawler",
+    "oracleId": "7fc60ae2-75fc-49e1-9d56-aa5a43844210",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9342d9bd91f4a0927932c035772321855114d454a77f9dd0e16f88845c73de8b",
+      "oracle": "fe4030090d2c62b0d9cadb6284bd9e1bdddda6b6423e3a0e8b4622b443e4f376",
+      "rulings": "910be6e6415d1b1c27c0495b8a8787cf10c2636ecbfbf669203221240b983ea7"
+    }
+  },
+  "whyHard": "Players lock in the value as the ability is activated, as they would for a cost."
+}

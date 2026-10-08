@@ -1,0 +1,50 @@
+{
+  "id": "cycling-esper-sojourners",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "0c59db70-9cb4-4edf-ba6e-12ffa7c06b7b",
+      "name": "Esper Sojourners"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I cycle Esper Sojourners even if there are no targets for its cycling trigger?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the cycling ability itself has no targets, so you can cycle it anyway.",
+    "answer": "You can cycle this card even if there are no targets for the triggered ability. That's because the cycling ability itself has no targets.",
+    "decidingRuleIds": ["702.29a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Esper Sojourners",
+    "oracleId": "0c59db70-9cb4-4edf-ba6e-12ffa7c06b7b",
+    "rulingDate": "2009-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "78a853ece72b9bf8a7bff51bb45eb3425cd3ab273fc9810fe96300fdf6f8fe88",
+      "oracle": "bef38a1569a894ba7e9004ae033cb2f6b086e0a5a0363144a31a7bdb80f7586f",
+      "rulings": "248dff432b90bfa75af62585b37f4a7050c4456a50069a83a950f89f082afba0"
+    }
+  },
+  "whyHard": "Players think the trigger's missing target stops the whole cycling ability."
+}

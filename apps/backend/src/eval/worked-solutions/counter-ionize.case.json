@@ -1,0 +1,50 @@
+{
+  "id": "counter-ionize",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "01da67a5-e3dc-44f4-8a93-513bfa4d8fbc",
+      "name": "Ionize"
+    }
+  ],
+  "gameState": null,
+  "question": "Can Ionize target a spell that can't be countered?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: such a spell is a legal target, it just is not countered, and Ionize still deals 2 damage to its controller.",
+    "answer": "A spell that can’t be countered is a legal target for Ionize. The spell won’t be countered when Ionize resolves, but Ionize still deals 2 damage to that spell’s controller.",
+    "decidingRuleIds": ["701.6a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Ionize",
+    "oracleId": "01da67a5-e3dc-44f4-8a93-513bfa4d8fbc",
+    "rulingDate": "2018-10-05",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "73702e6d40d89551454ae062925216488bad400a26d9c3f859b6c6ae5c72b8d3",
+      "oracle": "78faa656a40e290b1bc5c69656070e35018a3eaf9fba81ce08be72e4a8979260",
+      "rulings": "b5349e9e4a860290217212397d32475f41527eda6c14bc1caa8a06f463c74c24"
+    }
+  },
+  "whyHard": "Players think a spell that can't be countered is also not a legal target for a counterspell."
+}

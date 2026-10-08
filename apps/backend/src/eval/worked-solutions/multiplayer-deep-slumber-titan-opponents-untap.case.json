@@ -1,0 +1,54 @@
+{
+  "id": "multiplayer-deep-slumber-titan-opponents-untap",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "cce855c0-9632-4338-ace6-fcdfba564b0f",
+      "name": "I Know All, I See All"
+    },
+    {
+      "oracleId": "d8f2c12c-d463-42dc-95f1-2daf68f99873",
+      "name": "Deep-Slumber Titan"
+    }
+  ],
+  "gameState": null,
+  "question": "I control the ongoing scheme I Know All, I See All, which untaps all permanents I control during each opponent's untap step. Deep-Slumber Titan doesn't untap during my untap step. Does it untap during an opponent's untap step?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: effects that keep your permanents tapped apply only during your untap step, so it untaps during each opponent's untap step.",
+    "answer": "During an opponent’s untap step, effects that would otherwise cause your permanents to stay tapped don’t apply because they apply only during *your* untap step. For example, if you control a Deep-Slumber Titan (a creature that says “Deep-Slumber Titan doesn’t untap during your untap step”), you untap Deep-Slumber Titan during each opponent’s untap step.",
+    "decidingRuleIds": ["502.3"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "I Know All, I See All",
+    "oracleId": "cce855c0-9632-4338-ace6-fcdfba564b0f",
+    "rulingDate": "2010-06-15"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "412c57b54a696d7caba349fa2b8e74a8f1dd39dafd1ca9d963a42cce77fcf649",
+      "oracle": "17e2868e0850c8651ffd75135ddef8fdfb81fee8fe7831ade5a86c484fb55820",
+      "rulings": "32e4b243b8bc1c6f52ee811330237dc6149336287fdef842b0a8d903cc394423"
+    }
+  },
+  "whyHard": "Players think a permanent that doesn't untap stays tapped through every untap step."
+}

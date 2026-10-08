@@ -1,0 +1,50 @@
+{
+  "id": "foretell-surge-of-brilliance",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "4d720849-56cd-4b78-b9a7-7b9484702f0f",
+      "name": "Surge of Brilliance"
+    }
+  ],
+  "gameState": null,
+  "question": "If I foretell an instant card, can I cast it as soon as the next player's turn?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: casting a foretold card follows the timing rules for that card, so an instant can be cast on the next player's turn.",
+    "answer": "Casting a foretold card from exile follows the timing rules for that card. If you foretell an instant card, you can cast it as soon as the next player's turn.",
+    "decidingRuleIds": ["702.143a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Surge of Brilliance",
+    "oracleId": "4d720849-56cd-4b78-b9a7-7b9484702f0f",
+    "rulingDate": "2023-10-13",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "898ec939cf7cf1038e34e704d6f9c6f7b3aaff714407a715b4c807737d5a3b07",
+      "oracle": "6b1c31a81644a9bdd11461d60a9444bbeb86821492aab00efb8e57871a39fca0",
+      "rulings": "7a66dfe8ada145affceb3cdf40225c9e5428d7f48a66ec45f04f83659f012c64"
+    }
+  },
+  "whyHard": "Foretell asks you to wait until a later turn, and players think it must be your own."
+}

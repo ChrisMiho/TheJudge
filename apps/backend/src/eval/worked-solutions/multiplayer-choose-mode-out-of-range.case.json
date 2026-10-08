@@ -1,0 +1,45 @@
+{
+  "id": "multiplayer-choose-mode-out-of-range",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [],
+  "gameState": null,
+  "question": "Alex, who has a range of influence of 2, casts a spell that has an opponent choose a mode and picks Carissa, who has a range of influence of 1 and is on the other side of Rob. Can Carissa choose the mode even though Alex is out of her range?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: Carissa can choose the mode even though Alex is out of her range.",
+    "answer": "Alex, who has a range of influence of 2, is seated to the left of Rob, and Carissa, who has a range of influence of 1, is seated to the right of Rob. Alex casts a spell that reads, “An opponent chooses one — You draw two cards; or each creature you control gets +2/+2 until end of turn,” and chooses Carissa to make that choice. Carissa can choose the mode even though Alex is out of her range.",
+    "decidingRuleIds": ["801.5b"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "801.5b",
+    "sectionTitle": "Limited Range of Influence Option"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a139f0026633a4fb0d559abd465b0181cc294d4c192d23b867e26f5f09e5a0a9",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "whyHard": "Choosing an opponent uses the caster's range, and the chosen player's own range does not matter for the choice."
+}

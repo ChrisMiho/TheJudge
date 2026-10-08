@@ -1,0 +1,50 @@
+{
+  "id": "bestow-flitterstep-eidolon",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "4280191f-e2cb-4cee-a3b4-660b3efd62e9",
+      "name": "Flitterstep Eidolon"
+    }
+  ],
+  "gameState": null,
+  "question": "On the stack, can a spell with bestow be both a creature spell and an Aura spell?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it is either a creature spell or an Aura spell, though it is an enchantment spell either way.",
+    "answer": "On the stack, a spell with bestow is either a creature spell or an Aura spell. It's never both, although it's an enchantment spell in either case.",
+    "decidingRuleIds": ["702.103a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Flitterstep Eidolon",
+    "oracleId": "4280191f-e2cb-4cee-a3b4-660b3efd62e9",
+    "rulingDate": "2013-09-15",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "2d8e37f4e466892f871d0538665470d813978603ec79d45d81ac85291829a3a7",
+      "oracle": "c8f72edcd9a6c5007b11b557b9dda208b10cef9bb44c94067446eda01d61895d",
+      "rulings": "66c6792606cba2eb30bf3fb37d117df784e3cdcba581bf306011fca79cddf509"
+    }
+  },
+  "whyHard": "The card has both creature and Aura abilities printed on it, so players think the spell is both."
+}

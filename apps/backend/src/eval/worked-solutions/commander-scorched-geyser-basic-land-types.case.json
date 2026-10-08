@@ -1,0 +1,54 @@
+{
+  "id": "commander-scorched-geyser-basic-land-types",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "f808b510-907a-4c3c-aea1-efb825c8e13e",
+      "name": "Scorched Geyser"
+    },
+    {
+      "oracleId": "7137aae6-260d-41de-8b4e-42a8cf752697",
+      "name": "Frostboil Snarl"
+    }
+  ],
+  "gameState": null,
+  "question": "Can an effect that searches for basic lands find Scorched Geyser, which has two basic land types?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it isn't basic, so effects that search for basic lands can't find it, though it has the land types for effects such as Frostboil Snarl's.",
+    "answer": "Unlike some other dual lands, Scorched Geyser has two basic land types. It's not basic, so effects that search for basic lands can't find it, but it does have the appropriate land types for effects such as that of Frostboil Snarl (included in the Secrets of Strixhaven Commander decks).",
+    "decidingRuleIds": ["305.6", "205.3i"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Scorched Geyser",
+    "oracleId": "f808b510-907a-4c3c-aea1-efb825c8e13e",
+    "rulingDate": "2026-03-20"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "0d8c422f7aeec95131ef0b2315decff5e061e4450c71ad74a3c705784ed31b98",
+      "oracle": "724d33a2e299cb3ddbfedc1bc48f017c6a9a6cec1019ed53c7116f62acf67b1a",
+      "rulings": "766bfeb84b09a7309e3187023f32bff6e37d0c0337ab320be457c911c78e70fc"
+    }
+  },
+  "whyHard": "Basic land types and being a basic land are different things."
+}

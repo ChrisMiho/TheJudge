@@ -1,0 +1,50 @@
+{
+  "id": "ravenous-aberrant",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "46b5f12e-9fe5-44f6-b895-ee8c33205521",
+      "name": "Aberrant"
+    }
+  ],
+  "gameState": null,
+  "question": "Does a creature with ravenous enter the battlefield first and only then get its counters?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it gets its counters as it enters, so abilities that look at power or toughness on entering see them.",
+    "answer": "A creature with ravenous gets its counters as it enters the battlefield. It doesn't enter the battlefield first and then get its counters. Any triggered ability that looks for a creature with a certain power or toughness entering the battlefield will see the counters when it checks to see if it should trigger.",
+    "decidingRuleIds": ["702.156a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Aberrant",
+    "oracleId": "46b5f12e-9fe5-44f6-b895-ee8c33205521",
+    "rulingDate": "2022-10-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8b58822df3e12d3fa6e975a1166a5f02409e9567d1dd82e2435139a94ac6d52f",
+      "oracle": "794826b3f7f64fa807eaefd87f03b72a32d1cf8f0d2979da4fa945643d77396f",
+      "rulings": "6b1447d770b5577bb84ed3d2ad0d6fe3168a8a7b42145fa0033f312382f1eaaa"
+    }
+  },
+  "whyHard": "Players picture the creature entering and then receiving counters from a separate effect."
+}
