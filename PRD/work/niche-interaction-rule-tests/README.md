@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # niche-interaction-rule-tests
@@ -20,7 +20,7 @@ Make the Comprehensive Rules that decide a hard interaction reach the AI when th
 | A | [Topic data and size guard](slice-a-topic-data-and-size-guard.md) | done | none | 8 (1 manual) |
 | B | [Card-wording selector and the rules-retrieval product truth](slice-b-card-wording-selector-and-rules-truth.md) | done | Slice A (the topic must exist in the committed artifact for the lookup and prompt tests) | 12 (0 manual) |
 | C | [The rules gate counts a rule a curated topic carries](slice-c-rules-gate-counts-topic-rules.md) | done | Slices A and B (the baseline records the topic only once the selector fires it) | 11 (0 manual) |
-| D | [Re-measure against every rule-output suite and ship](slice-d-remeasure-and-ship.md) | planned | Slices A, B, and C | 14 (4 manual) |
+| D | [Re-measure against every rule-output suite and ship](slice-d-remeasure-and-ship.md) | done | Slices A, B, and C | 14 (4 manual) |
 
 Build note (2026-10-07): Slices B and C landed in one commit. Slice B alone turns the topic on, which makes the rules gate fail on `replacement-bard-and-bilbo-tokens` until Slice C teaches the gate to count topic-carried rules, so no B-only tree passes `npm run quality:check`.
 

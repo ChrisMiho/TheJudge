@@ -1,6 +1,6 @@
 # Slice D — Re-measure against every rule-output suite and ship
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
