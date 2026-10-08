@@ -8,8 +8,8 @@
 - Build-half resume 2026-10-07: owner merged docs PR #266 (2026-10-08T02:40Z) and invoked `/graph-implement PRD/work/niche-interaction-rule-tests/`. Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19738`); graph canary `nohup true` denied — graph tier armed. Claimed on `thejudge-auto/niche-interaction-rule-tests-work` cut from `origin/main` (`c1188dc8`).
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
 - Resume 2026-10-07: owner invoked `/graph-kickoff niche-interaction-rule-tests` after the rules test harness shipped (PR #269 merged 2026-10-07). Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19439`); graph canary `nohup true` denied — graph tier armed; this session's profile `loaded (env sentinel)`. Package restored from `deferred` to `owner-action` by `thejudge-defer` (restore direction). `origin/main` merged into the run branch in the kickoff worktree (merge commit `92031511`, clean; brings REQ-222–230, the rules test corpus, and the rules-review sweeps). REQ-220 and REQ-221 confirmed unused on `origin/main` (new IDs there run REQ-222–230).
-- Current node: `owner-action` (gate-qc attempt 7 FAIL, parked 2026-10-07; see `## Open gate`)
-- Next action: owner authorizes one define pass on the gate-qc attempt 7 finding (add the copy-the-model-folder step), then `/graph-implement PRD/work/niche-interaction-rule-tests/`
+- Current node: `define` (attempt 7, owner-authorized pass on the gate-qc attempt 7 finding, dispatched 2026-10-07)
+- Next action: on define ok, re-enter `gate-qc` (attempt 8; a FAIL parks), then `plan → build → review → close`
 
 ## Node ledger
 
@@ -34,6 +34,7 @@
 
 ## Open gate
 
+- RESOLVED 2026-10-07: the owner authorized the one define pass on the gate-qc attempt 7 finding and asked the run to continue (Instruction ledger, last row). Lock re-taken (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19738`), graph canary `nohup true` denied; `origin/main` still `c1188dc8`, PR #273 still open. Define attempt 7 dispatched, bounded to that finding. The entry below is the gate as it was parked.
 - PARKED 2026-10-07 (build half, gate-qc attempt 7 FAIL; the run's gate-qc loops to define are spent, so no autonomous loop). Question for the owner: authorize one more define pass to fix one mechanical gap in the brief's build section? The gap: step 7 (Scope 6, the 287/392 re-measure) runs `npm run eval:worked-solutions`, which needs the gitignored local MiniLM model folder `apps/backend/data/models/` (`.gitignore:89`); a fresh worktree lacks it, the script exits 1, and the brief wrongly says no gitignored file is needed. Fix is one sentence: copy that folder from the main checkout before step 7 (or run `node scripts/warm-embedding-model-cache.mjs`, which needs network), and name the folder in the no-gitignored-file claim. No product truth, number, or verdict changes — every diff, grep, and measured number re-verified on `origin/main` `c1188dc8` (README `## Preparation gate`). Evidence: ledger row 16; README `## Preparation gate`. Resume: once authorized, `/graph-implement PRD/work/niche-interaction-rule-tests/` (enters at gate resolution → define pass on the one finding → gate-qc → plan). Build worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` stays; branch `thejudge-auto/niche-interaction-rule-tests-work` pushed.
 - RESOLVED 2026-10-07 (build half, gate-review): the owner answered all four verdict slots in `GATE-QUESTIONS.md` (4 accept, 0 edit, 0 reject) and merged docs PR #266 to `main` (`c1188dc8`). See `## Gate verdicts`. The entry below is the gate as it was parked.
 - Owner action (2026-10-07, gate-qc PASS at attempt 6): answer `PRD/work/niche-interaction-rule-tests/GATE-QUESTIONS.md` — four verdict slots: REQ-220 (new ten-rule replacement/prevention topic, switched on by card wording), REQ-022 (amended: the curated baseline gains that one card-wording switch), REQ-222 (amended: the offline rules gate counts a deciding rule carried by a selected curated topic as reaching the prompt, via a new per-case `inTopic` list), REQ-221 (withdrawn: both tester questions are already approved corpus cases). Then merge docs PR https://github.com/ChrisMiho/TheJudge/pull/266 to build. Evidence: ledger rows 13–14; README `## Preparation gate`; `measure-rules-gate.out.txt`, `measure-candidates.out.txt`. Resume: `/graph-implement PRD/work/niche-interaction-rule-tests/` after the merge (the build loop watches `main`). Kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` stays through the park.
@@ -388,6 +389,27 @@ Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driv
 
 Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
+### define (attempt 7)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests
+
+You are node 3 (`define`) of graph run `graph-20261006-150550`, attempt 7 — a bounded, owner-authorized pass (2026-10-07) in the build half, after gate-qc attempt 7 FAILed on one finding. Run the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` on branch `thejudge-auto/niche-interaction-rule-tests-work`. The owner accepted all four proposal blocks in `GATE-QUESTIONS.md` (REQ-220 new, REQ-022 and REQ-222 amended, REQ-221 withdrawn); that file is final and you do not edit it.
+
+The one finding to fix (README `## Preparation gate`, gate-qc attempt 7): the brief says no build step needs a gitignored file or a network call (`DESIGN-BRIEF.md` section `## Build in a fresh worktree`, near line 680, and the matching wording in `## Method` near line 169 if it makes the same claim about a fresh worktree). That is untrue for the re-measure step (Scope 6): `npm run eval:worked-solutions` embeds with the local MiniLM model in `apps/backend/data/models/`, which is gitignored (`.gitignore:89`) and absent from a fresh worktree; without it the script exits 1, and its hint `node scripts/warm-embedding-model-cache.mjs` needs a network download. The same applies to the three define measure scripts if re-run.
+
+Fix it in `DESIGN-BRIEF.md` only:
+1. Add a step before the re-measure step: copy `apps/backend/data/models/` from the main checkout (`/Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/models/`) into the build worktree; if it is absent there too, stop and report rather than download.
+2. Correct every claim that the build needs no gitignored file so it names this folder as the one exception, and why (local embedder for the re-measure, not for `npm run quality:check`).
+3. Confirm the folder exists in the main checkout (read-only listing) and that copying it into a scratch export lets `npm run eval:worked-solutions` reproduce 287/392; record the command and result in the brief.
+
+Do not change any product truth, number, acceptance target, scope, or verdict; do not edit `GATE-QUESTIONS.md`, `PRD/sections/`, code, `intake/`, or the driver's `GRAPH-RUN.md` and README `## Preparation gate`. If fixing this finding would need any of those, stop and report. On success set `STATUS.refined` (the only marker), the README frontmatter status, and move the `PRD/work/STATUS.md` board row fully to refined. Do not commit or push; the driver commits. No live model calls. Use the Edit/Write tools for file changes (shell `sed -i` and heredoc writes are denied by the session's auto-mode guard).
+
+Report back: ok or failed, the exact brief lines changed, the reproduce command and its output, the marker you set, and every path you wrote.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -402,3 +424,4 @@ Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS
 | "dont worry about usage, keep going" | answered-once | gate-qc | — |
 | "/graph-kickoff niche-interaction-rule-tests" (2026-10-07, the go signal the parked gate named: restore, define attempt 6, gate-qc attempt 6) | answered-once | define | — |
 | "/graph-implement PRD/work/niche-interaction-rule-tests/" (2026-10-07, after the owner merged docs PR #266: build half) | answered-once | gate-review | — |
+| "yes, authorize the define pass and keep going" (2026-10-07, answer to the gate-qc attempt 7 park: one define pass on that finding, then continue the build half) | answered-once | define | — |

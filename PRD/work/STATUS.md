@@ -23,6 +23,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Build half: owner-authorized define attempt 7 (2026-10-07) adding the copy-the-model-folder step for the re-measure; then gate-qc attempt 8; branch `thejudge-auto/niche-interaction-rule-tests-work` |
 
 ## ideation
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Build half PARKED 2026-10-07: gate-qc attempt 7 FAIL on one mechanical item (the brief's re-measure step needs the gitignored MiniLM model folder `apps/backend/data/models/`; the brief says no gitignored file is needed), loops spent; everything else re-verified on `main`. Owner: authorize one define pass to add the copy-the-model step, then `/graph-implement PRD/work/niche-interaction-rule-tests/`; branch `thejudge-auto/niche-interaction-rule-tests-work` |
 
 ## deferred
 
