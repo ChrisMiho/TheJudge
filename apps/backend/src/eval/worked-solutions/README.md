@@ -149,7 +149,9 @@ call. For every non-rejected case, draft or not, the backend tests under
 run it through the unmodified `preparePromptInput`, and check that every attached
 card's oracle text and rulings reach the prompt, that each deciding rule that
 used to reach it still does (a ratchet over `baseline.json`), and that a case's
-`gameState` is valid and its facts are printed. System 3 ranks with committed
+`gameState` is valid and its facts are printed. A deciding rule also reaches the
+prompt when a curated topic selected for it carries that rule number; the baseline
+records those apart as `inTopic`, and `hit` and `miss` keep their System 3 meaning. System 3 ranks with committed
 frozen query vectors (`frozen-query-vectors.json`), each stored with a hash of
 its query text; a case whose query text changed is "awaiting a re-freeze" and is
 skipped, never failed. Rebuild the vectors with

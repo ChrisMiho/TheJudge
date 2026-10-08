@@ -360,10 +360,10 @@
 ### REQ-022
 - Title: General game rules prompt enrichment
 - Priority: high
-- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, selected by card-agnostic game-state signals for the baseline and by card/question-driven relevance scoring for supplemental rules, without changing the product API or UI.
+- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, selected by game-state signals for the baseline — plus one card-wording gate for replacement-effect interactions (REQ-220) — and by card/question-driven relevance scoring for supplemental rules, without changing the product API or UI.
 - Acceptance Criteria:
   - committed artifact `apps/backend/data/gameRulesByTopic.json` loads at backend startup
-  - every assembled prompt includes `GAME RULES (reference)` with curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) in stable `id` order when the artifact is present
+  - every assembled prompt includes `GAME RULES (reference)` with curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) and REQ-220 (the replacement-effect interaction topic when two or more cards carry replacement or prevention wording) in stable `id` order when the artifact is present
   - excerpts are verbatim WotC CR prose for rule numbers listed in `apps/backend/data/gameRulesTopicManifest.json`
   - section appears after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
   - section includes a disclaimer that rules are shared vocabulary and do not override submitted game state
@@ -386,8 +386,8 @@
   - no paraphrased rule text
   - no runtime CR or Scryfall fetch per request
   - no per-request external call for System 3 query embedding in the default (`mock`) or shipped-semantic (`local`) modes; the no-per-request-external-call posture is preserved by the bundled local model (REQ-181), not reversed — only `EMBEDDING_PROVIDER=openai` would add one, and it is never the default
-  - System 2 selection uses only card-agnostic game-state signals (`turnPhase`, `combatStep`, populated zones); no card names, oracle text, or keywords
-  - System 3 owns all card/question-driven retrieval including oracle-keyword signals
+  - System 2 selection uses game-state signals (`turnPhase`, `combatStep`, populated zones) plus exactly one card signal: whether two or more cards' oracle text carries replacement or prevention wording as REQ-220 defines it (the whole word "instead", "prevent", "prevents", or "prevented"), which selects the replacement-effect interaction topic (REQ-220); card names and keywords never select a System 2 topic
+  - System 3 owns all relevance-scored card/question-driven retrieval including oracle-keyword signals; REQ-220's wording gate is a fixed on/off switch, not scoring
 - Dependencies:
   - DEC-045
   - DEC-046
@@ -396,9 +396,11 @@
   - REQ-179 (rule-index hygiene and prefix-based curated exclusion)
   - REQ-181 (semantic retrieval mechanism: embeddings artifact, provider seam, runtime query-embed, lexical fallback)
   - REQ-182 (the hybrid blend that is now System 3's shipped ranking)
+  - REQ-220 (the card-wording gate for the replacement-effect interaction topic)
 - Notes:
   - supersedes REQ-022 acceptance criteria that required all curated topics on every request
   - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement and System 2 deduplication are unchanged. The cap moved from five excerpts to ten (2026-09-09, `rule-excerpt-cap-ten`) on the measured result that the deployed model `gpt-4.1` scored 16/18 on the worked-solution gold set at five and 18/18 at ten, at unchanged answer latency (REQ-190)
+  - amended by `niche-interaction-rule-tests` (2026-10-07): System 2 is no longer strictly card-agnostic. One topic, the replacement-effect interaction rules, is selected when two or more cards carry replacement or prevention wording (REQ-220), because no change to System 3's search, measured offline, got the rules that decide a question about two such cards attached together (614.1a, 616.1, 616.1e, 616.1f) into the prompt under both rankings
 
 ### REQ-023
 - Title: Decrypt wait feedback panel
@@ -5781,6 +5783,39 @@
     clarified the request is the browser tab, not the in-app hamburger menu; this
     id's earlier (Menu-tray) content and its A/B blocker are superseded
 
+### REQ-220
+- Title: Replacement-effect interaction rules when two or more cards replace or prevent
+- Priority: high
+- Description: When two or more cards in a request carry replacement or prevention wording, the assembled prompt's `GAME RULES (reference)` section includes the curated topic `replacement-effects-interaction` — the Comprehensive Rules for how replacement and prevention effects interact (what makes an effect a replacement effect, the affected player choosing the order, the special cases that apply first, and the process repeating until no effect is left to apply). It applies in lookup mode and game mode alike. It is the one System 2 topic selected by card wording rather than game state.
+- Acceptance Criteria:
+  - `apps/backend/data/gameRulesTopicManifest.json` gains topic `replacement-effects-interaction`, titled "Interaction of Replacement and Prevention Effects", with rule numbers `614.1a`, `616.1`, `616.1a`, `616.1b`, `616.1c`, `616.1d`, `616.1e`, `616.1f`, `616.1g`, `616.2`; `gameRulesByTopic.json` gains it as verbatim Comprehensive Rules text taken from the committed rule index (`gameRulesRuleIndex.json`, the same rules text every other shipped game-rules artifact was built from) and extracted the way `scripts/build-game-rules.mjs` extracts every topic; no rules-text refresh: every existing topic entry, `gameRulesRuleIndex.json`, `gameRulesTokenStats.json`, `gameRulesRuleEmbeddings.json`, and `apps/frontend/public/data/gameRulesCoreTopics.json` stay byte-identical
+  - the build-policy test (`apps/frontend/src/lib/gameRulesBuildPolicy.test.ts`) expects 24 curated topics instead of 23 and caps total topic text at 26,000 characters instead of 22,000, keeping its 18,000 floor; measured total with the new topic 25,808 (21,962 before). The cap bounds the stored topic library, not any single prompt
+  - a card carries replacement or prevention wording when its oracle text contains, as a whole word in any letter case, "instead" (CR 614.1a: effects that use the word "instead" are replacement effects) or "prevent", "prevents", or "prevented"; other forms such as "prevention" or "preventing" do not count
+  - the topic is selected when two or more cards in the request carry that wording — in lookup mode the attached cards, in game mode every card on the stack or in any zone; two copies of one card count as two. With fewer than two it is not selected
+  - one shared selection function serves both modes, so lookup and game mode cannot drift apart
+  - in lookup mode the topic is added alongside the four always-on core topics, never in place of them; in game mode it is added alongside the game-state-gated topics
+  - the topic's rule numbers join the curated exclusion set, so System 3 never repeats them (REQ-179)
+  - System 3's search text, scoring, cap, and embeddings are unchanged: the query stays the question plus each card's name, type line, and keywords, never oracle text (REQ-167, REQ-178, REQ-190)
+  - for the approved rules test case `academy-manufactor-esix-treasure` (REQ-185; the tester's question with Academy Manufactor and Esix, Fractal Bloom attached), every deciding rule — `614.1a`, `616.1`, `616.1e`, `616.1f` — reaches the prompt through this topic under both hybrid and lexical ranking, and so does the tester's verbatim question, "How do academy manufactor and esix, fractal bloom interact when I'm attempting to create a treasure token?", with both cards attached
+  - the rules gate's baseline is raised in the same change (`npm run eval:rules-gate:baseline`, without `--allow-regressions`), recording those four rules as carried by a curated topic for `academy-manufactor-esix-treasure` (REQ-222), so the gate fails if they stop reaching the prompt
+  - no existing rule-output result moves from its 2026-10-07 measurement: `npm run eval:worked-solutions` 287 of 392 cases, and 16/18 of the first-ship cases in System 3 under hybrid ranking and 14/18 under lexical; the rules gate passes, with every case's System 3 hits unchanged except `replacement-bard-and-bilbo-tokens`, whose rule `616.1f` moves from a System 3 excerpt into this topic and stays in the prompt; the context-evaluation harness's labelled System 3 checks 14/14 semantic and 14/14 lexical; none of the 31 fixtures' prompt, context, or checklist report goldens changes; the retrieval benchmark's recall@5 stays at 0.5833 clean / 0.5769 polluted lexical and 0.8974 clean / 0.8910 polluted hybrid; the coverage gate passes with `coverage.json` unchanged; the staleness report lists no stale case and no case awaiting a re-freeze
+- Constraints:
+  - card wording selects this one topic only; card names and keywords never select a System 2 topic
+  - no live AI call, no new runtime dependency, no per-request external call
+  - verbatim rules text only; no paraphrase
+- Dependencies:
+  - REQ-022 (the curated baseline this topic joins; amended for the card-wording gate)
+  - REQ-074 (Quick Lookup prompt assembly)
+  - REQ-178 (the shared card signal that keeps lookup and game mode aligned; unchanged)
+  - REQ-179 (prefix-based curated exclusion)
+  - REQ-185 (the approved tester case this fix is measured on)
+  - REQ-222 (the rules gate that holds this result; amended to count rules a curated topic carries)
+- Notes:
+  - measured at define, 2026-10-07 (`niche-interaction-rule-tests`), offline against the committed corpus (the 2026-06-05 rules text) with committed frozen query vectors and the local embedder: before, with both cards attached, none of the case's four deciding rules was in the prompt (all beyond 400th in System 3's hybrid ranking; on the tester's verbatim wording 616.1 ranked 357th hybrid and 50th lexical). After, all four are in the prompt through this topic
+  - candidates measured and rejected: the attached cards' oracle text in the System 3 search (616.1 still out of the top ten; it pushed the Necropotence + Silence question's rule 514.2 out of the prompt; benchmark polluted recall@5 fell from 0.5769 to 0.3782 lexical and from 0.8910 to 0.7756 hybrid; 25 of 31 prompt goldens changed); oracle text in the embedding only (514.2 pushed to 12th; hybrid polluted recall@5 0.8333); the terms "replacement effect" / "prevention effect" added to the search from card wording, card side or question side (616.1 reached 8th and 7th under lexical ranking but only 31st–35th under hybrid, the shipped ranking; 616.1f stayed 25th or worse under both; polluted recall@5 fell); no search-side candidate got the deciding rules into the top ten under both rankings; the topic on any one marked card (fired on Questing Beast's "can't be prevented" alone and changed a prompt golden); the topic without 614.1a (three of the case's four deciding rules)
+  - the full 616.1 family is shipped rather than a minimal subset because rule 616.1 directs the player through "the steps listed in rules 616.1a–f", and listing 616.1 bars System 3 from every 616.1 sub-rule; 614.1a is included because the approved case names it as deciding and System 3 ranks it beyond 400th for this question. The topic adds 3,898 characters to a prompt when it fires (3,837 of rule text plus the title line and line breaks; about 27% on the tester's Manufactor + Esix prompt). 4.8% of cards carry the wording (matched as whole words in any letter case), so two random attached cards both carry it about 0.2% of the time; in the 392 approved rules test cases it fires on 6
+  - the build re-runs every suite above and records its before/after here
+
 ### REQ-222
 - Title: Offline prompt gate over the rules test corpus
 - Priority: high
@@ -5788,10 +5823,10 @@
 - Acceptance Criteria:
   - for every case whose review status is not `rejected`, the gate builds the request a player would send — a lookup with every card in the case's `cards` attached by oracle id, or, for a case with a `gameState`, the In-Depth (`mode: "game"`) request whose `gameContext` is that `gameState` with the case's cards in their zones (`buildCaseRequest`, `scripts/lib/prompt-fidelity.mjs`) — passes it through the Ask AI request schema, supplies the committed card-detail and card-rulings indexes, and runs it through the unmodified production `preparePromptInput` (`apps/backend/src/eval/rules-gate/rulesGate.ts`, run by the backend vitest tests that `coverage:check` runs)
   - **card check (absolute)**: for every attached card, the assembled prompt contains that card's name, oracle text and every WotC ruling the committed rulings index holds for it; any miss fails the gate, naming the case and the card. Measured 2026-10-06, no card in the committed rulings index exceeds the prompt's ruling limits (the most rulings on one card is 32 against a per-card limit of 100; the largest single card's rulings section is 8,937 characters against a section limit of 1,000,000), so this check passes for any card in today's data
-  - **rule check (ratchet)**: a committed baseline file (`apps/backend/src/eval/rules-gate/baseline.json`) records, per case, which of its `decidingRuleIds` were among the System 3 excerpts in the prompt at the production cap (hits) and which were not (misses); the gate fails when a rule recorded as a hit no longer reaches the prompt, naming the case and the rule. Rules that are new hits, and cases not yet in the baseline, are reported and never fail the gate. The baseline is raised only by an explicit command (`npm run eval:rules-gate:baseline`, which refuses while a recorded hit has been lost unless `--allow-regressions` accepts the loss), never automatically, following REQ-177's recorded-baseline gate. At first ship the 18 migrated cases reproduce today's measurement: 16 cases with every deciding rule reaching the prompt, with `panharmonicon-controller-not-entering-permanent` (603.2) and `restoration-angel-blink-resets-counters` (400.7) recorded as misses
+  - **rule check (ratchet)**: a committed baseline file (`apps/backend/src/eval/rules-gate/baseline.json`) records, per case, which of its `decidingRuleIds` were among the System 3 excerpts in the prompt at the production cap (hits) and which were not (misses), and, apart from those, which of them a curated topic selected for that prompt carries (`inTopic`: a deciding rule that is not a System 3 excerpt but is one of the rule numbers of a selected System 2 topic, read from the production enrichment debug block, so its text is in the prompt's `GAME RULES (reference)` section; written only when non-empty). A deciding rule reaches the prompt when it is a System 3 excerpt or carried by a selected curated topic; the gate fails when a rule recorded as a hit or as `inTopic` reaches the prompt by neither route, naming the case and the rule, and a rule that moves from one route to the other is not a loss. Rules that newly reach the prompt by either route, and cases not yet in the baseline, are reported and never fail the gate. The baseline is raised only by an explicit command (`npm run eval:rules-gate:baseline`, which refuses while a recorded hit has been lost unless `--allow-regressions` accepts the loss), never automatically, following REQ-177's recorded-baseline gate. At first ship the 18 migrated cases reproduce today's measurement: 16 cases with every deciding rule reaching the prompt as a System 3 excerpt, with `panharmonicon-controller-not-entering-permanent` (603.2) and `restoration-angel-blink-resets-counters` (400.7) recorded as misses
   - **frozen query vectors**: the System 3 ranking uses one committed query vector per case (`apps/backend/src/eval/rules-gate/frozen-query-vectors.json`, never under `apps/backend/data/`, so the Lambda package never carries it), embedded once from the exact retrieval query text production builds (`buildRetrievalQueryText`) by the shipped local embedder, following the frozen-vector fixture REQ-181 established (`npm run eval:build-frozen-query-embeddings`); `npm run eval:build-rules-gate-vectors` (re)builds them, refuses any embedding provider but `local`, and stores with each vector a SHA-256 hash of the query text it was embedded from. A non-rejected case with no frozen vector fails the gate. A case whose query text no longer matches the text its vector was built from (the stored hash differs from a hash of the query text built now) — for example after a card-data refresh changes a card's keywords — is reported as awaiting a re-freeze and listed by the staleness report (REQ-225), and is not scored by the ratchet until re-frozen (neither a hit nor a miss, whatever its baseline records), so a weekly `data:refresh-pr` is never blocked by it; the gate and the staleness report decide this with one shared check (`checkReFreeze`)
   - **state-fact check (layer 3)**: for every case with a non-null `gameState`, the request built from it must pass the In-Depth request's own schema (`gameContextSchema`), and a case the schema rejects fails the gate, naming the case — the shared loader checks only the structural rules REQ-185 states, because the schema is TypeScript; then every fact it states appears in the assembled prompt as the line the prompt prints for it — each card under its zone's section, each stack item at its position (bottom to top), each `owner` (cards outside the stack) and each `caster` (stack items), each target, each card note (where a controller that differs from the owner is stated, since the In-Depth request has no controller field), the turn phase and its guidance, the active player and each life total; a miss fails the gate, naming the case and the fact
-  - the gate prints a summary: cases checked, cases scored (hit and missed), cases awaiting a re-freeze, cases that regressed, cases that failed, and the new hits to record
+  - the gate prints a summary: cases checked, cases scored (hit and missed), cases with a deciding rule carried by a curated topic, cases awaiting a re-freeze, cases that regressed, cases that failed, and the new hits to record
 - Constraints:
   - no provider call, no live embedding call, no network call; deterministic run to run
   - no change to `preparePromptInput`, System 3 query construction, scoring, the excerpt cap, or any prompt text; the gate observes the production prompt, it does not alter it
@@ -5802,10 +5837,12 @@
   - REQ-185 (the corpus it reads)
   - REQ-177 (the recorded-baseline gate pattern)
   - REQ-181 (the frozen query-vector pattern and the semantic retrieval it reproduces)
+  - REQ-022 (the curated System 2 topics whose listed rules count as reaching the prompt)
   - REQ-225 (the staleness report that lists cases awaiting re-freeze)
   - NFR-018 (the track whose prompt half this makes gating)
 - Notes:
   - measured 2026-10-06: `npm run eval:worked-solutions` reports 16/18 hits with the local embedder (all 18 ranked semantically) and 14/18 with `EMBEDDING_PROVIDER=mock`; the gate must therefore rank semantically from frozen vectors, since a lexical pass would record a different baseline from what production does. The whole 18-case lexical check ran in 0.68 s wall time including data load. A frozen vector is stored as base64 of its float32 values (the local embedder produces float32, so the round trip is exact), about 2.2 KB per 384-dimension vector against about 9.1 KB as a JSON number array in the REQ-181 fixture
+  - amended by `niche-interaction-rule-tests` (2026-10-07): the ratchet also counts a deciding rule carried by a selected curated topic, recorded apart as `inTopic`. Measured with production prompt preparation: REQ-220's topic carries all four deciding rules of `academy-manufactor-esix-treasure`, which a System 3-only ratchet records as misses, and it moves rule 616.1f of `replacement-bard-and-bilbo-tokens` from a System 3 excerpt into the topic, which the System 3-only ratchet failed as a lost hit although the rule stays in the prompt. `hit` and `miss` keep their System 3 meaning, so the evidence trace's parity with this baseline (REQ-229) is unchanged. Measured over the 392 approved cases: 6 have a topic-carried deciding rule without REQ-220 (603.2 in five, 400.7 in one), 11 with it, and no recorded hit is lost
 
 ### REQ-223
 - Title: Mechanic coverage gate and coverage report for the rules test corpus
@@ -5973,7 +6010,7 @@
   - REQ-222 (the frozen query vectors and the baseline it reproduces)
   - REQ-189 (`goldRuleInPrompt` and `allDecidingRulesInPrompt`)
 - Notes:
-  - measured 2026-10-07 from the committed `baseline.json` at `3e973ced`: of 392 approved cases, System 3 selects every deciding rule for 287, some for 14, and none for 91. `academy-manufactor-esix-treasure` misses all of 614.1a, 616.1, 616.1e and 616.1f; `necropotence-silence-borne-upon-a-wind-cleanup` selects 514.1 and misses 514.2 and 514.3a. The baseline records System 3 selections only, which is why this trace adds availability
+  - measured 2026-10-07 from the committed `baseline.json` at `3e973ced`: of 392 approved cases, System 3 selects every deciding rule for 287, some for 14, and none for 91. `academy-manufactor-esix-treasure` misses all of 614.1a, 616.1, 616.1e and 616.1f; `necropotence-silence-borne-upon-a-wind-cleanup` selects 514.1 and misses 514.2 and 514.3a. The baseline's hit and miss lists record System 3 selections only, which is why this trace adds availability
   - `retrieveRulesForQueryWithDebug` returns only ten ranks below the cap as `runnerUp`; a full rank needs the larger-cap preparation above
 
 ### REQ-230

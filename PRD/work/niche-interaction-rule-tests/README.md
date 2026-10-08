@@ -18,9 +18,11 @@ Make the Comprehensive Rules that decide a hard interaction reach the AI when th
 | Slice | Title | Status | Depends on | Criteria |
 | --- | --- | --- | --- | --- |
 | A | [Topic data and size guard](slice-a-topic-data-and-size-guard.md) | done | none | 8 (1 manual) |
-| B | [Card-wording selector and the rules-retrieval product truth](slice-b-card-wording-selector-and-rules-truth.md) | planned | Slice A (the topic must exist in the committed artifact for the lookup and prompt tests) | 12 (0 manual) |
-| C | [The rules gate counts a rule a curated topic carries](slice-c-rules-gate-counts-topic-rules.md) | planned | Slices A and B (the baseline records the topic only once the selector fires it) | 11 (0 manual) |
+| B | [Card-wording selector and the rules-retrieval product truth](slice-b-card-wording-selector-and-rules-truth.md) | done | Slice A (the topic must exist in the committed artifact for the lookup and prompt tests) | 12 (0 manual) |
+| C | [The rules gate counts a rule a curated topic carries](slice-c-rules-gate-counts-topic-rules.md) | done | Slices A and B (the baseline records the topic only once the selector fires it) | 11 (0 manual) |
 | D | [Re-measure against every rule-output suite and ship](slice-d-remeasure-and-ship.md) | planned | Slices A, B, and C | 14 (4 manual) |
+
+Build note (2026-10-07): Slices B and C landed in one commit. Slice B alone turns the topic on, which makes the rules gate fail on `replacement-bard-and-bilbo-tokens` until Slice C teaches the gate to count topic-carried rules, so no B-only tree passes `npm run quality:check`.
 
 Plan: [GAMEPLAN.md](GAMEPLAN.md). Build order A, B, C, D. Slices B and C apply the owner-accepted product truth (REQ-220 new; REQ-022 and REQ-222 amended; REQ-221 withdrawn and unused) to `PRD/sections/` with the code; Slice D replaces REQ-220's last Notes bullet with the measured before and after. Build step 7 (copy `apps/backend/data/models/` from the main checkout, never download) and the PR #273 rule-index check are carried in Slices A and D.
 

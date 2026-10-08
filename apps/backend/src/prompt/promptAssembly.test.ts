@@ -372,6 +372,21 @@ describe("Backend - Ask AI", () => {
       expect(prompt.indexOf("OFFICIAL RULINGS")).toBeLessThan(prompt.indexOf("SCOPE"));
     });
 
+    it("carries the replacement-and-prevention interaction topic's title and rules when it is selected, and not otherwise (REQ-220)", () => {
+      const interactionTopic: GameRulesTopic = {
+        id: "replacement-effects-interaction",
+        title: "Interaction of Replacement and Prevention Effects",
+        ruleNumbers: ["616.1"],
+        excerpt: "616.1. If two or more replacement and/or prevention effects are attempting to modify the way an event affects an object, the affected object's controller chooses one."
+      };
+      const withTopic = buildPromptText(baseContext, { gameRulesTopics: [...sampleGameRulesTopics, interactionTopic] });
+      expect(withTopic).toContain("Interaction of Replacement and Prevention Effects");
+      expect(withTopic).toContain("616.1. If two or more replacement and/or prevention effects");
+
+      const withoutTopic = buildPromptText(baseContext, { gameRulesTopics: sampleGameRulesTopics });
+      expect(withoutTopic).not.toContain("Interaction of Replacement and Prevention Effects");
+    });
+
     it("omits GAME RULES section when no topics provided", () => {
       const prompt = buildPromptText(baseContext, { gameRulesTopics: [] });
       expect(prompt).not.toContain("GAME RULES (reference)");

@@ -4,7 +4,7 @@ import {
   type RulingEntry
 } from "../cardRulings.js";
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
-import { ALWAYS_ON_TOPIC_IDS, selectGameRulesTopics } from "../gameRulesTopicSelection.js";
+import { ALWAYS_ON_TOPIC_IDS, selectCardWordingTopicIds, selectGameRulesTopics } from "../gameRulesTopicSelection.js";
 import {
   buildCompactCardSignal,
   buildQueryText,
@@ -209,9 +209,14 @@ function prepareLookupPromptInput(
   const limits = getRulingLimits();
   const cardsForRulings = (context.cards ?? []).map((card) => ({ cardId: card.cardId, name: card.name }));
   const allGameRulesTopics = options.gameRulesTopics ?? [];
-  const gameRulesTopics = allGameRulesTopics.filter((topic) =>
-    ALWAYS_ON_TOPIC_IDS.includes(topic.id as (typeof ALWAYS_ON_TOPIC_IDS)[number])
-  );
+  // REQ-220: the four always-on topics, plus the replacement-and-prevention
+  // interaction topic when two or more attached cards carry that wording.
+  const lookupTopicIds = new Set<string>([
+    ...ALWAYS_ON_TOPIC_IDS,
+    ...selectCardWordingTopicIds(context.cards ?? [])
+  ]);
+  // The loaded topic list is id-ordered, so the filtered list stays in id order.
+  const gameRulesTopics = allGameRulesTopics.filter((topic) => lookupTopicIds.has(topic.id));
   const gameRulesSection = formatGameRulesSection(gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
   // REQ-167 / REQ-178 / REQ-180: System 3 scores the question plus, for every

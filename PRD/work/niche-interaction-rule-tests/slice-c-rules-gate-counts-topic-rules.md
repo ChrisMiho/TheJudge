@@ -1,6 +1,6 @@
 # Slice C — The rules gate counts a rule a curated topic carries
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 

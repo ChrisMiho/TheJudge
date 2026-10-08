@@ -1,6 +1,6 @@
 # Slice B — Card-wording selector and the rules-retrieval product truth
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
