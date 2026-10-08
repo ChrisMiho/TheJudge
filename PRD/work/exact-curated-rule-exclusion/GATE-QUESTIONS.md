@@ -20,7 +20,7 @@ Recommendation: accept all five. The last four are wording that follows from
 `REQ-179`; rejecting `REQ-179` means rejecting them too.
 
 Full evidence, every decision with its source, and the line-level amendment
-set (46 rows): `DESIGN-BRIEF.md` in this folder.
+set (47 rows): `DESIGN-BRIEF.md` in this folder.
 
 ## REQ-179 — the rule search stops hiding sub-rules the prompt never shows
 
@@ -41,10 +41,11 @@ nothing else. The always-on triggered-ability topic lists 603.1, 603.2 and
 
 So today 41 sub-rules can never reach the AI on any card-lookup question,
 by either route — 603.1a–b, 603.2a–h, 603.3a–d, 117.1a–d, 117.3a–d,
-115.1a–e, 115.10a–b and 400.7a–m (127 across all topics in an In-Depth game
-question). A player who asks "does a 'becomes tapped' trigger fire when the
-permanent enters tapped?" gets an AI that never sees 603.2e, the one rule that
-says it doesn't.
+115.1a–e, 115.10a–b, 400.7a–k and 400.7m. Across all 24 topics the count is
+125 different sub-rules, those 41 included: each is barred whenever the topic
+listing its parent is picked, and no topic prints any of them. A player who
+asks "does a 'becomes tapped' trigger fire when the permanent enters tapped?"
+gets an AI that never sees 603.2e, the one rule that says it doesn't.
 
 This change makes System 3 skip only the exact rule numbers a selected topic
 lists. A sub-rule the topic does not print competes like any other rule. Both
@@ -55,8 +56,11 @@ it lists, so if a topic ever starts printing an unlisted rule, the test fails
 and this rule gets revisited before anything prints twice.
 
 Measured offline on today's code and data (the probe behind this package,
-2026-10-07): 603.2e ranks first for the "becomes tapped" case and 603.2g first
-for the "prevented damage doesn't trigger" case. Rules test cases with every
+2026-10-07): in the blended search the app ships, ranked the way the rules gate
+ranks it, 603.2e ranks first for the "becomes tapped" case and 603.2g first
+for the "prevented damage doesn't trigger" case. That is the check this slot
+sets. The word-match search was not measured for these two cases; the build
+records how it does on them, without making it a pass/fail check. Rules test cases with every
 deciding rule in the prompt go 293 → 295 of 392. No rule that reaches the
 prompt today is lost. Three of the 31 stored test prompts change, each by one
 rule swapped. The prompt's typical size doesn't move (largest growth 465
@@ -92,9 +96,16 @@ deciding rule, and the four amendments below have nothing to follow.
 +  - System 3 excludes a candidate rule only when its own id is one of the rule numbers a selected curated topic lists in `gameRulesTopicManifest.json`; a candidate whose parent rule a selected topic lists, but which that topic does not list itself, is ranked and selected like any other rule. The same rule holds on the hybrid path and on the lexical path (the mock/offline default and the embedding-failure fallback), in lookup mode and in game mode, through the one shared retrieval path
 +  - a test over the committed game-rules data asserts that every curated topic's excerpt in `gameRulesByTopic.json` carries the full text of each rule it lists and the full text of no other rule in `gameRulesRuleIndex.json`, so a topic that ever carries a rule it does not list fails the test and this exclusion is revisited, rather than the prompt printing that rule twice
 +  - the offline evidence trace's report that System 3 skipped a deciding rule because a curated topic carries it (REQ-229) applies the same exact-id rule
-+  - for the approved rules test cases `triggers-becomes-tapped-not-entering-tapped` (deciding rule 603.2e: an ability that triggers when a permanent "becomes tapped" doesn't trigger if it enters the battlefield tapped) and `triggers-damage-prevented-no-trigger` (deciding rule 603.2g), the deciding rule is a System 3 excerpt in the prompt
++  - for the approved rules test cases `triggers-becomes-tapped-not-entering-tapped` (deciding rule 603.2e: an ability that triggers when a permanent "becomes tapped" doesn't trigger if it enters the battlefield tapped) and `triggers-damage-prevented-no-trigger` (deciding rule 603.2g), the deciding rule is a System 3 excerpt in the prompt under hybrid ranking from the case's committed frozen query vector, as the rules gate (REQ-222) ranks it; under lexical ranking (the mock/offline default) the two cases' result is recorded at build, not gated
 +  - no rule that reached the prompt before this change is lost: the rules gate (REQ-222) passes with no regression, and its baseline is raised in the same change with `npm run eval:rules-gate:baseline`, without `--allow-regressions`
-+  - measured targets, from the 2026-10-07 measurement on commit `f98b8feb` (offline, committed frozen query vectors, local embedder for the hybrid rows): rules test cases with every deciding rule reaching the prompt as a System 3 excerpt or through a curated topic 293 → 295 of 392; `npm run eval:worked-solutions` 287 → 289 of 392; first-ship cases in System 3 under hybrid ranking 16/18 → 16/18, the same two misses; the context-evaluation harness's labelled System 3 checks 14/14 semantic and 14/14 lexical, unchanged; exactly three of the 31 prompt goldens change — `commander-spellbook-lookup-attached-intent` (614.10a out, 115.1b in), `commander-spellbook-wrong-zone` (500.10a out, 117.3a in), `upkeep-trigger` (609.7a out, 603.3b in) — each regenerated as a reviewed consequence of admitting a sub-rule, never a silent update; the retrieval benchmark's recall@5 is unchanged (both of its scorers rank with an empty curated exclusion set). If the Comprehensive Rules text in the committed index changes before this ships, these values are re-measured on the new index and recorded instead; the two criteria above stay the gate
++  - measured targets, from the 2026-10-07 measurement on commit `f98b8feb` (offline, committed frozen query vectors, local embedder for the hybrid rows): rules test cases with every deciding rule reaching the prompt as a System 3 excerpt or through a curated topic 293 → 295 of 392; `npm run eval:worked-solutions` 287 → 289 of 392; first-ship cases in System 3 under hybrid ranking 16/18 → 16/18, the same two misses; under lexical ranking 14/18 before (REQ-220's 2026-10-07 record), the after-value recorded at build, not targeted; the context-evaluation harness's labelled System 3 checks 14/14 semantic and 14/14 lexical, unchanged; exactly three of the 31 prompt goldens change — `commander-spellbook-lookup-attached-intent` (614.10a out, 115.1b in), `commander-spellbook-wrong-zone` (500.10a out, 117.3a in), `upkeep-trigger` (609.7a out, 603.3b in) — each regenerated as a reviewed consequence of admitting a sub-rule, never a silent update; the retrieval benchmark's recall@5 is unchanged (both of its scorers rank with an empty curated exclusion set). If the Comprehensive Rules text in the committed index changes before this ships, these values are re-measured on the new index and recorded instead; the two criteria above stay the gate
+```
+
+and the last `- Acceptance Criteria:` bullet:
+
+```diff
+-  - `npm run test:eval` stays green; any golden prompt change is an intentional, reviewed consequence of removing a junk excerpt, never a silent update
++  - `npm run test:eval` stays green; any golden prompt change is an intentional, reviewed consequence of removing a junk excerpt or of admitting a sub-rule that a curated topic lists the parent of but does not print, never a silent update
 ```
 
 and under `- Constraints:`, as the last bullet:
@@ -113,7 +124,7 @@ and under `- Dependencies:`, after `  - REQ-022 (the System 3 enrichment require
 and as the last bullets of `- Notes:`:
 
 ```diff
-+  - amended by `exact-curated-rule-exclusion`: the exclusion originally matched by rule-number prefix — a candidate was excluded when its id or any of its parent rule ids was selected by the curated baseline — on the premise that a curated topic carries its listed parent's lettered sub-rules. It does not: measured 2026-10-07 on `f98b8feb` over all 24 curated topics, every topic carries exactly the rules it lists, none missing and none extra (the always-on `abilities-trigger-basics` topic lists 603.1, 603.2 and 603.3 and prints only those three parent sentences, 926 characters). Prefix exclusion therefore kept 41 sub-rules out of every lookup prompt by any route — 603.1a–b, 603.2a–h, 603.3a–d, 117.1a–d, 117.3a–d, 115.1a–e, 115.10a–b, 400.7a–m — and 127 across all 24 topics in game mode. Excluding exactly the rules whose text a topic carries selects the same set on today's data; the data test above keeps the two equal. Whole-prompt size change over the corpus: median 0, p95 +79, max +465, mean −30 characters (median prompt 14,306). 58 cases' System 3 picks change (76 picks displaced, none a deciding rule)
++  - amended by `exact-curated-rule-exclusion`: the exclusion originally matched by rule-number prefix — a candidate was excluded when its id or any of its parent rule ids was selected by the curated baseline — on the premise that a curated topic carries its listed parent's lettered sub-rules. It does not: measured 2026-10-07 on `f98b8feb` over all 24 curated topics, every topic carries exactly the rules it lists, none missing and none extra (the always-on `abilities-trigger-basics` topic lists 603.1, 603.2 and 603.3 and prints only those three parent sentences, an 803-character excerpt). Prefix exclusion therefore kept 41 sub-rules out of every lookup prompt by any route — 603.1a–b, 603.2a–h, 603.3a–d, 117.1a–d, 117.3a–d, 115.1a–e, 115.10a–b, 400.7a–k and 400.7m — and, across all 24 topics, 125 distinct sub-rules that no topic lists (those 41 included), each barred whenever the topic listing its parent was selected (127 counted topic by topic: 120.3f and 614.1a are each barred by one topic and listed by another). Excluding exactly the rules whose text a topic carries selects the same set on today's data; the data test above keeps the two equal. Whole-prompt size change over the corpus: median 0, p95 +79, max +465, mean −30 characters (median prompt 14,306). 58 cases' System 3 picks change (76 picks displaced, none a deciding rule)
 +  - out of scope, decided at the `exact-curated-rule-exclusion` define gate: a keyword → defining-rule lookup (measured: in 62 of the 63 keyword cases whose deciding rule never reaches the prompt, the verbatim official ruling the case was written from already answers it); expanding a rule that ends "the following rules:" into its sub-rules; rules-corpus label hygiene; raising the System 3 cap; any new curated topic. The always-on `stack-and-priority` topic prints 117.3, which ends "determined by the following rules:" with nothing after it; this change lets 117.3a–d compete in System 3 but does not add them to the topic (884 characters on every prompt) — a recorded follow-up
 ```
 
@@ -246,7 +257,9 @@ and under `- Dependencies:`:
 ## REQ-181 — the meaning-based rule search stops saying "prefix" (amended)
 
 **What this decides:** whether the requirement for System 3's meaning-based
-search describes its duplicate-skipping the new way.
+search describes its duplicate-skipping the new way. System 3 is the scored
+rule search that adds up to ten rule excerpts to each prompt; System 2 is the
+small set of curated rules topics it skips duplicates of.
 
 **In plain terms:** REQ-181 is the requirement that made the rule search rank
 rules by meaning, using stored per-rule vectors (lists of numbers that capture
@@ -273,7 +286,9 @@ and contradicts `REQ-179` once it ships. Say no only if you also reject
 ## REQ-182 — the blended rule search stops saying "prefix" (amended)
 
 **What this decides:** whether the requirement for System 3's blended ranking
-describes its duplicate-skipping the new way.
+describes its duplicate-skipping the new way. System 3 is the scored rule
+search that adds up to ten rule excerpts to each prompt; System 2 is the small
+set of curated rules topics it skips duplicates of.
 
 **In plain terms:** REQ-182 is the requirement for the ranking the app ships.
 It blends the meaning score with the shared-words score, so short card-lookup
@@ -307,8 +322,10 @@ not change.
 more cards say "instead" or "prevent". It prints the rules for how replacement
 and prevention effects interact: 614.1a, 616.1, 616.1a through 616.1g, and
 616.2. Its note explains why it ships the whole 616.1 family. Part of that
-reason was that "listing 616.1 bars System 3 from every 616.1 sub-rule". With
-`REQ-179` amended, that is no longer true. The topic still lists each 616.1
+reason was that "listing 616.1 bars System 3 from every 616.1 sub-rule" —
+System 3 being the scored rule search that adds up to ten more rule excerpts
+and skips any rule a selected topic already carries. With `REQ-179` amended,
+that is no longer true. The topic still lists each 616.1
 sub-rule itself, so exactly the same rules are skipped and every prompt
 carrying it is unchanged. This rewrites that clause as history and relabels
 REQ-220's pointer to REQ-179.

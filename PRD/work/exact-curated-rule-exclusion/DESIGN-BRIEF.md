@@ -80,7 +80,8 @@ three-condition genuine-blocker test.
 | D7 | Keep REQ-179's title and amend it in place; add no new stable id and no DEC. | Rung 1: `requirement-format.md` "Decisions (retired)"; dispatch instruction. |
 | D8 | Amend REQ-220's rationale note, which states "listing 616.1 bars System 3 from every 616.1 sub-rule". | Rung 1: current-state truth must not describe a mechanism that no longer exists. Behaviour is unchanged for that topic: it lists 616.1a–g explicitly (REQ-220 acceptance). |
 | D9 | Leave dated acceptance records of shipped requirements unchanged (REQ-220's "287 of 392 … none of the 31 fixtures' goldens changes", REQ-222's "6 have a topic-carried deciding rule", REQ-180's "values recorded after REQ-179"). | Rung 5: each is a measurement dated to its own build, not a live claim; amending them would rewrite history. |
-| D10 | Lexical first-ship count is recorded at build, not targeted. | Quantitative-target rule: the intake measured the hybrid 16/18 only; no lexical after-value was measured, so none is set. |
+| D10 | Lexical first-ship count is recorded at build, not targeted. | Quantitative-target rule: the intake measured the hybrid 16/18 only; no lexical after-value was measured, so none is set. The before-value the build compares against is already in the PRD: 14/18 under lexical ranking (REQ-220 acceptance and build notes, `functional-requirements.md:5801`, `:5817`). |
+| D11 | The two closing cases (603.2e, 603.2g) are gated under hybrid ranking from each case's committed frozen query vector — the path the rules gate ranks on — and their lexical result is recorded at build, not gated. Not measured now. | Rung 1: REQ-222 Notes (`functional-requirements.md:5844`) — "the gate must therefore rank semantically from frozen vectors, since a lexical pass would record a different baseline from what production does"; REQ-229 traces every case "ranked with its committed frozen query vector (REQ-222)". The only recorded measurement of the two cases (intake: 603.2e and 603.2g first) is that path. Quantitative-target rule: no lexical rank is recorded, so none is set. Measuring lexical ranks now would mean running the exclusion code path the intake cites, which refinement does not open; the build measures it with the code in hand. Exact exclusion only adds candidates, so it cannot remove a rule lexical ranking selects today except by displacement, which the rules gate's zero-regression check already covers. |
 
 ## Product truth proposed
 
@@ -153,11 +154,13 @@ Greps run in this worktree over `PRD/sections/` at `d9b0090a`:
 | 44 | `functional-requirements.md:5996` | REQ-229 Acceptance | "whether System 3 skipped it because a curated System 2 topic already carries it" | no change — exact exclusion makes it literally true (D4) |
 | 45 | `functional-requirements.md:5997` | REQ-229 Acceptance | reports each deciding rule's parent and lettered subrules | no change — trace reporting, not exclusion |
 | 46 | `functional-requirements.md:6021` | REQ-230 Acceptance | experiment arm C's deciding-rule bundle | no change — experiment arm, not exclusion |
+| 47 | `functional-requirements.md:4228` | REQ-179 Acceptance | "any golden prompt change is an intentional, reviewed consequence of removing a junk excerpt, never a silent update" | **amend** — widen to also cover goldens changed by admitting a sub-rule (REQ-179 slot). Not a grep hit; added at define attempt 2 from quality-check item M3 |
 
-Disposition counts: **46 rows — 19 amend, 27 no change.** The 19 amend rows land
-as 17 replacement diffs (rows 7–8 and 19–20 are one sentence each):
+Disposition counts: **47 rows — 20 amend, 27 no change.** The 20 amend rows land
+as 18 replacement diffs (rows 7–8 and 19–20 are one sentence each):
 
-- REQ-179 slot, 11: its own Description and acceptance bullet (rows 28, 29),
+- REQ-179 slot, 12: its own Description and two acceptance bullets (rows 28,
+  29, 47),
   plus nine dependent lines — `system-map/game-rules-retrieval.md` ×4 (rows
   7–8, 11, 12, 13), `system-map.md` ×1 (row 1), `integrations-and-data.md` ×1
   (row 4), `in-depth/README.md` ×1 (row 15), `quick-lookup/README.md` ×2 (rows
@@ -167,7 +170,9 @@ as 17 replacement diffs (rows 7–8 and 19–20 are one sentence each):
   (row 38). REQ-220 slot, 2 (rows 42, 43).
 
 Every removed line in `GATE-QUESTIONS.md` was checked verbatim against
-`PRD/sections/` (27 of 27 lines found).
+`PRD/sections/` (28 of 28 lines found, re-run at define attempt 2: every `-`
+line inside a `diff` block matched whole-line with `grep -rqxF` over
+`PRD/sections/`).
 
 ## Acceptance targets and where each number comes from
 
@@ -175,7 +180,10 @@ Structural gates (no number to drift):
 
 - 603.2e is a System 3 excerpt in the prompt for
   `triggers-becomes-tapped-not-entering-tapped`; 603.2g for
-  `triggers-damage-prevented-no-trigger`.
+  `triggers-damage-prevented-no-trigger` — under hybrid ranking from each
+  case's committed frozen query vector, the path the rules gate (REQ-222) and
+  the evidence trace (REQ-229) rank on (D11). Under lexical ranking the two
+  cases' result is recorded at build, not gated.
 - The rules gate passes with zero regressions; the baseline is raised without
   `--allow-regressions`.
 - The topic-carries-exactly data test passes on the committed data.
@@ -193,22 +201,77 @@ to the owner at the gate in the REQ-179 slot; refinement did not re-measure.
 | Rules test cases with every deciding rule in the prompt, System 3 or curated topic (of 392) | 293 | 295 |
 | `npm run eval:worked-solutions` (every deciding rule a System 3 pick) | 287 | 289 |
 | First-ship cases, hybrid (of 18) | 16 | 16 (same two misses) |
+| First-ship cases, lexical (of 18) | 14 (REQ-220 record, `functional-requirements.md:5801`, `:5817`) | recorded at build, not targeted (D10) |
+| The two closing cases under lexical ranking | not measured | recorded at build, not targeted (D11) |
 | Context-eval labelled System 3 checks, semantic / lexical | 14 / 14 | 14 / 14 |
 | Prompt goldens that change (of 31) | — | exactly 3: `commander-spellbook-lookup-attached-intent` (614.10a out / 115.1b in), `commander-spellbook-wrong-zone` (500.10a out / 117.3a in), `upkeep-trigger` (609.7a out / 603.3b in) |
 | Retrieval benchmark recall@5 | 0.5833 / 0.5769 lexical, 0.8974 / 0.8910 hybrid (REQ-220 record) | unchanged — both scorers pass an empty exclusion set |
 | Whole-prompt size | median 14,306 | recorded, not gated: median 0, p95 +79, max +465, mean −30 characters |
 
-Before-values 287, 16/18 and 14/14 match the current PRD record (REQ-220 build
+Before-values 287, 16/18 (hybrid), 14/18 (lexical) and 14/14 match the current PRD record (REQ-220 build
 notes, 2026-10-07). 293 is not in the PRD; it is intake-measured.
 
 **Build-time condition — PR #273.** PR #273 (data refresh, new Comprehensive
 Rules text) is open. If it merges into `main` before this build, the build
-re-measures every number above, the 41 / 127 blocked-sub-rule counts, the two
+re-measures every number above, the 41 / 125 blocked-sub-rule counts (defined
+and measured as in `## Measured at define` below: distinct sub-rules no topic
+lists that a topic listing their parent bars, per-topic sum recorded alongside),
+the 803-character `abilities-trigger-basics` excerpt length, the two
 closing cases and the changed-golden list on the refreshed rule index before
 committing, and records those values in REQ-179's note in place of the
 `f98b8feb` values. The structural gates above stay the gate either way. If the
 re-measure shows a recorded rule lost, the build stops and reports rather than
 passing `--allow-regressions`.
+
+## Measured at define
+
+Run at define attempt 2, 2026-10-07, in this worktree at `15648dcb`, offline
+against the committed game-rules data (no network, no model call). The data
+files are identical to `f98b8feb`: `git diff --stat f98b8feb HEAD --
+apps/backend/data` prints nothing. The always-on topic ids are
+`ALWAYS_ON_TOPIC_IDS` in `apps/backend/src/gameRulesTopicSelection.ts`
+(`stack-and-priority`, `targets-basics`, `zones-basics`,
+`abilities-trigger-basics`). A sub-rule counts as barred by a topic when the
+topic does not list it but lists one of its `parentRuleIds` in
+`gameRulesRuleIndex.json` — the prefix rule as stated today.
+
+Command:
+
+```sh
+node -e '
+const T=require("./apps/backend/data/gameRulesByTopic.json"),R=require("./apps/backend/data/gameRulesRuleIndex.json");
+const listed=new Set(T.flatMap(t=>t.ruleNumbers));
+const barred=t=>{const L=new Set(t.ruleNumbers);return R.filter(r=>!L.has(r.ruleId)&&(r.parentRuleIds||[]).some(p=>L.has(p))).map(r=>r.ruleId)};
+const a=T.find(t=>t.id==="abilities-trigger-basics").excerpt;
+console.log("abilities-trigger-basics excerpt chars",a.length,"utf8 bytes",Buffer.byteLength(a));
+const core=["stack-and-priority","targets-basics","zones-basics","abilities-trigger-basics"];
+const c=core.flatMap(id=>barred(T.find(t=>t.id===id)));console.log("always-on barred",c.length,c.join(" "));
+const per=T.flatMap(barred);const d=new Set(per);const un=[...d].filter(i=>!listed.has(i));
+console.log("per-topic sum",per.length,"distinct",d.size,"distinct no topic lists",un.length,"listed by another topic",[...d].filter(i=>listed.has(i)).join(" "));'
+```
+
+Output:
+
+```text
+abilities-trigger-basics excerpt chars 803 utf8 bytes 819
+always-on barred 41 117.1a 117.1b 117.1c 117.1d 117.3a 117.3b 117.3c 117.3d 115.1a 115.1b 115.1c 115.1d 115.1e 115.10a 115.10b 400.7a 400.7b 400.7c 400.7d 400.7e 400.7f 400.7g 400.7h 400.7i 400.7j 400.7k 400.7m 603.1a 603.1b 603.2a 603.2b 603.2c 603.2d 603.2e 603.2f 603.2g 603.2h 603.3a 603.3b 603.3c 603.3d
+per-topic sum 127 distinct 127 distinct no topic lists 125 listed by another topic 120.3f 614.1a
+```
+
+What the proposal takes from it:
+
+- The `abilities-trigger-basics` excerpt is **803 characters** (REQ-179 Notes
+  bullet). The intake's 926 traces to no measurement and is not used.
+- **41** sub-rules are barred on every lookup prompt by the four always-on
+  topics. 400.7 contributes 400.7a–k and 400.7m (the index has no 400.7l).
+- Across all 24 topics, **125** distinct sub-rules that no topic lists are
+  barred whenever the topic listing their parent is selected — the 41
+  included. Counted topic by topic the sum is 127; the difference is 120.3f
+  (barred by `damage-basics`, listed by `damage-lifelink-deathtouch`) and
+  614.1a (barred by `replacement-effects-basics`, listed by
+  `replacement-effects-interaction`), which reach the prompt when their listing
+  topic is selected. The proposal states 125 and gives 127 only as the
+  topic-by-topic sum.
 
 ## Build outline (for map-out)
 
@@ -236,7 +299,10 @@ confirms.
 
 - `npm run eval:rules-gate:baseline` without `--allow-regressions`.
 - Re-run every suite in the target table and record the values in REQ-179's
-  note (and the receipt); confirm the two closing cases.
+  note (and the receipt); confirm the two closing cases under hybrid ranking
+  (the gate), and record the lexical first-ship count and the two closing
+  cases' lexical result from `EMBEDDING_PROVIDER=mock npm run
+  eval:worked-solutions` (recorded, not gated).
 
 Verification commands: `npm run quality:check`, `npm run test:scripts`,
 `npm --workspace apps/backend run test`, `npm run eval:worked-solutions`
@@ -244,7 +310,11 @@ Verification commands: `npm run quality:check`, `npm run test:scripts`,
 `npm run benchmark:rag-retrieval` (and `-- --semantic`), the context-evaluation
 harness under both providers, `npm run eval:evidence-trace -- --case
 triggers-becomes-tapped-not-entering-tapped --case
-triggers-damage-prevented-no-trigger`.
+triggers-damage-prevented-no-trigger` (no provider switch: REQ-229 ranks each
+case from its committed frozen query vector, falling back to the local embedder
+only for a case awaiting a re-freeze — the hybrid path the closing-case gate
+binds to; the lexical result comes from the `EMBEDDING_PROVIDER=mock`
+worked-solutions run above).
 
 ## Risks
 
@@ -263,6 +333,28 @@ triggers-damage-prevented-no-trigger`.
   `FINDINGS-two-fixes.md`, `measure-two-fixes.mjs`. Path recorded only.
 - Code and test paths named in the build outline — cited by the intake, not opened.
 - Prior runs on this ground: listed in `IDEA.md` `## Prior run`.
+
+## Define attempt 2 — quality-check findings resolved
+
+Quality-check attempt 1 (`QUALITY-CHECK.md`) failed on three must-fix items.
+Everything else attempt 1 wrote stands.
+
+- **F1** — the excerpt length is 803 characters, measured above; the REQ-179
+  Notes bullet says 803.
+- **F2** — the REQ-179 plain-language block and Notes bullet say 125 distinct
+  sub-rules across all 24 topics, with 127 named only as the topic-by-topic
+  sum; the build-time condition re-measures "41 / 125" by the same definition.
+- **F3** — the closing-case criterion is bound to hybrid ranking from the
+  committed frozen query vectors, the rules-gate path (D11); lexical results
+  are recorded at build, not gated. The `eval:evidence-trace` verification line
+  names its ranking path.
+- **M1** — D10 and the target table cite the lexical first-ship before-value,
+  14/18.
+- **M2** — the REQ-181, REQ-182 and REQ-220 blocks each define System 3 (and
+  System 2 where used) in-block.
+- **M3** — taken: REQ-179's golden-change acceptance bullet is widened (row 47,
+  one more diff in the REQ-179 slot).
+- **M4** — "400.7a–m" is now "400.7a–k and 400.7m" in both places.
 
 ## Blockers
 

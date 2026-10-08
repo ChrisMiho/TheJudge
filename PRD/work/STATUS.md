@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [exact-curated-rule-exclusion](exact-curated-rule-exclusion/) | Rule search should exclude only the exact rule numbers a curated topic lists, so its sub-rules (603.2e, 603.2g) can reach the prompt (REQ-179). Define attempt 2 resolved gate-qc FAIL 1/3 (F1–F3, M1–M4); awaiting gate-qc re-run. Graph run graph-20261008-053030. |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| [exact-curated-rule-exclusion](exact-curated-rule-exclusion/) | Rule search should exclude only the exact rule numbers a curated topic lists, so its sub-rules (603.2e, 603.2g) can reach the prompt (REQ-179). gate-qc FAIL 1/3 (wording precision: F1–F3); back to define. Graph run graph-20261008-053030. |
 
 ## ideation
 

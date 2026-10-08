@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/exact-curated-rule-exclusion` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-exact-curated-rule-exclusion` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half; resume reads this ledger)
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/exact-curated-rule-exclusion/IDEA.md`, `README.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md` (`cmp` identical to staging); `PRD/work/STATUS.md` ideation row; 6 `## Prior run` lines in IDEA.md; launch checkout `git status --porcelain` unchanged | 2026-10-08 |
 | 3 | define | opus | ok | `0 → 42` | `PRD/work/exact-curated-rule-exclusion/DESIGN-BRIEF.md` (270 lines, 46-row line-level amendment set: 19 amend / 27 no change); `GATE-QUESTIONS.md` present → product truth proposed, gates (5 slots: REQ-179, REQ-022, REQ-181, REQ-182, REQ-220; blank verdicts; Blocker questions: none); `STATUS.ideation` → `STATUS.refined`; board row moved ideation → refined; `git diff HEAD -- PRD/sections apps scripts` empty; launch checkout unchanged | 2026-10-08 |
 | 4 | gate-qc | sonnet | failed | `0 → 45` | FAIL attempt 1 of 3 — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: 3 must-fix (F1 803-not-926 excerpt size; F2 127 per-topic sum vs 125 distinct; F3 closing-case criterion names no ranking path / evidence-trace provider) + 4 minor; amendment set, verbatim removed lines and block format passed. Driver recorded FAIL in README `## Preparation gate`, `STATUS.refined` → `STATUS.refining`, board row → refining; loops to define | 2026-10-08 |
+| 5 | define | opus | ok | `0 → 28` | attempt 2: `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` edited in place — F1 803 chars (measured offline, brief `## Measured at define`); F2 125 distinct / 127 per-topic sum; F3 closing cases bound to hybrid frozen-vector path, lexical recorded at build (new D11); M1–M4 addressed (M3 adds amendment row 47 → 47 rows: 20 amend / 27 no change); verdict slots blank; `STATUS.refining` → `STATUS.refined`, board row → refined; no `PRD/sections/` or code diff; launch checkout unchanged | 2026-10-08 |
 
 ## Open gate
 
@@ -135,6 +136,26 @@ For F3, the choice between binding the closing-case criterion to the measured ra
 Rules unchanged from attempt 1: propose, never apply — no edits to `PRD/sections/`, code, data, or tests; amend in place, no DEC entry; intake is evidence, never authority, and documents it cites are never opened; every `- Verdict:` / `- Reason:` slot stays blank. Do not edit the README `## Preparation gate` section or `QUALITY-CHECK.md`. Do not commit. Do not write `GRAPH-RUN.md`.
 
 When done, set the package status marker the skill prescribes for a completed proposal and move the board row in `PRD/work/STATUS.md` to match (remove from the old section, add to the new). Report back: outcome, each finding and how it was resolved, every path written, and any blocker question raised.
+
+### gate-qc (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-exact-curated-rule-exclusion
+
+You are node 4 (`gate-qc`) of graph run `graph-20261008-053030`, attempt 2, re-checking after `define` attempt 2 answered the attempt-1 FAIL. Run the `thejudge-quality-check` skill: read `.claude/skills/thejudge-quality-check/SKILL.md` (and any reference it names) inside the working directory above and follow it in graph mode. Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Work only inside that working directory; never write to any path in the launch checkout `/Users/chrismiho/Coding/Projects/TheJudge/` outside `.worktrees/kickoff-exact-curated-rule-exclusion/`.
+
+Package: `PRD/work/exact-curated-rule-exclusion/`. Checked artifact: `DESIGN-BRIEF.md`, graded together with the proposal in `GATE-QUESTIONS.md` (five amend-in-place slots: REQ-179, REQ-022, REQ-181, REQ-182, REQ-220). The proposal is not yet applied to `PRD/sections/` by design — build applies it — so grade the brief against current `PRD/sections/` truth as amended by that proposal, and grade the proposal's diffs for accuracy against current `PRD/sections/` text. The attempt-1 findings are in the README `## Preparation gate` section; confirm each is resolved, and grade the whole package fresh rather than only the deltas.
+
+Check in particular:
+- Amendment-set completeness at line level: re-run `grep -rnE 'REQ-179|rule-number prefix|lettered sub-rules|sub-rules are excluded|parent rule ids?' PRD/sections/` and case-insensitive greps for `prefix`, `sub-rule`, and `parent rule` over `PRD/sections/`; every hit describing curated exclusion must have a disposition row in the brief, and every amend row a matching diff in `GATE-QUESTIONS.md`.
+- Every removed line in each diff matches `PRD/sections/` verbatim.
+- Each `GATE-QUESTIONS.md` block opens with the three plain-language lines and leaves `- Verdict:` / `- Reason:` blank.
+- Numeric acceptance targets trace to a recorded measurement or to committed data.
+
+Replace `QUALITY-CHECK.md` with this attempt's PASS/FAIL report. Do not edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, or the package `README.md` — the driver writes the `## Preparation gate` section and any status change. Do not commit. Do not write `GRAPH-RUN.md`.
+
+Report back: PASS or FAIL, the report path, and the complete findings list.
 
 ## Instruction ledger
 
