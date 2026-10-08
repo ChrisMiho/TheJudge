@@ -1,0 +1,5 @@
+{
+  "replaces": "Continuous effects and state-based actions use a layer system.",
+  "correction": "Continuous effects use a layer system (rule 613); state-based actions are not part of it and are checked separately whenever a player would receive priority (rule 704).",
+  "approvedOn": "2026-10-08"
+}
