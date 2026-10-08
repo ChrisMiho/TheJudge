@@ -6,6 +6,7 @@
 
 import type { CardDetailEntry } from "../../apps/backend/src/cardDetail.js";
 import type { RulingEntry } from "../../apps/backend/src/cardRulings.js";
+import type { ComboCatalog } from "../../apps/backend/src/commanderSpellbook/catalog.js";
 import type { GameRulesTopic } from "../../apps/backend/src/gameRules.js";
 import type { GameRulesRuleIndexEntry } from "../../apps/backend/src/gameRulesRetrieval.js";
 import type { CaseRequest, GoldCase } from "./gold-cases.mjs";
@@ -15,6 +16,8 @@ export type PromptResources = {
   gameRulesRuleIndex: GameRulesRuleIndexEntry[];
   cardRulingsIndex: Map<string, RulingEntry[]>;
   cardDetailIndex: Map<string, CardDetailEntry>;
+  /** Present when combo enrichment is on (production's default); absent otherwise (REQ-188). */
+  comboCatalog?: ComboCatalog;
 };
 
 export type Embedder = { mode: string; embed: (text: string) => Promise<number[] | null> };
@@ -35,7 +38,11 @@ export function describeRetrieval(
   expectedRuleIds: readonly string[],
   options?: { requireSemantic?: boolean; caseId?: string }
 ): RetrievalDescription;
-export function loadPromptResources(): Promise<PromptResources>;
+export const COMBO_ENRICHMENT_ENV: string;
+export function loadPromptResources(options?: {
+  env?: Record<string, string | undefined>;
+  modules?: Record<string, unknown>;
+}): Promise<PromptResources>;
 export function buildEmbedder(env: Record<string, string | undefined>): Promise<Embedder>;
 export function embedGoldCaseQueries(input: {
   goldCases: Array<Pick<GoldCase, "id" | "question" | "cards" | "gameState">>;

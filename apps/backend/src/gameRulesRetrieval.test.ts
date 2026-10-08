@@ -227,8 +227,15 @@ describe("Backend - Game Rules", () => {
       expect(ruleIds).not.toContain("405.1");
     });
 
-    it("excludes by rule-number prefix (REQ-179): a curated parent rule also excludes its own lettered sub-rules", () => {
+    it("excludes only the exact listed rule id (REQ-179): an unlisted sub-rule of a listed parent is ranked and selected", () => {
       const index = [
+        makeEntry({
+          ruleId: "603.1",
+          sectionTitle: "Triggers",
+          text: "603.1. Triggered abilities have a trigger condition.",
+          searchText: "603.1 triggered abilities trigger condition",
+          parentRuleIds: ["603"]
+        }),
         makeEntry({
           ruleId: "603.1a",
           sectionTitle: "Triggers",
@@ -244,13 +251,27 @@ describe("Backend - Game Rules", () => {
           parentRuleIds: ["405"]
         })
       ];
-      const context = makeContext({ finalQuestion: "What does rule 603.1a say about triggers and the stack?" });
-      // Only the exact parent id "603.1" is curated (as System 2 would pass),
-      // never the lettered child "603.1a" itself — the old exact-id-only
-      // exclusion would have let 603.1a reappear as a supplemental excerpt.
-      const excludeRuleIds = new Set(["603.1"]);
-      const result = retrieveSupplementalRules(context, index, excludeRuleIds);
-      expect(result.map((r) => r.ruleId)).not.toContain("603.1a");
+      const context = makeContext({ finalQuestion: "What does rule 603.1a say about triggered abilities, the trigger condition and the stack?" });
+      // The topic lists the parent id "603.1" only (as System 2 passes it).
+      // Its unlisted sub-rule 603.1a competes like any other rule.
+      const listedParentOnly = retrieveSupplementalRules(context, index, new Set(["603.1"]));
+      expect(listedParentOnly.map((r) => r.ruleId)).toContain("603.1a");
+      expect(listedParentOnly.map((r) => r.ruleId)).not.toContain("603.1");
+
+      // A sub-rule the topic does list is still excluded; its parent is not.
+      const listedSubRule = retrieveSupplementalRules(context, index, new Set(["603.1a"]));
+      expect(listedSubRule.map((r) => r.ruleId)).not.toContain("603.1a");
+      expect(listedSubRule.map((r) => r.ruleId)).toContain("603.1");
+    });
+
+    it("counts only exact-id exclusions in excludedCuratedRuleCount (REQ-179)", () => {
+      const index = [
+        makeEntry({ ruleId: "603.1", text: "603.1. Triggers.", searchText: "603.1 triggers", parentRuleIds: ["603"] }),
+        makeEntry({ ruleId: "603.1a", text: "603.1a Sub-rule.", searchText: "603.1a triggers", parentRuleIds: ["603.1", "603"] })
+      ];
+      const context = makeContext({ finalQuestion: "How do triggers work?" });
+      const result = retrieveSupplementalRulesWithDebug(context, index, new Set(["603.1"]));
+      expect(result.debug.excludedCuratedRuleCount).toBe(1);
     });
 
     it("caps results at max", () => {
@@ -970,9 +991,10 @@ describe("Backend - Game Rules", () => {
       expect(result[0]!.ruleId).toBe("702.2b");
     });
 
-    it("excludes by rule-number prefix under semantic ranking too (REQ-179 dedup applies regardless of scoring path)", () => {
+    it("excludes only the exact listed rule id under semantic ranking too (REQ-179): an unlisted sub-rule is ranked and selected", () => {
       const context = makeContext({ finalQuestion: "What kills a creature outright?" });
-      const result = retrieveSupplementalRules(
+      // 702.2b's parent 702.2 is listed, 702.2b itself is not: it competes.
+      const parentListed = retrieveSupplementalRules(
         context,
         semanticIndex,
         new Set(["702.2"]),
@@ -980,7 +1002,18 @@ describe("Backend - Game Rules", () => {
         semanticResources,
         [1, 0, 0]
       );
-      expect(result.map((r) => r.ruleId)).not.toContain("702.2b");
+      expect(parentListed[0]!.ruleId).toBe("702.2b");
+
+      // The listed id itself is still excluded.
+      const idListed = retrieveSupplementalRules(
+        context,
+        semanticIndex,
+        new Set(["702.2b"]),
+        5,
+        semanticResources,
+        [1, 0, 0]
+      );
+      expect(idListed.map((r) => r.ruleId)).not.toContain("702.2b");
     });
 
     it("caps results at max under semantic ranking", () => {

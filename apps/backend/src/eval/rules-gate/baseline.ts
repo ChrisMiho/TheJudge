@@ -1,7 +1,9 @@
 // REQ-222: the committed ratchet baseline for the offline prompt gate's rule
 // check: for each case, which deciding rules reached the prompt (hit) and which
-// did not (miss) the last time `npm run eval:rules-gate:baseline` ran. The
-// gate fails only when a recorded hit becomes a miss. Same shape as REQ-177's
+// did not (miss) the last time `npm run eval:rules-gate:baseline` ran, plus,
+// apart from those, which a selected curated topic carries (`inTopic`, written
+// only when non-empty). The gate fails only when a recorded hit or `inTopic`
+// rule reaches the prompt by neither route. Same shape as REQ-177's
 // `benchmark/step1-baseline.json`.
 
 import { readFileSync } from "node:fs";

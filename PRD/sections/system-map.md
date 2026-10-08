@@ -63,9 +63,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Game rules retrieval
 
 - Status: shipped
-- Summary: Retrieves card rulings, a card-agnostic curated game-rules baseline, and relevance-scored supplemental rules text to ground prompt reasoning; System 2 (curated) and System 3 (supplemental) are tuned and measured together.
+- Summary: Retrieves card rulings, a curated game-rules baseline (gated by game state, plus one card-wording gate for replacement-effect interactions), and relevance-scored supplemental rules text to ground prompt reasoning; System 2 (curated) and System 3 (supplemental) are tuned and measured together.
 - Lives in: `apps/backend/src/cardRulings.ts`, `gameRules.ts`, `gameRulesTopicSelection.ts`, `gameRulesRetrieval.ts`
-- Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032
+- Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-220
 - Details: `system-map/game-rules-retrieval.md`
 
 ### Card rulings
@@ -78,14 +78,14 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Curated game rules (System 2)
 
 - Status: shipped
-- Summary: Selects an always-on core plus card-agnostic, game-state-gated conditional topics (`turnPhase`, `combatStep`, populated zones) per request, replacing the prior "all topics every request" baseline.
+- Summary: Selects an always-on core plus game-state-gated conditional topics (`turnPhase`, `combatStep`, populated zones) per request, plus the replacement-effect interaction topic when two or more cards carry replacement or prevention wording (REQ-220), replacing the prior "all topics every request" baseline.
 - Lives in: `apps/backend/src/gameRulesTopicSelection.ts`, `gameRules.ts`
-- Backed by: DEC-030, DEC-045, REQ-022
+- Backed by: DEC-030, DEC-045, REQ-022, REQ-220
 
 ### Supplemental retrieval (System 3)
 
 - Status: shipped
-- Summary: Selects up to 10 supplemental rule excerpts per request (raised from 5 on 2026-09-09, REQ-190). The query is the player's question plus a compact per-card signal (name, type line, keywords), not raw card oracle text. Ranking is a hybrid score — normalised cosine over committed per-rule embeddings blended with normalised lexical IDF overlap — with the exact-rule-id boost merged in; lexical scoring alone is retained as the mock/offline default and the failure fallback. Deduplicated against the System 2 selection by rule-number prefix.
+- Summary: Selects up to 10 supplemental rule excerpts per request (raised from 5 on 2026-09-09, REQ-190). The query is the player's question plus a compact per-card signal (name, type line, keywords), not raw card oracle text. Ranking is a hybrid score — normalised cosine over committed per-rule embeddings blended with normalised lexical IDF overlap — with the exact-rule-id boost merged in; lexical scoring alone is retained as the mock/offline default and the failure fallback. Deduplicated against the System 2 selection by exact rule number: only the rules the selected topics list are excluded.
 - Lives in: `apps/backend/src/gameRulesRetrieval.ts`, `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed per-rule embeddings artifact
 - Backed by: DEC-032, DEC-046, REQ-178, REQ-179, REQ-180, REQ-181, REQ-182, REQ-183, REQ-184
 
@@ -498,9 +498,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Answer-quality baseline
 
 - Status: shipped
-- Summary: On-demand, confirmation-gated run that asks the selected approved cases of the rules test corpus — by default the cases whose prompt or reference answer changed since they were last graded, or whose last graded record predates those hashes, answered by the deployed model at the deployed ten-excerpt cap — and scores each answer against that case's approved reference answer: deterministic assertions (including rule ids the answer cites that are not in the committed rule index), a reference-grounded judge model stronger than every contestant, a blind side-by-side ranking when two or more models answer, over four 0–2 axes, then a human review pass. The four-model bake-off and other excerpt caps are explicit options. Never in `quality:check`, never asserted against a golden, never a build gate. Writes a small committed scores file merged per case and gitignored transcripts; tier-3 scores are always reported apart from the official tiers.
-- Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/`, `scripts/eval-answer-quality.mjs`
-- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190
+- Summary: On-demand, confirmation-gated run that asks the selected approved cases of the rules test corpus — by default the cases whose prompt or reference answer changed since they were last graded, or whose last graded record predates those hashes, answered by the deployed model at the deployed ten-excerpt cap — and scores each answer against that case's approved reference answer: deterministic assertions (including rule ids the answer cites that are not in the committed rule index), a reference-grounded judge model stronger than every contestant, a blind side-by-side ranking when two or more models answer, over four 0–2 axes, then a human review pass. The four-model bake-off and other excerpt caps are explicit options. Never in `quality:check`, never asserted against a golden, never a build gate. A routine run writes a small committed scores file merged per case and gitignored transcripts; tier-3 scores are always reported apart from the official tiers. Experiment runs (REQ-226) answer a fixed manifest of cases, optionally repeated and optionally regraded from an earlier run's stored answers, save each record as it completes and stop at an owner-set spending cap (REQ-227), and write only to their own gitignored run folder; a paired comparison report reads two runs (REQ-228); an offline evidence trace shows where each deciding rule ranks and whether it reaches the prompt (REQ-229); labelled diagnostic prompt arms run only on a committed diagnostic case set, apart from a held-out set (REQ-230).
+- Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/` (including `manifests/`), `scripts/eval-answer-quality.mjs`, and the compare and evidence-trace scripts beside it
+- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190, REQ-226, REQ-227, REQ-228, REQ-229, REQ-230
 
 ### Rules test corpus gates and review
 

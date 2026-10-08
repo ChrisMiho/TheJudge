@@ -214,6 +214,59 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
       expect(accepted.baseline.cases[target.id].hit).not.toContain("999.99");
     });
 
+    describe("rules carried by a curated topic (REQ-222, REQ-220)", () => {
+      const caseById = (id: string): GoldCase => cases.find((caseEntry) => caseEntry.id === id)!;
+
+      it("records a deciding rule an always-on topic carries as inTopic (603.2 on the Panharmonicon case)", () => {
+        const target = caseById("panharmonicon-controller-not-entering-permanent");
+        const outcome = runGate({ cases: [target], baseline: { cases: {} } });
+        const [result] = outcome.results;
+        expect(result.inTopic).toContain("603.2");
+        expect(result.miss).toContain("603.2");
+        expect(result.hit).not.toContain("603.2");
+        expect(outcome.summary.casesInTopic).toBe(1);
+        expect(outcome.report).toContain("1 with a deciding rule carried by a curated topic");
+      });
+
+      it("does not call a System 3 hit that moves into a selected topic a regression", () => {
+        const target = caseById("replacement-bard-and-bilbo-tokens");
+        const planted: RulesGateBaseline = { cases: { [target.id]: { hit: ["616.1f"], miss: ["616.1"] } } };
+        const outcome = runGate({ cases: [target], baseline: planted });
+        expect(outcome.results[0].regressions).toEqual([]);
+        expect(outcome.ok).toBe(true);
+        expect(outcome.results[0].inTopic).toEqual(expect.arrayContaining(["616.1", "616.1f"]));
+      });
+
+      it("fails a recorded inTopic rule that reaches the prompt by neither route", () => {
+        const target = caseById("panharmonicon-controller-not-entering-permanent");
+        const planted: RulesGateBaseline = {
+          cases: { [target.id]: { hit: [], miss: ["603.2"], inTopic: ["603.2", "999.99"] } }
+        };
+        const outcome = runGate({ cases: [target], baseline: planted });
+        expect(outcome.ok).toBe(false);
+        expect(outcome.results[0].regressions).toEqual(["999.99"]);
+      });
+
+      it("writes inTopic into a raised baseline only when it is non-empty", () => {
+        const withTopic = runGate({ cases: [caseById("academy-manufactor-esix-treasure")], baseline: { cases: {} } });
+        const withoutTopic = runGate({ cases: [caseById("replacement-byrke-and-branching-evolution")], baseline: { cases: {} } });
+        const raised = raiseBaseline({ cases: {} }, [...withTopic.results, ...withoutTopic.results]);
+        expect(raised.baseline.cases["academy-manufactor-esix-treasure"].inTopic).toEqual(
+          expect.arrayContaining(["614.1a", "616.1", "616.1e", "616.1f"])
+        );
+        const empty = withoutTopic.results[0];
+        expect(empty.inTopic).toEqual([]);
+        expect(raised.baseline.cases[empty.id]).not.toHaveProperty("inTopic");
+      });
+
+      it("records the Manufactor + Esix case's four deciding rules as inTopic in the committed baseline (REQ-220)", () => {
+        expect(baseline.cases["academy-manufactor-esix-treasure"].inTopic).toEqual(["614.1a", "616.1", "616.1e", "616.1f"]);
+        const withTopic = Object.values(baseline.cases).filter((entry) => (entry.inTopic?.length ?? 0) > 0);
+        expect(withTopic.length).toBe(11);
+        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(289);
+      });
+    });
+
     it("keeps the previous entry for a case it could not score, and drops a case no longer in the corpus", () => {
       const [first, second] = cases;
       const stale = { ...vectors, [first.id]: { ...vectors[first.id], queryTextHash: "0".repeat(64) } };

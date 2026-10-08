@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { GameRulesTopic } from "./gameRules.js";
-import { ALWAYS_ON_TOPIC_IDS, selectGameRulesTopics } from "./gameRulesTopicSelection.js";
+import {
+  ALWAYS_ON_TOPIC_IDS,
+  REPLACEMENT_INTERACTION_TOPIC_ID,
+  selectCardWordingTopicIds,
+  selectGameRulesTopics
+} from "./gameRulesTopicSelection.js";
 import type {
   PromptContext,
   PromptContextStackItem,
@@ -27,6 +32,7 @@ const ALL_TOPIC_IDS = [
   "layers-power-toughness",
   "layers-timestamps-dependencies",
   "replacement-effects-basics",
+  "replacement-effects-interaction",
   "replacement-etb-effects",
   "spell-casting-choices",
   "spell-casting-costs",
@@ -42,11 +48,11 @@ const ALL_TOPICS: GameRulesTopic[] = ALL_TOPIC_IDS.map((id) => ({
   excerpt: `excerpt for ${id}`
 }));
 
-function makeStackItem(): PromptContextStackItem {
+function makeStackItem(oracleText = ""): PromptContextStackItem {
   return {
     cardId: "c1",
     name: "Some Spell",
-    oracleText: "",
+    oracleText,
     imageUrl: "",
     manaCost: "",
     manaValue: 0,
@@ -62,11 +68,11 @@ function makeStackItem(): PromptContextStackItem {
   };
 }
 
-function makeZoneItem(): PromptContextZoneItem {
+function makeZoneItem(oracleText = ""): PromptContextZoneItem {
   return {
     cardId: "c2",
     name: "Some Permanent",
-    oracleText: "",
+    oracleText,
     imageUrl: "",
     manaCost: "",
     manaValue: 0,
@@ -83,8 +89,15 @@ function makeContext(overrides: {
   combatStep?: CombatStep;
   stack?: boolean;
   battlefield?: boolean;
+  /** Oracle text of each stack card, in order (a non-empty list also populates the stack). */
+  stackTexts?: string[];
+  /** Oracle text of each battlefield card, in order (a non-empty list also populates the battlefield). */
+  battlefieldTexts?: string[];
 }): PromptContext {
   const { turnPhase = "main_1", combatStep, stack = false, battlefield = false } = overrides;
+  const stackItems = overrides.stackTexts?.map((text) => makeStackItem(text)) ?? (stack ? [makeStackItem()] : []);
+  const battlefieldItems =
+    overrides.battlefieldTexts?.map((text) => makeZoneItem(text)) ?? (battlefield ? [makeZoneItem()] : []);
   return {
     finalQuestion: "q",
     gameContext: {
@@ -94,8 +107,8 @@ function makeContext(overrides: {
       ...(combatStep !== undefined ? { combatStep } : {}),
       selectedZones: []
     },
-    populatedZones: battlefield ? [{ zoneId: "battlefield", items: [makeZoneItem()] }] : [],
-    orderedStack: stack ? [makeStackItem()] : []
+    populatedZones: battlefieldItems.length > 0 ? [{ zoneId: "battlefield", items: battlefieldItems }] : [],
+    orderedStack: stackItems
   };
 }
 
@@ -215,6 +228,67 @@ describe("Backend - Game Rules", () => {
       const ids = selectGameRulesTopics(makeContext({ turnPhase: "main_1" }), partial).map((t) => t.id);
       expect(ids).not.toContain("zones-basics");
       expect(ids).toContain("stack-and-priority");
+    });
+
+    it("adds the replacement-interaction topic when two cards carry the wording (REQ-220)", () => {
+      const ids = selectedIds(
+        makeContext({
+          stackTexts: ["If you would create one or more tokens, you create those tokens plus a Treasure instead."],
+          battlefieldTexts: ["If damage would be dealt to a permanent, prevent that damage."]
+        })
+      );
+      expect(ids).toContain(REPLACEMENT_INTERACTION_TOPIC_ID);
+      expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b)));
+    });
+
+    it("does not add the topic for one marked card (REQ-220)", () => {
+      expect(selectedIds(makeContext({ stackTexts: ["Exile it instead."], battlefieldTexts: ["Draw a card."] }))).not.toContain(
+        REPLACEMENT_INTERACTION_TOPIC_ID
+      );
+    });
+
+    it("leaves existing fixtures with empty oracle text unchanged (REQ-220)", () => {
+      expect(selectedIds(makeContext({ stack: true, battlefield: true }))).not.toContain(REPLACEMENT_INTERACTION_TOPIC_ID);
+    });
+  });
+
+  describe("selectCardWordingTopicIds (REQ-220)", () => {
+    const topic = [REPLACEMENT_INTERACTION_TOPIC_ID];
+
+    it("fires on two cards that carry the whole word instead, prevent, prevents, or prevented", () => {
+      expect(selectCardWordingTopicIds([{ oracleText: "Exile it instead." }, { oracleText: "Prevent all damage." }])).toEqual(topic);
+      expect(selectCardWordingTopicIds([{ oracleText: "It prevents that." }, { oracleText: "It was prevented." }])).toEqual(topic);
+    });
+
+    it("does not fire on a single marked card or on none", () => {
+      expect(selectCardWordingTopicIds([{ oracleText: "Exile it instead." }, { oracleText: "Draw a card." }])).toEqual([]);
+      expect(selectCardWordingTopicIds([{ oracleText: "Exile it instead." }])).toEqual([]);
+      expect(selectCardWordingTopicIds([])).toEqual([]);
+    });
+
+    it("does not count prevention or preventing", () => {
+      expect(
+        selectCardWordingTopicIds([
+          { oracleText: "Damage prevention effects stop this." },
+          { oracleText: "Preventing damage this way is fine." }
+        ])
+      ).toEqual([]);
+    });
+
+    it("ignores letter case", () => {
+      expect(selectCardWordingTopicIds([{ oracleText: "INSTEAD, draw." }, { oracleText: "Prevent Damage." }])).toEqual(topic);
+    });
+
+    it("counts two copies of one card as two", () => {
+      const card = { oracleText: "Create a token instead." };
+      expect(selectCardWordingTopicIds([card, card])).toEqual(topic);
+    });
+
+    it("reads a card in a game zone and a card on the stack", () => {
+      const zoneOnly = makeContext({ battlefieldTexts: ["Do this instead.", "Prevent it."] });
+      expect(selectGameRulesTopics(zoneOnly, ALL_TOPICS).map((t) => t.id)).toContain(REPLACEMENT_INTERACTION_TOPIC_ID);
+      const stackOnly = makeContext({ stackTexts: ["Do this instead.", "Prevent it."] });
+      expect(selectGameRulesTopics(stackOnly, ALL_TOPICS).map((t) => t.id)).toContain(REPLACEMENT_INTERACTION_TOPIC_ID);
     });
   });
 });

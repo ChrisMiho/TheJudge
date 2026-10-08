@@ -1,5 +1,5 @@
 # Game rules retrieval
-Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-177, REQ-178, REQ-179, REQ-180, REQ-181
+Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-177, REQ-178, REQ-179, REQ-180, REQ-181, REQ-220
 
 ## How it works
 
@@ -11,9 +11,12 @@ derived from Scryfall bulk `rulings`, filtered to `source === "wotc"`, and emitt
 the committed card metadata oracle IDs, the rulings section is omitted.
 
 System 2 is the curated baseline. It always includes core rules topics, then adds
-conditional buckets from card-agnostic game-state signals only: `turnPhase`,
-`combatStep`, and populated zone presence. Card names, oracle text, and keywords do
-not affect System 2. This replaces the prior "all topics every request" baseline with
+conditional buckets from game-state signals: `turnPhase`, `combatStep`, and populated
+zone presence. One topic is gated on card wording instead: when two or more cards —
+attached in a lookup, or on the stack or in any zone in a game — carry replacement or
+prevention wording ("instead", "prevent"), it adds the replacement-effect interaction
+rules (CR 614.1a, 616.1, 616.1a–g, 616.2; REQ-220).
+Card names and keywords never affect System 2. This replaces the prior "all topics every request" baseline with
 a smaller `GAME RULES (reference)` section that still covers the stable vocabulary the
 model needs for stack, priority, zones, targets, combat, delayed triggers, and related
 common interactions.
@@ -37,9 +40,10 @@ earlier lexical-only behaviour. The blend exists because semantic-only ranking, 
 card name, type line, and one keyword — in three of eight labelled fixtures, scoring 9
 of 12 checks against lexical's 12 of 12 (REQ-182). Ties prefer the highest matching
 signal, then ascending rule ID. Before output is selected, System 3 excludes rule IDs already selected by
-System 2 — by rule-number prefix, so a curated parent rule also excludes its lettered
-sub-rules — and the prompt does not print the same rule in both `GAME RULES (reference)`
-and `ADDITIONAL RELEVANT RULE EXCERPTS`.
+System 2 — exactly the rule numbers the selected topics list, because a topic prints only
+the rules it lists; a lettered sub-rule of a listed parent that the topic does not list
+competes like any other rule (REQ-179) — and the prompt does not print the same rule in
+both `GAME RULES (reference)` and `ADDITIONAL RELEVANT RULE EXCERPTS`.
 
 The query embedder is chosen by the `EMBEDDING_PROVIDER` seam (`mock` | `local` |
 `openai`), which mirrors the `ASK_AI_PROVIDER` boundary. `mock` (the default) does no
@@ -60,8 +64,8 @@ duplicate or a bare heading (REQ-179).
 Input is the normalized prompt context plus startup-loaded artifacts: card rulings,
 curated game-rules topics, the rule excerpt index, token statistics, and keyword
 vocabulary. Prompt preparation first collects submitted cards for System 1. It then
-selects System 2 topics from game-state signals and derives the selected curated rule
-IDs from those topics.
+selects System 2 topics from game-state signals and the card-wording gate (REQ-220)
+and derives the selected curated rule IDs from those topics.
 
 Those curated rule IDs become the exclusion set for System 3. When a semantic embedding
 provider is active, the async route handler embeds the query first and passes the query
@@ -69,8 +73,9 @@ vector into prompt preparation as an option, so `preparePromptInput` stays synch
 Supplemental retrieval builds the query from the question plus the per-card keyword
 signal, ranks the rule index (cosine over the committed rule embeddings when a query
 vector is present, IDF-weighted lexical otherwise or on embedding failure) with the
-exact-rule-ID boost merged in, drops entries whose rule IDs or parent rule IDs are
-already in the System 2 set, and returns the top ten excerpts plus debug data when
+exact-rule-ID boost merged in, drops entries whose own rule ID is already in the
+System 2 set (a listed parent rule ID does not drop its sub-rules), and returns the
+top ten excerpts plus debug data when
 mock enrichment diagnostics are enabled. Prompt rendering places the resulting sections
 as curated rules, then supplemental excerpts, then official rulings.
 
@@ -100,10 +105,10 @@ oracle text — embeds it with the active provider, and cosine-ranks it against 
 committed rule embeddings, so the excerpts that actually address deathtouch and
 combat-damage assignment surface even when they share few literal words with the
 question. Any explicit rule number in the query still pulls in an exact or parent match
-through the merged boost. If a combat damage rule is already present in the System 2
-topic set, that rule ID and its lettered sub-rules are excluded from System 3 so the
-supplemental block uses its ten slots for additional relevant context rather than
-duplicating the baseline.
+through the merged boost. If a combat damage rule is already listed in the System 2
+topic set, that exact rule ID is excluded from System 3 so the supplemental block uses
+its ten slots for additional relevant context rather than duplicating the baseline; the
+rule's lettered sub-rules, which the topic does not print, still compete for those slots.
 
 System 1 independently checks the submitted card IDs against the rulings index. If one
 of those cards has WotC rulings in the committed data, the rulings block appears after
@@ -114,10 +119,15 @@ reference material and simply omits `OFFICIAL RULINGS`.
 
 - System 1 is card-specific and ruling-specific; it only emits WotC rulings for
   submitted cards that match the committed rulings/card metadata index.
-- System 2 is intentionally card-agnostic. It is driven by `turnPhase`, `combatStep`,
-  and populated-zone presence, not card names, oracle text, or keywords.
-- System 3 is deduplicated against the System 2 selection, so the same rule ID never
-  appears once as curated baseline and again as supplemental retrieval.
+- System 2 is driven by `turnPhase`, `combatStep`, and populated-zone presence, plus
+  one card-wording gate: two or more cards whose oracle text says "instead" or
+  "prevent" add the replacement-effect interaction topic (REQ-220). Card names and
+  keywords never select a System 2 topic, and relevance scoring stays System 3's job.
+- System 3 is deduplicated against the System 2 selection by exact rule ID, so the same
+  rule ID never appears once as curated baseline and again as supplemental retrieval.
+  Exact matching is enough only because each curated topic prints exactly the rules it
+  lists; a test over the committed game-rules data holds every topic to that and fails
+  if a topic ever carries a rule it does not list (REQ-179).
 - System 3 is capped at ten supplemental excerpts per request (raised from five on 2026-09-09, REQ-190).
 - System 3 ranking is a hybrid blend (normalised cosine over committed rule embeddings
   plus normalised lexical IDF overlap) with the exact-rule-ID boost merged in and

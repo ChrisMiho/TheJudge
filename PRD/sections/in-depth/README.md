@@ -22,7 +22,8 @@
   REQ-061, REQ-069, REQ-070, REQ-093, REQ-094, REQ-095, REQ-100, REQ-106,
   REQ-110, REQ-121, REQ-130, REQ-132, REQ-136, REQ-137, REQ-138, REQ-139,
   REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, REQ-206, REQ-209, REQ-210, FLOW-001, FLOW-002,
-  FLOW-003, FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009
+  FLOW-003, FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009,
+  REQ-220
 - Consumed but owned elsewhere (cited, not re-specified here): the shared
   answered-conversation workspace, View Context overlay, Question History,
   suite-wide card-detail popup, Menu rail (DEC-122), suite shell, and shared
@@ -373,10 +374,12 @@ the game-mode request drives them. (DEC-020, DEC-010)
 
 - Built: `GAME RULES (reference)` loads verbatim WotC Comprehensive Rules
   excerpts from committed artifacts, selected by DEC-045's always-on core plus
-  card-agnostic game-state-gated expansion (System 2, gated on `turnPhase`,
-  `combatStep`, and populated zones only — no card names or oracle text). It is
-  omitted only when the artifact is missing/empty, with a warning logged.
-  (DEC-030, DEC-045, REQ-022)
+  game-state-gated expansion (System 2, gated on `turnPhase`, `combatStep`, and
+  populated zones), plus the replacement-effect interaction topic when two or
+  more cards on the stack or in any zone say "instead" or "prevent" (REQ-220);
+  card names and keywords never select a topic. It is omitted only when the
+  artifact is missing/empty, with a warning logged. (DEC-030, DEC-045, REQ-022,
+  REQ-220)
 - Built: `ADDITIONAL RELEVANT RULE EXCERPTS` adds up to 10 supplemental rules
   scored per DEC-046 — hybrid ranking (normalised cosine over the committed
   per-rule embeddings blended with the normalised IDF-weighted lexical score)
@@ -385,7 +388,7 @@ the game-mode request drives them. (DEC-020, DEC-010)
   mock/offline default and the fallback on any embedding failure (REQ-181,
   REQ-182), from a query built from the question plus each submitted card's
   name, type line, and keywords rather than its full oracle text (REQ-178),
-  deduplicated against the System 2 selection by rule-number prefix (REQ-179) —
+  deduplicated against the System 2 selection by exact rule number (REQ-179) —
   omitted when nothing scores above 0. (DEC-032, DEC-046, REQ-022, REQ-178,
   REQ-179, REQ-181, REQ-182)
 - Built: `OFFICIAL RULINGS` carries published WotC Oracle rulings for submitted
