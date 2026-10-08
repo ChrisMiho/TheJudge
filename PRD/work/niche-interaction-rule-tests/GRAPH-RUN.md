@@ -8,7 +8,7 @@
 - Build-half resume 2026-10-07: owner merged docs PR #266 (2026-10-08T02:40Z) and invoked `/graph-implement PRD/work/niche-interaction-rule-tests/`. Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19738`); graph canary `nohup true` denied — graph tier armed. Claimed on `thejudge-auto/niche-interaction-rule-tests-work` cut from `origin/main` (`c1188dc8`).
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
 - Resume 2026-10-07: owner invoked `/graph-kickoff niche-interaction-rule-tests` after the rules test harness shipped (PR #269 merged 2026-10-07). Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19439`); graph canary `nohup true` denied — graph tier armed; this session's profile `loaded (env sentinel)`. Package restored from `deferred` to `owner-action` by `thejudge-defer` (restore direction). `origin/main` merged into the run branch in the kickoff worktree (merge commit `92031511`, clean; brings REQ-222–230, the rules test corpus, and the rules-review sweeps). REQ-220 and REQ-221 confirmed unused on `origin/main` (new IDs there run REQ-222–230).
-- Current node: `gate-review` done (build half, 2026-10-07); next is `gate-qc` re-entry
+- Current node: `gate-qc` (attempt 7, build-half re-entry, dispatched 2026-10-07)
 - Next action: re-enter node 4 (`gate-qc`) on the finalized package; `STATUS.refined`
 
 ## Node ledger
@@ -29,6 +29,7 @@
 | 12 | gate-qc | sonnet | parked | `0 → 76` | FAIL attempt 5 = 4th FAIL → parked at owner-action per the three-loop cap: 2 findings (1 Important: game-mode topic scope phrased as stack/battlefield/in play in `GATE-QUESTIONS.md:31`, `:219`, `DESIGN-BRIEF.md:196` vs every populated zone; 1 Minor: three disposition rows); build path, numbers, IDs, diff anchors all verified clean; findings in README `## Preparation gate` | 2026-10-06 |
 | 13 | define | opus | ok | `0 → 95` | attempt 6 (resume after restore; owner-authorized pass): both attempt-5 findings fixed (one scope phrase, three disposition rows); re-measured on the rules test harness via new `measure-rules-gate.mjs` (+ `.out.txt`, `.nine.out.txt`): the System 2 topic does not register in the rules gate and the nine-rule topic would fail its ratchet on `replacement-bard-and-bilbo-tokens` (616.1f), so `GATE-QUESTIONS.md` now = REQ-220 (topic gains 614.1a as C8; 0 suites move; 25,808 chars under the 26,000 cap), REQ-022 amended, REQ-222 amended (new `inTopic` list; 0 recorded hits lost over 392 cases), REQ-221 withdrawn (both tester cases already approved corpus cases); Necropotence #7/#3 vs baseline misses reconciled to query-text difference (verbatim vs corpus wording); `measure-candidates.mjs` ported to the case format, attempt-5 numbers reproduce; `STATUS.refined`; board row moved owner-action → refined | 2026-10-07 |
 | 14 | gate-qc | sonnet | ok | `0 → 64` (includes 4 driver calls made during the node) | PASS attempt 6, findings none (3 non-blocking notes recorded in README `## Preparation gate`): both amendment greps re-run (28 + 12 hits, all dispositioned), all 19 diff blocks match merged `PRD/sections/`, `measure-rules-gate.mjs` + `measure-candidates.mjs` outputs byte-identical to the committed `.out.txt`, scratch build 23 → 24 topics / 25,808 chars; README `## Preparation gate` PASS; parked `STATUS.owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/266 (body rewritten, marked ready) | 2026-10-07 |
+| 15 | gate-review | sonnet | ok | `1 → 21` | build half: claim commit `e9a86c31` on `thejudge-auto/niche-interaction-rule-tests-work` (cut from `origin/main` `c1188dc8`, kickoff worktree removed clean); `graph-gate-review` commit `0abe57ba`: 4 accept / 0 edit / 0 reject, `GATE-QUESTIONS.md` and `PRD/sections/` unchanged, brief reconciliation none needed; `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker, board row under refined; worktree porcelain empty; launch checkout porcelain unchanged | 2026-10-07 |
 
 ## Open gate
 
@@ -364,6 +365,26 @@ Do:
 5. Confirm `git status --porcelain` is empty in the working directory and that the launch checkout `/Users/chrismiho/Coding/Projects/TheJudge` was not written.
 
 Report: outcome (ok/failed), the commit hash, the verdict tally, the `### Brief reconciliation` list, and every path you wrote.
+
+Harness notes: use the Edit/Write tools for file changes (shell `sed -i` and heredoc writes are denied by the session's auto-mode guard). Commit messages end with the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+
+### gate-qc (attempt 7)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests
+
+You are node 4 (`gate-qc`) of graph run `graph-20261006-150550`, attempt 7 — the build half's re-entry after `graph-gate-review` applied the owner's verdicts (4 accept, 0 edit, 0 reject; commit `0abe57ba`). The run's gate-qc loops to define are spent, so a FAIL parks the run at owner-action with your findings; there is no loop to define. A PASS advances to `plan`. Run the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Context: this branch, `thejudge-auto/niche-interaction-rule-tests-work`, was cut from `origin/main` at `c1188dc8` (docs PR #266 merged). Attempt 6 passed on the kickoff branch with `origin/main` merged at `92031511`; `main` may have moved since (other PRs merged). The main job of this re-grade is to confirm the accepted proposal still applies cleanly to the current tree. PR #273 (data refresh, new Comprehensive Rules text) is still open and not on this tree; the brief names it as a stated dependency.
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.refined). Grade `DESIGN-BRIEF.md` together with the finalized proposal in `GATE-QUESTIONS.md` (REQ-220 new, REQ-022 amended, REQ-222 amended, REQ-221 withdrawn, all accepted) against current `PRD/sections/` truth on this tree and agent-readiness. Intake under `intake/` is evidence only. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` section are the driver's; do not edit them.
+
+Check by grep, not memory: re-run both of the brief's amendment-set greps as quoted (line-level, case-insensitive, over `PRD/sections/` and the eval READMEs) and confirm every hit has a disposition row and, where it needs an edit, a diff in `GATE-QUESTIONS.md`. Confirm every removed and context line in every diff block still matches `PRD/sections/` on this tree exactly, and that REQ-220 and REQ-221 are still unused there. Run `measure-rules-gate.mjs`, `measure-candidates.mjs`, and `build-topic-from-index.mjs` offline (a scratch export outside the repo for the build) and confirm their outputs still match the committed `.out.txt` files and the numbers the brief cites (25,808-character total under the 26,000 cap, 23 to 24 topics); a cited number that no longer reproduces is a finding. Confirm the fresh-worktree build sequence needs no gitignored file.
+
+Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driver commits. No live model calls, no network calls. Use the Edit/Write tools for any file change (shell `sed -i` and heredoc writes are denied by the session's auto-mode guard).
+
+Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
 ## Instruction ledger
 
