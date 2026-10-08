@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/exact-curated-rule-exclusion` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-exact-curated-rule-exclusion` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half; resume reads this ledger)
+- Current node: `owner-action` (parked after gate-qc PASS)
+- Next action: owner answers `PRD/work/exact-curated-rule-exclusion/GATE-QUESTIONS.md` in the docs PR and merges it; `/graph-implement PRD/work/exact-curated-rule-exclusion/` builds it
 
 ## Node ledger
 
@@ -18,10 +18,14 @@
 | 3 | define | opus | ok | `0 → 42` | `PRD/work/exact-curated-rule-exclusion/DESIGN-BRIEF.md` (270 lines, 46-row line-level amendment set: 19 amend / 27 no change); `GATE-QUESTIONS.md` present → product truth proposed, gates (5 slots: REQ-179, REQ-022, REQ-181, REQ-182, REQ-220; blank verdicts; Blocker questions: none); `STATUS.ideation` → `STATUS.refined`; board row moved ideation → refined; `git diff HEAD -- PRD/sections apps scripts` empty; launch checkout unchanged | 2026-10-08 |
 | 4 | gate-qc | sonnet | failed | `0 → 45` | FAIL attempt 1 of 3 — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: 3 must-fix (F1 803-not-926 excerpt size; F2 127 per-topic sum vs 125 distinct; F3 closing-case criterion names no ranking path / evidence-trace provider) + 4 minor; amendment set, verbatim removed lines and block format passed. Driver recorded FAIL in README `## Preparation gate`, `STATUS.refined` → `STATUS.refining`, board row → refining; loops to define | 2026-10-08 |
 | 5 | define | opus | ok | `0 → 28` | attempt 2: `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` edited in place — F1 803 chars (measured offline, brief `## Measured at define`); F2 125 distinct / 127 per-topic sum; F3 closing cases bound to hybrid frozen-vector path, lexical recorded at build (new D11); M1–M4 addressed (M3 adds amendment row 47 → 47 rows: 20 amend / 27 no change); verdict slots blank; `STATUS.refining` → `STATUS.refined`, board row → refined; no `PRD/sections/` or code diff; launch checkout unchanged | 2026-10-08 |
+| 6 | gate-qc | sonnet | ok | `0 → 33` | PASS attempt 2 — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: F1–F3 and M1–M4 resolved; 0 must-fix; N1/N2 non-blocking for map-out. Observation: the checker traced numbers to the intake-cited probe outputs (`PRD/work/probe-keyword-rule-retrieval/measure-two-fixes.out.txt`, `FINDINGS-missing.md`, launch checkout, read-only) — the contract says intake-cited documents are never opened; no file was written and the proposal is unaffected. Driver recorded PASS in README `## Preparation gate`; `STATUS.refined` → `STATUS.owner-action`; board row → owner-action | 2026-10-08 |
 
 ## Open gate
 
-- None
+- Gate: `define` product-truth proposal (gate-qc PASS, run stopped by design).
+- Question: answer the five verdict slots (REQ-179, REQ-022, REQ-181, REQ-182, REQ-220) in `PRD/work/exact-curated-rule-exclusion/GATE-QUESTIONS.md` — accept / edit / reject, with a reason for edit or reject — then merge to build.
+- Evidence: `QUALITY-CHECK.md` (PASS, attempt 2); docs PR (URL below).
+- Resume: merging the docs PR is the build signal; `/graph-implement PRD/work/exact-curated-rule-exclusion/` (the background build loop) resolves the gate and builds it.
 
 ## Dispatch prompts
 
