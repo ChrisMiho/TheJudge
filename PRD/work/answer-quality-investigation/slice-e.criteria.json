@@ -47,7 +47,7 @@
       "statement": "The manifest generator is seeded and re-running it reproduces both committed files byte-for-byte",
       "value": true,
       "evidence": {
-        "command": "build-answer-quality-manifests"
+        "command": "ANSWER_QUALITY_NO_LOCAL_ENV=1 npm run eval:answer-quality:manifests -- --check"
       }
     },
     {

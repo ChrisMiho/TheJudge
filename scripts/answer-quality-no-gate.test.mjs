@@ -69,3 +69,37 @@ test("no gate script and no CI workflow invokes the answer-quality run, its comp
   };
   for (const [script, command] of Object.entries(expected)) assert.equal(rootPkg.scripts[script], command, `${script} is registered as its own on-demand script`);
 });
+
+// A unit test inside test:scripts may not run the manifest generator or the evidence trace against the
+// real corpus (REQ-229, NFR-018): a corpus refresh would turn the gate red and invite re-drawing the
+// frozen held-out set. Tests drive the pure functions on synthetic input instead.
+test("no *.test.mjs under scripts/ execs the manifest generator or the evidence-trace scripts, or runs them against the real corpus", async () => {
+  const found = [];
+  const walk = async (dir) => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) await walk(full);
+      else if (entry.name.endsWith(".test.mjs")) found.push(full);
+    }
+  };
+  await walk(join(repoRoot, "scripts"));
+  assert.ok(found.length > 10, "the scripts test files were found");
+  const self = fileURLToPath(import.meta.url);
+  const spawnsScript = /(execFile|execFileSync|exec|execSync|spawn|spawnSync|fork)\s*\([^)]*(build-answer-quality-manifests|eval-evidence-trace)/s;
+  for (const file of found) {
+    if (file === self) continue;
+    const text = await readFile(file, "utf8");
+    const name = file.slice(repoRoot.length + 1);
+    assert.ok(!spawnsScript.test(text), `${name} must not exec the manifest generator or the evidence-trace scripts`);
+    // Spawning either through a package script also counts.
+    assert.ok(!/(execFile|execFileSync|exec|execSync|spawn|spawnSync)\s*\([^)]*eval:(answer-quality:manifests|evidence-trace)/s.test(text), `${name} must not run the generator or trace through npm`);
+    // Their trace runner (runEvidenceTrace) may be imported only with injected, synthetic inputs.
+    if (/runEvidenceTrace/.test(text)) {
+      assert.match(text, /loadCases\s*:/, `${name} runs the trace only with injected cases, never the real corpus`);
+    }
+    // The generator's real-corpus entry points (--check against disk, loading the corpus) stay out.
+    if (/build-answer-quality-manifests\.mjs/.test(text)) {
+      assert.ok(!/loadGoldCases/.test(text), `${name} must not load the real corpus beside the manifest generator`);
+    }
+  }
+});

@@ -1,9 +1,7 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { promisify } from "node:util";
 import test from "node:test";
 
 import {
@@ -20,9 +18,8 @@ import {
   selectHeldOut
 } from "./build-answer-quality-manifests.mjs";
 import { DIAGNOSTIC_MANIFEST_RELATIVE_PATH, HELD_OUT_MANIFEST_RELATIVE_PATH } from "./lib/diagnostic-arms.mjs";
-import { loadManifestFile, validateManifestCases } from "./lib/experiment-run.mjs";
+import { loadManifestFile } from "./lib/experiment-run.mjs";
 
-const execFileAsync = promisify(execFile);
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 // A synthetic corpus: 3 tester/named cases plus pools of partial, none and full cases across sections.
@@ -153,7 +150,7 @@ test("check mode compares against the files on disk, and write mode writes both"
   );
 });
 
-test("the committed manifests: disjoint, ids and hashes only, usable as an experiment manifest, and reproduced byte for byte by the seeded command", async () => {
+test("the committed manifests, read as data: disjoint, ids and hashes only, usable as an experiment manifest (byte-for-byte reproduction is the on-demand `npm run eval:answer-quality:manifests -- --check`, never a gate)", async () => {
   const diagnostic = JSON.parse(await readFile(join(repoRoot, DIAGNOSTIC_MANIFEST_RELATIVE_PATH), "utf8"));
   const heldOut = JSON.parse(await readFile(join(repoRoot, HELD_OUT_MANIFEST_RELATIVE_PATH), "utf8"));
   assert.equal(diagnostic.kind, "diagnostic");
@@ -168,24 +165,10 @@ test("the committed manifests: disjoint, ids and hashes only, usable as an exper
     for (const entry of manifest.cases) assert.deepEqual(Object.keys(entry).sort(), ["answerSha256", "id", "questionSha256"]);
     assert.equal(manifest.seed, DEFAULT_SEED);
   }
-  // They load as experiment manifests and every case still matches the corpus of this checkout.
+  // They load as experiment manifests (shape only). Nothing here reads the live corpus or runs the
+  // evidence trace: a later corpus refresh must never turn this suite red (REQ-229, NFR-018).
   const { manifest } = await loadManifestFile(join(repoRoot, DIAGNOSTIC_MANIFEST_RELATIVE_PATH));
   assert.equal(manifest.cases.length, diagnostic.cases.length);
-
-  // Re-running the seeded command reproduces both committed files byte for byte (E6).
-  const { stdout } = await execFileAsync(process.execPath, ["--import", "tsx", "scripts/build-answer-quality-manifests.mjs", "--check"], {
-    cwd: repoRoot,
-    env: { ...process.env, ANSWER_QUALITY_NO_LOCAL_ENV: "1" },
-    maxBuffer: 16 * 1024 * 1024
-  });
-  assert.match(stdout, /reproduces both committed files byte for byte/);
-});
-
-test("validateManifestCases accepts the committed diagnostic manifest against this checkout's corpus", async () => {
-  const { loadGoldCases } = await import("./lib/gold-cases.mjs");
-  const { manifest } = await loadManifestFile(join(repoRoot, DIAGNOSTIC_MANIFEST_RELATIVE_PATH));
-  const cases = validateManifestCases({ manifest, allCases: await loadGoldCases() });
-  assert.equal(cases.length, manifest.cases.length);
 });
 
 test("--emit writes a run manifest for a paid phase from the named sources, optionally narrowed to ids, under output/ only", () => {

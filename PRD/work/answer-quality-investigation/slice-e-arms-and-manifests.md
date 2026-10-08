@@ -24,8 +24,8 @@ Test-only prompt variants separate presentation from evidence, confined to a com
 - [x] E2: A test shows no arm output or arm input contains any reference answer text
 - [x] E3: A test shows arm P is refused until the approved correction file exists
 - [x] E4: A test shows arms C, D, P are refused on a case outside the diagnostic manifest and diagnostic records carry `diagnostic: true`
-- [x] E5: A test asserts the diagnostic and held-out manifests are disjoint, hold ids and hashes only, and held-out runs only arm A
-- [x] E6: The manifest generator is seeded and re-running it reproduces both committed files byte-for-byte
+- [x] E5: A test (reading the two committed manifest files as data; no corpus, no trace) asserts the diagnostic and held-out manifests are disjoint, hold ids and hashes only, and held-out runs only arm A
+- [x] E6: The manifest generator is seeded and re-running it reproduces both committed files byte-for-byte (proved by the synthetic-input determinism test in `npm run test:scripts` plus the on-demand `npm run eval:answer-quality:manifests -- --check`; the real-corpus check is never a gate, REQ-229 / NFR-018)
 - [x] E7: Arm records carry an arm revision id; `apps/backend/src/prompt/`, routes and providers have no diff versus origin/main
 - [x] E8: Typecheck passes
 
@@ -33,7 +33,7 @@ Test-only prompt variants separate presentation from evidence, confined to a com
 
 ```bash
 npm run test:scripts
-build-answer-quality-manifests
+ANSWER_QUALITY_NO_LOCAL_ENV=1 npm run eval:answer-quality:manifests -- --check
 git diff --stat origin/main
 npm run typecheck
 ```
