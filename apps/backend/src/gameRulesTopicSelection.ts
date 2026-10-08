@@ -4,8 +4,10 @@ import type { PromptContext } from "./types/index.js";
 /**
  * System 2 (curated general rules) topic selection — DEC-045.
  *
- * Selection is driven only by card-agnostic game-state signals: `turnPhase`,
- * `combatStep`, and populated-zone presence. No card names, oracle text, or
+ * Selection reads game state — `turnPhase`, `combatStep`, and populated-zone
+ * presence — plus one card-wording gate (REQ-220): when two or more cards carry
+ * the whole word "instead" or "prevent" in their oracle text, the
+ * replacement-and-prevention interaction topic is added. No card names or
  * keywords influence this selection (those are System 3's job, DEC-046).
  */
 
@@ -61,6 +63,28 @@ const DELAYED_TRIGGER_TOPIC_ID = "abilities-delayed-triggers";
 
 const DELAYED_TRIGGER_PHASES = new Set(["upkeep", "draw", "end_step", "cleanup"]);
 
+/** REQ-220: how replacement and prevention effects interact (614.1a, 616.1, 616.2). */
+export const REPLACEMENT_INTERACTION_TOPIC_ID = "replacement-effects-interaction";
+
+/** Whole words only: "prevention" and "preventing" do not count. */
+const REPLACEMENT_WORDING = /\binstead\b|\bprevent(?:s|ed)?\b/i;
+
+/**
+ * REQ-220: the card-wording gate. Reads only each card's `oracleText`; with two
+ * or more cards carrying replacement or prevention wording it returns the
+ * interaction topic id, otherwise nothing. Two copies of one card count as two.
+ * One function for lookup mode and game mode, so the two cannot drift apart.
+ */
+export function selectCardWordingTopicIds(cards: ReadonlyArray<{ oracleText: string }>): string[] {
+  const marked = cards.filter((card) => REPLACEMENT_WORDING.test(card.oracleText)).length;
+  return marked >= 2 ? [REPLACEMENT_INTERACTION_TOPIC_ID] : [];
+}
+
+/** Every card on the stack and in any populated zone — the set System 3 reads. */
+function collectContextCards(context: PromptContext): Array<{ oracleText: string }> {
+  return [...context.orderedStack, ...context.populatedZones.flatMap((zone) => zone.items)];
+}
+
 function isStackPopulated(context: PromptContext): boolean {
   return context.orderedStack.length > 0;
 }
@@ -90,7 +114,8 @@ function collectCombatTopicIds(context: PromptContext): string[] {
 /**
  * Select the System 2 curated topics relevant to the current game state.
  *
- * @param context  Normalized prompt context (game-state signals only are read).
+ * @param context  Normalized prompt context (game-state signals plus the cards'
+ *                 oracle text for the REQ-220 wording gate are read).
  * @param allTopics Full topic list loaded at startup; output is filtered to ids
  *                  present here. Unknown selected ids are ignored, and missing
  *                  manifest ids are no-ops.
@@ -117,6 +142,8 @@ export function selectGameRulesTopics(
   if (DELAYED_TRIGGER_PHASES.has(context.gameContext.turnPhase)) {
     selectedIds.add(DELAYED_TRIGGER_TOPIC_ID);
   }
+
+  for (const id of selectCardWordingTopicIds(collectContextCards(context))) selectedIds.add(id);
 
   return allTopics
     .filter((topic) => selectedIds.has(topic.id))

@@ -90,6 +90,69 @@ describe("Backend - Ask AI", () => {
       expect(prepared.promptText).not.toContain("CARD (looked up)");
     });
 
+    describe("card-wording topic (REQ-220)", () => {
+      const interactionTopic: GameRulesTopic = {
+        id: "replacement-effects-interaction",
+        title: "Interaction of Replacement and Prevention Effects",
+        ruleNumbers: ["616.1"],
+        excerpt: "616.1. If two or more replacement and/or prevention effects are attempting to modify the way an event affects an object, the affected object's controller chooses one."
+      };
+      const topicsWithInteraction = [...topics, interactionTopic].sort((a, b) => a.id.localeCompare(b.id));
+      const interactionRuleIndex: GameRulesRuleIndexEntry[] = [
+        ...ruleIndex,
+        {
+          ruleId: "616.1",
+          sectionTitle: "Interaction of Replacement and/or Prevention Effects",
+          text: "616.1. If two or more replacement effects modify the way an event affects an object, the controller chooses one.",
+          searchText: "616.1 replacement prevention effects order affected object controller chooses",
+          parentRuleIds: ["616"]
+        }
+      ];
+      const markedCard = (cardId: string, oracleText: string) => ({
+        cardId,
+        name: cardId,
+        oracleText,
+        imageUrl: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "Creature",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      });
+      const run = (cards: ReturnType<typeof markedCard>[]) => {
+        const request: LookupAskAiRequest = {
+          mode: "lookup",
+          question: "How do replacement effects and prevention effects order here, rule 616.1?",
+          cards
+        };
+        return preparePromptInput(request, {
+          gameRulesTopics: topicsWithInteraction,
+          gameRulesRuleIndex: interactionRuleIndex,
+          cardDetailIndex: cardDetailIndexFrom(cards),
+          collectEnrichmentDebug: true
+        });
+      };
+      const alwaysOnIds = [...ALWAYS_ON_TOPIC_IDS].sort((a, b) => a.localeCompare(b));
+
+      it("adds the interaction topic beside the four always-on topics when two attached cards carry the wording", () => {
+        const prepared = run([markedCard("a", "Create a token instead."), markedCard("b", "Prevent all damage.")]);
+        expect(prepared.enrichmentDebug?.curatedGameRules.topicIds).toEqual(
+          [...alwaysOnIds, "replacement-effects-interaction"].sort((a, b) => a.localeCompare(b))
+        );
+        expect(prepared.promptText).toContain("Interaction of Replacement and Prevention Effects");
+        // REQ-179: System 3 never repeats a rule the topic already carries.
+        expect(prepared.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId)).not.toContain("616.1");
+      });
+
+      it("keeps the four always-on topics alone with one marked card", () => {
+        const prepared = run([markedCard("a", "Create a token instead."), markedCard("b", "Draw a card.")]);
+        expect(prepared.enrichmentDebug?.curatedGameRules.topicIds).toEqual(alwaysOnIds);
+        expect(prepared.promptText).not.toContain("Interaction of Replacement and Prevention Effects");
+        expect(prepared.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId)).toContain("616.1");
+      });
+    });
+
     it("scores supplemental rules from an attached card's keywords and includes its rulings (REQ-180)", () => {
       const request: LookupAskAiRequest = {
         mode: "lookup",

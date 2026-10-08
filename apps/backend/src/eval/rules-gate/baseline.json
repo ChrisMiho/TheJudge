@@ -10,7 +10,8 @@
     },
     "academy-manufactor-esix-treasure": {
       "hit": [],
-      "miss": ["614.1a", "616.1", "616.1e", "616.1f"]
+      "miss": ["614.1a", "616.1", "616.1e", "616.1f"],
+      "inTopic": ["614.1a", "616.1", "616.1e", "616.1f"]
     },
     "activate-chronatog": {
       "hit": [],
@@ -214,7 +215,8 @@
     },
     "combat-wicker-warcrawler-counter-after-damage": {
       "hit": [],
-      "miss": ["510.2", "603.2"]
+      "miss": ["510.2", "603.2"],
+      "inTopic": ["603.2"]
     },
     "combat-wither-applies-to-noncombat-damage": {
       "hit": ["702.80a"],
@@ -334,7 +336,8 @@
     },
     "copies-null-profusion-and-isochron-scepter": {
       "hit": [],
-      "miss": ["603.2", "707.12"]
+      "miss": ["603.2", "707.12"],
+      "inTopic": ["603.2"]
     },
     "copies-quicksilver-gargantuan-and-tarmogoyf": {
       "hit": ["707.9d"],
@@ -982,7 +985,8 @@
     },
     "panharmonicon-controller-not-entering-permanent": {
       "hit": [],
-      "miss": ["603.2"]
+      "miss": ["603.2"],
+      "inTopic": ["603.2"]
     },
     "paradigm-decorum-dissertation": {
       "hit": ["702.192a"],
@@ -1089,8 +1093,9 @@
       "miss": []
     },
     "replacement-bard-and-bilbo-tokens": {
-      "hit": ["616.1f"],
-      "miss": ["616.1"]
+      "hit": [],
+      "miss": ["616.1", "616.1f"],
+      "inTopic": ["616.1", "616.1f"]
     },
     "replacement-byrke-and-branching-evolution": {
       "hit": [],
@@ -1098,7 +1103,8 @@
     },
     "replacement-crafty-cutpurse-anointed-procession": {
       "hit": [],
-      "miss": ["616.1", "614.12"]
+      "miss": ["616.1", "614.12"],
+      "inTopic": ["616.1"]
     },
     "replacement-damia-thought-reflection-draw": {
       "hit": [],
@@ -1114,7 +1120,8 @@
     },
     "replacement-feather-and-dreadhorde-arcanist": {
       "hit": [],
-      "miss": ["616.1", "614.1a"]
+      "miss": ["616.1", "614.1a"],
+      "inTopic": ["616.1", "614.1a"]
     },
     "replacement-felix-and-charging-tuskodon": {
       "hit": ["614.5"],
@@ -1162,7 +1169,8 @@
     },
     "replacement-szadek-and-mending-hands": {
       "hit": [],
-      "miss": ["616.1", "615.1"]
+      "miss": ["616.1", "615.1"],
+      "inTopic": ["616.1"]
     },
     "replacement-two-devour-effects-one-sacrifice": {
       "hit": ["614.13b"],
@@ -1214,7 +1222,8 @@
     },
     "restoration-angel-blink-resets-counters": {
       "hit": [],
-      "miss": ["400.7"]
+      "miss": ["400.7"],
+      "inTopic": ["400.7"]
     },
     "retrace-call-the-skybreaker": {
       "hit": ["702.81a"],
@@ -1466,7 +1475,8 @@
     },
     "triggers-karlov-triggers-per-life-gain-event": {
       "hit": [],
-      "miss": ["603.2"]
+      "miss": ["603.2"],
+      "inTopic": ["603.2"]
     },
     "triggers-lifestaff-and-planar-cleansing": {
       "hit": ["603.10a"],
@@ -1474,7 +1484,8 @@
     },
     "triggers-obstinate-baloth-discard-and-raiders-wake": {
       "hit": [],
-      "miss": ["701.9a", "603.2"]
+      "miss": ["701.9a", "603.2"],
+      "inTopic": ["603.2"]
     },
     "triggers-quagnoth-discard-and-yixlid-jailer": {
       "hit": [],

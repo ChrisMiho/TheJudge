@@ -1,5 +1,5 @@
 # Game rules retrieval
-Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-177, REQ-178, REQ-179, REQ-180, REQ-181
+Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-177, REQ-178, REQ-179, REQ-180, REQ-181, REQ-220
 
 ## How it works
 
@@ -11,9 +11,12 @@ derived from Scryfall bulk `rulings`, filtered to `source === "wotc"`, and emitt
 the committed card metadata oracle IDs, the rulings section is omitted.
 
 System 2 is the curated baseline. It always includes core rules topics, then adds
-conditional buckets from card-agnostic game-state signals only: `turnPhase`,
-`combatStep`, and populated zone presence. Card names, oracle text, and keywords do
-not affect System 2. This replaces the prior "all topics every request" baseline with
+conditional buckets from game-state signals: `turnPhase`, `combatStep`, and populated
+zone presence. One topic is gated on card wording instead: when two or more cards —
+attached in a lookup, or on the stack or in any zone in a game — carry replacement or
+prevention wording ("instead", "prevent"), it adds the replacement-effect interaction
+rules (CR 614.1a, 616.1, 616.1a–g, 616.2; REQ-220).
+Card names and keywords never affect System 2. This replaces the prior "all topics every request" baseline with
 a smaller `GAME RULES (reference)` section that still covers the stable vocabulary the
 model needs for stack, priority, zones, targets, combat, delayed triggers, and related
 common interactions.
@@ -60,8 +63,8 @@ duplicate or a bare heading (REQ-179).
 Input is the normalized prompt context plus startup-loaded artifacts: card rulings,
 curated game-rules topics, the rule excerpt index, token statistics, and keyword
 vocabulary. Prompt preparation first collects submitted cards for System 1. It then
-selects System 2 topics from game-state signals and derives the selected curated rule
-IDs from those topics.
+selects System 2 topics from game-state signals and the card-wording gate (REQ-220)
+and derives the selected curated rule IDs from those topics.
 
 Those curated rule IDs become the exclusion set for System 3. When a semantic embedding
 provider is active, the async route handler embeds the query first and passes the query
@@ -114,8 +117,10 @@ reference material and simply omits `OFFICIAL RULINGS`.
 
 - System 1 is card-specific and ruling-specific; it only emits WotC rulings for
   submitted cards that match the committed rulings/card metadata index.
-- System 2 is intentionally card-agnostic. It is driven by `turnPhase`, `combatStep`,
-  and populated-zone presence, not card names, oracle text, or keywords.
+- System 2 is driven by `turnPhase`, `combatStep`, and populated-zone presence, plus
+  one card-wording gate: two or more cards whose oracle text says "instead" or
+  "prevent" add the replacement-effect interaction topic (REQ-220). Card names and
+  keywords never select a System 2 topic, and relevance scoring stays System 3's job.
 - System 3 is deduplicated against the System 2 selection, so the same rule ID never
   appears once as curated baseline and again as supplemental retrieval.
 - System 3 is capped at ten supplemental excerpts per request (raised from five on 2026-09-09, REQ-190).

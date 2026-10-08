@@ -85,6 +85,11 @@
     "ruleNumbers": ["614.1", "614.5", "614.6"]
   },
   {
+    "id": "replacement-effects-interaction",
+    "title": "Interaction of Replacement and Prevention Effects",
+    "ruleNumbers": ["614.1a", "616.1", "616.1a", "616.1b", "616.1c", "616.1d", "616.1e", "616.1f", "616.1g", "616.2"]
+  },
+  {
     "id": "replacement-etb-effects",
     "title": "Replacement Effects as Permanents Enter",
     "ruleNumbers": ["614.12a", "614.12b", "614.12c"]

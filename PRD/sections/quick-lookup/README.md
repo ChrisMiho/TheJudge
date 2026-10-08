@@ -13,7 +13,8 @@
   REQ-075, REQ-079, REQ-091, REQ-092, REQ-094, REQ-095, REQ-097, REQ-098,
   REQ-011, REQ-022, REQ-024, REQ-030, REQ-105, REQ-109, REQ-110, REQ-121,
   REQ-129, REQ-132, REQ-134, REQ-141, REQ-167, REQ-178, REQ-179, REQ-180,
-  REQ-181, REQ-182, REQ-184, REQ-206, FLOW-006, FLOW-011, FLOW-023, NFR-001
+  REQ-181, REQ-182, REQ-184, REQ-206, FLOW-006, FLOW-011, FLOW-023, NFR-001,
+  REQ-220
 
 ## What it is
 
@@ -273,7 +274,7 @@ both providers. (DEC-020, REQ-072)
   IDF keyword score, both normalised per query, with the exact-rule-id boost
   merged into the blended score — over a rule index with the source document's
   table of contents and heading-only entries stripped (REQ-179), excluding by
-  rule-number prefix the curated rule numbers the always-on core topics already
+  rule-number prefix the curated rule numbers the selected curated topics already
   carry, and returning a small capped set of the best-ranked rules. IDF-scored
   keyword retrieval alone is retained as the mock/offline default and the
   fallback on any embedding failure, so those settings are never worse than the
@@ -288,7 +289,12 @@ both providers. (DEC-020, REQ-072)
 - Built: the always-on core game-rules topics are a fixed curated set
   (stack-and-priority, targets, zones, triggered-ability basics), not the
   state-gated selector the game flow uses — lookup carries no game state to gate
-  on. (DEC-045, REQ-074)
+  on. One topic is added on card wording: when two or more attached cards say
+  "instead" or "prevent" (replacement or prevention effects), the prompt also
+  carries the replacement-effect interaction rules (CR 614.1a, 616.1, 616.1a–g,
+  616.2), so a question about two such cards — Academy Manufactor with Esix,
+  Fractal Bloom, say — gets the rule that the player chooses the order. (DEC-045,
+  REQ-074, REQ-220)
 
 ### Provider boundary
 

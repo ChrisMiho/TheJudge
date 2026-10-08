@@ -6,10 +6,13 @@
 //   card check (absolute)  every attached card's name, oracle text and every
 //                          committed ruling appear in the prompt (no card's
 //                          rulings come near the prompt's limits, measured);
-//   rule check (ratchet)   against a committed per-case hit/miss baseline it
-//                          fails only when a deciding rule that used to reach
-//                          the prompt no longer does; new hits are reported and
-//                          an explicit command raises the baseline;
+//   rule check (ratchet)   against a committed per-case baseline it fails only
+//                          when a deciding rule that used to reach the prompt
+//                          no longer does. A rule reaches the prompt as a System
+//                          3 excerpt (`hit`) or carried by a curated topic
+//                          selected for that prompt (`inTopic`); a rule that
+//                          moves between the two is not a loss. New hits are
+//                          reported and an explicit command raises the baseline;
 //   state-fact check       where a case carries a `gameState`, every stated
 //                          fact appears as its printed line (stateFacts.ts),
 //                          and the request passes the In-Depth schema.
@@ -33,7 +36,12 @@ import { askAiRequestSchema, gameContextSchema } from "../../validation/askAiReq
 import { checkReFreeze, type FrozenVectorFile } from "./frozenVectors.js";
 import { checkStateFacts } from "./stateFacts.js";
 
-export type BaselineCase = { hit: string[]; miss: string[] };
+/**
+ * `hit` and `miss` keep their System 3 meaning (a deciding rule is a System 3
+ * excerpt or is not). `inTopic` records, apart from them, the deciding rules a
+ * curated topic selected for the prompt carries; written only when non-empty.
+ */
+export type BaselineCase = { hit: string[]; miss: string[]; inTopic?: string[] };
 export type RulesGateBaseline = { cases: Record<string, BaselineCase> };
 
 export type CaseGateResult = {
@@ -45,9 +53,11 @@ export type CaseGateResult = {
   /** Deciding rule ids that reached the prompt; null when the case was not scored (awaiting a re-freeze or no vector). */
   hit: string[] | null;
   miss: string[] | null;
-  /** Rules the baseline recorded as hits that no longer reach the prompt: fail the gate. */
+  /** Deciding rules that are not System 3 excerpts but are carried by a selected curated topic (their text is in `GAME RULES (reference)`); null when not scored. */
+  inTopic: string[] | null;
+  /** Rules the baseline recorded as hits or `inTopic` that now reach the prompt by neither route: fail the gate. */
   regressions: string[];
-  /** Rules that reach the prompt now and were not recorded as hits: reported, never failed. */
+  /** Rules that reach the prompt now, by either route, and were in neither recorded list: reported, never failed. */
   newHits: string[];
 };
 
@@ -56,6 +66,8 @@ export type RulesGateSummary = {
   scored: number;
   casesHit: number;
   casesMissed: number;
+  /** Scored cases with at least one deciding rule carried by a selected curated topic. */
+  casesInTopic: number;
   awaitingRefreeze: number;
   failed: number;
   regressed: number;
@@ -137,6 +149,7 @@ function evaluateCase(caseEntry: GoldCase, inputs: RulesGateInputs): CaseGateRes
     failures: [],
     hit: null,
     miss: null,
+    inTopic: null,
     regressions: [],
     newHits: []
   };
@@ -177,14 +190,21 @@ function evaluateCase(caseEntry: GoldCase, inputs: RulesGateInputs): CaseGateRes
     );
   }
   const selected = new Set((supplemental?.selected ?? []).map((rule) => rule.ruleId));
+  // REQ-222: a rule also reaches the prompt when a curated topic selected for it carries
+  // that rule number (the topic's text is in `GAME RULES (reference)`).
+  const topicRules = new Set(
+    (prepared.enrichmentDebug?.curatedGameRules.topics ?? []).flatMap((topic) => topic.ruleNumbers)
+  );
+  const reaches = (ruleId: string): boolean => selected.has(ruleId) || topicRules.has(ruleId);
   const deciding = caseEntry.expected.decidingRuleIds;
   result.hit = deciding.filter((ruleId) => selected.has(ruleId));
   result.miss = deciding.filter((ruleId) => !selected.has(ruleId));
+  result.inTopic = deciding.filter((ruleId) => !selected.has(ruleId) && topicRules.has(ruleId));
 
   const recorded = baseline.cases[caseEntry.id];
-  const recordedHits = new Set(recorded?.hit ?? []);
-  result.regressions = [...recordedHits].filter((ruleId) => !selected.has(ruleId));
-  result.newHits = result.hit.filter((ruleId) => !recordedHits.has(ruleId));
+  const recordedReaching = new Set([...(recorded?.hit ?? []), ...(recorded?.inTopic ?? [])]);
+  result.regressions = [...recordedReaching].filter((ruleId) => !reaches(ruleId));
+  result.newHits = deciding.filter((ruleId) => reaches(ruleId) && !recordedReaching.has(ruleId));
   return result;
 }
 
@@ -209,7 +229,7 @@ export function formatGateReport(results: CaseGateResult[], summary: RulesGateSu
   }
   lines.push(
     `Rules gate: ${summary.cases} cases, ${summary.scored} scored (${summary.casesHit} hit, ${summary.casesMissed} missed), ` +
-      `${summary.awaitingRefreeze} awaiting re-freeze, ${summary.regressed} regressed, ${summary.failed} failed`
+      `${summary.casesInTopic} with a deciding rule carried by a curated topic, ${summary.awaitingRefreeze} awaiting re-freeze, ${summary.regressed} regressed, ${summary.failed} failed`
   );
   return lines.join("\n");
 }
@@ -226,6 +246,7 @@ export function evaluateRulesGate(inputs: RulesGateInputs): RulesGateOutcome {
     scored: scored.length,
     casesHit: scored.filter((result) => result.miss?.length === 0).length,
     casesMissed: scored.filter((result) => (result.miss?.length ?? 0) > 0).length,
+    casesInTopic: scored.filter((result) => (result.inTopic?.length ?? 0) > 0).length,
     awaitingRefreeze: results.filter((result) => result.awaitingRefreeze).length,
     failed: results.filter((result) => result.failures.length > 0).length,
     regressed: results.filter((result) => result.regressions.length > 0).length,
@@ -241,9 +262,10 @@ export function evaluateRulesGate(inputs: RulesGateInputs): RulesGateOutcome {
 
 /**
  * The explicit baseline raise (`npm run eval:rules-gate:baseline`): records
- * each scored case's hit and miss lists. It refuses while any recorded hit has
- * been lost (a regression) unless the caller passes `allowRegressions`, which
- * is a deliberate decision to accept the loss. A case that was not scored
+ * each scored case's hit and miss lists, and its `inTopic` list only when it
+ * is non-empty. It refuses while any recorded hit or `inTopic` rule has been
+ * lost (a regression) unless the caller passes `allowRegressions`, which is a
+ * deliberate decision to accept the loss. A case that was not scored
  * (awaiting a re-freeze, or no vector) keeps its previous entry, and a case no
  * longer in the corpus is dropped.
  */
@@ -262,7 +284,11 @@ export function raiseBaseline(
   const added: string[] = [];
   for (const result of [...results].sort((a, b) => a.id.localeCompare(b.id))) {
     if (result.hit !== null && result.miss !== null) {
-      cases[result.id] = { hit: [...result.hit], miss: [...result.miss] };
+      cases[result.id] = {
+        hit: [...result.hit],
+        miss: [...result.miss],
+        ...(result.inTopic !== null && result.inTopic.length > 0 ? { inTopic: [...result.inTopic] } : {})
+      };
       if (result.newHits.length > 0) added.push(`${result.id}: ${result.newHits.join(", ")}`);
     } else if (previous.cases[result.id]) {
       cases[result.id] = previous.cases[result.id];

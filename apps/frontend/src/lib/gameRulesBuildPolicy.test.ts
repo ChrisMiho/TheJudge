@@ -199,11 +199,11 @@ describe("game rules build policy", () => {
     const sortedArtifactIds = [...artifactIds].sort((a, b) => a.localeCompare(b));
     const excerptChars = artifact.reduce((total, topic) => total + topic.excerpt.length, 0);
 
-    expect(manifest).toHaveLength(23);
+    expect(manifest).toHaveLength(24);
     expect(artifact).toHaveLength(manifest.length);
     expect(artifactIds).toEqual(sortedArtifactIds);
     expect(excerptChars).toBeGreaterThanOrEqual(18000);
-    expect(excerptChars).toBeLessThanOrEqual(22000);
+    expect(excerptChars).toBeLessThanOrEqual(26000);
 
     for (const topic of artifact) {
       expect(topic.excerpt.trim().length).toBeGreaterThan(0);
