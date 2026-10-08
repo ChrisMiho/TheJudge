@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | built 2026-10-07: 4 slices A to D done (B and C applied the product-truth proposal); offline-only; branch `thejudge-auto/niche-interaction-rule-tests-work`; graph run `graph-20261006-150550` |
 
 ## active
 
