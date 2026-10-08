@@ -39,9 +39,9 @@
     "variants": []
   },
   "snapshot": {
-    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
     "dependsOnHashes": {
-      "rules": "e9b1d0899dbd7c7742dcedcde5705aa082365f5eca869f8a37db20bed8e12eda",
+      "rules": "03008fcdc48c07639d8f9d583e67e024685805169a3d690e25f13445e1701996",
       "oracle": "d71e5664aeaa8913c7ff7bb321d7a96897163f4b985f871a5e8f4540bd5fddc2",
       "rulings": "241d79bcb6bc94c9998b06761b461dc4131d83fa476959a3289a74054ff53581"
     }

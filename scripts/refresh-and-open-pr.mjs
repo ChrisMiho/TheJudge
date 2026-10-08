@@ -37,7 +37,11 @@ export const COMMITTED_ARTIFACT_PATHS = [
   "apps/backend/data/gameRulesRuleEmbeddings.json",
   "apps/backend/data/cardPrintingPricesByOracleId.json.br",
   "apps/backend/data/commanderSpellbookComboBlocks.br",
-  "apps/backend/data/commanderSpellbookComboIndex.json.br"
+  "apps/backend/data/commanderSpellbookComboIndex.json.br",
+  // REQ-196: the combo source marker (card-identity + template-set hashes) the
+  // hash gate reads to skip an unchanged combo rebuild. Written by every
+  // refresh; without it committed, the gate can never say "unchanged".
+  "apps/backend/data/commanderSpellbookComboSource.meta.json"
 ]
 
 export const REFRESH_BRANCH_PREFIX = "chore/data-refresh-"

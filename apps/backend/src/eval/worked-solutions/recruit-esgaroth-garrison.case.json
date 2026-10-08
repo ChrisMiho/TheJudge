@@ -1,0 +1,50 @@
+{
+  "id": "recruit-esgaroth-garrison",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "84597236-2cfc-4654-b126-a8ee252f4d14",
+      "name": "Esgaroth Garrison"
+    }
+  ],
+  "gameState": null,
+  "question": "Esgaroth Garrison enters and its recruit trigger starts resolving. I draw my card and look at my hand, then I want to decide what to discard. Can my opponent cast an instant after seeing my draw but before I discard and possibly create the Human Soldier token?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: once the recruit ability begins to resolve, nobody can act until the draw, the discard and any token creation are all done.",
+    "answer": "Once a spell or ability that causes you to recruit begins to resolve, no player may take any other actions until it's done. Any responses made to the spell or ability must be made before you draw, discard, and potentially create a token.",
+    "decidingRuleIds": ["701.70a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Esgaroth Garrison",
+    "oracleId": "84597236-2cfc-4654-b126-a8ee252f4d14",
+    "rulingDate": "2026-06-29",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "1bb7fae689a89cec11374d93e40329467e13b7e163a366d93b9fa817a3805d0e",
+      "oracle": "2129ef6c6e9fb824fe88e3172d7651d6da394e0b4a2567ab6072312e959fb54b",
+      "rulings": "8ad15015f8cf699a91f11bbf0337bddb2dcf2b9112d0d0726b2ff971126e3314"
+    }
+  },
+  "whyHard": "Players treat the draw, the discard and the token as three separate steps with a window to respond between them, but recruit resolves as one uninterrupted action."
+}

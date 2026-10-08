@@ -39,10 +39,10 @@
     "variants": []
   },
   "snapshot": {
-    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
     "dependsOnHashes": {
       "rules": "88e2674c744bcde2f1dc33cc97b4475b2a35aed94fe8f89b5efb76e8be4552af",
-      "oracle": "23e5565b9354ddb96f75f6487ef2b507d7e006fbd50e85b57f31459850d73cc3",
+      "oracle": "6bdd18824e00632be76bec4e5c45645a349568217493019366cf0a3dd973dc83",
       "rulings": "57768c9a144b23766def30d64d21c347429c05e7aa62ff53717308a7ce2dfc64"
     }
   },

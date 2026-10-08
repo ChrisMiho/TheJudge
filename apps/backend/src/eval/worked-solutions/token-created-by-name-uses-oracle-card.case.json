@@ -4,7 +4,7 @@
   "tier": 1,
   "review": {
     "status": "approved",
-    "reviewedOn": "2026-10-06",
+    "reviewedOn": "2026-10-07",
     "note": "approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2"
   },
   "cards": [
@@ -39,11 +39,11 @@
     "variants": []
   },
   "snapshot": {
-    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
     "dependsOnHashes": {
       "rules": "352b69e02402b0256a6483de73e494d76e57c3418f8b78208628d3f43d76b0ef",
       "oracle": "5fbab95f7d8e8c793a1bd8f4ff7f573b10698b580c561dc4fa042ad3b7b39d07",
-      "rulings": "d402021617cf21cd4bc7969c0adae998fe48c8ef5cf6ab92b4145b9b82d2a2c7"
+      "rulings": "8e66401244ac0721a988a13f418c96eedb95213863b397e9d17a0a15e4b6f0d1"
     }
   },
   "whyHard": "Players expect a bare 'create a [Name] token' instruction to produce a vanilla, characteristic-less token bearing only that name, or assume the game has no way to fill in the blanks. Instead the rules point at the named card's actual Oracle text and stats, so the token is a full functional copy of that printed card even though the ability never restates its power, toughness, or abilities."

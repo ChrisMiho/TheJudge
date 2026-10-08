@@ -263,7 +263,7 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
         expect(baseline.cases["academy-manufactor-esix-treasure"].inTopic).toEqual(["614.1a", "616.1", "616.1e", "616.1f"]);
         const withTopic = Object.values(baseline.cases).filter((entry) => (entry.inTopic?.length ?? 0) > 0);
         expect(withTopic.length).toBe(11);
-        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(289);
+        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(297);
       });
     });
 

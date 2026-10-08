@@ -1,0 +1,50 @@
+{
+  "id": "power-up-abomination-activate-once",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "72101185-4336-480a-b4d7-f8ceb0007a51",
+      "name": "Abomination, Terrifying Titan"
+    }
+  ],
+  "gameState": null,
+  "question": "Abomination, Terrifying Titan entered this turn and I activated his power-up ability for the reduced cost, putting a +1/+1 counter on him and having him fight a creature. I still have plenty of mana. Can I activate his power-up ability a second time this turn, paying the full cost?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: a power-up ability can be activated only once, whether or not its cost was reduced.",
+    "answer": "702.193a Power-up is a keyword that adds additional rules to the activated ability that follows it. “Power-up — [Cost]: [Effect]” means “[Cost]: [Effect]. If this permanent entered this turn, this ability’s cost is reduced by this permanent’s mana cost. Activate this ability only once.”",
+    "decidingRuleIds": ["702.193a"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "pool": "mechanic",
+    "type": "Official Magic: The Gathering Comprehensive Rules text",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "702.193a",
+    "sectionTitle": "Keyword Abilities",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of what the cited rule states, asked about a real card with the keyword; the answer is the rule's own text, verbatim. Scryfall carried no WotC ruling for any Marvel Super Heroes card and the rule has no Example: line when this case was authored, so the rule's own text is the official source."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "166748150b044d78060780cab0b8a0478af501194fc4ebeb9d2d7c1f2096ce76",
+      "oracle": "f50cbd2586528b22c20d4df7fafdaa6fd62c560d6772d3281eef6538d5385ff1",
+      "rulings": "43c297744fc13bb36b4c8502d06503a00f79d47b3e380284cb8fb02624aaffd2"
+    }
+  },
+  "whyHard": "Players read the cost reduction as the only thing power-up adds and treat the ability like any repeatable activated ability, but the keyword itself limits it to one activation ever, reduced cost or not."
+}

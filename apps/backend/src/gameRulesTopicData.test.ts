@@ -9,7 +9,11 @@ import { describe, expect, it } from "vitest";
  * excerpt carries exactly the rules it lists: a listed rule missing from the
  * excerpt would vanish from the prompt, and an unlisted rule printed in the
  * excerpt would be shown twice. This test holds that condition over the
- * committed data (plain substring match on the full index text).
+ * committed data (plain substring match on the full index text, ignoring
+ * trailing spaces at line ends: the rule-index builder appends the next
+ * chapter heading to a chapter's last rule, and a refreshed source can carry a
+ * stray non-breaking space on the blank line before it, as 616.2 did on
+ * 2026-09-25).
  */
 
 type TopicData = { id: string; ruleNumbers: string[]; excerpt: string };
@@ -30,15 +34,19 @@ export type TopicExcerptMismatch = {
 };
 
 /** Pure check: does this topic's excerpt carry exactly the rules it lists? */
+const stripLineEndSpaces = (text: string) => text.replace(/[ \t\u00a0]+$/gm, "");
+
 export function checkTopicExcerpt(topic: TopicData, index: IndexRule[]): TopicExcerptMismatch {
   const byId = new Map(index.map((rule) => [rule.ruleId, rule]));
   const listed = new Set(topic.ruleNumbers);
+  const excerpt = stripLineEndSpaces(topic.excerpt);
+  const carries = (rule: IndexRule) => excerpt.includes(stripLineEndSpaces(rule.text));
   const unknownListed = topic.ruleNumbers.filter((ruleNumber) => !byId.has(ruleNumber));
   const missing = topic.ruleNumbers.filter((ruleNumber) => {
     const rule = byId.get(ruleNumber);
-    return rule !== undefined && !topic.excerpt.includes(rule.text);
+    return rule !== undefined && !carries(rule);
   });
-  const extra = index.filter((rule) => !listed.has(rule.ruleId) && topic.excerpt.includes(rule.text)).map((rule) => rule.ruleId);
+  const extra = index.filter((rule) => !listed.has(rule.ruleId) && carries(rule)).map((rule) => rule.ruleId);
   return { unknownListed, missing, extra };
 }
 

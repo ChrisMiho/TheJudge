@@ -404,8 +404,8 @@
       "miss": ["702.145a"]
     },
     "deathtouch-wurmcoil-engine": {
-      "hit": [],
-      "miss": ["702.2a"]
+      "hit": ["702.2a"],
+      "miss": []
     },
     "decayed-rule-text": {
       "hit": ["702.147a"],
@@ -521,6 +521,10 @@
     },
     "emerge-abundant-maw": {
       "hit": ["702.119a"],
+      "miss": []
+    },
+    "empower-jace-theorists-proxy": {
+      "hit": ["701.71a"],
       "miss": []
     },
     "enchant-rancor": {
@@ -676,8 +680,8 @@
       "miss": []
     },
     "frenzy-frenzy-sliver": {
-      "hit": [],
-      "miss": ["702.68a"]
+      "hit": ["702.68a"],
+      "miss": []
     },
     "fuse-alive-well": {
       "hit": ["702.102a"],
@@ -713,6 +717,10 @@
     },
     "haunt-exhumer-thrull": {
       "hit": ["702.55a"],
+      "miss": []
+    },
+    "heal-wolverine-fierce-fighter": {
+      "hit": ["701.69a"],
       "miss": []
     },
     "hexproof-slippery-bogbonder": {
@@ -928,8 +936,8 @@
       "miss": []
     },
     "multiplayer-only-blood-ends-your-nightmares-opponents": {
-      "hit": ["608.2d", "701.21a"],
-      "miss": []
+      "hit": ["701.21a"],
+      "miss": ["608.2d"]
     },
     "multiplayer-player-leaves-range-expands": {
       "hit": ["801.2c"],
@@ -1024,6 +1032,14 @@
       "hit": ["701.36a"],
       "miss": []
     },
+    "power-up-abomination-activate-once": {
+      "hit": ["702.193a"],
+      "miss": []
+    },
+    "power-up-captain-marvel-cost-reduction-by-type": {
+      "hit": ["702.193b"],
+      "miss": []
+    },
     "proliferate-contagion-engine": {
       "hit": ["701.34a"],
       "miss": []
@@ -1074,6 +1090,10 @@
     },
     "recover-rule-text": {
       "hit": ["702.59a"],
+      "miss": []
+    },
+    "recruit-esgaroth-garrison": {
+      "hit": ["701.70a"],
       "miss": []
     },
     "regenerate-boneknitter": {
@@ -1353,6 +1373,10 @@
       "hit": ["702.184a"],
       "miss": []
     },
+    "storied-thorin-oakenshield": {
+      "hit": ["702.195a"],
+      "miss": []
+    },
     "storm-fiery-encore": {
       "hit": ["702.40a"],
       "miss": []
@@ -1384,6 +1408,10 @@
     "tap-and-untap-snow-day": {
       "hit": [],
       "miss": ["701.26a"]
+    },
+    "teamwork-repulsor-blast-total-power": {
+      "hit": ["702.194a"],
+      "miss": []
     },
     "the-ring-tempts-you-elrond-lord-of-rivendell": {
       "hit": ["701.54a"],
