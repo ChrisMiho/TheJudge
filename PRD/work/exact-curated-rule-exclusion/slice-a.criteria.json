@@ -1,0 +1,69 @@
+{
+  "slug": "exact-curated-rule-exclusion",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "Neither exclusion branch in `scoreIndex` consults `parentRuleIds`; each drops a candidate only when `excludeRuleIds.has(entry.ruleId)`, and the REQ-179 comments describe exact-id exclusion",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/backend/src/gameRulesRetrieval.ts"
+        ]
+      }
+    },
+    {
+      "id": "A2",
+      "statement": "The retrieval tests prove, on the hybrid path and on the lexical path, that an unlisted sub-rule of a listed parent is ranked and selected and that a listed id is still excluded; the suite passes",
+      "value": false,
+      "evidence": {
+        "command": "apps/backend run test|vitest run|vitest .*gameRulesRetrieval"
+      }
+    },
+    {
+      "id": "A3",
+      "statement": "`skippedForCuratedTopic` in the evidence trace returns true only for a rule number a curated topic lists, and its tests assert 514.3a is no longer skipped while 514.3 still is; `npm run test:scripts` passes",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts|node --test .*evidence-trace"
+      }
+    },
+    {
+      "id": "A4",
+      "statement": "`apps/backend/src/gameRulesTopicData.test.ts` asserts, with plain substring matching, that each of the 24 topics' excerpts carries the full text of every rule it lists and of no other rule, and it passes on the committed data",
+      "value": false,
+      "evidence": {
+        "command": "gameRulesTopicData|apps/backend run test|vitest run",
+        "paths": [
+          "apps/backend/src/gameRulesTopicData.test.ts"
+        ]
+      }
+    },
+    {
+      "id": "A5",
+      "statement": "The data test's helper fails on a synthetic topic that carries an unlisted rule's text and on one that omits a listed rule's text (a test of the test)",
+      "value": false,
+      "evidence": {
+        "command": "gameRulesTopicData|apps/backend run test|vitest run"
+      }
+    },
+    {
+      "id": "A6",
+      "statement": "The `upkeep-trigger.fixture.json` description no longer says rule 603.3b is dropped by prefix exclusion",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/backend/src/eval/fixtures/upkeep-trigger.fixture.json"
+        ]
+      }
+    },
+    {
+      "id": "A7",
+      "statement": "`npm run typecheck` and `npm run lint` pass",
+      "value": false,
+      "evidence": {
+        "command": "npm run typecheck|npm run lint|npm run quality:check"
+      }
+    }
+  ]
+}

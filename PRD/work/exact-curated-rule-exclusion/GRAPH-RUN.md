@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim; spec-forming half: `origin/thejudge-auto/exact-curated-rule-exclusion`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` (rewritten by the build half's claim; spec-forming half: `.worktrees/kickoff-exact-curated-rule-exclusion`, removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/exact-curated-rule-exclusion/`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 6 | gate-qc | sonnet | ok | `0 → 33` | PASS attempt 2 — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: F1–F3 and M1–M4 resolved; 0 must-fix; N1/N2 non-blocking for map-out. Observation: the checker traced numbers to the intake-cited probe outputs (`PRD/work/probe-keyword-rule-retrieval/measure-two-fixes.out.txt`, `FINDINGS-missing.md`, launch checkout, read-only) — the contract says intake-cited documents are never opened; no file was written and the proposal is unaffected. Driver recorded PASS in README `## Preparation gate`; `STATUS.refined` → `STATUS.owner-action`; board row → owner-action | 2026-10-08 |
 | — | gate-review | sonnet | ok | `0 → 13` | build-half run `graph-20261008-061643`: 5/5 verdicts `accept` (REQ-179, REQ-022, REQ-181, REQ-182, REQ-220); `GATE-QUESTIONS.md` unchanged; `### Brief reconciliation` none; `## Gate verdicts` written; `## Open gate` RESOLVED; `STATUS.owner-action` → `STATUS.refined`; board row → refined; launch checkout `git status --porcelain` unchanged | 2026-10-08 |
 | 4 | gate-qc | sonnet | ok | `0 → 17` | PASS (build-half re-grade, run `graph-20261008-061643`) — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: 0 must-fix; 28/28 removed lines verbatim at the brief's line numbers; 47-row amendment set complete; code sites + numbers re-confirmed (803 chars, 125 distinct / 127 sum); PR #273 still open so intake numbers stand; N1/N2 non-blocking for map-out. Driver recorded PASS in README `## Preparation gate`; `STATUS.refined` kept; launch checkout unchanged | 2026-10-08 |
+| 5 | plan | sonnet | ok | `0 → 24` | `GAMEPLAN.md` + 3 slices: `slice-a-exact-exclusion-code.md` (exact exclusion in both `scoreIndex` branches, evidence trace, tests, new `apps/backend/src/gameRulesTopicData.test.ts`), `slice-b-goldens-baseline-measure.md` (3 goldens, baseline without `--allow-regressions`, re-measure; 603.2e/603.2g hybrid gate), `slice-c-prd-truth-and-close.md` (apply 5 accepted slots by intent); `slice-{a,b,c}.criteria.json` 7/9/8 criteria all false; `STATUS.refined` → `STATUS.active`; board row → active; no deliverable under `PRD/work/` except bookkeeping `slice-b.evidence.md` (copied into REQ-179 Notes by C); launch checkout unchanged. Driver: copied ignored `apps/backend/data/models/` into the worktree (local embedder) | 2026-10-08 |
 
 ## Open gate
 
@@ -236,6 +237,28 @@ Context:
 - Verify directly. Spawn no subagents or forks. No sleeping or polling. Stay well under the 120 tool-call budget.
 
 Report back: the slice list (letter, title, one line each), every path you wrote (absolute), the marker before and after, and `git status --porcelain` from the working directory.
+
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion
+
+You are node 6 (`build`) of graph run `graph-20261008-061643`. Run the `thejudge-implement-all` skill: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-implement-all/SKILL.md` (and any reference it names) and follow it against `PRD/work/exact-curated-rule-exclusion/` inside the working directory above, implementing slices A, B, C in order. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Context:
+- Shared branch: `thejudge-auto/exact-curated-rule-exclusion-work`, already checked out in the working directory (cut from origin/main, pushed). Work in place: no second worktree, no contributor branch. Open the code PR `thejudge-auto/exact-curated-rule-exclusion-work` into `main` with `gh pr create --base main --head thejudge-auto/exact-curated-rule-exclusion-work`; its body opens with the plain-language block from `PRD/instructions/plain-language-standard.md`. Never merge or close a PR, never force-push, never push main.
+- Apply the accepted `PRD/sections/` truth by intent (finalized `GATE-QUESTIONS.md` + `DESIGN-BRIEF.md`, re-derived against current truth) together with the code, as slice C says. Do not add new stable IDs.
+- Setup: the worktree has no `node_modules`; run `npm ci` in the working directory first. `apps/backend/data/models/` (the local embedder) is already present; confirm hybrid runs did not fall back to lexical.
+- Data refresh PR #273 is still open; slice B's check against `f98b8feb` should find no data change. Never run `npm run data:refresh` or any Scryfall or paid OpenAI call (no live answer-quality runs).
+- `npm run benchmark:rag-retrieval` rewrites `scoredAt` in tracked `apps/backend/src/eval/benchmark/results.json` and `semantic-results.json`; if the only change is the timestamp, restore those two files with `git checkout --` before committing.
+- Prettier governs only JSON/YAML here; never run prettier on `.ts`/`.mjs`. Use `npm run format` only for a script-written JSON that fails `format:check`.
+- Criteria: flip each `slice-*.criteria.json` value to `true` with the Edit tool only after its evidence command was issued and passed. Never use `sed -i` or a heredoc on package files. If the hook denies a flip, do not route around it: record which ids and the denial text and report them.
+- A denied command is never retried verbatim. If the harness denies something, switch to Edit/Write or a standalone command, or stop and report.
+- Every file you write stays inside the working directory; the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` stays untouched. Stage explicit paths only (never `git add -A`, `--all`, or `.`). Commit and push per slice as the skill directs, with the commit trailer `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and the PR body ending with the Claude Code attribution line.
+- Subagent fan-out is off for this run: do the work yourself, spawn no subagents or forks. No sleeping or polling.
+
+Report back: per slice — outcome, commits, test and eval commands with their pass/fail results and the measured values; the criteria still `false` (if any) with the reason; the PR URL; every path you wrote (absolute); and `git status --porcelain` from the working directory.
 
 ## Instruction ledger
 
