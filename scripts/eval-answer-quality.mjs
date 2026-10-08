@@ -125,7 +125,11 @@ export const MODEL_PRICING_USD_PER_MILLION_TOKENS = {
   "gpt-5-nano": { input: 0.05, output: 0.4 },
   "gpt-5": { input: 1.25, output: 10.0 },
   // A reasoning model: its reasoning tokens are billed as output (REQ-227). Named with `--model gpt-6-luna`; not in `--bake-off`.
-  "gpt-6-luna": { input: 0.1, output: 0.5 }
+  "gpt-6-luna": { input: 0.1, output: 0.5 },
+  // Judge candidates (REQ-186: stronger than every contestant, never one of them). Standard tier, short context.
+  "gpt-6-sol": { input: 2.0, output: 10.0 },
+  "gpt-6.1-sol": { input: 2.0, output: 10.0 },
+  "gpt-6-astra": { input: 10.0, output: 50.0 }
 };
 
 const RATE_NOT_RECHECKED = "not re-checked since the table was written";
@@ -136,12 +140,15 @@ const RATE_NOT_RECHECKED = "not re-checked since the table was written";
  * prints every rate with this date so a stale one is seen, not assumed.
  */
 export const MODEL_RATE_CHECKED_ON = {
-  "gpt-4.1-mini": RATE_NOT_RECHECKED,
-  "gpt-4.1": "2026-10-07",
-  "gpt-5-mini": RATE_NOT_RECHECKED,
-  "gpt-5-nano": RATE_NOT_RECHECKED,
-  "gpt-5": RATE_NOT_RECHECKED,
-  "gpt-6-luna": "2026-10-07"
+  "gpt-4.1-mini": "2026-10-08",
+  "gpt-4.1": "2026-10-08",
+  "gpt-5-mini": "2026-10-08",
+  "gpt-5-nano": "2026-10-08",
+  "gpt-5": "2026-10-08",
+  "gpt-6-luna": "2026-10-08",
+  "gpt-6-sol": "2026-10-08",
+  "gpt-6.1-sol": "2026-10-08",
+  "gpt-6-astra": "2026-10-08"
 };
 
 /** The dry run's rate lines: every rate in the table with the date it was checked. */
