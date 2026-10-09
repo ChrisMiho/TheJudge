@@ -1,15 +1,16 @@
 # Graph run — luna-answer-budget
 
-- Run ID: `graph-20261009-142138`
+- Run ID: `graph-20261009-142138` (spec-forming half)
+- Build run ID: `graph-20261009-150059` (build half, lock pid 2284; canary `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`, 2026-10-09)
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261009-142138/`
-- Current node: `owner-action` (parked after gate-qc PASS)
+- Current node: `gate-review` (build half)
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/280
-- Terminal state: `PARKED` (lock released)
-- Next action: owner answers `GATE-QUESTIONS.md` in the docs PR and merges it; `/graph-implement PRD/work/luna-answer-budget/` builds it
+- Terminal state: in progress (build half holds the lock)
+- Next action: `/graph-implement PRD/work/luna-answer-budget/` resumes at the node this ledger records
 
 ## Node ledger
 
@@ -109,9 +110,26 @@ If you write any prompt for another agent, copy the Working directory line above
 
 Report back plain text: verdict (PASS / FAIL), the complete findings list (or none), report path, and commit SHA.
 
+### gate-review
+
+graph is controlling. You are the gate-resolution step of the build half of graph run graph-20261009-150059, package luna-answer-budget.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget
+
+Shared branch: thejudge-auto/luna-answer-budget-work, already checked out in that worktree and pushed. Work only inside the working directory. Never write to, commit in, switch, or stash the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+Invoke the graph-gate-review skill (Skill tool, skill name graph-gate-review) on PRD/work/luna-answer-budget/ and follow it exactly. The owner answered all ten verdict slots in GATE-QUESTIONS.md (accept on every one, each with a reason) and merged docs PR #280 to main; that merge is the build signal. Confirm every slot from the file itself rather than from this summary.
+
+Do what the skill requires: finalize the proposal inside GATE-QUESTIONS.md, reconcile DESIGN-BRIEF.md and the README intake pointer to every edit or reject verdict (if there are none, say so and change nothing there), write the verdict record into the ledger as the skill directs, resolve the ledger's Open gate section, leave STATUS.refined as the only STATUS marker in the package, and move the luna-answer-budget row on PRD/work/STATUS.md fully to the refined section (remove it from its old section). Never edit PRD/sections/ or any code. Do not run the resume command the skill hands back; the driver does that.
+
+Stage explicit paths only (no git add -A, --all, or .), commit inside the working directory, and push with git push -u origin thejudge-auto/luna-answer-budget-work. Verify directly; spawn no subagents or forks; no sleeping or polling; stay well under the tool-call cap. A denied tool call is never retried: report it verbatim and stop. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
+
+Report back, plain text: outcome (ok / failed), commit sha, verdict counts (accept / edit / reject), a section headed ### Brief reconciliation listing each passage changed (or none), the STATUS marker now present, the board row text and section, git status --porcelain in the worktree after the push, and every file path you changed.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Switch live answers to GPT-6 Luna at default effort under one 30-second answer budget (Lambda ~40 s, retries inside the budget), amend NFR-002, and correct the layers sentence" | answered-once | shape | — |
 | "Decisions 1–9 are closed; do not reopen the model choice, the effort setting or the 30 s figure" | answered-once | define | — |
+| "/graph-implement PRD/work/luna-answer-budget/" (2026-10-09, after the owner merged docs PR #280: build half) | answered-once | gate-review | — |
