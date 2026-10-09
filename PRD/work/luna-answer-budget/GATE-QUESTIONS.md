@@ -127,8 +127,8 @@ appended after `### REQ-230`:
 +- Backed by: DEC-020, DEC-033, REQ-231
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner's 2026-10-09 choice (Luna, default effort, one 30 s budget, 40 s Lambda). Pre-screen confirmed no earlier cutoff: the frontend calls the Lambda function URL directly, with no CloudFront hop and no client timer.
 
 ## NFR-002 — the speed target follows the new model (amended, with the goals echo)
 
@@ -189,8 +189,8 @@ NFR-002):
 +- **Prompt size vs AI latency:** Game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics ship). This is an active risk to the typical-answer latency success metric (about 4 seconds, NFR-002), not a temporary scope tradeoff. Monitor after ship.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: The typical-answer figure is provider time measured from the eval machine; 'about' keeps it a soft target, and the post-deploy check times one live hard question.
 
 ## REQ-181 — the meaning-based rule search stops quoting "under 3 seconds" (amended)
 
@@ -212,8 +212,8 @@ exists.
 +  - NFR-002's typical-answer target (about 4 seconds) holds; an in-process query embedding adds about 2 milliseconds
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Wording follows the NFR-002 amendment; the search itself does not change.
 
 ## REQ-182 — the blended rule search: new speed wording, and Luna measured at the ten-excerpt cap (amended)
 
@@ -246,8 +246,8 @@ Luna.
 +  - the deployed answer model moved to `gpt-6-luna` in the `luna-answer-budget` change (REQ-231). It was measured at cap 10 — 125 of 126 approved rules cases right, owner-adjudicated, 2026-10-09 — so ten stands for it and is not re-decided; it was not measured at any other cap
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Luna was measured at cap 10 (125 of 126), so ten stands for it.
 
 ## REQ-186 — the routine quality check's default judge becomes gpt-6.1-sol (amended)
 
@@ -273,8 +273,8 @@ the owner remembers to set the judge by hand each time.
 +  - the judge model is selected by its own explicit setting, `ANSWER_QUALITY_JUDGE_MODEL` (`resolveJudgeModel`), recorded in the run artifact, and defaults to `gpt-6.1-sol` when unset — mirroring the explicit-selection seam `ASK_AI_PROVIDER` and `EMBEDDING_PROVIDER` already use, so a judge change is visible in the artifact rather than invisible in a score. The default moved from `gpt-5` when the deployed model became `gpt-6-luna` (REQ-231), so a routine run's judge stays stronger than the model it grades; `gpt-6.1-sol` judged the 2026-10-09 investigation. It never defaults to an answer model, and `judgeMatchesAnswerModel` flags any run whose judge model id matches an answer model id
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Keeps the routine judge stronger than the deployed model; gpt-6.1-sol costs about the same as gpt-5 ($2/$10 vs $1.25/$10 per million tokens).
 
 ## REQ-188 — the routine quality check grades Luna by default (amended)
 
@@ -326,8 +326,8 @@ players no longer get, and the requirement contradicts REQ-231.
 +  - measured 2026-09-07 (three live runs, $0.67 / $0.69 / $0.63 actual against the ≈$2.50 estimate — the gpt-5 judge's reasoning output was far smaller than assumed): the first two runs passed no query embedding and attached no card, so both ranked lexically under a `local` label and the three tier-2 prompts carried no ruling; the prompt-fidelity criterion above was added and the run repeated. Run 3 (the committed baseline, `gitCommit b3f860f`, semantic for all 18 cases): fully correct of 18 at cap 5 / cap 10 — `gpt-4.1-mini` 17 / 15, `gpt-4.1` 16 / 18, `gpt-5-mini` 17 / 18, `gpt-5-nano` 15 / 13; mean latency `gpt-4.1` 3.4–3.5 s, `gpt-4.1-mini` 4.3–5.5 s, `gpt-5-mini` 13.5–20.7 s, `gpt-5-nano` 22.9–27.7 s; mean blind rank `gpt-4.1` 1.8, `gpt-5-mini` 1.9, `gpt-4.1-mini` 2.7–2.9, `gpt-5-nano` 3.3–3.6. The deployed model was `gpt-4.1` (`scripts/aws-deploy.sh` sets `OPENAI_MODEL`) until the `luna-answer-budget` change moved it to `gpt-6-luna` (REQ-231), and this run is what moved the deployed cap from five to ten on 2026-09-09 (`rule-excerpt-cap-ten`, REQ-190), so its cap-10 row is the `gpt-4.1`-era product baseline and its cap-5 row the superseded one. Full record: the `ai-answer-quality-baseline` package's slice E doc, promoted to its receipt at cleanup
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: A routine run grades what players get; the effort trigger fired and was resolved by amending NFR-002, not by adding an effort setting.
 
 ## REQ-190 — the excerpt-cap requirement stops quoting "under three seconds" (amended)
 
@@ -350,8 +350,8 @@ calls GPT-4.1 the deployed model.
 +  - NFR-002's answer targets are not re-gated by the cap: the then-deployed `gpt-4.1`'s answer latency was measured unchanged across cap 5 and cap 10 (3.4 → 3.5 s, run 3), `gpt-6-luna` was measured at cap 10 only (REQ-231's note), and end-to-end production request latency has never been sampled at either cap — that sampling is a separate parked package, not a precondition of this cap
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Wording follows the NFR-002 amendment.
 
 ## REQ-226 — a run records production's answer timeout, not a "per-attempt" one (amended)
 
@@ -375,8 +375,8 @@ per-attempt timeout that production no longer has.
 +  - the identity record holds: run id; the commit executed from; the SHA-256 of each file in `apps/backend/data/` and of each listed case file, and of the rule index; the manifest's SHA-256 and its case list (ids and hashes); answer model ids as requested and as the provider reports them; the request options sent (model and input only, REQ-188); the client timeout and retry count; `ASK_AI_PROVIDER`; `EMBEDDING_PROVIDER` and the embedding model id; whether the combo catalog was loaded; excerpt caps; arms and their revision ids; repeat count; judge model; rubric revision; the rate table with the date each rate was checked; the spending cap and any later change to it (REQ-227); the production answer timeout at the revision the run executed from (`DEFAULT_OPENAI_TIMEOUT_MS`: the overall answer budget from REQ-231 on, a per-attempt timeout before it), which the comparison report holds latency against (REQ-228); for a regrade run, the source run id and manifest hash; and the UTC start time
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Production's timeout becomes one overall budget, so the per-attempt wording is wrong after this change.
 
 ## REQ-228 — the comparison report measures slow answers against 30 seconds (amended)
 
@@ -401,8 +401,8 @@ per-attempt limit that production no longer uses.
 +  - per side it reports: answer latency mean, p50 and p95; the count of answers slower than the production answer timeout of the revision that side's run executed from (the 30,000 ms overall answer budget from REQ-231 on; 15,000 ms per attempt before it, which is also assumed for a run whose identity record predates the field); error and timeout counts; input, output and reasoning tokens; answer cost and judge cost apart, with unpriced models shown as unpriced (REQ-227)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Old runs keep 15 s, which is what production used when they ran; new runs are measured against 30 s.
 
 ## REQ-230 — the corrected layers sentence becomes the real prompt, and how it gets judged (amended note)
 
@@ -437,8 +437,8 @@ correction gets judged or why arm P stops working.
 +  - the `luna-answer-budget` change (REQ-231's package) adopted P's owner-approved correction (2026-10-08) as production prompt text — "Continuous effects use a layer system (rule 613); state-based actions are not part of it and are checked separately whenever a player would receive priority (rule 704)." — as a factual fix. The judging this requirement's constraint asks for (arm A run from the changed revision on the held-out manifest) is a paid, owner-run experiment after merge, never part of the build; until it runs, the change is recorded as a factual correction, not a measured accuracy change (alone it measured only a small-sample lead: Academy Manufactor 3 of 4 right with it, 1 of 5 without). Because the sentence P replaces no longer appears in the production prompt, P now refuses to run (its sentence must appear exactly once) until a new correction is approved
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Factual fix approved 2026-10-08. Arm P's exactly-once refusal is confirmed in scripts/lib/diagnostic-arms.mjs; the held-out arm-A judging is a paid run the owner triggers after merge.
 
 ## Blocker questions
 
