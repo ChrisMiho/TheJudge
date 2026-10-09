@@ -1322,21 +1322,21 @@ test("estimateCallCostUsd follows the dry-run method and is null for a model wit
 
 test("gpt-6-luna is in the rate table with a check date, and the dry run prints every rate with its date", async () => {
   assert.deepEqual(MODEL_PRICING_USD_PER_MILLION_TOKENS["gpt-6-luna"], { input: 0.1, output: 0.5 })
-  assert.equal(MODEL_RATE_CHECKED_ON["gpt-6-luna"], "2026-10-07")
+  assert.equal(MODEL_RATE_CHECKED_ON["gpt-6-luna"], "2026-10-08")
   for (const model of Object.keys(MODEL_PRICING_USD_PER_MILLION_TOKENS)) {
     assert.ok(MODEL_RATE_CHECKED_ON[model], `${model} has a recorded check date`)
   }
   assert.ok(!BAKE_OFF_LINEUP.includes("gpt-6-luna"), "--bake-off is unchanged")
-  assert.equal(buildRateTable()["gpt-6-luna"].checkedOn, "2026-10-07")
+  assert.equal(buildRateTable()["gpt-6-luna"].checkedOn, "2026-10-08")
 
   const rateLines = describeRates().join("\n")
   for (const model of Object.keys(MODEL_PRICING_USD_PER_MILLION_TOKENS)) assert.match(rateLines, new RegExp(`${model}: \\$`))
-  assert.match(rateLines, /gpt-6-luna: \$0\.1 \/ \$0\.5 -- check date: 2026-10-07/)
+  assert.match(rateLines, /gpt-6-luna: \$0\.1 \/ \$0\.5 -- check date: 2026-10-08/)
 
   const logs = []
   await run({ loadLocalEnv: noLocalEnv, argv: ["--model", "gpt-6-luna"], env: {}, log: (line) => logs.push(line), measure: fakeMeasure, isStale: notStale })
   assert.match(logs[0], /Rates \(USD per million tokens/)
-  assert.match(logs[0], /gpt-6-luna: \$0\.1 \/ \$0\.5 -- check date: 2026-10-07/)
+  assert.match(logs[0], /gpt-6-luna: \$0\.1 \/ \$0\.5 -- check date: 2026-10-08/)
   assert.doesNotMatch(logs[0], /Unpriced/, "Luna now has a rate")
 })
 
