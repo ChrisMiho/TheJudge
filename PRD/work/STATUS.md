@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| luna-answer-budget | Luna live answers, one 30 s budget, Lambda ~40 s, NFR-002 amend, layers sentence |
 
 ## owner-action
 
