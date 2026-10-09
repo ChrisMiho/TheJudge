@@ -1,4 +1,9 @@
-import type { ServerConfig } from "../config/index.js";
+import {
+  DEFAULT_OPENAI_MAX_RETRIES,
+  DEFAULT_OPENAI_MODEL,
+  DEFAULT_OPENAI_TIMEOUT_MS,
+  type ServerConfig
+} from "../config/index.js";
 import type { AskAiProvider } from "./askAiProvider.js";
 import { createOpenAiAskAiProvider, type OpenAiResponsesClient } from "./openAiResponsesProvider.js";
 import { mockAskAiProvider } from "./mockAskAiProvider.js";
@@ -11,9 +16,9 @@ export function createAskAiProvider(config: ServerConfig, options: CreateAskAiPr
   if (config.askAiProvider === "openai") {
     return createOpenAiAskAiProvider({
       apiKey: config.openAiApiKey ?? "",
-      model: config.openAiModel ?? "gpt-4.1-mini",
-      timeoutMs: config.openAiTimeoutMs ?? 15000,
-      maxRetries: config.openAiMaxRetries ?? 2,
+      model: config.openAiModel ?? DEFAULT_OPENAI_MODEL,
+      timeoutMs: config.openAiTimeoutMs ?? DEFAULT_OPENAI_TIMEOUT_MS,
+      maxRetries: config.openAiMaxRetries ?? DEFAULT_OPENAI_MAX_RETRIES,
       client: options.openAiClient
     });
   }

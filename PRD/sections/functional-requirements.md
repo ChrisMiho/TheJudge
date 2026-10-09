@@ -4295,7 +4295,7 @@
 - Constraints:
   - backend and prompt-internal only; no `AskAiRequest` change, no Zod schema change, no frontend change, no new endpoint
   - the raw model download and any oversized full-precision vector blob are gitignored and never committed; only the trimmed committed vectors ship
-  - NFR-002's under-3-second answer target holds; an in-process query embedding adds about 2 milliseconds
+  - NFR-002's typical-answer target (about 4 seconds) holds; an in-process query embedding adds about 2 milliseconds
   - semantic retrieval scope is the Comprehensive Rules corpus only; cards, WotC rulings, and Commander Spellbook combos remain exact-id keyed lookups and are never embedded or semantically searched under this requirement
   - the shipped semantic provider is a small embedding model bundled in the answer process and run in-process (`all-MiniLM-L6-v2`, 384 dimensions, quantised), not a hosted service and not a per-request external call; System 3's no-per-request-external-call posture is preserved by this choice rather than reversed, and only `EMBEDDING_PROVIDER=openai` would add such a call, which is never the default. A dedicated always-on inference host is out of scope
   - no vector database and no new storage service: the rule vectors are loaded in-process alongside the rule index and cosine-searched directly. A hosted vector store would only be justified if semantic search later spanned cards, rulings, and combos (over 150,000 vectors), which the corpus-scope constraint above excludes
@@ -4332,7 +4332,7 @@
 - Constraints:
   - backend and prompt-internal only; no `AskAiRequest` change, no Zod schema change, no frontend change, no new endpoint, no new dependency
   - no change to the committed embeddings artifact's contents or to query construction (REQ-178); this requirement changes only how two existing scores are combined, plus the one additional boost term above
-  - NFR-002's under-3-second answer target holds; blending adds arithmetic over the already-scored candidate list and no additional model call
+  - NFR-002's typical-answer target (about 4 seconds) holds; blending adds arithmetic over the already-scored candidate list and no additional model call
 - Dependencies:
   - REQ-181 (the semantic path and the provider seam this blends with)
   - REQ-177 (the committed benchmark this is gated against)
@@ -4344,7 +4344,8 @@
   - owner decision, 2026-09-05: keep the 12/12 gate and the `[0.50, 0.70]` band; add the cross-reference boost above instead of relaxing either. Sized by measurement: the largest gap between `701.8b`'s blended score and its closest full-pool competitor, across the whole accepted alpha band, was 0.078 (at alpha 0.70). `SCORE_CROSS_REFERENCE = 10` clears that with a wide margin while staying an order of magnitude below the exact-rule-id boost (100) and half the parent-rule-id boost (20) — preserving the intended hierarchy (exact > parent > cross-reference) rather than acting as an equally-absolute override.
   - measured at build, 2026-09-05, with the cross-reference boost in place (`npm run test:eval`, `npm run benchmark:rag-retrieval -- --semantic`, full candidate list): all 12 fixture checks pass at every alpha tested — 0.50, 0.55, 0.60, 0.65, 0.70. Benchmark clean/polluted recall@5 and MRR per alpha (unaffected by the boost — none of the 156 benchmark questions cites a rule number, so the boost never fires there): 0.8526/0.6649 clean, 0.8205/0.6392 polluted at 0.50; 0.8782/0.6918, 0.8718/0.6615 at 0.55; 0.8974/0.7139, 0.8910/0.6928 at 0.60; 0.8974/0.7188, 0.9038/0.7042 at 0.65; 0.9167/0.7353, 0.9038/0.7188 at 0.70. `alpha = 0.60` is chosen: the first value in the sweep where both clean and polluted recall clear the accepted floors (0.8526 / 0.8333) with real headroom. This sweep predates REQ-183's int8 re-encoding; the shipped artifact's committed `semantic-results.json` records clean/polluted recall@5 unchanged (0.8974/0.8910) with MRR 0.7107/0.6931 — a sub-0.001 shift from int8 quantisation reordering within an unchanged top-5, not a recall regression.
   - the prior state this replaces: `gameRulesRetrieval.ts` chose `scoreEntrySemantic` or `scoreEntry` for the whole index with no blend, which is why REQ-181's notes recorded that no fusion score had been measured
-  - the cap moved from 5 to 10 excerpts on 2026-09-09 (`rule-excerpt-cap-ten`) on REQ-190's run-3 measurement, which is model-dependent: the deployed `gpt-4.1` improved 16 → 18 fully correct of 18, while the smaller `gpt-4.1-mini` regressed 17 → 15 and `gpt-5-nano` 15 → 13 — extra lower-ranked excerpts distract a smaller model more than they inform it. If the deployed answer model is ever changed to a smaller one, this cap is re-decided in the same package, not inherited
+  - the cap moved from 5 to 10 excerpts on 2026-09-09 (`rule-excerpt-cap-ten`) on REQ-190's run-3 measurement, which is model-dependent: the then-deployed `gpt-4.1` improved 16 → 18 fully correct of 18, while the smaller `gpt-4.1-mini` regressed 17 → 15 and `gpt-5-nano` 15 → 13 — extra lower-ranked excerpts distract a smaller model more than they inform it. If the deployed answer model is ever changed to a smaller one, this cap is re-decided in the same package, not inherited
+  - the deployed answer model moved to `gpt-6-luna` in the `luna-answer-budget` change (REQ-231). It was measured at cap 10 — 125 of 126 approved rules cases right, owner-adjudicated, 2026-10-09 — so ten stands for it and is not re-decided; it was not measured at any other cap
 
 ### REQ-183
 - Title: Rule-embedding vectors ship in a compact number format
@@ -4589,7 +4590,7 @@
   - the deployed cap is 10, raised from 5 on 2026-09-09 (`rule-excerpt-cap-ten`) on the recorded run-3 measurement in the notes below. Changing it again requires the same evidence — a recorded run showing a different cap scored better for the deployed model — and an amendment to REQ-181, REQ-182, and `system-map/game-rules-retrieval.md` alongside this requirement, never a change made inside this requirement alone
 - Constraints:
   - no change to System 3 query construction (REQ-178), scoring or blending (REQ-182), the committed corpus or embeddings (REQ-181, REQ-183), or the System 2 deduplication (REQ-179)
-  - NFR-002's under-three-second answer target is not re-gated by the cap: the deployed model's answer latency was measured unchanged across cap 5 and cap 10 (3.4 → 3.5 s, run 3), and end-to-end production request latency has never been sampled at either cap — that sampling is a separate parked package, not a precondition of this cap
+  - NFR-002's answer targets are not re-gated by the cap: the then-deployed `gpt-4.1`'s answer latency was measured unchanged across cap 5 and cap 10 (3.4 → 3.5 s, run 3), `gpt-6-luna` was measured at cap 10 only (REQ-231's note), and end-to-end production request latency has never been sampled at either cap — that sampling is a separate parked package, not a precondition of this cap
   - the judge is not told which cap or which model produced an answer (REQ-186)
 - Dependencies:
   - REQ-182 (the hybrid ranking whose top-N the legs slice)
@@ -6049,3 +6050,30 @@
 - Notes:
   - measured 2026-10-07 at `3e973ced`: 14 approved cases have partial System 3 coverage, 91 none, 287 full (`apps/backend/src/eval/rules-gate/baseline.json`), so the diagnostic set is about 47 cases; the two tester cases are tier 3 and `multiplayer-only-blood-ends-your-nightmares-opponents` is tier 2
   - the preamble sentence P targets is the one the owner's intake brief reports as mixing up continuous effects, state-based actions, and layers; its correction is verified and owner-approved before P runs
+
+### REQ-231
+- Title: Live answers use the deployed model inside one answer budget
+- Priority: high
+- Description: Every live AI answer — a lookup, an In-Depth answer, and every follow-up turn — comes from the deployed answer model, `gpt-6-luna`, at its default reasoning effort, and the AI call for one player request runs inside one overall time budget. A player never waits on the AI longer than the budget before seeing either the answer or the failure path (REQ-014).
+- Acceptance Criteria:
+  - the deployed answer model is `gpt-6-luna`: `scripts/aws-deploy.sh` sets `OPENAI_MODEL=gpt-6-luna` on every deploy, and the provider sends model and prompt only — no reasoning-effort value (REQ-188)
+  - the answer budget is 30,000 ms (`OPENAI_TIMEOUT_MS`; code default and deployed value `30000`), measured across every attempt of one request, never per attempt; it starts when the provider call starts, so prompt assembly and local embedding before it are outside the budget and inside the server limit below
+  - a fast failure (a dropped connection or a provider server error) may be retried while budget remains (`OPENAI_MAX_RETRIES`; code default and deployed value `1`; `0` means never retry); no attempt runs past the budget, and no retry starts once the budget is spent
+  - a slow answer that uses up the budget is never started over
+  - when the budget runs out, however it runs out, the request fails with `PROVIDER_TIMEOUT` (HTTP 504, the error taxonomy in `integrations-and-data.md`) — never `PROVIDER_UNAVAILABLE` — and the player sees the failure path: "Miho is working on it", state preserved, retry on its 13-second cooldown (REQ-014)
+  - the server's hard limit, the AWS Lambda function timeout, is 40 seconds — above the budget, so prompt assembly and embedding before the call and the error reply after it fit; `scripts/aws-deploy.sh` sets it on every deploy, and `scripts/aws-bootstrap.sh` both creates the function with it and re-applies it, with the same model, budget and retry defaults, whenever it re-configures an existing function
+  - offline tests with fake clients prove: a slow attempt is cut off at the budget and maps to `PROVIDER_TIMEOUT`; a fast failure retries inside the budget; no retry starts after the budget is spent; no test makes a network call
+- Constraints:
+  - mock stays the local default (`ASK_AI_PROVIDER` unset → mock); mock behaviour, mock goldens, and the `{ answer }` HTTP contract are unchanged
+  - no UI change: the waiting panel (REQ-023) and the follow-up composer's inline indicator carry waits up to the budget
+  - no live provider call in tests or in the build; live checks are owner-run
+- Dependencies:
+  - REQ-014 (the failure path a spent budget lands on)
+  - REQ-023 (the waiting panel that covers long waits)
+  - REQ-188 (no reasoning-effort value is sent)
+  - NFR-002 (the latency targets this budget serves)
+- Notes:
+  - chosen 2026-10-09 by the owner on the paid answer-quality investigation (production prompt, 126 approved cases, owner-adjudicated): `gpt-6-luna` 125 right against `gpt-4.1`'s 120, all 12 disagreements to Luna, preferred blind 78 to 47, about 0.05¢ per answer against about 1¢; it cites rule numbers less often (1.26 → 0.89 of 2) and a typical answer is slower. Answer time over 181 answers per model, eval machine straight to OpenAI: Luna median 3.8 s, p95 9.5 s, 4 over 15 s, 2 over 20 s, none over 30 s, slowest 22.7 s (the only correct Necropotence answer any model has given). Every Luna answer over 10 s was on one of the two hardest cases, and answer time tracks reasoning tokens, so the correct hard answers are the long ones — which is why no lower effort is set
+  - the excerpt cap stays at 10: Luna was measured at cap 10 (REQ-182's caveat)
+  - the prior state this replaces: `gpt-4.1` with a 15-second timeout per attempt and 2 retries, under a 20-second Lambda limit set only when the function was first created. A long answer was retried at 15 s and the server was stopped at 20 s mid-retry, so the backend's own `PROVIDER_TIMEOUT` reply was never sent; the player still saw "Miho is working on it" through the frontend's fallback for any failed request
+  - the production server's own overhead (prompt build, local embedding, cold start) was never measured; 22.7 s leaves about 7 s of margin. The first deploy's receipt records one timed live tier-3 question, the `ask_ai.provider_invocation_completed` log line's `providerElapsedMs`, and that semantic retrieval, not the lexical fallback, served it

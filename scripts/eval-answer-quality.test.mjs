@@ -1544,8 +1544,8 @@ test("a live run refuses an arm whose revision is not frozen, and hands the held
   assert.equal(received.correction, null)
 })
 
-test("the production per-attempt timeout is read from the checkout's own config source", async () => {
-  assert.equal(await readProductionTimeoutMs(), 15000)
+test("the production answer timeout is read from the checkout's own config source", async () => {
+  assert.equal(await readProductionTimeoutMs(), 30000)
   assert.equal(await readProductionTimeoutMs("/no/such/config.ts"), null)
 })
 

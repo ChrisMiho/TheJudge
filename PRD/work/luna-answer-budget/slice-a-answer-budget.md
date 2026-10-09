@@ -1,6 +1,6 @@
 # Slice A — Answer budget (provider deadline, config, product truth for the budget)
 
-## Status: planned
+## Status: done
 
 ## Goal
 

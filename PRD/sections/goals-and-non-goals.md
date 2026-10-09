@@ -17,7 +17,7 @@
 ## Success Metrics
 - user can add a card to the stack in under 5 seconds
 - user can complete a full Decrypt Stack flow in under 20 seconds
-- AI response latency is under 3 seconds in normal conditions
+- a typical AI answer arrives in about 4 seconds, and no answer waits on the AI for more than 30 seconds (NFR-002)
 - users can retry without losing stack/question state
 - users can correct card selection quickly when suggestions are ambiguous
 
@@ -57,7 +57,7 @@
 - backend-only **Commander Spellbook combo enrichment**: a human-approved static community combo corpus used only for complete contextual matches or narrow explicit combo questions, with deterministic identity/quantity/zone matching, labeled missing pieces, and per-ingredient card state surfaced but never verified (DEC-116, DEC-161, REQ-093..REQ-095, REQ-146); see `system-map.md` "Commander Spellbook combo retrieval" (status: planned)
 
 ## Product risks
-- **Prompt size vs AI latency:** Game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics ship). This is an active risk to the 3-second latency success metric, not a temporary scope tradeoff. Monitor after ship.
+- **Prompt size vs AI latency:** Game-rules prompt enrichment (DEC-030, REQ-022) materially increases prompt size (~25–32k chars typical/worst case when all 23 curated topics ship). This is an active risk to the typical-answer latency success metric (about 4 seconds, NFR-002), not a temporary scope tradeoff. Monitor after ship.
 - **Mitigation (planned):** context-driven System 2 topic selection (DEC-045) reduces baseline prompt size for phase-irrelevant requests; ship and re-sample p50/p95 after implementation. `MAX_PROMPT_CHAR_BUDGET` remains at `EFFECTIVELY_UNLIMITED_CHARS` (DEC-042) during tuning; revisit cap values after latency/cost sampling.
 
 ## Explicit Non-Goals

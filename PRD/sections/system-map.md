@@ -113,9 +113,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### OpenAI provider
 
 - Status: shipped
-- Summary: OpenAI Responses-API provider implementing the shared provider interface.
+- Summary: OpenAI Responses-API provider implementing the shared provider interface. The deployed model is `gpt-6-luna` at its default reasoning effort; each request gets one 30-second answer budget (`OPENAI_TIMEOUT_MS`) with any retry inside it (`OPENAI_MAX_RETRIES`), and a spent budget maps to `PROVIDER_TIMEOUT` (504).
 - Lives in: `apps/backend/src/providers/openAiResponsesProvider.ts`, `askAiProvider.ts`
-- Backed by: DEC-020, DEC-033
+- Backed by: DEC-020, DEC-033, REQ-231
 
 ## Backend API & validation
 

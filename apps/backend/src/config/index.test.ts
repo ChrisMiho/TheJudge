@@ -57,8 +57,8 @@ describe("Backend - Shared", () => {
       expect(config.askAiProvider).toBe("openai");
       expect(config.openAiApiKey).toBe("sk-test");
       expect(config.openAiModel).toBe("gpt-4.1-mini");
-      expect(config.openAiTimeoutMs).toBe(15000);
-      expect(config.openAiMaxRetries).toBe(2);
+      expect(config.openAiTimeoutMs).toBe(30000);
+      expect(config.openAiMaxRetries).toBe(1);
     });
 
     it("normalizes provider selection casing and surrounding whitespace", () => {
@@ -71,8 +71,19 @@ describe("Backend - Shared", () => {
       expect(config.askAiProvider).toBe("openai");
       expect(config.openAiApiKey).toBe("sk-test");
       expect(config.openAiModel).toBe("gpt-4.1-mini");
-      expect(config.openAiTimeoutMs).toBe(15000);
-      expect(config.openAiMaxRetries).toBe(2);
+      expect(config.openAiTimeoutMs).toBe(30000);
+      expect(config.openAiMaxRetries).toBe(1);
+    });
+
+    it("accepts OPENAI_MAX_RETRIES=0 as never retry", () => {
+      const config = readServerConfig({
+        ASK_AI_PROVIDER: "openai",
+        OPENAI_API_KEY: "sk-test",
+        OPENAI_MODEL: "gpt-6-luna",
+        OPENAI_MAX_RETRIES: "0"
+      });
+
+      expect(config.openAiMaxRetries).toBe(0);
     });
 
     it("parses optional openai timeout/retry overrides", () => {
@@ -153,7 +164,15 @@ describe("Backend - Shared", () => {
           ASK_AI_PROVIDER: "openai",
           OPENAI_API_KEY: "sk-test",
           OPENAI_MODEL: "gpt-4.1-mini",
-          OPENAI_MAX_RETRIES: "0"
+          OPENAI_MAX_RETRIES: "-1"
+        })
+      ).toThrow(/Invalid OPENAI_MAX_RETRIES value/);
+      expect(() =>
+        readServerConfig({
+          ASK_AI_PROVIDER: "openai",
+          OPENAI_API_KEY: "sk-test",
+          OPENAI_MODEL: "gpt-4.1-mini",
+          OPENAI_MAX_RETRIES: "1.5"
         })
       ).toThrow(/Invalid OPENAI_MAX_RETRIES value/);
     });

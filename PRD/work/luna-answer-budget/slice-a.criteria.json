@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "Provider tests prove a slow attempt is cut off at the deadline and maps to PROVIDER_TIMEOUT (504), using fake clients and no network",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest run.*openAiResponsesProvider|test.*(apps/backend|backend).*providers"
       }
@@ -13,7 +13,7 @@
     {
       "id": "A2",
       "statement": "Provider tests prove a fast failure retries inside the budget and no retry starts after the budget is spent; retries=0 never retries",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest run.*openAiResponsesProvider|test.*(apps/backend|backend).*providers"
       }
@@ -21,7 +21,7 @@
     {
       "id": "A3",
       "statement": "The SDK abort error (APIUserAbortError, 'Request was aborted.') is classified by cause as PROVIDER_TIMEOUT and never as PROVIDER_UNAVAILABLE (a named test)",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/backend/src/providers/openAiResponsesProvider.test.ts"
@@ -31,7 +31,7 @@
     {
       "id": "A4",
       "statement": "Config defaults are 30000 and 1, OPENAI_MAX_RETRIES=0 is accepted, negative or non-integer values are rejected; DEFAULT_OPENAI_TIMEOUT_MS keeps its name and 'const NAME = 30000' form",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest run.*config|test.*(apps/backend|backend)"
       }
@@ -39,7 +39,7 @@
     {
       "id": "A5",
       "statement": "createAskAiProvider fallbacks read gpt-6-luna, 30000, 1 and the factory tests pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/backend/src/providers/createAskAiProvider.ts"
@@ -49,7 +49,7 @@
     {
       "id": "A6",
       "statement": "scripts/openai-verify-credentials.mjs defaults 30000 / 1 and accepts 0; the script tests pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts|node --test"
       }
@@ -57,7 +57,7 @@
     {
       "id": "A7",
       "statement": "Backend typecheck and the full backend test run pass with no network call and no OPENAI key",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run (typecheck|test)|npm run (typecheck|test)\\b"
       }
@@ -65,7 +65,7 @@
     {
       "id": "A8",
       "statement": "PRD/sections carries REQ-231 (new), the In-Depth, Quick Lookup and system-map provider passages, NFR-002 plus the goals echo, REQ-181, REQ-182 and REQ-190 as accepted in GATE-QUESTIONS.md; REQ-014 and REQ-023 are unchanged",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",
@@ -78,7 +78,7 @@
     {
       "id": "A9",
       "statement": "A reader confirms the applied REQ-231 and NFR-002 text matches the accepted slot intent (30 s budget, no restart of a slow answer, 504 mapping, about 4 s typical) and that no under-3-second wording remains in those requirements",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
