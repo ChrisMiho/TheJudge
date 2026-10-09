@@ -1,0 +1,63 @@
+{
+  "slug": "luna-answer-budget",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "aws-deploy.sh sets OPENAI_MODEL=gpt-6-luna, OPENAI_TIMEOUT_MS=30000, OPENAI_MAX_RETRIES=1 and passes --timeout 40 in its update-function-configuration call",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "scripts/aws-deploy.sh"
+        ]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "aws-bootstrap.sh fallbacks are gpt-6-luna / 30000 / 1, create-function uses --timeout 40, and the update-function-configuration call also passes --timeout 40",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "scripts/aws-bootstrap.sh"
+        ]
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "Both shell scripts pass a syntax check (bash -n) and no aws command was run",
+      "value": false,
+      "evidence": {
+        "command": "bash -n scripts/aws-(deploy|bootstrap)\\.sh"
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "docs/aws/deployment.md, apps/backend/.env.example, the root README and apps/backend/src/providers/README.md carry the new model, 30000 budget, retries 1 (0 allowed) and 40 s limit",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "docs/aws/deployment.md",
+          "apps/backend/.env.example",
+          "README.md",
+          "apps/backend/src/providers/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "No remaining stale deploy default: a grep of scripts, docs, README and .env.example for 'gpt-4.1-mini', '--timeout 20', and '15000' as an OpenAI default returns only history or unrelated hits",
+      "value": false,
+      "evidence": {
+        "command": "git grep -n .*(gpt-4\\.1|--timeout 20|15000)"
+      }
+    },
+    {
+      "id": "B6",
+      "statement": "The script test suite passes",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts|node --test"
+      }
+    }
+  ]
+}

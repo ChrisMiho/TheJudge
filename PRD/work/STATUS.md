@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| luna-answer-budget | mapped into slices A-D (provider budget, deploy config, layers sentence, eval defaults); Luna live answers under one 30 s budget, Lambda 40 s; REQ-231 new, NFR-002/REQ-181/182/186/188/190/226/228/230 amended |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| luna-answer-budget | gate resolved 2026-10-09 (10 accept); build half resumes at gate-qc: Luna live answers, one 30 s budget, Lambda 40 s, layers sentence; REQ-231 new, NFR-002/REQ-181/182/186/188/190/226/228/230 amended |
 
 ## refining
 
