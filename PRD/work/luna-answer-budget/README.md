@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # luna-answer-budget
 
@@ -12,3 +12,9 @@ Switch live answers to GPT-6 Luna at default effort under one 30-second answer b
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/luna-answer-budget
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/luna-answer-budget/DESIGN-BRIEF.md`
+- Findings: none

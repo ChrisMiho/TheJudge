@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/luna-answer-budget` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-luna-answer-budget` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261009-142138/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half)
+- Current node: `owner-action` (parked after gate-qc PASS)
+- Next action: owner answers `GATE-QUESTIONS.md` in the docs PR and merges it; `/graph-implement PRD/work/luna-answer-budget/` builds it
 
 ## Node ledger
 
@@ -16,10 +16,14 @@
 | 1 | preflight | haiku | ok | `0 → 6` | branch `thejudge-auto/luna-answer-budget` pushed from `.worktrees/kickoff-luna-answer-budget` at `a28c048f` (`git ls-remote --heads origin thejudge-auto/luna-answer-budget`); lock `.worktrees/.graph-run.lock` pid 93685; launch checkout untouched | 2026-10-09 |
 | 2 | shape | sonnet | ok | `0 → 11` | `PRD/work/luna-answer-budget/` (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md byte-identical to staged copy); commits `610e7df4`, `1dc46900`; 3 prior-run receipts in IDEA.md | 2026-10-09 |
 | 3 | define | opus | ok | `0 → 76` | `PRD/work/luna-answer-budget/DESIGN-BRIEF.md`, `PRD/work/luna-answer-budget/GATE-QUESTIONS.md` (10 stable-ID slots + Blocker questions: none), `STATUS.refined`; commit `81cdba28`; 366-hit line-level grep with dispositions in the brief; `git diff --stat a28c048f HEAD -- PRD/sections apps scripts` empty | 2026-10-09 |
+| 4 | gate-qc | sonnet | ok | `0 → 22` | PASS — `PRD/work/luna-answer-budget/QUALITY-CHECK.md`, commit `291c2dc5`; 0 mismatches over 15 diff blocks; 366/366 grep hits dispositioned; README `## Preparation gate` written by the driver | 2026-10-09 |
 
 ## Open gate
 
-- None
+- Parked at `owner-action` after gate-qc PASS (spec-forming half complete).
+- Question: answer the 10 verdict slots in `PRD/work/luna-answer-budget/GATE-QUESTIONS.md` (accept / edit / reject, with a reason for edit or reject), then merge the docs PR to build.
+- Evidence: `PRD/work/luna-answer-budget/QUALITY-CHECK.md` (PASS); docs PR — see Node ledger / PR line below.
+- Resume: merge the docs PR; `/graph-implement PRD/work/luna-answer-budget/` (the background build loop) picks it up.
 
 ## Dispatch prompts
 
@@ -86,6 +90,22 @@ Rules: Do not edit PRD/sections/ or any code; refinement proposes, build applies
 If you write any prompt for another agent, copy the Working directory line above into it unchanged.
 
 Report back plain text: outcome (ok / failed / parked), files written, commit SHAs, the list of stable IDs given slots, any blocker questions, and the grep command with its hit count.
+
+### gate-qc
+
+graph is controlling. You are node 4 (gate-qc) of graph run graph-20261009-142138, attempt 1.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-luna-answer-budget
+
+Work only inside that working directory (the kickoff worktree, branch thejudge-auto/luna-answer-budget). Never write to, commit in, switch, or stash the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+Invoke the thejudge-quality-check skill (Skill tool, skill name thejudge-quality-check) and follow its graph-controlled mode against PRD/work/luna-answer-budget/DESIGN-BRIEF.md, together with PRD/work/luna-answer-budget/GATE-QUESTIONS.md (the proposed PRD/sections/ truth, which build applies later; current PRD/sections/ is expected to be unchanged at this stage), README.md, IDEA.md and intake/GRAPH-BRIEF.md (evidence, never authority). Grade PRD alignment and agent-readiness. Check in particular: each GATE-QUESTIONS block has the three plain-language lines, a complete diff whose removed and context lines match current PRD text, and a blank verdict slot; the brief's amendment-set disposition table covers every line-level grep hit; any place the brief departs from the intake is named with its reason.
+
+Write the quality-check report where the skill prescribes. On FAIL, set the STATUS marker the skill prescribes (exactly one marker) and move the PRD/work/STATUS.md board row fully (remove from the old section, add to the new). On PASS, leave STATUS.refined in place. Do not edit DESIGN-BRIEF.md, GATE-QUESTIONS.md, PRD/sections/, code, or GRAPH-RUN.md, and do not write the README Preparation gate section; the driver writes it. Stage explicit paths only (never git add -A / --all / .), and commit with: cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-luna-answer-budget && git add <paths> && git commit -m ... ; do not push. Use Edit/Write for file changes, not sed -i or heredoc redirection. No paid or live OpenAI call.
+
+If you write any prompt for another agent, copy the Working directory line above into it unchanged.
+
+Report back plain text: verdict (PASS / FAIL), the complete findings list (or none), report path, and commit SHA.
 
 ## Instruction ledger
 
