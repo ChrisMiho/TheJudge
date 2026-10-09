@@ -7,6 +7,8 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-luna-answer-budget` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261009-142138/`
 - Current node: `owner-action` (parked after gate-qc PASS)
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/280
+- Terminal state: `PARKED` (lock released)
 - Next action: owner answers `GATE-QUESTIONS.md` in the docs PR and merges it; `/graph-implement PRD/work/luna-answer-budget/` builds it
 
 ## Node ledger
@@ -22,7 +24,7 @@
 
 - Parked at `owner-action` after gate-qc PASS (spec-forming half complete).
 - Question: answer the 10 verdict slots in `PRD/work/luna-answer-budget/GATE-QUESTIONS.md` (accept / edit / reject, with a reason for edit or reject), then merge the docs PR to build.
-- Evidence: `PRD/work/luna-answer-budget/QUALITY-CHECK.md` (PASS); docs PR — see Node ledger / PR line below.
+- Evidence: `PRD/work/luna-answer-budget/QUALITY-CHECK.md` (PASS); docs PR https://github.com/ChrisMiho/TheJudge/pull/280.
 - Resume: merge the docs PR; `/graph-implement PRD/work/luna-answer-budget/` (the background build loop) picks it up.
 
 ## Dispatch prompts
