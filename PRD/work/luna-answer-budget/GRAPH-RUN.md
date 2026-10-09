@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261009-142138/`
-- Current node: `gate-review` (build half)
+- Current node: `gate-qc` (build half, attempt 2)
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/280
 - Terminal state: in progress (build half holds the lock)
 - Next action: `/graph-implement PRD/work/luna-answer-budget/` resumes at the node this ledger records
@@ -20,6 +20,7 @@
 | 2 | shape | sonnet | ok | `0 → 11` | `PRD/work/luna-answer-budget/` (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md byte-identical to staged copy); commits `610e7df4`, `1dc46900`; 3 prior-run receipts in IDEA.md | 2026-10-09 |
 | 3 | define | opus | ok | `0 → 76` | `PRD/work/luna-answer-budget/DESIGN-BRIEF.md`, `PRD/work/luna-answer-budget/GATE-QUESTIONS.md` (10 stable-ID slots + Blocker questions: none), `STATUS.refined`; commit `81cdba28`; 366-hit line-level grep with dispositions in the brief; `git diff --stat a28c048f HEAD -- PRD/sections apps scripts` empty | 2026-10-09 |
 | 4 | gate-qc | sonnet | ok | `0 → 22` | PASS — `PRD/work/luna-answer-budget/QUALITY-CHECK.md`, commit `291c2dc5`; 0 mismatches over 15 diff blocks; 366/366 grep hits dispositioned; README `## Preparation gate` written by the driver | 2026-10-09 |
+| 5 | gate-review | sonnet | ok | `0 → 11` | build half run `graph-20261009-150059`: claim commit `b93f4dc9` on `thejudge-auto/luna-answer-budget-work` cut from `origin/main` `b4bb41dd` (kickoff worktree removed clean); `graph-gate-review` commits `bc87ea42`, `40974ff1`: 10 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty; launch checkout porcelain unchanged; `git diff --stat a724b90f 40974ff1 -- PRD/sections apps scripts` empty | 2026-10-09 |
 
 ## Open gate
 
@@ -144,6 +145,22 @@ Do what the skill requires: finalize the proposal inside GATE-QUESTIONS.md, reco
 Stage explicit paths only (no git add -A, --all, or .), commit inside the working directory, and push with git push -u origin thejudge-auto/luna-answer-budget-work. Verify directly; spawn no subagents or forks; no sleeping or polling; stay well under the tool-call cap. A denied tool call is never retried: report it verbatim and stop. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
 
 Report back, plain text: outcome (ok / failed), commit sha, verdict counts (accept / edit / reject), a section headed ### Brief reconciliation listing each passage changed (or none), the STATUS marker now present, the board row text and section, git status --porcelain in the worktree after the push, and every file path you changed.
+
+### gate-qc (build half, attempt 2)
+
+graph is controlling. You are node 4 (gate-qc), attempt 2, the build-half re-grade of graph run graph-20261009-150059, package luna-answer-budget.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget
+
+Shared branch: thejudge-auto/luna-answer-budget-work, checked out in that worktree. Work only inside the working directory. Never write to, commit in, switch, or stash the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+Invoke the thejudge-quality-check skill (Skill tool, skill name thejudge-quality-check) on PRD/work/luna-answer-budget/ and follow it exactly. Context: the spec-forming half passed quality-check at commit 291c2dc5; the owner then accepted all ten verdict slots and merged docs PR #280; graph-gate-review recorded the verdicts with no brief reconciliation (commits bc87ea42, 40974ff1). This is the re-grade the entry-point table requires. Grade the package as it stands now against current PRD/sections/ on this branch (which equals origin/main b4bb41dd): every GATE-QUESTIONS.md diff block must still apply against current truth, the brief must agree with the finalized verdicts, and the amendment-set grep must still be fully dispositioned. Re-run checks yourself; do not take the earlier QUALITY-CHECK.md on its word.
+
+Write the report to PRD/work/luna-answer-budget/QUALITY-CHECK.md as the skill directs and set the STATUS marker as the skill directs (on PASS leave STATUS.refined as the only marker). Do not write the README Preparation gate section; the driver owns it. Never edit PRD/sections/, DESIGN-BRIEF.md, GATE-QUESTIONS.md, or any code. If any measurement command rewrites a tracked result file, restore it with git checkout -- on that file before committing.
+
+Stage explicit paths only (no git add -A, --all, or .), commit inside the working directory, and push with git push -u origin thejudge-auto/luna-answer-budget-work. Verify directly; spawn no subagents or forks; no sleeping or polling; stay well under the 60-call cap. A denied tool call is never retried: report it verbatim and stop. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
+
+Report back, plain text: verdict (PASS / FAIL), the complete findings list (or none), commit sha, STATUS marker now present, git status --porcelain in the worktree after the push, and every file path you changed.
 
 ## Instruction ledger
 
