@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| luna-answer-budget | slices A-D done; Luna live answers under one 30 s budget, Lambda 40 s; REQ-231 new, NFR-002/REQ-181/182/186/188/190/226/228/230 applied; code PR open for owner merge |
 
 ## active
 
