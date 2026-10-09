@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| luna-answer-budget | Brief + 10 gate slots (REQ-231 new; NFR-002, REQ-181/182/186/188/190/226/228/230 amended) await owner verdicts: Luna live answers, one 30 s budget, Lambda 40 s, layers sentence |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| luna-answer-budget | Luna live answers, one 30 s budget, Lambda ~40 s, NFR-002 amend, layers sentence |
 
 ## owner-action
 

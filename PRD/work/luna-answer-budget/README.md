@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # luna-answer-budget
 
@@ -6,6 +6,8 @@ Switch live answers to GPT-6 Luna at default effort under one 30-second answer b
 
 - Idea: `IDEA.md`
 - Intake: `intake/GRAPH-BRIEF.md` (evidence, not authority)
+- Design brief: `DESIGN-BRIEF.md`
+- Proposed product truth (owner answers): `GATE-QUESTIONS.md`
 
 ## Autonomous metadata
 
