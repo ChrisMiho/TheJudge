@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261009-142138/`
-- Current node: `review`
+- Current node: `build` (attempt 2, review loop 1 of 2)
 - Code PR: https://github.com/ChrisMiho/TheJudge/pull/281
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/280
 - Terminal state: in progress (build half holds the lock)
@@ -26,6 +26,7 @@
 | 7 | plan | sonnet | failed | `0 → 14` | attempt 1: harness permission layer (auto mode, not the graph hook — no `.worktrees/.graph-denials.jsonl` entry for this run) denied one compound Bash call (`cd … && cat > luna-answer-budget/GAMEPLAN.md <<'EOF' …` plus README edits, `git mv STATUS.refined STATUS.active`, board-row move); not retried. Left uncommitted in the worktree: `slice-a-answer-budget.md`, `slice-b-deploy-config.md`, `slice-c-layers-sentence.md`, `slice-d-eval-defaults-and-ship.md` + four `slice-*.criteria.json` (30 criteria, 4 manual); GAMEPLAN, README slice table, marker and board row not written; launch checkout porcelain unchanged | 2026-10-09 |
 | 8 | plan | sonnet | ok | `0 → 18` | attempt 2: commit `c0f1d309` — `GAMEPLAN.md` + 4 slices with criteria files (A answer budget, 9 criteria, manual A9; B deploy config, 6; C layers sentence, 6, manual C6; D eval defaults and ship, 9, manual D7, D9), all criteria `false`; attempt-1 files kept, one fix (slice C verification command); Preparation gate PASS verified first; `STATUS.active` only marker; board row under active; no deliverable inside `PRD/work/`; worktree porcelain empty; launch checkout porcelain unchanged | 2026-10-09 |
 | 9 | build | sonnet | ok | `0 → 158` | code PR https://github.com/ChrisMiho/TheJudge/pull/281 (OPEN, `[THEJUDGE-AUTO][READY]`, MERGEABLE, head `bf40f5bf`); commits `0cb2d3a2` (A), `b98ad23e` (B), `909f4e0d` (C), `bf40f5bf` (D, `STATUS.ship-ready`); 30/30 criteria `true` read from the four `slice-*.criteria.json` (self-reported — `.worktrees/.graph-evidence.jsonl` got 0 entries for this run, the known evidence-root gap); builder-reported: backend 639/639, `test:eval` 3/3, `test:scripts` 766/766, `quality:check` exit 0; return-side: launch checkout porcelain identical before/after, `classifyBuildWrites` over the 70 changed paths → ok (all inside `.worktrees/implement-luna-answer-budget/`); C1 literal deviation self-noted (old sentence kept as the arm P `replaces` string in `apps/backend/src/eval/answer-quality/arm-p-correction.json`) | 2026-10-09 |
+| 10 | review | opus | failed | `0 → 40` | CHANGES REQUESTED on PR #281 head `bf40f5bf` (loop 1 of 2 to build): 0 Critical / 1 Important / 4 Minor. Important: A3 classify-by-cause unmet — `apps/backend/src/providers/openAiResponsesProvider.ts:56` and `:65` test `error.name` against `APIUserAbortError` / `APIConnectionTimeoutError` / `APIConnectionError`, but openai SDK classes leave `.name` as `Error` (driver re-verified: `node -e` prints `Error Error Error`), so classification falls to the message regex; probe: an abort with a non-default message maps to PROVIDER_UNAVAILABLE. Minor (receipt follow-ups, no loop): 429 retried beyond the slot's wording; retry guard at `:120-123` untested; late 5xx retried while >750 ms remain; D6 receipt grep quotes 4 of the brief's 18 terms (reviewer checked all 105 amend rows directly). Re-ran: typecheck, backend 639/639, `test:scripts` 766/766, `test:eval` 3/3, lint 0 errors, `format:check` clean, `bash -n` both scripts | 2026-10-09 |
 
 ## Open gate
 
@@ -275,6 +276,26 @@ Severity rule: Critical or Important only for a defect that breaks a stated crit
 Spawn no subagents; no sleeping or polling; stay well under the 120-call cap. A denied tool call is never retried: report it verbatim. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
 
 Report back, plain text: verdict (APPROVE or CHANGES REQUESTED), counts of Critical / Important / Minor, then each finding with its severity, the criterion or ID it breaks, file:line evidence, and the concrete failure; then the checks you re-ran with their results.
+
+### build (attempt 2)
+
+graph is controlling. You are node 6 (build), attempt 2, of graph run graph-20261009-150059, package luna-answer-budget. This is review loop 1 of 2: the reviewer requested changes on one Important finding, and this attempt fixes that finding and nothing else.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget
+
+Shared branch: thejudge-auto/luna-answer-budget-work, checked out in that worktree; code PR https://github.com/ChrisMiho/TheJudge/pull/281 is already open into main, so push to the same branch and do not open a new PR. Work in place. Never write to, commit in, switch, or stash the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge; every path you write must lie inside the working directory.
+
+Invoke the thejudge-implement-all skill (Skill tool, skill name thejudge-implement-all) on PRD/work/luna-answer-budget/ for this bounded fix pass and follow its verification and commit rules. The finding, from the no-write reviewer:
+
+> Important, breaks slice A criterion A3 and the brief (DESIGN-BRIEF.md lines 92-95: classify the abort by cause, not message) and REQ-231 (never PROVIDER_UNAVAILABLE for a spent budget). apps/backend/src/providers/openAiResponsesProvider.ts line 56 tests error.name against APIUserAbortError and APIConnectionTimeoutError, and line 65 tests error.name against APIConnectionError. The openai SDK in node_modules never sets .name on these classes (a new APIUserAbortError reports name Error; the driver re-verified all three), so those branches are dead and classification falls through to the message regexes. A probe through createOpenAiAskAiProvider with a fake client turned an APIUserAbortError carrying a non-default message into PROVIDER_UNAVAILABLE. The named A3 test at openAiResponsesProvider.test.ts line 128 passes only because the default message contains the word aborted.
+
+Fix: classify these by class identity (instanceof against the SDK's exported APIUserAbortError, APIConnectionTimeoutError and APIConnectionError, imported the way the provider already imports the SDK), keeping the BudgetExpiredError check and the existing deadline behaviour. Make the A3 test prove classification by cause: construct the SDK abort error with a non-default message that does not match the timeout regex and assert PROVIDER_TIMEOUT; add the matching case for a connection error with a non-default message being retried. Do not change the retry rule, the 429 handling, the budget figures, PRD/sections/, or anything outside this finding; the reviewer's Minor notes are receipt follow-ups, not part of this pass.
+
+Then re-run the backend typecheck, the full backend test run, npm run test:scripts and npm run quality:check, and confirm A3 stays true in slice-a.criteria.json only after its check has run. Record the fix in the slice A doc in one or two lines.
+
+Hard limits: no paid or live OpenAI call, no aws command, no deploy or bootstrap script, no data refresh. Tool mechanics: write and change files with the Write and Edit tools only, never a shell heredoc, cat redirection, sed -i, or a script that writes source files. Run git commands as short separate Bash calls. Stage explicit paths only (no git add -A, --all, or .). Push with git push -u origin thejudge-auto/luna-answer-budget-work. Verify directly; spawn no subagents or forks; no sleeping or polling. A denied tool call is never retried: report it verbatim and stop. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
+
+Report back, plain text: outcome (ok / failed), the commit sha, the lines changed in the provider and its test, the commands you ran with pass/fail counts, the criteria state per slice read from the four criteria files, every path you wrote as an absolute path, the STATUS marker now present, and git status --porcelain in the worktree after the push.
 
 ## Instruction ledger
 
