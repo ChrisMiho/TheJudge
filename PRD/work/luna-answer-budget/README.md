@@ -11,7 +11,7 @@ Switch live answers to GPT-6 Luna at default effort under one 30-second answer b
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/luna-answer-budget
+- Autonomous base: origin/main
 
 ## Preparation gate
 

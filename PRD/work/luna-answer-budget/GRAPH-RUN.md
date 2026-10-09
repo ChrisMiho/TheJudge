@@ -3,8 +3,8 @@
 - Run ID: `graph-20261009-142138`
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/luna-answer-budget` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-luna-answer-budget` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget` by the build half's claim)
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261009-142138/`
 - Current node: `owner-action` (parked after gate-qc PASS)
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/280
