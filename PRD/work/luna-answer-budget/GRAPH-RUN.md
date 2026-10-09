@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261009-142138/`
-- Current node: `plan`
+- Current node: `build`
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/280
 - Terminal state: in progress (build half holds the lock)
 - Next action: `/graph-implement PRD/work/luna-answer-budget/` resumes at the node this ledger records
@@ -23,6 +23,7 @@
 | 5 | gate-review | sonnet | ok | `0 → 11` | build half run `graph-20261009-150059`: claim commit `b93f4dc9` on `thejudge-auto/luna-answer-budget-work` cut from `origin/main` `b4bb41dd` (kickoff worktree removed clean); `graph-gate-review` commits `bc87ea42`, `40974ff1`: 10 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty; launch checkout porcelain unchanged; `git diff --stat a724b90f 40974ff1 -- PRD/sections apps scripts` empty | 2026-10-09 |
 | 6 | gate-qc | sonnet | ok | `0 → 15` | PASS attempt 2 (build-half re-grade), findings none — `PRD/work/luna-answer-budget/QUALITY-CHECK.md`, commit `d9be4af2`; 21 diff blocks 0 mismatches vs `PRD/sections/` at `b4bb41dd`; 366/366 amendment-grep hits dispositioned; 3 non-blocking map-out notes; `STATUS.refined` only marker; README `## Preparation gate` PASS written by the driver; launch checkout porcelain unchanged | 2026-10-09 |
 | 7 | plan | sonnet | failed | `0 → 14` | attempt 1: harness permission layer (auto mode, not the graph hook — no `.worktrees/.graph-denials.jsonl` entry for this run) denied one compound Bash call (`cd … && cat > luna-answer-budget/GAMEPLAN.md <<'EOF' …` plus README edits, `git mv STATUS.refined STATUS.active`, board-row move); not retried. Left uncommitted in the worktree: `slice-a-answer-budget.md`, `slice-b-deploy-config.md`, `slice-c-layers-sentence.md`, `slice-d-eval-defaults-and-ship.md` + four `slice-*.criteria.json` (30 criteria, 4 manual); GAMEPLAN, README slice table, marker and board row not written; launch checkout porcelain unchanged | 2026-10-09 |
+| 8 | plan | sonnet | ok | `0 → 18` | attempt 2: commit `c0f1d309` — `GAMEPLAN.md` + 4 slices with criteria files (A answer budget, 9 criteria, manual A9; B deploy config, 6; C layers sentence, 6, manual C6; D eval defaults and ship, 9, manual D7, D9), all criteria `false`; attempt-1 files kept, one fix (slice C verification command); Preparation gate PASS verified first; `STATUS.active` only marker; board row under active; no deliverable inside `PRD/work/`; worktree porcelain empty; launch checkout porcelain unchanged | 2026-10-09 |
 
 ## Open gate
 
@@ -199,6 +200,24 @@ First verify the README Preparation gate section reads Quality-check: PASS (comm
 Never edit PRD/sections/ or code in this node. Stage explicit paths only (no git add -A, --all, or .), commit inside the working directory, and push with git push -u origin thejudge-auto/luna-answer-budget-work. Verify directly; spawn no subagents or forks; no sleeping or polling; stay well under the 120-call cap. A denied tool call is never retried: report it verbatim and stop. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
 
 Report back, plain text: outcome (ok / failed), commit sha, the slice list (letter, title, criteria count, which criteria are manual), what you changed in the eight attempt-1 files (or none), any deliverable path inside PRD/work/ (should be none), STATUS marker now present, board row section, git status --porcelain in the worktree after the push, and every file path you changed.
+
+### build
+
+graph is controlling. You are node 6 (build) of graph run graph-20261009-150059, package luna-answer-budget.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget
+
+Shared branch: thejudge-auto/luna-answer-budget-work. It is already checked out in that worktree and pushed, and it carries GAMEPLAN.md, slices A-D and their criteria files at commit c0f1d309 plus a driver ledger commit. Work in place in that worktree: no second worktree, no contributor branch. Never write to, commit in, switch, or stash the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge; every path you write must lie inside the working directory.
+
+Invoke the thejudge-implement-all skill (Skill tool, skill name thejudge-implement-all) on PRD/work/luna-answer-budget/ and follow it exactly, implementing slices A, B, C and D in order. Open the code PR from thejudge-auto/luna-answer-budget-work into main with gh pr create (open it, never merge or close it). Apply the accepted product truth: write the real PRD/sections/ edits by intent, re-derived from the finalized GATE-QUESTIONS.md diff and DESIGN-BRIEF.md against current truth, never a blind replay, together with the code in the slice that owns each ID. Honour the three carried notes in QUALITY-CHECK.md (REQ-230 only appends a note; the intake's REQ-178 is REQ-022; REQ-023's 40-second waiting-panel line stays untouched). Mark each criterion true only after you have run its check, and leave the slice status, STATUS.ship-ready and the board row as the skill directs, all inside the worktree and committed on the branch.
+
+Hard limits from the brief: make no paid or live OpenAI call, run no aws CLI command and no deploy or bootstrap script, and run no Scryfall or data refresh. Live and paid checks are owner steps after merge; record them for the receipt. If a test needs a gitignored cache that a fresh worktree lacks (for example apps/backend/data/models/), copy it from the launch checkout into the worktree with a read-only copy; never download it and never write into the launch checkout.
+
+Tool mechanics: in this session the permission layer has denied long compound Bash commands that chain heredoc or cat-redirect file writes with git commands. Write and change files with the Write and Edit tools only, never a shell heredoc, cat redirection, sed -i, or a script that writes source files (test commands that regenerate fixtures by design are fine). Run git commands as short separate Bash calls. Stage explicit paths only (no git add -A, --all, or .). Push with git push -u origin thejudge-auto/luna-answer-budget-work.
+
+Verify directly; spawn no subagents or forks; no sleeping or polling. A denied tool call is never retried: report it verbatim and stop. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
+
+Report back, plain text: outcome (ok / failed), the PR URL, every commit sha with its slice, the criteria state per slice read from the four criteria files (ids still false, if any), the test and quality commands you ran with their pass/fail counts, the PRD/sections/ IDs you applied, every path you wrote as an absolute path, the STATUS marker now present, the board row section, git status --porcelain in the worktree after the last push, and any owner step for the receipt.
 
 ## Instruction ledger
 
