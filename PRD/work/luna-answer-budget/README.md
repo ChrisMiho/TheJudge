@@ -17,4 +17,4 @@ Switch live answers to GPT-6 Luna at default effort under one 30-second answer b
 
 - Quality-check: PASS
 - Checked artifact: `PRD/work/luna-answer-budget/DESIGN-BRIEF.md`
-- Findings: none
+- Findings: none (attempt 2, build-half re-grade, run `graph-20261009-150059`, commit `d9be4af2`; three non-blocking notes for map-out in `QUALITY-CHECK.md`)

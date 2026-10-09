@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261009-142138/`
-- Current node: `gate-qc` (build half, attempt 2)
+- Current node: `plan`
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/280
 - Terminal state: in progress (build half holds the lock)
 - Next action: `/graph-implement PRD/work/luna-answer-budget/` resumes at the node this ledger records
@@ -21,6 +21,7 @@
 | 3 | define | opus | ok | `0 → 76` | `PRD/work/luna-answer-budget/DESIGN-BRIEF.md`, `PRD/work/luna-answer-budget/GATE-QUESTIONS.md` (10 stable-ID slots + Blocker questions: none), `STATUS.refined`; commit `81cdba28`; 366-hit line-level grep with dispositions in the brief; `git diff --stat a28c048f HEAD -- PRD/sections apps scripts` empty | 2026-10-09 |
 | 4 | gate-qc | sonnet | ok | `0 → 22` | PASS — `PRD/work/luna-answer-budget/QUALITY-CHECK.md`, commit `291c2dc5`; 0 mismatches over 15 diff blocks; 366/366 grep hits dispositioned; README `## Preparation gate` written by the driver | 2026-10-09 |
 | 5 | gate-review | sonnet | ok | `0 → 11` | build half run `graph-20261009-150059`: claim commit `b93f4dc9` on `thejudge-auto/luna-answer-budget-work` cut from `origin/main` `b4bb41dd` (kickoff worktree removed clean); `graph-gate-review` commits `bc87ea42`, `40974ff1`: 10 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty; launch checkout porcelain unchanged; `git diff --stat a724b90f 40974ff1 -- PRD/sections apps scripts` empty | 2026-10-09 |
+| 6 | gate-qc | sonnet | ok | `0 → 15` | PASS attempt 2 (build-half re-grade), findings none — `PRD/work/luna-answer-budget/QUALITY-CHECK.md`, commit `d9be4af2`; 21 diff blocks 0 mismatches vs `PRD/sections/` at `b4bb41dd`; 366/366 amendment-grep hits dispositioned; 3 non-blocking map-out notes; `STATUS.refined` only marker; README `## Preparation gate` PASS written by the driver; launch checkout porcelain unchanged | 2026-10-09 |
 
 ## Open gate
 
@@ -161,6 +162,24 @@ Write the report to PRD/work/luna-answer-budget/QUALITY-CHECK.md as the skill di
 Stage explicit paths only (no git add -A, --all, or .), commit inside the working directory, and push with git push -u origin thejudge-auto/luna-answer-budget-work. Verify directly; spawn no subagents or forks; no sleeping or polling; stay well under the 60-call cap. A denied tool call is never retried: report it verbatim and stop. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
 
 Report back, plain text: verdict (PASS / FAIL), the complete findings list (or none), commit sha, STATUS marker now present, git status --porcelain in the worktree after the push, and every file path you changed.
+
+### plan
+
+graph is controlling. You are node 5 (plan) of graph run graph-20261009-150059, package luna-answer-budget.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget
+
+Shared branch: thejudge-auto/luna-answer-budget-work, checked out in that worktree. Work only inside the working directory. Never write to, commit in, switch, or stash the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+Invoke the thejudge-map-out skill (Skill tool, skill name thejudge-map-out) on PRD/work/luna-answer-budget/ and follow it exactly. First verify the README Preparation gate section reads Quality-check: PASS (the driver wrote it after gate-qc attempt 2, commit d9be4af2); you cannot self-certify one. Write GAMEPLAN.md, one lettered slice doc per slice, and one slice-<letter>.criteria.json beside each slice doc with every criterion initialised false and carrying an evidence block, per thejudge-map-out/reference.md. Set STATUS.active as the only marker and move the luna-answer-budget row on PRD/work/STATUS.md fully into the active section (remove it from refined).
+
+Inputs to carry into the slices: the finalized GATE-QUESTIONS.md (ten accepted IDs; build applies them to PRD/sections/ by intent together with the code), DESIGN-BRIEF.md (including its amendment-set table with 105 amend rows), and the three non-blocking notes in QUALITY-CHECK.md (the REQ-230 wording in the brief is looser than the slot, which only appends a note; the intake's REQ-178 is really REQ-022; REQ-023's 40-second waiting-panel line stays untouched). The brief states that the build makes no paid or live OpenAI call and runs no AWS command; live and paid checks are owner-run after merge. Keep that: no criterion may require a paid eval run, a live provider call, or an aws CLI call; record the post-deploy check as an owner step for the receipt instead.
+
+Placement: every deliverable the slices produce (code, docs, scripts, data, reports) must live outside PRD/work/, because node 8 deletes PRD/work/luna-answer-budget/ on this same branch before the merge. Only planning bookkeeping (GAMEPLAN, slice docs, criteria files, markers) lives in the package.
+
+Never edit PRD/sections/ or code in this node. Stage explicit paths only (no git add -A, --all, or .), commit inside the working directory, and push with git push -u origin thejudge-auto/luna-answer-budget-work. Verify directly; spawn no subagents or forks; no sleeping or polling; stay well under the 120-call cap. A denied tool call is never retried: report it verbatim and stop. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
+
+Report back, plain text: outcome (ok / failed), commit sha, the slice list (letter, title, criteria count, which criteria are manual), any deliverable path inside PRD/work/ (should be none), STATUS marker now present, board row section, git status --porcelain in the worktree after the push, and every file path you changed.
 
 ## Instruction ledger
 
