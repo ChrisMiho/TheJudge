@@ -23,10 +23,29 @@
 
 ## Open gate
 
-- Parked at `owner-action` after gate-qc PASS (spec-forming half complete).
-- Question: answer the 10 verdict slots in `PRD/work/luna-answer-budget/GATE-QUESTIONS.md` (accept / edit / reject, with a reason for edit or reject), then merge the docs PR to build.
-- Evidence: `PRD/work/luna-answer-budget/QUALITY-CHECK.md` (PASS); docs PR https://github.com/ChrisMiho/TheJudge/pull/280.
-- Resume: merge the docs PR; `/graph-implement PRD/work/luna-answer-budget/` (the background build loop) picks it up.
+- RESOLVED 2026-10-09 by graph-gate-review: 10 of 10 verdict slots answered, 10 accept / 0 edit / 0 reject. Docs PR #280 merged to main (the build signal).
+- Original question: answer the 10 verdict slots in `PRD/work/luna-answer-budget/GATE-QUESTIONS.md`, then merge the docs PR to build.
+- Evidence: `PRD/work/luna-answer-budget/QUALITY-CHECK.md` (PASS); https://github.com/ChrisMiho/TheJudge/pull/280.
+- Resume: `/graph-implement PRD/work/luna-answer-budget/` — the run resumes at `gate-qc`.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-231` | accept | "Owner's 2026-10-09 choice (Luna, default effort, one 30 s budget, 40 s Lambda)." |
+| `NFR-002` | accept | "'about' keeps it a soft target, and the post-deploy check times one live hard question." |
+| `REQ-181` | accept | "Wording follows the NFR-002 amendment; the search itself does not change." |
+| `REQ-182` | accept | "Luna was measured at cap 10 (125 of 126), so ten stands for it." |
+| `REQ-186` | accept | "Keeps the routine judge stronger than the deployed model." |
+| `REQ-188` | accept | "A routine run grades what players get." |
+| `REQ-190` | accept | "Wording follows the NFR-002 amendment." |
+| `REQ-226` | accept | "Production's timeout becomes one overall budget." |
+| `REQ-228` | accept | "Old runs keep 15 s; new runs are measured against 30 s." |
+| `REQ-230` | accept | "Factual fix approved 2026-10-08." |
+
+### Brief reconciliation
+
+none — every verdict was accept; `DESIGN-BRIEF.md`, the README intake pointer and `GATE-QUESTIONS.md` proposed diffs are unchanged. Blocker questions: none.
 
 ## Dispatch prompts
 
