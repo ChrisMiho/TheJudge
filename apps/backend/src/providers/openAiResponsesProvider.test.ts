@@ -127,7 +127,8 @@ describe("Backend - Providers", () => {
 
     it("classifies the SDK abort error (APIUserAbortError) by cause as PROVIDER_TIMEOUT, never PROVIDER_UNAVAILABLE", async () => {
       const create = vi.fn(async () => {
-        throw new OpenAI.APIUserAbortError();
+        // Non-default message that matches no timeout wording: cause, not text, must decide.
+        throw new OpenAI.APIUserAbortError({ message: "cancelled by caller" });
       });
       const provider = createOpenAiAskAiProvider({
         apiKey: "k",
@@ -141,6 +142,23 @@ describe("Backend - Providers", () => {
       expect(error).toMatchObject({ code: "PROVIDER_TIMEOUT", status: 504 });
       expect((error as AppError).code).not.toBe("PROVIDER_UNAVAILABLE");
       expect(create).toHaveBeenCalledTimes(1);
+    });
+
+    it("retries an SDK connection error by cause even when its message matches no connection wording", async () => {
+      const create = vi
+        .fn()
+        .mockRejectedValueOnce(new OpenAI.APIConnectionError({ message: "upstream hiccup" }))
+        .mockResolvedValueOnce({ output_text: "recovered" });
+      const provider = createOpenAiAskAiProvider({
+        apiKey: "k",
+        model: "gpt-test",
+        timeoutMs: 5000,
+        maxRetries: 1,
+        client: { responses: { create } }
+      });
+
+      await expect(provider.generateAnswer(prepared)).resolves.toEqual({ answer: "recovered" });
+      expect(create).toHaveBeenCalledTimes(2);
     });
 
     it("retries a fast failure inside the budget", async () => {

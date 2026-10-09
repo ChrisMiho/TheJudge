@@ -40,6 +40,10 @@ npm run test:scripts
 git grep -n -i 'under 3 seconds\|under-3-second\|under-three-second' -- PRD/sections
 ```
 
+## Review fix (loop 1)
+
+The provider now classifies abort, timeout and connection errors by class (`instanceof` the SDK's `APIUserAbortError`, `APIConnectionTimeoutError`, `APIConnectionError`), not by `error.name`, which the SDK never sets. A3's test uses a non-default abort message, and a new test retries a connection error with a non-default message.
+
 ## Files touched
 
 - `apps/backend/src/providers/openAiResponsesProvider.ts`

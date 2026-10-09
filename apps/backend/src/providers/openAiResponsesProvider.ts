@@ -53,7 +53,7 @@ function extractText(response: OpenAiResponseOutput): string | undefined {
 function isTimeoutCause(error: unknown): boolean {
   if (error instanceof BudgetExpiredError) return true;
   if (!(error instanceof Error)) return false;
-  if (error.name === "APIUserAbortError" || error.name === "APIConnectionTimeoutError") return true;
+  if (error instanceof OpenAI.APIUserAbortError || error instanceof OpenAI.APIConnectionTimeoutError) return true;
   return /timeout|timed out|aborted/i.test(error.message);
 }
 
@@ -62,7 +62,7 @@ function isRetryableFastFailure(error: unknown): boolean {
   if (!(error instanceof Error) || error instanceof AppError) return false;
   const status = (error as { status?: unknown }).status;
   if (typeof status === "number") return status === 429 || status >= 500;
-  return error.name === "APIConnectionError" || /connection|econnreset|socket|network|fetch failed/i.test(error.message);
+  return error instanceof OpenAI.APIConnectionError || /connection|econnreset|socket|network|fetch failed/i.test(error.message);
 }
 
 function sleep(ms: number): Promise<void> {
