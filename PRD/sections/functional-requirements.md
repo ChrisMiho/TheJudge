@@ -6050,6 +6050,7 @@
 - Notes:
   - measured 2026-10-07 at `3e973ced`: 14 approved cases have partial System 3 coverage, 91 none, 287 full (`apps/backend/src/eval/rules-gate/baseline.json`), so the diagnostic set is about 47 cases; the two tester cases are tier 3 and `multiplayer-only-blood-ends-your-nightmares-opponents` is tier 2
   - the preamble sentence P targets is the one the owner's intake brief reports as mixing up continuous effects, state-based actions, and layers; its correction is verified and owner-approved before P runs
+  - the `luna-answer-budget` change (REQ-231's package) adopted P's owner-approved correction (2026-10-08) as production prompt text — "Continuous effects use a layer system (rule 613); state-based actions are not part of it and are checked separately whenever a player would receive priority (rule 704)." — as a factual fix. The judging this requirement's constraint asks for (arm A run from the changed revision on the held-out manifest) is a paid, owner-run experiment after merge, never part of the build; until it runs, the change is recorded as a factual correction, not a measured accuracy change (alone it measured only a small-sample lead: Academy Manufactor 3 of 4 right with it, 1 of 5 without). Because the sentence P replaces no longer appears in the production prompt, P now refuses to run (its sentence must appear exactly once) until a new correction is approved
 
 ### REQ-231
 - Title: Live answers use the deployed model inside one answer budget

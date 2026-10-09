@@ -5,7 +5,7 @@
     {
       "id": "C1",
       "statement": "mtgReference.ts carries the owner-approved corrected sentence verbatim and the old sentence appears nowhere under apps/",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git grep -n.*(state-based actions use a layer system)"
       }
@@ -13,7 +13,7 @@
     {
       "id": "C2",
       "statement": "The 31 prompt goldens are regenerated and the context evaluation harness passes without the update flag",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest run.*contextEvaluationHarness|test:eval"
       }
@@ -21,7 +21,7 @@
     {
       "id": "C3",
       "statement": "git diff of the prompt goldens shows exactly 31 files, each changed only on the layers sentence line (counts of added and removed lines equal per file, no other hunk)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git diff.*(prompt\\.golden|fixtures)"
       }
@@ -29,7 +29,7 @@
     {
       "id": "C4",
       "statement": "Backend typecheck and test pass; mock goldens are unchanged",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run (typecheck|test)|npm run (typecheck|test)\\b"
       }
@@ -37,7 +37,7 @@
     {
       "id": "C5",
       "statement": "PRD/sections REQ-230 carries the accepted appended note and nothing else in that requirement changed",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md"
@@ -47,7 +47,7 @@
     {
       "id": "C6",
       "statement": "A reader confirms one golden diff end to end shows only the single-sentence change",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

@@ -1,6 +1,8 @@
 # Slice C — Layers sentence correction and prompt goldens
 
-## Status: planned
+## Status: done
+
+Build note (C1): the old sentence survives only as the `replaces` target string in `apps/backend/src/eval/answer-quality/arm-p-correction.json`. The accepted REQ-230 note keeps arm P untouched so it refuses to run; no production prompt text carries the old sentence.
 
 ## Goal
 
