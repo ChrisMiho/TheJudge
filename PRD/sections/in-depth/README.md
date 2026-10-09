@@ -436,6 +436,13 @@ the game-mode request drives them. (DEC-020, DEC-010)
   contracts stay frozen across the swap and upstream failures map to the
   normalized error shape ("Miho is working on it"). (DEC-020, DEC-011, DEC-017,
   DEC-033, REQ-027)
+- Built: the live path asks the deployed answer model, `gpt-6-luna`, at its
+  default reasoning effort, and gives each answer — the first answer and every
+  follow-up turn — one 30-second budget for the whole AI call, retries
+  included. A quick failure may retry inside the budget; a slow answer is never
+  started over. When the budget runs out the request fails as
+  `PROVIDER_TIMEOUT` (HTTP 504), so the player sees "Miho is working on it" and
+  the retry cooldown instead of a longer wait. (REQ-231, REQ-014)
 - Built: `askAiResponseSchema` accepts optional `context`, `diagnostics`, and
   `enrichmentDebug` sidecar fields on success responses; the mock provider
   populates them for local prompt-preview tooling, while the live OpenAI

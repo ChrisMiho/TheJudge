@@ -2,7 +2,7 @@
 //
 // Asks the live provider the selected approved cases of the rules test corpus
 // (scripts/lib/gold-cases.mjs, REQ-185) and scores each answer. By default it
-// asks only the deployed model, `gpt-4.1`, at the deployed excerpt cap, `10`,
+// asks only the deployed model, `gpt-6-luna`, at the deployed excerpt cap, `10`,
 // and only the cases that need it: `--changed` picks an approved, non-stale
 // case whose prompt hash or reference-answer hash differs from its last graded
 // record, whose last record carries no hash, or that was never graded. The
@@ -103,8 +103,8 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const CONFIRM_FLAG = "--confirm-live-calls";
 export const DEFAULT_OUTPUT_DIR = "output/answer-quality";
 export const RESULTS_RELATIVE_PATH = "apps/backend/src/eval/answer-quality/results.json";
-/** The deployed model alone (`scripts/aws-deploy.sh` sets OPENAI_MODEL=gpt-4.1): a routine run grades what players get (REQ-188). */
-export const DEFAULT_LINEUP = ["gpt-4.1"];
+/** The deployed model alone (`scripts/aws-deploy.sh` sets OPENAI_MODEL=gpt-6-luna): a routine run grades what players get (REQ-188, REQ-231). */
+export const DEFAULT_LINEUP = ["gpt-6-luna"];
 /** The four-model bake-off, one flag away (`--bake-off`). */
 export const BAKE_OFF_LINEUP = ["gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5-nano"];
 /** The deployed excerpt cap alone (REQ-190); `--excerpt-cap 10 --excerpt-cap 15` compares caps. */
@@ -115,7 +115,7 @@ export const DEFAULT_SAMPLE_SEED = 1;
 // script's dry-run path must resolve the judge model synchronously under
 // plain `node --test`, with no TypeScript loader. The real per-call judge
 // functions use judge.ts's own copy.
-export const DEFAULT_JUDGE_MODEL = "gpt-5";
+export const DEFAULT_JUDGE_MODEL = "gpt-6.1-sol";
 
 /** Published list rates, USD per million tokens (re-checked before a live run; REQ-188's note). */
 export const MODEL_PRICING_USD_PER_MILLION_TOKENS = {
@@ -1027,7 +1027,7 @@ export async function runLiveExperiment(params) {
     rubricRevision: RUBRIC_REVISION,
     rateTable: buildRateTable(),
     clientOptions: { timeoutMs: "sdk-default", maxRetries: "sdk-default" },
-    // Production's per-attempt timeout at this checkout's revision, read from its own config source (REQ-228 holds latency against it).
+    // Production's answer timeout at this checkout's revision, read from its own config source (REQ-228 holds latency against it).
     productionTimeoutMs: await readProductionTimeoutMs(),
     git: await defaultGit(repoRoot),
     fileHashes: async (cases) => {

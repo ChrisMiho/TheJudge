@@ -91,9 +91,9 @@ test("parseArgs defaults to the deployed model at the deployed cap and --changed
   process.env.OPENAI_MODEL = "some-other-model"
   try {
     const parsed = parseArgs([])
-    assert.deepEqual(DEFAULT_LINEUP, ["gpt-4.1"])
+    assert.deepEqual(DEFAULT_LINEUP, ["gpt-6-luna"])
     assert.deepEqual(DEFAULT_EXCERPT_CAPS, [10])
-    assert.deepEqual(parsed.models, ["gpt-4.1"])
+    assert.deepEqual(parsed.models, ["gpt-6-luna"])
     assert.deepEqual(parsed.excerptCaps, [10])
     assert.deepEqual(parsed.mode, { kind: "changed" })
     assert.equal(parsed.confirmed, false)
@@ -228,7 +228,7 @@ test("a live run fails naming any lineup or judge model the credentials cannot a
         isStale: notStale,
         client
       }),
-    /gpt-5-mini.*gpt-5-nano.*gpt-5/
+    /gpt-5-mini.*gpt-5-nano.*gpt-6\.1-sol/
   )
 })
 
@@ -834,7 +834,7 @@ test("the dry run on the real corpus selects every approved case (no recorded ha
   assert.match(logs[0], new RegExp(`Cases selected: ${approved} of \\d+ \\(selection: changed`))
   assert.match(
     logs[0],
-    /: never graded \(gpt-4\.1, cap 10\)/,
+    /: never graded \(gpt-6-luna, cap 10\)/,
     "each selected case is listed with the reason it needs grading"
   )
   assert.match(logs[0], /\.\.\. and \d+ more/, "the per-case reason list is capped, not printed in full")
@@ -1089,7 +1089,7 @@ test("an experiment run whose manifest names a missing, unapproved or changed ca
     manifestCases: [manifestEntryFor(good), manifestEntryFor(draft), manifestEntryFor(changed), { id: "exp-ghost", questionSha256: "x", answerSha256: "y" }],
     cases
   })
-  const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
+  const client = fakeAccessClient(["gpt-6-luna", "gpt-6.1-sol"])
   let runnerCalled = false
   await assert.rejects(
     () =>
@@ -1119,7 +1119,7 @@ test("an experiment dry run prints the plan, reads and writes no committed score
   const b = fixtureCase("exp-b")
   const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a), manifestEntryFor(b)], cases: [a, b] })
   const logs = []
-  const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
+  const client = fakeAccessClient(["gpt-6-luna", "gpt-6.1-sol"])
   const result = await run({
     loadLocalEnv: noLocalEnv,
     argv: ["--run-id", "dry", "--manifest", manifestPath, "--repeat", "3"],
@@ -1149,7 +1149,7 @@ test("a confirmed experiment run hands the validated cases to the experiment run
   const committed = resolve(repoRootForTest, "apps/backend/src/eval/answer-quality/results.json")
   const before = await readFileAsync(committed, "utf8")
   let received
-  const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
+  const client = fakeAccessClient(["gpt-6-luna", "gpt-6.1-sol"])
   const result = await run({
     loadLocalEnv: noLocalEnv,
     argv: ["--run-id", "live", "--manifest", manifestPath, "--repeat", "2", "--expect-commit", "abcdef1", "--max-cost-usd", "5", CONFIRM_FLAG],
@@ -1245,7 +1245,7 @@ test("--confirm-live-calls in experiment mode without --max-cost-usd refuses bef
         isStale: notStale,
         buildClient: async () => {
           clientBuilt = true
-          return fakeAccessClient(["gpt-4.1", "gpt-5"])
+          return fakeAccessClient(["gpt-6-luna", "gpt-6.1-sol"])
         },
         runExperiment: async () => {
           throw new Error("must not run")
@@ -1518,7 +1518,7 @@ test("a live run refuses an arm whose revision is not frozen, and hands the held
     loadCases,
     isStale: notStale,
     loadArmSets: armSets(),
-    client: fakeAccessClient(["gpt-4.1", "gpt-5"])
+    client: fakeAccessClient(["gpt-6-luna", "gpt-6.1-sol"])
   }
   const unfrozenB = { ...ARM_REGISTRY, B: { ...ARM_REGISTRY.B, frozen: false } }
   await assert.rejects(
@@ -1544,8 +1544,8 @@ test("a live run refuses an arm whose revision is not frozen, and hands the held
   assert.equal(received.correction, null)
 })
 
-test("the production per-attempt timeout is read from the checkout's own config source", async () => {
-  assert.equal(await readProductionTimeoutMs(), 15000)
+test("the production answer timeout is read from the checkout's own config source", async () => {
+  assert.equal(await readProductionTimeoutMs(), 30000)
   assert.equal(await readProductionTimeoutMs("/no/such/config.ts"), null)
 })
 

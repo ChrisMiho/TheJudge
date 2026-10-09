@@ -10,7 +10,7 @@
 // pooled), rules section, mechanic, difficulty, source pool and request kind,
 // and reports the unchanged-input stratum (identical prompt hash) as sampling
 // noise. Per side it reports latency, answers slower than the revision's
-// per-attempt timeout, errors, tokens (reasoning included) and cost, answer
+// production timeout, errors, tokens (reasoning included) and cost, answer
 // and judge apart. It states counts and lists and draws no conclusion: a number
 // moving is a fact to investigate, not a verdict. Diagnostic arms (REQ-230) print under a
 // "diagnostic control, not a product score" heading.
@@ -21,7 +21,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 export const DIAGNOSTIC_HEADING = "DIAGNOSTIC CONTROL -- NOT A PRODUCT SCORE";
-/** The per-attempt timeout production uses today (REQ-188's note), assumed only for a run whose identity record lacks one. */
+/** The pre-budget production timeout (15 s per attempt, before REQ-231's 30 s overall budget), assumed only for a run whose identity record has no `productionTimeoutMs`. */
 export const ASSUMED_TIMEOUT_MS = 15000;
 
 export async function readRunFolder(folder) {
@@ -327,7 +327,7 @@ function sideBlock(label, side) {
   const timeoutNote = side.timeoutIsAssumed ? " (assumed: this run's identity record names none)" : "";
   return [
     `  ${label}: run ${side.runId} at commit ${side.commit}, arm ${side.arm}${side.armRevision ? ` (${side.armRevision})` : ""}, model ${side.model}${side.reportedModel ? ` (reported ${side.reportedModel})` : ""}`,
-    `    latency: mean ${ms(side.latencyMs.mean)}, p50 ${ms(side.latencyMs.p50)}, p95 ${ms(side.latencyMs.p95)}; ${side.slowerThanTimeout} answers slower than the ${side.timeoutMs} ms per-attempt timeout${timeoutNote}`,
+    `    latency: mean ${ms(side.latencyMs.mean)}, p50 ${ms(side.latencyMs.p50)}, p95 ${ms(side.latencyMs.p95)}; ${side.slowerThanTimeout} answers slower than the ${side.timeoutMs} ms production timeout${timeoutNote}`,
     `    errors ${side.errors} (of which timeouts ${side.timeouts}) across ${side.records} records`,
     `    tokens: answer in ${side.tokens.input} / out ${side.tokens.output} (reasoning ${side.tokens.reasoning} inside out); judge in ${side.tokens.judgeInput} / out ${side.tokens.judgeOutput} (reasoning ${side.tokens.judgeReasoning} inside out)`,
     `    cost: answers ${money(side.answerCostUsd)}; judge ${money(side.judgeCostUsd)}${side.unpricedRecords > 0 ? `; ${side.unpricedRecords} record(s) unpriced` : ""}`

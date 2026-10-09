@@ -3,8 +3,8 @@ import { join } from "node:path";
 import OpenAI from "openai";
 
 const LOG_PREFIX = "[openai:verify-credentials]";
-const DEFAULT_OPENAI_TIMEOUT_MS = 15000;
-const DEFAULT_OPENAI_MAX_RETRIES = 2;
+const DEFAULT_OPENAI_TIMEOUT_MS = 30000;
+const DEFAULT_OPENAI_MAX_RETRIES = 1;
 
 function parseEnvFile(filePath) {
   if (!existsSync(filePath)) return {};
@@ -50,13 +50,15 @@ function mergeLocalOpenAiEnv(baseEnv) {
 }
 
 /** Matches apps/backend/src/config.ts parseOptionalPositiveInteger */
-function parseOptionalPositiveInteger(rawValue, envName) {
+function parseOptionalPositiveInteger(rawValue, envName, minimum = 1) {
   if (rawValue == null || String(rawValue).trim() === "") {
     return undefined;
   }
   const parsed = Number(String(rawValue).trim());
-  if (!Number.isInteger(parsed) || parsed < 1) {
-    throw new Error(`Invalid ${envName} value "${rawValue}". Expected a positive integer.`);
+  if (!Number.isInteger(parsed) || parsed < minimum) {
+    throw new Error(
+      `Invalid ${envName} value "${rawValue}". Expected ${minimum === 0 ? "a non-negative" : "a positive"} integer.`
+    );
   }
   return parsed;
 }
@@ -97,7 +99,7 @@ let timeoutMs;
 let maxRetries;
 try {
   timeoutMs = parseOptionalPositiveInteger(env.OPENAI_TIMEOUT_MS, "OPENAI_TIMEOUT_MS") ?? DEFAULT_OPENAI_TIMEOUT_MS;
-  maxRetries = parseOptionalPositiveInteger(env.OPENAI_MAX_RETRIES, "OPENAI_MAX_RETRIES") ?? DEFAULT_OPENAI_MAX_RETRIES;
+  maxRetries = parseOptionalPositiveInteger(env.OPENAI_MAX_RETRIES, "OPENAI_MAX_RETRIES", 0) ?? DEFAULT_OPENAI_MAX_RETRIES;
 } catch (e) {
   const message = e instanceof Error ? e.message : String(e);
   console.error(`${LOG_PREFIX} ${message}`);

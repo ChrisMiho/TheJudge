@@ -309,6 +309,10 @@ both providers. (DEC-020, REQ-072)
   HTTP contracts stay frozen across the swap and upstream failures map to the
   normalized error shape (the "Miho is working on it" copy). (DEC-020, DEC-017,
   DEC-033)
+- Built: the live path's model and answer budget are the game mode's: the
+  deployed `gpt-6-luna` at its default reasoning effort, one 30-second budget
+  per lookup with any retry inside it, and a spent budget failing as
+  `PROVIDER_TIMEOUT` (HTTP 504). (REQ-231)
 - Built: regression is pinned by golden fixtures under
   `apps/backend/src/eval/fixtures/quick-lookup-*` — single-card, no-card,
   multi-card, and off-domain scenarios, each with a request fixture plus a

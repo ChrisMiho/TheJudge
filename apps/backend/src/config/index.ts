@@ -1,8 +1,10 @@
 import { resolveBooleanEnv, resolveDebugLoggingEnabled, resolvePayloadLoggingEnabled } from "../logging.js";
 
 const DEFAULT_PORT = 3000;
-const DEFAULT_OPENAI_TIMEOUT_MS = 15000;
-const DEFAULT_OPENAI_MAX_RETRIES = 2;
+// REQ-231: the overall answer budget for one AI call, covering every attempt.
+export const DEFAULT_OPENAI_TIMEOUT_MS = 30000;
+export const DEFAULT_OPENAI_MAX_RETRIES = 1;
+export const DEFAULT_OPENAI_MODEL = "gpt-6-luna";
 const ASK_AI_PROVIDER_MODES = ["mock", "openai"] as const;
 const DEFAULT_ASK_AI_PROVIDER_MODE = "mock";
 type AskAiProviderMode = (typeof ASK_AI_PROVIDER_MODES)[number];
@@ -79,14 +81,20 @@ function parseFrontendOrigin(rawOrigin: string | undefined): string | undefined 
   return parsedUrl.toString().replace(/\/$/, "");
 }
 
-function parseOptionalPositiveInteger(rawValue: string | undefined, envName: string): number | undefined {
+function parseOptionalPositiveInteger(
+  rawValue: string | undefined,
+  envName: string,
+  minimum = 1
+): number | undefined {
   if (!rawValue || rawValue.trim().length === 0) {
     return undefined;
   }
 
   const parsed = Number(rawValue);
-  if (!Number.isInteger(parsed) || parsed < 1) {
-    throw new Error(`Invalid ${envName} value "${rawValue}". Expected a positive integer.`);
+  if (!Number.isInteger(parsed) || parsed < minimum) {
+    throw new Error(
+      `Invalid ${envName} value "${rawValue}". Expected a ${minimum === 0 ? "non-negative" : "positive"} integer.`
+    );
   }
 
   return parsed;
@@ -98,7 +106,7 @@ export function readServerConfig(env: NodeJS.ProcessEnv): ServerConfig {
   const openAiApiKey = env.OPENAI_API_KEY?.trim() || undefined;
   const openAiModel = env.OPENAI_MODEL?.trim() || undefined;
   const openAiTimeoutMs = parseOptionalPositiveInteger(env.OPENAI_TIMEOUT_MS, "OPENAI_TIMEOUT_MS");
-  const openAiMaxRetries = parseOptionalPositiveInteger(env.OPENAI_MAX_RETRIES, "OPENAI_MAX_RETRIES");
+  const openAiMaxRetries = parseOptionalPositiveInteger(env.OPENAI_MAX_RETRIES, "OPENAI_MAX_RETRIES", 0);
   if (provider === "openai" && (!openAiApiKey || !openAiModel)) {
     const missing: string[] = [];
     if (!openAiApiKey) missing.push("OPENAI_API_KEY");

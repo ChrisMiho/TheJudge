@@ -293,7 +293,7 @@ test("per side: latency mean, p50 and p95, answers slower than the revision's ti
   assert.notEqual(result.sides.b.answerCostUsd, result.sides.b.judgeCostUsd, "answer and judge cost are separate numbers");
 
   const text = formatComparison(result, { labelA: "a", labelB: "b" });
-  assert.match(text, /latency: mean 250 ms, p50 200 ms, p95 400 ms; 0 answers slower than the 15000 ms per-attempt timeout/);
+  assert.match(text, /latency: mean 250 ms, p50 200 ms, p95 400 ms; 0 answers slower than the 15000 ms production timeout/);
   assert.match(text, /errors 1 \(of which timeouts 1\)/);
   assert.match(text, /reasoning 300 inside out/);
   assert.match(text, /cost: answers \$[\d.]+; judge \$[\d.]+/);

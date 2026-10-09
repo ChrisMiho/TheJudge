@@ -26,9 +26,12 @@ feedback_formspree_id="${VITE_FEEDBACK_FORMSPREE_ID:?VITE_FEEDBACK_FORMSPREE_ID 
 # Non-secret Lambda config. Plain literals, no shell env indirection: to change
 # the model (or timeout/retries), edit these values and push — the change
 # ships with the deploy that touches them, and `git blame` shows who/why.
-openai_model="gpt-4.1"
-openai_timeout_ms="15000"
-openai_max_retries="2"
+openai_model="gpt-6-luna"
+openai_timeout_ms="30000"
+openai_max_retries="1"
+# Lambda hard limit (REQ-231): above the 30 s answer budget, so prompt assembly
+# before the call and the error reply after it fit.
+lambda_timeout_seconds="40"
 openai_api_key_ssm_param="/thejudge/openai-api-key"
 
 artifact_path="$(bash "$repo_root/scripts/package-lambda.sh")"
@@ -93,6 +96,7 @@ fi
 
 aws lambda update-function-configuration \
   --function-name "$lambda_name" \
+  --timeout "$lambda_timeout_seconds" \
   --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=openai,EMBEDDING_PROVIDER=local,DEBUG_LOGGING=false,LOG_PAYLOADS=false,OPENAI_MODEL=$openai_model,OPENAI_TIMEOUT_MS=$openai_timeout_ms,OPENAI_MAX_RETRIES=$openai_max_retries,OPENAI_API_KEY_SSM_PARAM=$openai_api_key_ssm_param,FRONTEND_ORIGIN=$frontend_origin}" \
   --region "$aws_region" \
   >/dev/null

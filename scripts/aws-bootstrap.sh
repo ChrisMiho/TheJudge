@@ -14,9 +14,10 @@ artifact_s3_key="lambda/lambda.zip"
 lambda_name="${AWS_LAMBDA_FUNCTION_NAME:-$app_name-api}"
 lambda_role_name="${AWS_LAMBDA_ROLE_NAME:-$app_name-lambda-exec}"
 ssm_param_name="${OPENAI_API_KEY_SSM_PARAM:-/thejudge/openai-api-key}"
-openai_model="${OPENAI_MODEL:-gpt-4.1-mini}"
-openai_timeout_ms="${OPENAI_TIMEOUT_MS:-15000}"
-openai_max_retries="${OPENAI_MAX_RETRIES:-2}"
+openai_model="${OPENAI_MODEL:-gpt-6-luna}"
+openai_timeout_ms="${OPENAI_TIMEOUT_MS:-30000}"
+openai_max_retries="${OPENAI_MAX_RETRIES:-1}"
+lambda_timeout_seconds="40"
 reserved_concurrency="${RESERVED_CONCURRENCY:-5}"
 budget_limit_usd="${BUDGET_LIMIT_USD:-5}"
 notification_email="${NOTIFICATION_EMAIL:-}"
@@ -145,7 +146,7 @@ if ! aws lambda get-function --function-name "$lambda_name" --region "$aws_regio
     --role "$lambda_role_arn" \
     --handler apps/backend/dist/lambda.handler \
     --code "S3Bucket=$artifact_bucket_name,S3Key=$artifact_s3_key" \
-    --timeout 20 \
+    --timeout "$lambda_timeout_seconds" \
     --memory-size 1769 \
     --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=openai,EMBEDDING_PROVIDER=local,DEBUG_LOGGING=false,LOG_PAYLOADS=false,OPENAI_MODEL=$openai_model,OPENAI_TIMEOUT_MS=$openai_timeout_ms,OPENAI_MAX_RETRIES=$openai_max_retries,OPENAI_API_KEY_SSM_PARAM=$ssm_param_name}" \
     --region "$aws_region" \
@@ -642,6 +643,7 @@ fi
 
 aws lambda update-function-configuration \
   --function-name "$lambda_name" \
+  --timeout "$lambda_timeout_seconds" \
   --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=openai,EMBEDDING_PROVIDER=local,DEBUG_LOGGING=false,LOG_PAYLOADS=false,OPENAI_MODEL=$openai_model,OPENAI_TIMEOUT_MS=$openai_timeout_ms,OPENAI_MAX_RETRIES=$openai_max_retries,OPENAI_API_KEY_SSM_PARAM=$ssm_param_name,FRONTEND_ORIGIN=$frontend_origin}" \
   --region "$aws_region" \
   >/dev/null

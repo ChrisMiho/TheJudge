@@ -15,8 +15,8 @@ This folder isolates answer-generation providers behind a stable interface so ro
 - Default behavior is always `ASK_AI_PROVIDER=mock` when the flag is unset; this does not auto-switch based on `NODE_ENV` or deploy target.
 - `ASK_AI_PROVIDER=openai` requires `OPENAI_MODEL`; config fails fast if it is missing.
 - Optional runtime controls for OpenAI mode:
-  - `OPENAI_TIMEOUT_MS` (default `15000`)
-  - `OPENAI_MAX_RETRIES` (default `2`)
+  - `OPENAI_TIMEOUT_MS` (default `30000`): the overall answer budget across every attempt of one request
+  - `OPENAI_MAX_RETRIES` (default `1`; `0` means never retry): retries only start inside the budget
 - Route handlers remain provider-agnostic. OpenAI SDK wiring lives in provider/factory composition only.
 - Error middleware returns the centralized API error shape (`{ code, message, metadata?, retryAfterSeconds? }`) regardless of provider mode.
 
