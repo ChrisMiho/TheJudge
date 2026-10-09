@@ -132,8 +132,6 @@ export const MODEL_PRICING_USD_PER_MILLION_TOKENS = {
   "gpt-6-astra": { input: 10.0, output: 50.0 }
 };
 
-const RATE_NOT_RECHECKED = "not re-checked since the table was written";
-
 /**
  * The date each rate above was last checked against the provider's published
  * pricing (REQ-188, REQ-226). The owner re-checks before spending; the dry run
