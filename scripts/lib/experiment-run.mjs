@@ -252,7 +252,7 @@ export function buildIdentityRecord({
     models: { requested: [...models], reported: {} },
     requestOptions: { fields: ["model", "input"] },
     client: { timeoutMs: client?.timeoutMs ?? "sdk-default", maxRetries: client?.maxRetries ?? "sdk-default" },
-    // Production's per-attempt timeout at the revision this run executed from: what the compare report holds latency against (REQ-228).
+    // Production's answer timeout at the revision this run executed from: what the compare report holds latency against (REQ-228).
     productionTimeoutMs,
     askAiProvider: askAiProvider ?? "",
     embeddingProvider: embeddingProvider ?? "",

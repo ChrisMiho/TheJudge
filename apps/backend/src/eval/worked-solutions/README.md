@@ -213,7 +213,7 @@ measures.
 
 ### The answer-quality run (`npm run eval:answer-quality`)
 
-Asks the deployed model (`gpt-4.1`, at excerpt cap 10) the selected approved,
+Asks the deployed model (`gpt-6-luna`, at excerpt cap 10) the selected approved,
 non-stale cases (by default the ones whose prompt or reference answer changed
 since they were last graded; `--tag`, `--tier`, `--sample N`, `--all` and
 `--bake-off` are explicit options), through the identical `preparePromptInput`

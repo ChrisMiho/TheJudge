@@ -1,6 +1,17 @@
 # Slice D — Eval defaults, compare report, and ship gates
 
-## Status: planned
+## Status: done
+
+## Receipt notes (read by cleanup)
+
+- Owner step after merge: deploy (or re-run bootstrap), then time one tier-3 question live, read `providerElapsedMs` in the CloudWatch tail, confirm semantic retrieval served it (not the lexical fallback), and confirm the function config reads 40 s / gpt-6-luna / 30000 / 1.
+- Optional owner-run paid step: the arm-A run on the held-out manifest that judges the layers-sentence correction (REQ-230 note). Not part of the build.
+- Reserved-concurrency risk: five slow answers can hold the five reserved slots for up to about 30 s each.
+- Wording looseness: the brief's REQ-230 wording is looser than the accepted slot, which only appends a note. The slot was followed.
+- The intake's "REQ-178" is REQ-022.
+- Slice C: the old layers sentence survives only as arm P's `replaces` string in `arm-p-correction.json`, by design, so arm P refuses to run.
+- Slice A also updated one assertion in `scripts/eval-answer-quality.test.mjs` (production timeout now reads 30000).
+- Amendment-set grep (`git grep -n -E 'gpt-4\.1|OPENAI_TIMEOUT_MS|per-attempt|under 3 seconds'`) re-run at build: remaining hits are dated history notes, the bake-off lineup and rate table, the eval script's regex reader, or the new REQ-231/NFR-002 notes. No amend row is left undone.
 
 ## Goal
 
@@ -51,11 +62,11 @@ npm run quality:check
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/luna-answer-budget/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/luna-answer-budget/` ready to delete
 
 ## PRD promotion checklist (executed by cleanup)
 

@@ -27,9 +27,9 @@ function fakeThrowingClient(message: string): JudgeClient {
 
 describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
   describe("resolveJudgeModel / judgeMatchesAnswerModel", () => {
-    it("defaults to gpt-5 when ANSWER_QUALITY_JUDGE_MODEL is unset", () => {
+    it("defaults to gpt-6.1-sol when ANSWER_QUALITY_JUDGE_MODEL is unset", () => {
       expect(resolveJudgeModel({})).toBe(DEFAULT_JUDGE_MODEL);
-      expect(DEFAULT_JUDGE_MODEL).toBe("gpt-5");
+      expect(DEFAULT_JUDGE_MODEL).toBe("gpt-6.1-sol");
     });
 
     it("honors ANSWER_QUALITY_JUDGE_MODEL when set", () => {

@@ -73,13 +73,13 @@ function usageOf(response: {
 // judge model synchronously under plain `node --test`, with no TypeScript
 // loader, so it cannot import this module directly. This copy is what the
 // real per-call judge functions below use.
-export const DEFAULT_JUDGE_MODEL = "gpt-5";
+export const DEFAULT_JUDGE_MODEL = "gpt-6.1-sol";
 
 /**
  * The judge model is selected by its own explicit setting
  * (REQ-186) -- never `OPENAI_MODEL`, never an answer model -- mirroring the
  * explicit-selection seam `ASK_AI_PROVIDER` / `EMBEDDING_PROVIDER` already
- * use. Defaults to `gpt-5` when unset.
+ * use. Defaults to `gpt-6.1-sol` when unset.
  */
 export function resolveJudgeModel(env: Record<string, string | undefined> = process.env): string {
   const value = env.ANSWER_QUALITY_JUDGE_MODEL?.trim();
