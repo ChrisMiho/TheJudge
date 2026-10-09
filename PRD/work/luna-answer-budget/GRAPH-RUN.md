@@ -7,7 +7,8 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261009-142138/`
-- Current node: `build`
+- Current node: `review`
+- Code PR: https://github.com/ChrisMiho/TheJudge/pull/281
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/280
 - Terminal state: in progress (build half holds the lock)
 - Next action: `/graph-implement PRD/work/luna-answer-budget/` resumes at the node this ledger records
@@ -24,6 +25,7 @@
 | 6 | gate-qc | sonnet | ok | `0 → 15` | PASS attempt 2 (build-half re-grade), findings none — `PRD/work/luna-answer-budget/QUALITY-CHECK.md`, commit `d9be4af2`; 21 diff blocks 0 mismatches vs `PRD/sections/` at `b4bb41dd`; 366/366 amendment-grep hits dispositioned; 3 non-blocking map-out notes; `STATUS.refined` only marker; README `## Preparation gate` PASS written by the driver; launch checkout porcelain unchanged | 2026-10-09 |
 | 7 | plan | sonnet | failed | `0 → 14` | attempt 1: harness permission layer (auto mode, not the graph hook — no `.worktrees/.graph-denials.jsonl` entry for this run) denied one compound Bash call (`cd … && cat > luna-answer-budget/GAMEPLAN.md <<'EOF' …` plus README edits, `git mv STATUS.refined STATUS.active`, board-row move); not retried. Left uncommitted in the worktree: `slice-a-answer-budget.md`, `slice-b-deploy-config.md`, `slice-c-layers-sentence.md`, `slice-d-eval-defaults-and-ship.md` + four `slice-*.criteria.json` (30 criteria, 4 manual); GAMEPLAN, README slice table, marker and board row not written; launch checkout porcelain unchanged | 2026-10-09 |
 | 8 | plan | sonnet | ok | `0 → 18` | attempt 2: commit `c0f1d309` — `GAMEPLAN.md` + 4 slices with criteria files (A answer budget, 9 criteria, manual A9; B deploy config, 6; C layers sentence, 6, manual C6; D eval defaults and ship, 9, manual D7, D9), all criteria `false`; attempt-1 files kept, one fix (slice C verification command); Preparation gate PASS verified first; `STATUS.active` only marker; board row under active; no deliverable inside `PRD/work/`; worktree porcelain empty; launch checkout porcelain unchanged | 2026-10-09 |
+| 9 | build | sonnet | ok | `0 → 158` | code PR https://github.com/ChrisMiho/TheJudge/pull/281 (OPEN, `[THEJUDGE-AUTO][READY]`, MERGEABLE, head `bf40f5bf`); commits `0cb2d3a2` (A), `b98ad23e` (B), `909f4e0d` (C), `bf40f5bf` (D, `STATUS.ship-ready`); 30/30 criteria `true` read from the four `slice-*.criteria.json` (self-reported — `.worktrees/.graph-evidence.jsonl` got 0 entries for this run, the known evidence-root gap); builder-reported: backend 639/639, `test:eval` 3/3, `test:scripts` 766/766, `quality:check` exit 0; return-side: launch checkout porcelain identical before/after, `classifyBuildWrites` over the 70 changed paths → ok (all inside `.worktrees/implement-luna-answer-budget/`); C1 literal deviation self-noted (old sentence kept as the arm P `replaces` string in `apps/backend/src/eval/answer-quality/arm-p-correction.json`) | 2026-10-09 |
 
 ## Open gate
 
@@ -218,6 +220,61 @@ Tool mechanics: in this session the permission layer has denied long compound Ba
 Verify directly; spawn no subagents or forks; no sleeping or polling. A denied tool call is never retried: report it verbatim and stop. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
 
 Report back, plain text: outcome (ok / failed), the PR URL, every commit sha with its slice, the criteria state per slice read from the four criteria files (ids still false, if any), the test and quality commands you ran with their pass/fail counts, the PRD/sections/ IDs you applied, every path you wrote as an absolute path, the STATUS marker now present, the board row section, git status --porcelain in the worktree after the last push, and any owner step for the receipt.
+
+### review
+
+graph is controlling. You are node 7 (review) of graph run graph-20261009-150059, package luna-answer-budget: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit tool and must not change anything: no file edits, no git add, commit, checkout, stash or push, no gh write command, no fixture-update flags.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-luna-answer-budget
+
+Subject: code PR https://github.com/ChrisMiho/TheJudge/pull/281 (thejudge-auto/luna-answer-budget-work into main), head bf40f5bf. The diff to grade is git diff 1ca897de bf40f5bf, run inside the working directory (1ca897de is the last driver commit before build). Read that diff, the four slice docs and their criteria files in PRD/work/luna-answer-budget/, GAMEPLAN.md, DESIGN-BRIEF.md, the finalized GATE-QUESTIONS.md (ten accepted IDs, which build had to apply to PRD/sections/ by intent), and QUALITY-CHECK.md. You do not get the build transcript, by design. Do not trust the criteria files' true values or the slice docs' claims; check the work itself. You may re-run read-only checks (typecheck, the backend tests, test:scripts, the eval harness without its update flag, git grep). Make no paid or live OpenAI call and no aws command.
+
+Rubric: the slices' own acceptance criteria, quoted here, and the accepted GATE-QUESTIONS.md diffs those criteria point to. Flag only gaps that affect correctness or these stated requirements.
+
+Slice file: slice-a-answer-budget.md
+- [ ] A1: Provider tests prove a slow attempt is cut off at the deadline and maps to PROVIDER_TIMEOUT (504), using fake clients and no network
+- [ ] A2: Provider tests prove a fast failure retries inside the budget and no retry starts after the budget is spent; retries=0 never retries
+- [ ] A3: The SDK abort error (APIUserAbortError, 'Request was aborted.') is classified by cause as PROVIDER_TIMEOUT and never as PROVIDER_UNAVAILABLE (a named test)
+- [ ] A4: Config defaults are 30000 and 1, OPENAI_MAX_RETRIES=0 is accepted, negative or non-integer values are rejected; DEFAULT_OPENAI_TIMEOUT_MS keeps its name and 'const NAME = 30000' form
+- [ ] A5: createAskAiProvider fallbacks read gpt-6-luna, 30000, 1 and the factory tests pass
+- [ ] A6: scripts/openai-verify-credentials.mjs defaults 30000 / 1 and accepts 0; the script tests pass
+- [ ] A7: Backend typecheck and the full backend test run pass with no network call and no OPENAI key
+- [ ] A8: PRD/sections carries REQ-231 (new), the In-Depth, Quick Lookup and system-map provider passages, NFR-002 plus the goals echo, REQ-181, REQ-182 and REQ-190 as accepted in GATE-QUESTIONS.md; REQ-014 and REQ-023 are unchanged
+- [ ] A9 (manual): A reader confirms the applied REQ-231 and NFR-002 text matches the accepted slot intent (30 s budget, no restart of a slow answer, 504 mapping, about 4 s typical) and that no under-3-second wording remains in those requirements
+
+Slice file: slice-b-deploy-config.md
+- [ ] B1: aws-deploy.sh sets OPENAI_MODEL=gpt-6-luna, OPENAI_TIMEOUT_MS=30000, OPENAI_MAX_RETRIES=1 and passes --timeout 40 in its update-function-configuration call
+- [ ] B2: aws-bootstrap.sh fallbacks are gpt-6-luna / 30000 / 1, create-function uses --timeout 40, and the update-function-configuration call also passes --timeout 40
+- [ ] B3: Both shell scripts pass a syntax check (bash -n) and no aws command was run
+- [ ] B4: docs/aws/deployment.md, apps/backend/.env.example, the root README and apps/backend/src/providers/README.md carry the new model, 30000 budget, retries 1 (0 allowed) and 40 s limit
+- [ ] B5: No remaining stale deploy default: a grep of scripts, docs, README and .env.example for 'gpt-4.1-mini', '--timeout 20', and '15000' as an OpenAI default returns only history or unrelated hits
+- [ ] B6: The script test suite passes
+
+Slice file: slice-c-layers-sentence.md
+- [ ] C1: mtgReference.ts carries the owner-approved corrected sentence verbatim and the old sentence appears nowhere under apps/
+- [ ] C2: The 31 prompt goldens are regenerated and the context evaluation harness passes without the update flag
+- [ ] C3: git diff of the prompt goldens shows exactly 31 files, each changed only on the layers sentence line (counts of added and removed lines equal per file, no other hunk)
+- [ ] C4: Backend typecheck and test pass; mock goldens are unchanged
+- [ ] C5: PRD/sections REQ-230 carries the accepted appended note and nothing else in that requirement changed
+- [ ] C6 (manual): A reader confirms one golden diff end to end shows only the single-sentence change
+
+Slice file: slice-d-eval-defaults-and-ship.md
+- [ ] D1: DEFAULT_LINEUP is ["gpt-6-luna"] and the script's judge default is gpt-6.1-sol, in step with judge.ts (DEFAULT_JUDGE_MODEL); --bake-off lineup unchanged
+- [ ] D2: ASSUMED_TIMEOUT_MS is still 15000 with a comment calling it the pre-budget value; the compare report label reads 'production timeout'
+- [ ] D3: The script test suite passes with updated default assertions (lineup, judge, timeout title/constant, report label)
+- [ ] D4: The backend judge test asserts gpt-6.1-sol and the backend tests pass
+- [ ] D5: PRD/sections carries REQ-186, REQ-188, REQ-226 and REQ-228 as accepted in GATE-QUESTIONS.md; dated history notes untouched
+- [ ] D6: Quoted line-level grep from the brief shows no amend row left undone (every hit dispositioned; keep and history rows untouched)
+- [ ] D7 (manual): No criterion in this package required a paid run, live provider call or aws command; none was run (attested in the evidence log)
+- [ ] D8: Full quality gate passes
+- [ ] D9 (manual): A reader confirms the receipt notes list the owner-run post-deploy check, the optional paid arm-A run, the reserved-concurrency risk (five slow answers hold slots up to ~30 s), the REQ-230 wording looseness and the REQ-022 vs 'REQ-178' mix-up
+
+
+Severity rule: Critical or Important only for a defect that breaks a stated criterion, an accepted product-truth ID, or correctness of shipped behaviour (for example the 30-second budget, the retry rule, the 504 mapping, or the deploy timeout). A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never sends the run back to build; mark it Minor. Where a criterion's literal wording and the accepted GATE-QUESTIONS.md slot disagree, the accepted slot governs; say which you applied. The builder self-noted one literal deviation on C1 (the old layers sentence is kept as the arm P replaces string in apps/backend/src/eval/answer-quality/arm-p-correction.json, per the accepted REQ-230 note); judge it on the accepted slot.
+
+Spawn no subagents; no sleeping or polling; stay well under the 120-call cap. A denied tool call is never retried: report it verbatim. If you write any prompt for another agent, copy the Working directory line above into it unchanged.
+
+Report back, plain text: verdict (APPROVE or CHANGES REQUESTED), counts of Critical / Important / Minor, then each finding with its severity, the criterion or ID it breaks, file:line evidence, and the concrete failure; then the checks you re-ran with their results.
 
 ## Instruction ledger
 
