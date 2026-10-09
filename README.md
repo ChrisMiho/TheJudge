@@ -113,9 +113,9 @@ Local defaults work out of the box, but deployment targets should set explicit v
   - `DEBUG_LOGGING` - optional backend debug log toggle (`true`/`false`); defaults on in `development`
   - `LOG_PAYLOADS` - optional backend request payload logging toggle (`true`/`false`); defaults on in `development`, off otherwise
   - `ASK_AI_PROVIDER` - provider mode toggle (`mock` default, `openai` for live provider path)
-  - `OPENAI_MODEL` - required when `ASK_AI_PROVIDER=openai` (default recommendation: `gpt-4.1-mini`)
-  - `OPENAI_TIMEOUT_MS` - optional OpenAI request timeout in ms (default: `15000`)
-  - `OPENAI_MAX_RETRIES` - optional SDK retry attempts (default: `2`)
+  - `OPENAI_MODEL` - required when `ASK_AI_PROVIDER=openai` (default recommendation: `gpt-6-luna`)
+  - `OPENAI_TIMEOUT_MS` - optional overall answer budget in ms, covering every attempt of one request (default: `30000`)
+  - `OPENAI_MAX_RETRIES` - optional retry attempts, only inside the answer budget (default: `1`; `0` means never retry)
 
 Local OpenAI auth guidance:
 - Keep non-secret configuration in `apps/backend/.env`.

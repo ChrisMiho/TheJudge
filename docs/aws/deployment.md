@@ -33,7 +33,7 @@ Browser  --POST /api/ask-ai, GET /api/health-->
 Lambda Function URL (https://<id>.lambda-url.us-east-1.on.aws)   auth NONE
   |                                             reserved concurrency = 5
   v
-Lambda  thejudge-api  (nodejs24.x, arm64, 1769 MB, 20 s)
+Lambda  thejudge-api  (nodejs24.x, arm64, 1769 MB, 40 s)
         (memory raised from 512 MB on 2026-09-08: cold start was 9-10 s in-function
          at 512 MB with 491 MB peak use; 2.4 s at 1769 MB — memory is Lambda's CPU dial)
         handler: apps/backend/dist/lambda.handler

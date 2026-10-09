@@ -1,6 +1,6 @@
 # Slice B — Deploy config (model, budget, retries, 40-second Lambda limit)
 
-## Status: planned
+## Status: done
 
 ## Goal
 
