@@ -1,86 +1,69 @@
 # Quality check — rulesguru-local-suite
 
-Graph run `graph-20261010-193032`, node 4 (`gate-qc`), attempt 1, 2026-10-10.
+Graph run `graph-20261010-193032`, node 4 (`gate-qc`), attempt 2, 2026-10-10,
+after define attempt 2 (commit `62296b1e`).
 
-**Result: FAIL.** Two small fixes in `GATE-QUESTIONS.md` and one in the brief.
-Everything else passes. Status set to `refining`.
+Attempt 1 failed on findings 1 to 3 (a non-verbatim removed line, a permission
+sentence that said too much, and name-lookup numbers with no command).
 
-## Findings (return to refinement)
+**Result: PASS.** All three attempt-1 findings are resolved and no new problem
+was found. Package stays at `refined`.
 
-1. **A removed line is not word for word (GATE-QUESTIONS.md line 129).** The
-   system-map `### Answer-quality baseline` `Summary` diff uses
-   `On-demand, confirmation-gated run that asks the selected approved cases of
-   the rules test corpus — … (unchanged) … (REQ-230).` The `…` stands in for the
-   live text, so the removed line does not match
-   `PRD/sections/system-map.md:501`. Every other removed and context line (18 of
-   19 checked, by script against the live section files) matches exactly. Fix:
-   quote the full live line 501 as the `-` line, and the same line plus the new
-   sentence as the `+` line, and drop the "shown on its own line for
-   readability" note (lines 137-138).
-2. **A sentence says more about the permission than the settled decision
-   allows (GATE-QUESTIONS.md line 67).** "A purge command deletes the whole
-   folder if the permission is ever withdrawn." Decision 2 is to say nothing
-   about the permission beyond "used with permission, local only". Fix: reword
-   the purge sentence without the withdrawal clause, for example "A purge
-   command deletes the whole folder."
-3. **Name-lookup numbers name files but no command (DESIGN-BRIEF.md,
-   "Measured coverage" and assumption 5; GATE-QUESTIONS.md REQ-232 Notes).**
-   I re-measured them and they hold: 37,854 detail ids; `cardMetadata.json`
-   34,639 names; with `cardScanMap.json` 34,973 named; 341 of 348 non-token
-   creatures with no rules text named; 19 duplicate names among non-token cards.
-   But no command or script is named, so a later reader cannot repeat them. Fix:
-   add one line saying how they were counted (the join of the three files by
-   oracle id, counting detail ids with a name, and non-token creature ids with
-   empty `oracleText`), or name a scratch script kept in the work folder.
+## Attempt-1 findings
 
-## Checks that pass
+1. **Resolved.** The system-map `### Answer-quality baseline` `Summary` diff now
+   quotes the full live line as the `-` line and the same line plus the new
+   sentence as the `+` line; the "shown on its own line" note is gone. A script
+   checked every removed and context line in every diff block against the live
+   `PRD/sections/*.md` lines: 19 checked, 0 mismatches.
+2. **Resolved.** The REQ-232 plain-terms text now reads "A purge command deletes
+   the whole folder." The withdrawal clause is gone. Outside the verbatim
+   intake, the only permission wording left in the brief, questions file, IDEA
+   and evidence is "used with permission, local only".
+3. **Resolved.** The brief ("Measured coverage", assumption 5, the verification
+   list) names `evidence/name-lookup-counts.mjs`, how it counts, and the saved
+   output. Re-ran it: every number matches `evidence/name-lookup-counts.out.txt`
+   and the brief (37,854 detail ids; 34,639 `cardMetadata.json` rows; 34,568
+   named from it; 34,973 with `cardScanMap.json`; 2,881 unnamed; 341 of 348
+   non-token creatures with no rules text named; 19 shared names; 400 corpus
+   case files). The only line that differs is the script's own `commit:` stamp
+   (HEAD now, `8b0a3a88` when saved). The script reads files only: no network,
+   no writes.
 
-1. **Stable-ID blocks.** All seven blocks (REQ-232, REQ-185, REQ-186, REQ-188,
-   REQ-226, NFR-018, goals-and-non-goals) carry the three-line opening ("What
-   this decides", "In plain terms", "What happens if you say no") and a blank
-   `- Verdict:` / `- Reason:` slot. Removed and context lines match live
-   `PRD/sections/` text, except finding 1. `REQ-232` appears nowhere in
-   `PRD/sections` or in any `thejudge-auto/*` remote branch outside this
-   package; `REQ-231` is the last entry, so "after `### REQ-231`" is right. Same
-   anchor lines for the REQ-185 insertions exist live.
-2. **Line-level grep.** Re-ran the brief's exact command: 251 hits. The brief's
-   251 `file:line` keys equal the live hit list exactly (diffed, no extras, no
-   gaps). Dispositions: 12 PRD amends, 9 amend-at-build, 230 no change, which
-   sums to 251 and matches the brief's totals. The brief's list of edited lines
-   the grep misses (REQ-186 description and criterion, REQ-226 first criterion,
-   dependency insertion points, system-map line 502) is consistent with the
-   blocks; line 502 is the `Lives in` line.
-3. **Blockers.** B1 and B2 each state a recommendation (B1 yes by hand only; B2
-   `output/rulesguru/`), say what no does, and leave the slot blank.
-4. **No RulesGuru content.** The package files hold counts, field names and
-   invented description only: no question, answer or card-roll text. No network
-   request was made.
-5. **Five intake decisions kept.** Local only, gitignored folder ignored in the
-   first slice before any import; permission wording otherwise (except finding
-   2); not ground truth and reported apart from REQ-187's headline; never a
-   build gate (`NEVER_IN_A_GATE` extension, no-test-reads-the-folder guard);
-   synthetic data, injected fetch and clock.
-6. **REQ-185 overlap with docs PR #283.** Read
-   `origin/thejudge-auto/resolution-recipe-eval:.../GATE-QUESTIONS.md`. Its
-   REQ-185 block rewrites the `Description` last sentence and the "no case is
-   approved by an agent" constraint. This package's three REQ-185 insertions
-   (criterion after the community-sources criterion, constraint after the "commits
-   only WotC text" constraint, dependency after the REQ-230 line) touch neither.
-   Its other blocks (REQ-230, REQ-228, REQ-187, REQ-224) touch no line this
-   package amends. The brief's "Overlap" section gives the by-intent build
-   procedure if the recipe lands first, including the anchors-moved fallback and
-   the B1 gate-slot note.
-7. **Numbers.** Grep count 251 reproduced (check 2). Name-lookup numbers
-   reproduced (finding 3). The 400 corpus case files is correct. Probe figures
-   (918 questions, 830, 686, 476) trace to `intake/FINDINGS-fit.md` and
-   `intake/GRAPH-BRIEF.md`.
+## Checks
+
+1. **Stable-ID blocks.** Nine blocks (REQ-232, REQ-185, REQ-186, REQ-188,
+   REQ-226, NFR-018, goals-and-non-goals, B1, B2). Nine "What this decides", nine
+   "In plain terms", nine "What happens if you say no", nine blank `- Verdict:`
+   and nine blank `- Reason:` slots. `REQ-232` appears nowhere in
+   `PRD/sections`; `REQ-231` is still the last entry.
+2. **Line-level grep.** The brief's exact command returns 251 hits. The brief's
+   251 `file:line` keys equal the live list exactly (diffed). Dispositions: 12
+   amend in `PRD/sections`, 9 amend at build, 230 no change. The list of edited
+   lines the grep misses is consistent with the blocks.
+3. **Blockers.** B1 recommends yes by hand only; B2 recommends
+   `output/rulesguru/`. Both say what no does and stay blank.
+4. **No RulesGuru content.** Counts, field names and invented description only;
+   no question, answer or card-roll text. No network request made.
+5. **Nothing outside the package changed.** `git diff --stat dabad406 HEAD --
+   PRD/sections apps scripts docs .gitignore` is empty; the working tree was
+   clean at the start.
+6. **Edits introduced no new problem.** The attempt-2 diff touches only the
+   brief, questions file, README note, GRAPH-RUN, status marker and the two
+   evidence files. The REQ-185 overlap with docs PR #283 text is unchanged.
 
 ## Other checklist items
 
-- No contradiction found with REQ-185 to REQ-188, REQ-222 to REQ-230 or
-  NFR-018 beyond what the amendments resolve.
+- No contradiction with REQ-185 to REQ-188, REQ-222 to REQ-230 or NFR-018 beyond
+  what the amendments resolve.
 - No user-visible screen or overlay: the `screen-layout.md` row check does not
   apply.
 - `technical-design-rules.md`: no runtime, route, schema or provider change; no
   new dependency.
 - Open questions are limited to B1 and B2, both genuine owner choices.
+
+## Non-blocking note
+
+`README.md` line 18 (the driver's preparation-gate text) quotes attempt-1
+finding 2, including the withdrawal wording. It is a record of a finding, not a
+claim in the package's design text; the driver owns that section.
