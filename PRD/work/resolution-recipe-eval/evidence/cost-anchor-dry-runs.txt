@@ -1,0 +1,111 @@
+Cost anchor for resolution-recipe-eval (DESIGN-BRIEF.md "Cost dry run (anchor)").
+Re-run 2026-10-10, define attempt 2, worktree .worktrees/kickoff-resolution-recipe-eval
+at branch head 1f6162bc. Dry runs only: no --confirm-live-calls, no provider request,
+nothing spent. Output below is verbatim stdout+stderr of each command.
+Evidence only; the build deletes this folder with the package.
+
+=== Step 1: write the two run manifests (gitignored output/, offline) ===
+
+$ npm run eval:answer-quality:manifests -- --emit output/answer-quality/manifests/rr-hard-anchor.json --from approved --ids academy-manufactor-esix-treasure,layers-hand-size-timestamp-praetors-counsel,layers-hand-size-timestamp-thought-eater,necropotence-silence-borne-upon-a-wind-cleanup,replacement-saheeli-three-artifacts-sculpting-steel,triggers-devouring-hellion-and-kronch-wrangler
+Wrote a run manifest of 6 cases (approved) to .../output/answer-quality/manifests/rr-hard-anchor.json.
+
+$ npm run eval:answer-quality:manifests -- --emit output/answer-quality/manifests/rr-diagnostic.json --from diagnostic
+Wrote a run manifest of 46 cases (diagnostic) to .../output/answer-quality/manifests/rr-diagnostic.json.
+
+=== Step 2: dry run A — 6 existing hard cases x arms A, B x 6 repeats ===
+
+$ npm run eval:answer-quality -- --run-id rr-hard-anchor --manifest output/answer-quality/manifests/rr-hard-anchor.json --model gpt-6-luna --excerpt-cap 10 --arm A --arm B --repeat 6 --max-cost-usd 6
+
+> thejudge@0.0.1 eval:answer-quality
+> tsx scripts/eval-answer-quality.mjs --run-id rr-hard-anchor --manifest output/answer-quality/manifests/rr-hard-anchor.json --model gpt-6-luna --excerpt-cap 10 --arm A --arm B --repeat 6 --max-cost-usd 6
+
+Experiment run plan (no provider request has been made):
+
+  Run id: rr-hard-anchor  ->  /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-resolution-recipe-eval/output/answer-quality/runs/rr-hard-anchor/ (the committed apps/backend/src/eval/answer-quality/results.json is never read or written)
+  Cases: 6 from the manifest, each answered 6 times.
+  Answer-model lineup: gpt-6-luna
+  Judge model: gpt-6.1-sol
+  Excerpt caps: 10
+  Arms: A (A.1), B (B.1)
+  Calls: 72 answer calls, 72 lone judge calls,
+  0 blind-ranking calls (144 total, sequential).
+  Estimated cost: $0.84 (character-count estimate; the live run records its own actual cost).
+  Rates (USD per million tokens, input / output; re-check before spending):
+    gpt-4.1-mini: $0.4 / $1.6 -- check date: 2026-10-08
+    gpt-4.1: $2 / $8 -- check date: 2026-10-08
+    gpt-5-mini: $0.25 / $2 -- check date: 2026-10-08
+    gpt-5-nano: $0.05 / $0.4 -- check date: 2026-10-08
+    gpt-5: $1.25 / $10 -- check date: 2026-10-08
+    gpt-6-luna: $0.1 / $0.5 -- check date: 2026-10-08
+    gpt-6-sol: $2 / $10 -- check date: 2026-10-08
+    gpt-6.1-sol: $2 / $10 -- check date: 2026-10-08
+    gpt-6-astra: $10 / $50 -- check date: 2026-10-08
+  Spending cap: $6 (the run stops cleanly before passing it).
+
+Re-run with --confirm-live-calls to make the live provider calls.
+
+=== Step 3: dry run B — 46 diagnostic cases x arms A, B x 1 repeat ===
+
+$ npm run eval:answer-quality -- --run-id rr-diagnostic-anchor --manifest output/answer-quality/manifests/rr-diagnostic.json --model gpt-6-luna --excerpt-cap 10 --arm A --arm B --max-cost-usd 3
+
+> thejudge@0.0.1 eval:answer-quality
+> tsx scripts/eval-answer-quality.mjs --run-id rr-diagnostic-anchor --manifest output/answer-quality/manifests/rr-diagnostic.json --model gpt-6-luna --excerpt-cap 10 --arm A --arm B --max-cost-usd 3
+
+Experiment run plan (no provider request has been made):
+
+  Run id: rr-diagnostic-anchor  ->  /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-resolution-recipe-eval/output/answer-quality/runs/rr-diagnostic-anchor/ (the committed apps/backend/src/eval/answer-quality/results.json is never read or written)
+  Cases: 46 from the manifest, each answered 1 time.
+  Answer-model lineup: gpt-6-luna
+  Judge model: gpt-6.1-sol
+  Excerpt caps: 10
+  Arms: A (A.1), B (B.1)
+  Calls: 92 answer calls, 92 lone judge calls,
+  0 blind-ranking calls (184 total, sequential).
+  Estimated cost: $1.08 (character-count estimate; the live run records its own actual cost).
+  Rates (USD per million tokens, input / output; re-check before spending):
+    gpt-4.1-mini: $0.4 / $1.6 -- check date: 2026-10-08
+    gpt-4.1: $2 / $8 -- check date: 2026-10-08
+    gpt-5-mini: $0.25 / $2 -- check date: 2026-10-08
+    gpt-5-nano: $0.05 / $0.4 -- check date: 2026-10-08
+    gpt-5: $1.25 / $10 -- check date: 2026-10-08
+    gpt-6-luna: $0.1 / $0.5 -- check date: 2026-10-08
+    gpt-6-sol: $2 / $10 -- check date: 2026-10-08
+    gpt-6.1-sol: $2 / $10 -- check date: 2026-10-08
+    gpt-6-astra: $10 / $50 -- check date: 2026-10-08
+  Spending cap: $3 (the run stops cleanly before passing it).
+
+Re-run with --confirm-live-calls to make the live provider calls.
+
+=== Step 4: recorded Luna output tokens and judge cost (2026-10-09 paid runs) ===
+
+$ node PRD/work/resolution-recipe-eval/evidence/luna-token-stats.mjs ~/Coding/Projects/TheJudge-backups/answer-quality-paid-run-2026-10-09/answer-quality/runs
+
+Reads every <run>/calls.jsonl under that folder, keeps the last "record" line per
+record key, and filters to model "gpt-6-luna" with status "ok" (181 records, all in
+the three phase-4-* folders). Fields read from each record: outputTokens (reasoning
+tokens included, billed as output), reasoningTokens, judgeCostUsd, tier, latencyMs.
+
+run folders: phase-1-grader-check, phase-3-arms, phase-3-repeats, phase-4-arm-a, phase-4-best-arm, phase-4-repeats
+record lines: 713; distinct keys: 713
+gpt-6-luna, status ok, all tiers
+  outputTokens n=181 mean=322.906077 max=2026
+  reasoningTokens n=181 mean=217.911602 max=1872
+  judgeCostUsd n=181 mean=0.005394 max=0.009372
+gpt-6-luna, status ok, tier 3
+  outputTokens n=10 mean=1286.200000 max=2026
+  reasoningTokens n=10 mean=1107.900000 max=1872
+  judgeCostUsd n=10 mean=0.006447 max=0.008968
+phase-4-arm-a: gpt-6-luna, status ok
+  outputTokens n=126 mean=274.865079 max=1525
+  reasoningTokens n=126 mean=173.031746 max=1284
+  judgeCostUsd n=126 mean=0.005196 max=0.00867
+phase-4-best-arm: gpt-6-luna, status ok
+  outputTokens n=46 mean=326.847826 max=1693
+  reasoningTokens n=46 mean=223.086957 max=1552
+  judgeCostUsd n=46 mean=0.005771 max=0.009372
+phase-4-repeats: gpt-6-luna, status ok
+  outputTokens n=9 mean=975.333333 max=2026
+  reasoningTokens n=9 mean=819.777778 max=1872
+  judgeCostUsd n=9 mean=0.006238 max=0.00852
+latencyMs, gpt-6-luna ok, all tiers: n=181 max=22683
+latencyMs, gpt-6-luna ok, tier 3: n=10 median=13114.5 max=22683
