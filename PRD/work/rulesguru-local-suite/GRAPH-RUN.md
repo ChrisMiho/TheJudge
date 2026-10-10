@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-193032/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-implement PRD/work/rulesguru-local-suite/`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | 6 | gate-qc | sonnet | ok | `0 → 18` | PASS attempt 2, findings none — `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md`, commit `60955b1d`; findings 1–3 resolved; 19/19 diff lines exact; grep 251/251; 9 slots blank; no RulesGuru text; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs .gitignore` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/284 | 2026-10-10 |
 | 7 | gate-review | sonnet | ok | `0 → 16` | build half run `graph-20261010-205704`: claim commit `5ca804dc` on `thejudge-auto/rulesguru-local-suite-work` cut from `origin/main` `c6dec2ce` (docs PR #284 merge; kickoff worktree removed clean); `graph-gate-review` commit `714b5354`: 9 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; worktree porcelain empty | 2026-10-10 |
 | 8 | gate-qc | sonnet | failed | `0 → 28` | FAIL build-half re-grade at `c6dec2ce` (code PR #285 merged after this spec was written) — `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md`, commit `8476a3ef`, `STATUS.refining`, board row under refining; findings bookkeeping only: amendment-set grep 269 hits not 251 with shifted keys, 18 new no-change hits need rows, 3 rows with stale reasons, stale recipe-overlap prose (non-blocking); passed: 19/19 diff lines exact at `c6dec2ce`, added lines read correctly beside #285 wording, build-scope names present, 9/9 verdicts consistent, nothing outside the package changed, no suite content; README `## Preparation gate` FAIL written by the driver; loop 1 of 3 back to define | 2026-10-10 |
+| 9 | define | opus | ok | `0 → 55` | build-half refresh (gate-qc loop 1): commit `02a2cc5b`; amendment set rebuilt at `c6dec2ce`: 269 hits = 12 amend / 9 build / 248 no-change, 18 new no-change rows, rows 5/63/89 reasons updated, no hit needed an amendment; evidence `evidence/amendment-grep.cmd.txt`, `evidence/amendment-grep.hits.txt` (269 lines), `evidence/amendment-grep.mjs`; recipe-overlap prose updated to #285 merged at `81739f35`; corpus count bullet 400 → 416 at `c6dec2ce`; `STATUS.refined` only marker, board row under refined; `git diff --stat 714b5354 HEAD -- GATE-QUESTIONS.md intake` empty; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty | 2026-10-10 |
 
 ## Open gate
 
@@ -258,6 +259,28 @@ Privacy: this package concerns a local-only practice suite. Write no question or
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 150 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: the new hit count and split, the evidence file paths, whether any hit needed an amendment, the marker and board state, the commit SHA, and the push result.
+
+### gate-qc (build-half re-grade, attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite
+
+You are node 4 (`gate-qc`), attempt 2 of the build-half re-grade, run `graph-20261010-205704`, on branch `thejudge-auto/rulesguru-local-suite-work`. Invoke the `thejudge-quality-check` skill on `PRD/work/rulesguru-local-suite/` in its graph-controlled mode (no questions to the user, no approval pauses). Attempt 1 failed on bookkeeping findings 1 to 4 in `QUALITY-CHECK.md` (commit `8476a3ef`); `define` refreshed the brief at commit `02a2cc5b` (amendment set 269 hits, 12 amend / 9 build / 248 no-change; evidence under `evidence/amendment-grep.*`; recipe-overlap prose updated). `GATE-QUESTIONS.md` is unchanged since `graph-gate-review` (`714b5354`).
+
+Check directly at base `c6dec2ce`:
+1. Findings 1 to 4 are resolved: re-run the command in `evidence/amendment-grep.cmd.txt`, confirm the count, and confirm every hit has exactly one disposition row with a correct key and reason (spot-check the 18 new rows and rows 5, 63, 89).
+2. Every stable-ID diff's removed and context lines still match live `PRD/sections/` text word for word, and added lines read correctly beside the #285 wording.
+3. The build-scope names in the brief still exist; every verdict slot is answered and consistent with the brief.
+4. Nothing outside the package changed: `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` is empty.
+
+Write the report to `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md` (replace it, keeping a one-line history of earlier attempts). On FAIL set the status the skill names. Do not edit the brief or the questions file. The driver writes the README `## Preparation gate` section, so leave it alone.
+
+Privacy: this package concerns a local-only practice suite. Write no question or answer text from that source into any file, make no network request to it, and add nothing about how use of it was agreed beyond the words used with permission, local only.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
 
 ## Instruction ledger
 
