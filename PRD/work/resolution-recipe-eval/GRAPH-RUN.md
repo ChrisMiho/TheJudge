@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
-- Current node: `gate-review` (build half; docs PR #283 merged at `bcef4543`)
+- Current node: `gate-qc`
 - Next action: `/graph-implement PRD/work/resolution-recipe-eval/`
 - Build canary: `denied — graph tier armed (nohup true)` (build half, lock taken at the launch root)
 
@@ -20,6 +20,7 @@
 | 4 | gate-qc | sonnet | failed | `0 → 44` | FAIL attempt 1 — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `532b7129`, `STATUS.refining`; F1 blocking (cost anchor and reasoning-token figures cite no command or output), F2 blocking (Serra Angel not found — driver re-check: present as oracle `4b7ac066-e5c7-43e6-9e7e-2739b24a905d` via `apps/frontend/public/data/cardMetadata.json` cardId, so F2 reduces to F3), F3–F5 minor; diffs 33/33 lines match, grep 104/104 dispositioned, 16/16 references correct; loop 1 of 3 back to define | 2026-10-10 |
 | 5 | define | opus | ok | `0 → 93` | attempt 2 (gate-qc loop 1): commit `a5f98eec`; F1 dry-run command lines + `evidence/cost-anchor-dry-runs.txt` (re-run, same totals; no `--confirm-live-calls`), Luna figures sourced to backup `calls.jsonl` fields via `evidence/luna-token-stats.mjs` (two figures corrected: tier-3 judge $0.0064, hard-case median 13.1 s); F2/F3 oracle ids in all 16 G3 slots via `evidence/resolve-g3-cards.mjs` → `evidence/g3-card-ids.txt` (22 cards, 1 id each; Grizzly Bears resolved via `cardScanMap.json` because vanilla cards are absent from `cardMetadata.json`); F4 cross-ref fixed; F5 REQ-230/REQ-224 wording count-free + per-slot recommendations; diffs 33/33 lines still match; grep 104/104; `STATUS.refined`; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty | 2026-10-10 |
 | 6 | gate-qc | sonnet | ok | `0 → 17` | PASS attempt 2, findings none — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `efda9238`; F1–F5 resolved; 33/33 diff lines match; grep 104/104; 24 verdict slots blank; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/283 | 2026-10-10 |
+| 7 | gate-review | sonnet | ok | `0 → 15` | build half run `graph-20261010-200144`: claim commit `a1683a9d` on `thejudge-auto/resolution-recipe-eval-work` cut from `origin/main` `bcef4543` (kickoff worktree removed clean); `graph-gate-review` commit `2e4720cd`: 24 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty | 2026-10-10 |
 
 ## Open gate
 
@@ -201,6 +202,26 @@ You are the gate-resolution step of the build half (run `graph-20261010-200144`)
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: the verdict tally, the brief reconciliation list, the marker and board state, the commit SHA(s), and the push result.
+
+### gate-qc (build-half re-grade)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval
+
+You are node 4 (`gate-qc`), build-half re-grade, of run `graph-20261010-200144` on branch `thejudge-auto/resolution-recipe-eval-work`. Invoke the `thejudge-quality-check` skill on `PRD/work/resolution-recipe-eval/` in its graph-controlled mode (no questions to the user, no approval pauses). The owner accepted all 24 slots and `graph-gate-review` finalized them (commit `2e4720cd`, brief reconciliation none). Re-grade `DESIGN-BRIEF.md` and the finalized `GATE-QUESTIONS.md` against the current `origin/main` truth and return PASS or FAIL with a complete findings list.
+
+Check directly:
+1. Every stable-ID diff's removed and context lines still match live `PRD/sections/` text word for word at this branch's base (`bcef4543`, which includes PR #282).
+2. The brief's line-level grep still yields the hit count the brief states, each with a disposition row, at this base.
+3. Every verdict slot is answered and consistent with the brief.
+4. Nothing outside the package changed on this branch: `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` is empty.
+
+Write the report to `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md` (replace it, keeping a one-line history of the spec-forming attempts). On FAIL set the status the skill names. Do not edit the brief or the questions file. The driver writes the README `## Preparation gate` section, so leave it alone.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
 
 ## Instruction ledger
 
