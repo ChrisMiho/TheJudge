@@ -1,10 +1,11 @@
 # Graph run — rulesguru-local-suite
 
-- Run ID: `graph-20261010-193032`
+- Run ID: `graph-20261010-193032` (spec-forming half); build half `graph-20261010-205704` (lock pid 90418)
 - Profile: `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/rulesguru-local-suite`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rulesguru-local-suite`
+- Build canary: `denied — graph tier armed (nohup true)` (build half, lock taken at the launch root)
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-193032/`
 - Current node: `owner-action` (parked at gate-qc PASS)
 - Next action: `/graph-implement PRD/work/rulesguru-local-suite/`

@@ -19,4 +19,4 @@ Intake (evidence, not authority): `intake/GRAPH-BRIEF.md`, `intake/FINDINGS-fit.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/rulesguru-local-suite
+- Autonomous base: origin/main
