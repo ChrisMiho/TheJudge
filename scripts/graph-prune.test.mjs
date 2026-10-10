@@ -10,6 +10,7 @@ import {
   classifyLeftovers,
   formatReport,
   intakeRemovalPath,
+  orderDeletions,
   parseWorktreeList
 } from "./graph-prune.mjs"
 
@@ -257,6 +258,44 @@ test("graph-prune - formatReport - one line per item and a dry-run summary", () 
   )
   assert.doesNotMatch(formatReport(items, { apply: true }), /dry run/)
   assert.match(formatReport([]), /no leftovers found/)
+})
+
+// --- apply order -----------------------------------------------------------
+
+test("graph-prune - orderDeletions - removes a worktree before the branch it has checked out", () => {
+  // Branch-first failed every `-work` branch with "used by worktree" (seven
+  // recurrences, 2026-09-07 to 2026-10-07).
+  const items = classifyLeftovers({
+    branches: [
+      { name: `${PREFIX}slug-work`, merged: true },
+      { name: `${PREFIX}in-flight`, merged: false }
+    ],
+    worktrees: [{ path: ".worktrees/implement-slug", branch: `${PREFIX}slug-work`, merged: true, clean: true }],
+    intakeDirs: ["graph-20261010-000000"]
+  })
+  const ordered = orderDeletions(items)
+  assert.deepEqual(
+    ordered.map((item) => `${item.kind} ${item.name}`),
+    [
+      "worktree .worktrees/implement-slug",
+      `branch ${PREFIX}slug-work`,
+      `intake ${INTAKE_DIR}/graph-20261010-000000`
+    ]
+  )
+})
+
+test("graph-prune - orderDeletions - keeps only delete items and is stable within a kind", () => {
+  const items = classifyLeftovers({
+    branches: [
+      { name: `${PREFIX}b`, merged: true },
+      { name: `${PREFIX}a`, merged: true },
+      { name: `${PREFIX}kept`, merged: false }
+    ]
+  })
+  assert.deepEqual(
+    orderDeletions(items).map((item) => item.name),
+    [`${PREFIX}b`, `${PREFIX}a`]
+  )
 })
 
 // --- safety by construction ------------------------------------------------
