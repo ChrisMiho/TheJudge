@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # resolution-recipe-eval
 
@@ -23,7 +23,7 @@ Measure whether a layer-and-timing resolution recipe (eval-only arm R, amending 
 | D | `slice-d-game-fidelity.md` | Game-case request fidelity check | REQ-230 fidelity line | none | 5 | done |
 | E | `slice-e-strict-grading.md` | Strict grading revision | REQ-187 (G5) | none | 6 | done |
 | F | `slice-f-hard-cases.md` | Sixteen hard cases and the offline gate | REQ-224, REQ-185, G3-01..16 | B | 8 (1 manual) | done |
-| G | `slice-g-runbook-ship.md` | Runbook, truth sweep, ship gates | G4, final consistency | A to F | 7 (1 manual) | planned |
+| G | `slice-g-runbook-ship.md` | Runbook, truth sweep, ship gates | G4, final consistency | A to F | 7 (1 manual) | done |
 
 Paid-run runbook lands in `docs/eval/resolution-recipe/RUNBOOK.md` (slice G); cases in `apps/backend/src/eval/worked-solutions/` (slice F).
 

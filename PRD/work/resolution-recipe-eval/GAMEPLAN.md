@@ -60,11 +60,11 @@ F needs B's append command. G runs last.
 
 ## Verification checklist
 
-- [ ] `npm run test:scripts` green
-- [ ] `npm --workspace apps/backend run test` green for touched eval tests
-- [ ] `npm run typecheck` and `npm run lint` green
-- [ ] `npm run quality:check` green (slice G)
-- [ ] Dry run of the paid command prints calls and an estimate, spends nothing
-- [ ] `grep -rn "confirm-live-calls"` over this package's diff shows it only as a
+- [x] `npm run test:scripts` green (785 pass, 0 fail)
+- [x] `npm --workspace apps/backend run test` green for touched eval tests (`src/eval`: 12 files, 135 tests)
+- [x] `npm run typecheck` and `npm run lint` green (lint: 0 errors, 18 existing warnings, none in touched files)
+- [x] `npm run quality:check` green (slice G)
+- [x] Dry run of the paid command prints calls and an estimate, spends nothing
+- [x] `grep -rn "confirm-live-calls"` over this package's diff shows it only as a
       runbook step the owner runs, never in a verification command
-- [ ] `git diff origin/main --stat -- apps/backend/src/prompt` is empty
+- [x] `git diff origin/main --stat -- apps/backend/src/prompt` is empty
