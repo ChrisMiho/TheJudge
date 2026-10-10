@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rulesguru-local-suite](rulesguru-local-suite/) | Local-only RulesGuru practice suite: import, convert, suite and filter selection on the harness runs; brief + GATE-QUESTIONS (new REQ-232, two blockers); define attempt 2 fixed the three gate-qc attempt-1 findings, awaiting re-check |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rulesguru-local-suite](rulesguru-local-suite/) | Docs PR open: answer `GATE-QUESTIONS.md` (REQ-232 new, REQ-185, REQ-186, REQ-188, REQ-226, NFR-018, goals-and-non-goals, B1, B2). Merge it only after the resolution-recipe-eval code PR merges, so the build applies REQ-185 on top of the recipe's change |
 
 ## deferred
 

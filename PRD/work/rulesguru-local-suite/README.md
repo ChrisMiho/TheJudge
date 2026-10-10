@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # rulesguru-local-suite
 
@@ -13,9 +13,9 @@ Intake (evidence, not authority): `intake/GRAPH-BRIEF.md`, `intake/FINDINGS-fit.
 
 ## Preparation gate
 
-- Quality-check: FAIL
+- Quality-check: PASS
 - Checked artifact: `PRD/work/rulesguru-local-suite/DESIGN-BRIEF.md`
-- Findings: (1) GATE-QUESTIONS.md:129 abbreviates the removed system-map Answer-quality Summary line (`system-map.md:501`) instead of quoting it word for word, plus a readability note at :137-138 to drop; (2) GATE-QUESTIONS.md:67 says more about the permission than intake decision 2 allows; (3) the brief's name-lookup coverage numbers name files but no command or script. Full report: `QUALITY-CHECK.md`.
+- Findings: none (attempt 2, commit `60955b1d`; attempt 1 failed on three findings fixed by define attempt 2). Report: `QUALITY-CHECK.md`.
 
 ## Autonomous metadata
 
