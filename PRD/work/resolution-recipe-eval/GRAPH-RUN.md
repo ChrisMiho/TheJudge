@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
-- Current node: `review`
+- Current node: `close`
 - Next action: `/graph-implement PRD/work/resolution-recipe-eval/`
 - Build canary: `denied — graph tier armed (nohup true)` (build half, lock taken at the launch root); run `graph-20261010-200917` re-armed the same way, `denied — graph tier armed (nohup true)`
 
@@ -24,6 +24,7 @@
 | 8 | gate-qc | sonnet | ok | `0 → 18` | PASS build-half re-grade, findings none — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `831c0ee7`; 33/33 diff lines match at `bcef4543`; grep 104/104; 24/24 accept; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; README `## Preparation gate` PASS written by the driver | 2026-10-10 |
 | 9 | plan | sonnet | ok | `0 → 35` | commit `edf9e904` — `GAMEPLAN.md` + 7 slices with criteria files (A arm R 8; B manifests 6; C compare report 5; D game fidelity 5; E strict grading 6; F hard cases 8, manual F8; G runbook + ship 7, manual G7), all criteria `false`; Preparation gate PASS verified first; `STATUS.active` only marker; board row under active; runbook at `docs/eval/resolution-recipe/RUNBOOK.md`, no deliverable inside `PRD/work/`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-10 |
 | 10 | build | sonnet | ok | `0 → 292` | run `graph-20261010-200917`; code PR https://github.com/ChrisMiho/TheJudge/pull/285 (open, `thejudge-auto/resolution-recipe-eval-work → main`); slice commits A `a4db3115`, B `73dfc317`, C `99ff78f6`, D `dd5fca3a`, E `96691614`, F `46f4fc7a`, G `e1467adb`; 45/45 criteria `true` (self-reported: the hook reads criteria from the launch checkout, which holds no slice criteria files, so no evidence was logged — review re-verifies); `STATUS.ship-ready` only marker; builder reports `npm run quality:check` exit 0 on `e1467adb`; return-side checks: launch `git status --porcelain` identical before/after (`diff` clean), `classifyBuildWrites` over `git diff --name-only origin/main...HEAD` (62 files) → ok, 0 outside; `git diff --stat origin/main -- apps/backend/src/prompt apps/backend/src/routes apps/backend/src/providers` empty; no `--confirm-live-calls`; deviation (mechanics, not denied): Bash heredocs used for edits in slices A and C; out-of-repo scratch only (session scratchpad, one `/tmp/qc.txt`) | 2026-10-10 |
+| 11 | review | opus | ok | `0 → 57` | APPROVE, 45/45 criteria re-verified independently, 0 Critical / 0 Important / 4 Minor; no-write `Plan`-type subagent at head `ae2c6395`; re-ran `npm run test:scripts` (785 pass), `npm --workspace apps/backend run test -- src/eval` (135 pass), `npm run typecheck`, `node scripts/diagnostic-arms-check.mjs` (62 cases, 0 problems), `npm run eval:answer-quality:manifests -- --check` (exit 0), F6 dry run `rr-hard-review-dry` (216 answer + 216 judge calls, $2.56, no `--confirm-live-calls`), `npm run quality:check` (exit 0); F8 scripted over all 16 cases, 0 differences; FR edits checked line by line against the five accepted blocks; worktree porcelain empty after. Minor: (1) `scripts/eval-answer-compare.mjs:92` saved compare file name ignores arm and repeats, so RUNBOOK Step 4's four `rr-hard rr-hard` compares overwrite one saved file (printed output correct); (2) `apps/backend/src/eval/rules-gate/stateFacts.ts:145-153` any-block match, not one-to-one pairing; (3) `scripts/lib/diagnostic-arms.test.mjs:319` title names R but body has no R assertion; (4) `scripts/lib/answer-compare.mjs:384` noise-floor label on overlapping repeat selections. Driver then posted the missing `thejudge-auto:v1:registered:resolution-recipe-eval` comment (https://github.com/ChrisMiho/TheJudge/pull/285#issuecomment-6102029388) and set the title to `[THEJUDGE-AUTO][READY]` | 2026-10-10 |
 
 ## Open gate
 
@@ -350,6 +351,24 @@ Severity rule: Critical or Important is reserved for a gap that breaks correctne
 Leave the worktree as you found it: if a command rewrites a tracked file, say which, and report `git status --porcelain` at the end. Spawn no subagents; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: verdict APPROVE or CHANGES REQUESTED; per criterion id, verified or not with the command or file you used; findings as Critical, Important or Minor, each with file and line and the criterion it breaks; the final `git status --porcelain`.
+
+### close
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval
+
+You are node 8 (`close`) of run `graph-20261010-200917` for `PRD/work/resolution-recipe-eval/`, on branch `thejudge-auto/resolution-recipe-eval-work`. Invoke the `thejudge-cleanup` skill in its graph-controlled mode and take the PR-ready path: code PR https://github.com/ChrisMiho/TheJudge/pull/285 is open (head `thejudge-auto/resolution-recipe-eval-work`, base `main`), registered by the comment carrying `thejudge-auto:v1:registered:resolution-recipe-eval`. Review (node 7) approved with 0 Critical and 0 Important findings.
+
+Do, per the skill:
+1. Run the four PR-ready checks in order (branch and HEAD equal `origin/thejudge-auto/resolution-recipe-eval-work` after `git fetch origin`; PR open with that head and base `main`; `STATUS.ship-ready` with all 45 criteria `true`, read from the files; runtime-cleanup criteria, of which this package has none because it ran no dev server or browser). Any failure ends the node `failed` with the exact unmet condition.
+2. Confirm the durable `PRD/sections/` truth build applied (REQ-230, REQ-228, REQ-187, REQ-224, REQ-185 in `PRD/sections/functional-requirements.md`) is present; promote only a leftover, never re-write.
+3. Write the receipt under `PRD/instructions/receipts/` named `resolution-recipe-eval-2026-10-10.md`, with the plain-language opening block, a `- PR:` line for #285, the `## Graph run` section folding this ledger's `## Node ledger` and `## Instruction ledger` verbatim, the `## Intake` section, and the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/285`. Record review's four Minor findings (listed in node-ledger row 11) as follow-ups, and note that the owner's paid run and `docs/eval/resolution-recipe/REPORT.md` come after the merge, per the runbook.
+4. Strip the board row from `PRD/work/STATUS.md`, `git rm -r PRD/work/resolution-recipe-eval/`, apply any `system-map.md` flip the skill requires, then commit and push on the branch without force. Remove no worktree and no branch.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>` or `git rm -r <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). Never force-push. End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Never merge or close the PR. Spawn no subagents or forks; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: each PR-ready check result, the receipt path, the commit SHA(s), the push result, and `git status --porcelain` at the end.
 
 ## Instruction ledger
 
