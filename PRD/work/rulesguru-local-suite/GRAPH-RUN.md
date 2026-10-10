@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-193032/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/rulesguru-local-suite/`
 
 ## Node ledger
@@ -24,6 +24,7 @@
 | 8 | gate-qc | sonnet | failed | `0 → 28` | FAIL build-half re-grade at `c6dec2ce` (code PR #285 merged after this spec was written) — `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md`, commit `8476a3ef`, `STATUS.refining`, board row under refining; findings bookkeeping only: amendment-set grep 269 hits not 251 with shifted keys, 18 new no-change hits need rows, 3 rows with stale reasons, stale recipe-overlap prose (non-blocking); passed: 19/19 diff lines exact at `c6dec2ce`, added lines read correctly beside #285 wording, build-scope names present, 9/9 verdicts consistent, nothing outside the package changed, no suite content; README `## Preparation gate` FAIL written by the driver; loop 1 of 3 back to define | 2026-10-10 |
 | 9 | define | opus | ok | `0 → 55` | build-half refresh (gate-qc loop 1): commit `02a2cc5b`; amendment set rebuilt at `c6dec2ce`: 269 hits = 12 amend / 9 build / 248 no-change, 18 new no-change rows, rows 5/63/89 reasons updated, no hit needed an amendment; evidence `evidence/amendment-grep.cmd.txt`, `evidence/amendment-grep.hits.txt` (269 lines), `evidence/amendment-grep.mjs`; recipe-overlap prose updated to #285 merged at `81739f35`; corpus count bullet 400 → 416 at `c6dec2ce`; `STATUS.refined` only marker, board row under refined; `git diff --stat 714b5354 HEAD -- GATE-QUESTIONS.md intake` empty; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty | 2026-10-10 |
 | 10 | gate-qc | sonnet | ok | `0 → 19` | PASS build-half re-grade attempt 2, findings none — `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md`, commit `9face57d`; findings 1–4 resolved; amendment grep 269 hits re-run, keys equal `evidence/amendment-grep.hits.txt`; 19/19 diff lines exact at `c6dec2ce`; build-scope names present; 9/9 accept consistent; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; `STATUS.refined`; README `## Preparation gate` PASS written by the driver | 2026-10-10 |
+| 11 | plan | sonnet | ok | `0 → 31` | commit `0d2538dd` — `GAMEPLAN.md` + 6 slices with criteria files (A folder/ignore/guards/loader 10; B import and purge 10; C lookup/headers/convert 10; D retrieval check 8; E answer run 11, manual E9; F PRD apply/README/promotion 11, manual F8), all criteria `false`; Preparation gate PASS verified first; `STATUS.active` only marker; board row under active; ignore line and REQ-232 in slice A before import code; no deliverable inside `PRD/work/` (driver grep of GAMEPLAN and slices); `--confirm-live-calls` appears only as refusal tests (E criteria); `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; worktree porcelain empty | 2026-10-10 |
 
 ## Open gate
 
@@ -304,6 +305,35 @@ Privacy: this package concerns a local-only practice suite. Write no question or
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: the slice list (letter, title, criteria count, manual criteria), where every deliverable lands, the marker and board state, the commit SHA, and the push result.
+
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite
+
+You are node 6 (`build`) of run `graph-20261010-205704` for `PRD/work/rulesguru-local-suite/`. Shared branch: `thejudge-auto/rulesguru-local-suite-work` — the worktree above is already checked out on it, cut from `origin/main` `c6dec2ce` and pushed; confirm with `git branch --show-current` before anything else. Invoke the `thejudge-implement-all` skill in its graph-controlled mode (no questions to the user, no approval pauses; any stop ends the node `failed` with evidence) and complete slices A to F in the GAMEPLAN order (A first; B and C after A; D after C; E after D; F last).
+
+Setup: this worktree is fresh and has no `node_modules`. Run `npm ci` at the worktree root before the first test. A linked worktree also lacks gitignored caches such as `apps/backend/data/models/`; if a step genuinely needs one, copy it from `/Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/models/` into this worktree (reading the launch checkout is fine; writing to it is not).
+
+Scope:
+- Work only inside the worktree above. The package lives at its `PRD/work/rulesguru-local-suite/`; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` or anywhere else in the launch checkout. Report every path you wrote as an absolute path.
+- Apply each accepted `PRD/sections/` block exactly once, by intent against current truth, in the slice the GAMEPLAN names, committed with that slice's code. `GATE-QUESTIONS.md` (all 9 slots accepted) and `DESIGN-BRIEF.md` are the source.
+- Never run the real import, convert or suite run against the live source; make no network request to it and no live OpenAI call; never pass `--confirm-live-calls` except inside a test with an injected fake client. Tests use injected fetch, clock and client, invented questions, and temporary folders. Never read `.secrets/`.
+- Nothing under `apps/backend/src/prompt/`, routes, or providers changes.
+- If a product question arises that the brief and the accepted slots do not answer, apply the assumption ladder in `PRD/instructions/preparation-contract.md` to that one question; if it does not resolve, end the node `failed` with the question as evidence. Do not decide product behavior.
+- Open the code PR with `gh pr create --base main --head thejudge-auto/rulesguru-local-suite-work` after the first slice push, titled `[THEJUDGE-AUTO][IN PROGRESS] RulesGuru local practice suite (rulesguru-local-suite)`. Its body starts with the line `<!-- thejudge-auto:v1:registered:rulesguru-local-suite -->`, then the plain-language block from `PRD/instructions/plain-language-standard.md` (what a player sees: nothing; this adds owner-only tooling for a private, local practice suite), and ends with the line `🤖 Generated with [Claude Code](https://claude.com/claude-code)`. When every slice is done, set the title prefix to `[THEJUDGE-AUTO][READY]`. Never merge or close it.
+
+Privacy: this package concerns a local-only practice suite. Write no question or answer text from that source into any file, commit, PR body, or comment, and add nothing about how use of it was agreed beyond the words used with permission, local only. Synthetic test questions must be invented, not copied.
+
+Criteria:
+- Known gap: the boundary hook reads criteria from the launch checkout, which has no slice criteria files, so it logs no evidence and does not guard your flips. Your criteria are self-reported. For each criterion, issue its evidence command in a form its `evidence.command` regex matches, read the real output, and only then set it `true`. A failing command is not evidence. Record the exact command and a one-line result per criterion in the slice doc's notes, so review can re-run it.
+- Manual criteria E9 and F8: do the check yourself (E9: confirm from your own command history that no live call or real fetch ran in verification; F8: read the full branch diff and confirm it carries no suite question or answer text), then write a dated observation line in the slice doc of the form `2026-10-10 E9 — <what you checked and found>`.
+- Report `ok` only when every criterion in every `slice-*.criteria.json` is `true`, `npm run quality:check` is green on the final commit, and the package is `STATUS.ship-ready` with the board row under ship-ready.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). Never force-push. End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; no sleeping or polling; run no dev server or browser. A script that rewrites a tracked result file must not leave it dirty unless the slice intends the change. Prettier governs only JSON and YAML here: never run prettier on `.ts` or `.mjs`; run `npm run format` for JSON a script wrote. Stay well under 4000 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: per slice — status, commit SHA, criteria true/total; every path written (absolute); the PR URL; the final `npm run quality:check` result; anything left unresolved.
 
 ## Instruction ledger
 
