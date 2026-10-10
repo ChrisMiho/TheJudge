@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/resolution-recipe-eval`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-resolution-recipe-eval`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/resolution-recipe-eval/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 6` | branch `thejudge-auto/resolution-recipe-eval` pushed from `.worktrees/kickoff-resolution-recipe-eval` at `dabad406` (`git ls-remote --heads origin thejudge-auto/resolution-recipe-eval`); lock `.worktrees/.graph-run.lock` pid 81708; launch checkout untouched (porcelain unchanged, still on `main`) | 2026-10-10 |
 | 2 | shape | sonnet | ok | `0 → 13` | `PRD/work/resolution-recipe-eval/` (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md byte-identical to the staged copy, `cmp` clean); commit `96eb39d4`; 3 prior-run receipts in IDEA.md; node removed the staged copy after committing it (the committed `intake/` copy is the record) | 2026-10-10 |
+| 3 | define | opus | ok | `0 → 118` | `PRD/work/resolution-recipe-eval/DESIGN-BRIEF.md`, `PRD/work/resolution-recipe-eval/GATE-QUESTIONS.md` (5 stable-ID slots REQ-230, REQ-228, REQ-187, REQ-224, REQ-185 + blocker slots G1, G2, G3-01..G3-16, G4, G5→REQ-187), `STATUS.refined`; commit `a9daa27f`; 104-hit line-level grep with dispositions in the brief (10 amend / 20 build / 74 keep); `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty; dry-run anchor $0.0117 per graded answer (gitignored `output/` only); driver spot-checked the nine reference outcomes against CR 613.4b/c, 613.8, 707.2, 603.3b, 616.1 | 2026-10-10 |
 
 ## Open gate
 
@@ -89,6 +90,28 @@ Outputs:
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 150 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: the files written, the commit SHA(s), the push result, the stable-ID slots and blocker-question slots (one line each), the proposed hard case list, the dry-run cost anchor, and the grep hit count with its dispositions.
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-resolution-recipe-eval
+
+You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261010-183425`. Invoke the `thejudge-quality-check` skill on `PRD/work/resolution-recipe-eval/` and follow it in its graph-controlled mode: no questions to the user, no approval pauses. Grade `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` against PRD alignment and agent-readiness and return PASS or FAIL with a complete findings list.
+
+Check directly, at least:
+1. Every stable-ID block in `GATE-QUESTIONS.md` (REQ-230, REQ-228, REQ-187, REQ-224, REQ-185): its removed and context lines match the live `PRD/sections/` text word for word, and it carries the three-line plain-language opening plus a blank `- Verdict:` / `- Reason:` slot.
+2. The brief's line-level grep: re-run it and confirm every hit has a disposition row and the count matches.
+3. The blocker questions (G1, G2, G3-01 to G3-16, G4, G5) each recommend without deciding, and leave the slot blank.
+4. Each G3 reference outcome is correct under the cited rule text in `apps/backend/data/gameRulesRuleIndex.json` and the committed card oracle text, and carries no side error of its own.
+5. The design stays eval-only (no change under `apps/backend/src/prompt/`, routes or providers), never tags cards with layers in code, puts any deliverable that must survive under `docs/eval/` rather than `PRD/work/`, and caps every live run at `--max-cost-usd` 15 or less.
+6. Numbers in the brief (cost anchor, repeat count) trace to a command or record named in the brief.
+
+Write the report to `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`. On FAIL set the status the skill names. Do not edit the brief or the questions file yourself. The driver writes the README `## Preparation gate` section, so leave it alone.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
 
 ## Instruction ledger
 
