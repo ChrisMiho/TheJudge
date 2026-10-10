@@ -14,9 +14,21 @@
 // and the selection rule. A sample size may differ from its default only with a
 // reason, which the files and this command's output record.
 //
-//   npm run eval:answer-quality:manifests               # (re)writes both files
-//   npm run eval:answer-quality:manifests -- --check    # exits 1 if they would change
+//   npm run eval:answer-quality:manifests               # (re)writes both files, keeping every appended group
+//   npm run eval:answer-quality:manifests -- --check    # verifies the committed files; exits 1 on a problem, prints re-draw drift
 //   npm run eval:answer-quality:manifests -- --seed 7 --held-out 60 --reason "..."
+//   npm run eval:answer-quality:manifests -- --append-diagnostic a,b,c --group <name> --reason "..."
+//
+// `--check` does not re-draw: it fails, naming each problem, when a listed case is missing,
+// not approved, stale, or no longer matches its listed question or reference-answer hash, or
+// when the two manifests share a case. It also prints, without failing, how many cases a fresh
+// seeded draw from the current corpus would change (drift).
+//
+// `--append-diagnostic` adds named approved cases to the committed diagnostic manifest as a
+// recorded group (case ids with their hashes, the date, the reason), outside the seeded
+// selection. It refuses a case that is not approved, is stale, is in the held-out manifest or is
+// already in the diagnostic manifest, and never touches the held-out file. A later re-draw keeps
+// every appended group.
 //
 // It can also write a run manifest for a paid phase without touching the committed
 // files (the path must be under output/, which is gitignored):
@@ -146,7 +158,7 @@ export function selectHeldOut({ approvedCases, excludeIds, seed, size }) {
 }
 
 /** Builds both manifest objects. Pure: the same inputs give the same bytes. */
-export function buildManifests({ approvedCases, classes, seed = DEFAULT_SEED, sizes = DEFAULT_SIZES, reason = null }) {
+export function buildManifests({ approvedCases, classes, seed = DEFAULT_SEED, sizes = DEFAULT_SIZES, reason = null, appendedGroups = [] }) {
   const changed = Object.entries(DEFAULT_SIZES).filter(([key, value]) => sizes[key] !== value);
   if (changed.length > 0 && !reason) {
     throw new Error(`A sample size differs from its default (${changed.map(([key]) => key).join(", ")}): record why with --reason "<why>".`);
@@ -154,13 +166,19 @@ export function buildManifests({ approvedCases, classes, seed = DEFAULT_SEED, si
   const sizeChange = changed.length > 0 ? { reason, from: Object.fromEntries(changed.map(([key]) => [key, DEFAULT_SIZES[key]])), to: Object.fromEntries(changed.map(([key]) => [key, sizes[key]])) } : null;
 
   const diagnostic = selectDiagnostic({ approvedCases, classes, seed, noneSample: sizes.diagnosticNone, fullSample: sizes.diagnosticFull });
+  // Appended groups stay in the diagnostic manifest as recorded, outside the seeded selection, and their
+  // cases leave the held-out pool so the two sets stay disjoint.
+  const appendedEntries = appendedGroups.flatMap((group) => group.cases);
   const heldOut = selectHeldOut({
     approvedCases,
-    excludeIds: new Set(diagnostic.cases.map((caseEntry) => caseEntry.id)),
+    excludeIds: new Set([...diagnostic.cases.map((caseEntry) => caseEntry.id), ...appendedEntries.map((entry) => entry.id)]),
     seed,
     size: sizes.heldOut
   });
-  const header = (kind, rule, selection) => ({
+  const diagnosticEntries = new Map(diagnostic.cases.map((caseEntry) => [caseEntry.id, manifestEntryFor(caseEntry)]));
+  for (const entry of appendedEntries) diagnosticEntries.set(entry.id, entry);
+  const diagnosticCases = [...diagnosticEntries.values()].sort((a, b) => a.id.localeCompare(b.id));
+  const header = (kind, rule, selection, caseCount = selection.caseCount) => ({
     formatVersion: MANIFEST_FORMAT_VERSION,
     kind,
     seed,
@@ -168,12 +186,13 @@ export function buildManifests({ approvedCases, classes, seed = DEFAULT_SEED, si
     selectionRule: rule,
     sampleSizeChange: sizeChange,
     selection,
-    caseCount: selection.caseCount
+    caseCount
   });
   return {
     diagnostic: {
-      ...header("diagnostic", DIAGNOSTIC_RULE, { ...diagnostic.counts, caseCount: diagnostic.cases.length }),
-      cases: diagnostic.cases.map(manifestEntryFor)
+      ...header("diagnostic", DIAGNOSTIC_RULE, { ...diagnostic.counts, caseCount: diagnostic.cases.length }, diagnosticCases.length),
+      ...(appendedGroups.length > 0 ? { appendedGroups } : {}),
+      cases: diagnosticCases
     },
     heldOut: {
       ...header("held-out", HELD_OUT_RULE, { ...heldOut.counts, caseCount: heldOut.cases.length }),
@@ -189,10 +208,12 @@ async function formatJson(value, filePath) {
 }
 
 export function parseManifestArgs(argv) {
-  const parsed = { check: false, seed: DEFAULT_SEED, sizes: { ...DEFAULT_SIZES }, reason: null, emit: null, from: [], ids: null, exclude: [] };
+  const parsed = { check: false, seed: DEFAULT_SEED, sizes: { ...DEFAULT_SIZES }, reason: null, emit: null, from: [], ids: null, exclude: [], append: null, group: null };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--check") parsed.check = true;
+    else if (arg === "--append-diagnostic") parsed.append = String(argv[++i] ?? "").split(",").filter(Boolean);
+    else if (arg === "--group") parsed.group = argv[++i];
     else if (arg === "--emit") parsed.emit = argv[++i];
     else if (arg === "--from") parsed.from.push(argv[++i]);
     else if (arg === "--ids") parsed.ids = String(argv[++i] ?? "").split(",").filter(Boolean);
@@ -211,6 +232,13 @@ export function parseManifestArgs(argv) {
     const bad = parsed.from.filter((source) => !["approved", "diagnostic", "held-out"].includes(source));
     if (bad.length > 0) throw new Error(`--from names approved, diagnostic or held-out, not ${bad.join(", ")}.`);
     if (parsed.from.length === 0) parsed.from.push("approved");
+  }
+  if (parsed.append !== null) {
+    if (parsed.append.length === 0) throw new Error("--append-diagnostic needs the case ids to add, comma separated.");
+    if (!parsed.reason) throw new Error('--append-diagnostic needs --reason "<why these cases join the diagnostic set>".');
+    if (parsed.check || parsed.emit !== null) throw new Error("--append-diagnostic cannot be combined with --check or --emit.");
+  } else if (parsed.group !== null) {
+    throw new Error("--group belongs to --append-diagnostic.");
   }
   if (!Number.isInteger(parsed.seed)) throw new Error("--seed needs a whole number.");
   for (const [key, value] of Object.entries(parsed.sizes)) {
@@ -259,14 +287,138 @@ export function resolveEmitPath(path, root = repoRoot) {
   return resolved;
 }
 
+/** A committed manifest read back from its text; null when the file is missing or empty. */
+function parseCommitted(text) {
+  if (typeof text !== "string" || text.trim().length === 0) return null;
+  return JSON.parse(text);
+}
+
+/**
+ * The problems with the committed manifests, each naming the case (REQ-230): a listed case that is
+ * missing from the corpus, not approved, flagged stale, or whose question or reference-answer hash
+ * has moved, and a case both manifests list. Pure over the manifests and the corpus.
+ */
+export function verifyCommittedManifests({ diagnostic, heldOut, allCases, isStale = () => false }) {
+  const problems = [];
+  const byId = new Map(allCases.map((caseEntry) => [caseEntry.id, caseEntry]));
+  for (const [label, manifest] of [["diagnostic", diagnostic], ["held-out", heldOut]]) {
+    if (!manifest || !Array.isArray(manifest.cases)) {
+      problems.push(`the ${label} manifest is missing or has no case list`);
+      continue;
+    }
+    for (const entry of manifest.cases) {
+      const caseEntry = byId.get(entry.id);
+      if (!caseEntry) problems.push(`${label}: ${entry.id} is missing from the corpus`);
+      else if (caseEntry.review?.status !== "approved") problems.push(`${label}: ${entry.id} is not approved`);
+      else if (isStale(caseEntry)) problems.push(`${label}: ${entry.id} is flagged stale`);
+      else {
+        const current = manifestEntryFor(caseEntry);
+        if (current.questionSha256 !== entry.questionSha256) problems.push(`${label}: ${entry.id} no longer matches its listed question hash`);
+        if (current.answerSha256 !== entry.answerSha256) problems.push(`${label}: ${entry.id} no longer matches its listed reference-answer hash`);
+      }
+    }
+  }
+  if (diagnostic?.cases && heldOut?.cases) {
+    const diagnosticIds = new Set(diagnostic.cases.map((entry) => entry.id));
+    for (const entry of heldOut.cases) {
+      if (diagnosticIds.has(entry.id)) problems.push(`${entry.id} is listed in both the diagnostic and the held-out manifest`);
+    }
+  }
+  return problems;
+}
+
+/** One line: how many cases a fresh seeded draw from the current corpus would add and drop, per manifest. Information only. */
+function describeDrift({ committedDiagnostic, committedHeldOut, manifests }) {
+  const compare = (committed, fresh) => {
+    const had = new Set((committed?.cases ?? []).map((entry) => entry.id));
+    const would = new Set(fresh.cases.map((entry) => entry.id));
+    return { add: [...would].filter((id) => !had.has(id)).length, drop: [...had].filter((id) => !would.has(id)).length };
+  };
+  const d = compare(committedDiagnostic, manifests.diagnostic);
+  const h = compare(committedHeldOut, manifests.heldOut);
+  const total = d.add + d.drop + h.add + h.drop;
+  return (
+    `Drift (information only, not a failure): a fresh seeded draw from the current corpus would add ${d.add} and drop ${d.drop} diagnostic cases, ` +
+    `and add ${h.add} and drop ${h.drop} held-out cases${total === 0 ? " (no drift)" : ""}. The committed files stay as drawn; re-draw only deliberately.`
+  );
+}
+
+/**
+ * Adds approved cases to the diagnostic manifest as a recorded group, outside the seeded selection
+ * (REQ-230). Refuses, naming each, an id that is unknown, not approved, stale, held-out or already
+ * diagnostic. Returns the new diagnostic manifest; the held-out manifest is never an output.
+ */
+export function appendDiagnosticGroup({ diagnostic, heldOut, allCases, isStale = () => false, ids, reason, group = null, date }) {
+  const byId = new Map(allCases.map((caseEntry) => [caseEntry.id, caseEntry]));
+  const heldOutIds = new Set(heldOut.cases.map((entry) => entry.id));
+  const diagnosticIds = new Set(diagnostic.cases.map((entry) => entry.id));
+  const name = group ?? `appended-${date}`;
+  const problems = [];
+  if ((diagnostic.appendedGroups ?? []).some((existing) => existing.name === name)) problems.push(`a group named "${name}" already exists`);
+  const unique = [...new Set(ids)];
+  for (const id of unique) {
+    const caseEntry = byId.get(id);
+    if (!caseEntry) problems.push(`${id}: not in the corpus`);
+    else if (caseEntry.review?.status !== "approved") problems.push(`${id}: not approved`);
+    else if (isStale(caseEntry)) problems.push(`${id}: flagged stale (REQ-225)`);
+    else if (heldOutIds.has(id)) problems.push(`${id}: listed in the held-out manifest`);
+    else if (diagnosticIds.has(id)) problems.push(`${id}: already in the diagnostic manifest`);
+  }
+  if (problems.length > 0) throw new Error(`--append-diagnostic refuses (${problems.length}):\n  ${problems.join("\n  ")}`);
+  const entries = unique.sort().map((id) => manifestEntryFor(byId.get(id)));
+  const cases = [...diagnostic.cases, ...entries].sort((a, b) => a.id.localeCompare(b.id));
+  return {
+    ...diagnostic,
+    caseCount: cases.length,
+    appendedGroups: [...(diagnostic.appendedGroups ?? []), { name, date, reason, cases: entries }],
+    cases
+  };
+}
+
+/** `--append-diagnostic`: rewrites the diagnostic manifest only. */
+export async function runAppend({ argv, allCases, isStale = () => false, readExisting, write, log = console.log, root = repoRoot, today = () => new Date().toISOString().slice(0, 10) }) {
+  const args = parseManifestArgs(argv);
+  const diagnosticPath = resolve(root, DIAGNOSTIC_MANIFEST_RELATIVE_PATH);
+  const diagnostic = parseCommitted(await readExisting(diagnosticPath));
+  const heldOut = parseCommitted(await readExisting(resolve(root, HELD_OUT_MANIFEST_RELATIVE_PATH)));
+  if (!diagnostic || !heldOut) throw new Error("Both committed manifests must exist before cases are appended.");
+  const next = appendDiagnosticGroup({ diagnostic, heldOut, allCases, isStale, ids: args.append, reason: args.reason, group: args.group, date: today() });
+  await write(diagnosticPath, await formatJson(next, diagnosticPath));
+  const group = next.appendedGroups.at(-1);
+  log(`Appended ${group.cases.length} cases to the diagnostic manifest as group "${group.name}" (${group.date}); it now lists ${next.caseCount} cases. The held-out manifest is unchanged.`);
+  return { diagnostic: next, group };
+}
+
 /** Generates (or checks) both files. `traced` is the evidence trace over the approved cases. */
-export async function runManifests({ argv = [], approvedCases, traced, write, readExisting, log = console.log, root = repoRoot }) {
+export async function runManifests({
+  argv = [],
+  approvedCases,
+  allCases = approvedCases,
+  isStale = () => false,
+  traced,
+  write,
+  readExisting,
+  log = console.log,
+  root = repoRoot
+}) {
   const args = parseManifestArgs(argv);
   const classes = classifyFromTrace(traced);
-  const manifests = buildManifests({ approvedCases, classes, seed: args.seed, sizes: args.sizes, reason: args.reason });
+  const diagnosticPath = resolve(root, DIAGNOSTIC_MANIFEST_RELATIVE_PATH);
+  const heldOutPath = resolve(root, HELD_OUT_MANIFEST_RELATIVE_PATH);
+  const committedDiagnostic = parseCommitted(await readExisting(diagnosticPath));
+  const committedHeldOut = parseCommitted(await readExisting(heldOutPath));
+  // A re-draw keeps every appended group of the committed diagnostic manifest (REQ-230).
+  const manifests = buildManifests({
+    approvedCases,
+    classes,
+    seed: args.seed,
+    sizes: args.sizes,
+    reason: args.reason,
+    appendedGroups: committedDiagnostic?.appendedGroups ?? []
+  });
   const targets = [
-    [resolve(root, DIAGNOSTIC_MANIFEST_RELATIVE_PATH), manifests.diagnostic],
-    [resolve(root, HELD_OUT_MANIFEST_RELATIVE_PATH), manifests.heldOut]
+    [diagnosticPath, manifests.diagnostic],
+    [heldOutPath, manifests.heldOut]
   ];
   const outputs = [];
   for (const [path, value] of targets) outputs.push({ path, value, text: await formatJson(value, path) });
@@ -281,15 +433,14 @@ export async function runManifests({ argv = [], approvedCases, traced, write, re
   );
 
   if (args.check) {
-    const stale = [];
-    for (const { path, text } of outputs) {
-      if ((await readExisting(path)) !== text) stale.push(path);
+    // Verify what is committed; the fresh draw is information only (drift), because a corpus refresh moves it.
+    const problems = verifyCommittedManifests({ diagnostic: committedDiagnostic, heldOut: committedHeldOut, allCases, isStale });
+    if (problems.length > 0) {
+      throw new Error(`The committed manifests have ${problems.length} problem${problems.length === 1 ? "" : "s"}:\n  ${problems.join("\n  ")}`);
     }
-    if (stale.length > 0) {
-      throw new Error(`The committed manifests differ from a fresh seeded run: ${stale.join(", ")}. Re-run ${MANIFEST_COMMAND} and commit the result.`);
-    }
-    log("Check passed: re-running the seeded command reproduces both committed files byte for byte.");
-    return { manifests, outputs, checked: true };
+    const drift = describeDrift({ committedDiagnostic, committedHeldOut, manifests });
+    log(`Check passed: every case the committed manifests list is present, approved, current and matches its hashes, and the two sets are apart.\n${drift}`);
+    return { manifests, outputs, checked: true, drift };
   }
   for (const { path, text } of outputs) await write(path, text);
   log(`Wrote ${outputs.map(({ path }) => path).join(" and ")}.`);
@@ -301,8 +452,22 @@ async function main() {
   const parsedArgs = parseManifestArgs(process.argv.slice(2));
   const { buildTrace, PRODUCTION_CAP } = await import("./lib/evidence-trace.mjs");
   const { defaultTraceDeps } = await import("./eval-evidence-trace.mjs");
-  const { loadGoldCases } = await import("./lib/gold-cases.mjs");
-  const approvedCases = (await loadGoldCases()).filter((caseEntry) => caseEntry.review.status === "approved");
+  const { compareSnapshot, loadGoldCases, loadSnapshotSources } = await import("./lib/gold-cases.mjs");
+  const allCases = await loadGoldCases();
+  const approvedCases = allCases.filter((caseEntry) => caseEntry.review.status === "approved");
+  const sources = await loadSnapshotSources();
+  const isStale = (caseEntry) => compareSnapshot(caseEntry, sources).stale;
+  const readExisting = async (path) => readFile(path, "utf8").catch(() => "");
+  if (parsedArgs.append !== null) {
+    await runAppend({
+      argv: process.argv.slice(2),
+      allCases,
+      isStale,
+      readExisting,
+      write: async (path, text) => writeFile(path, text, "utf8")
+    });
+    return;
+  }
   if (parsedArgs.emit !== null) {
     const readIds = async (relativePath) => JSON.parse(await readFile(resolve(repoRoot, relativePath), "utf8")).cases.map((entry) => entry.id);
     const manifest = buildEmitManifest({
@@ -339,8 +504,10 @@ async function main() {
   await runManifests({
     argv: process.argv.slice(2),
     approvedCases,
+    allCases,
+    isStale,
     traced,
-    readExisting: async (path) => readFile(path, "utf8").catch(() => ""),
+    readExisting,
     write: async (path, text) => {
       await mkdir(dirname(path), { recursive: true });
       await writeFile(path, text, "utf8");

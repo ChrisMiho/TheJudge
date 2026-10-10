@@ -1,6 +1,6 @@
 # Slice B — Manifests: recorded append and verifying check
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -17,12 +17,20 @@ instead of failing on a fresh draw.
 
 ## Acceptance criteria
 
-- [ ] Append of an approved id adds a group with its reason and leaves the held-out manifest byte-identical (test)
-- [ ] Append refuses a held-out id and refuses a non-approved id (tests)
-- [ ] A re-draw keeps appended groups (test)
-- [ ] `--check` exits 0 on the committed files and prints drift as information (test, plus a run on the repo)
-- [ ] The test formerly named for byte-for-byte reproduction is renamed to the verification meaning
-- [ ] The REQ-230 appended-group and `--check` lines match the accepted block
+- [x] Append of an approved id adds a group with its reason and leaves the held-out manifest byte-identical (test)
+- [x] Append refuses a held-out id and refuses a non-approved id (tests)
+- [x] A re-draw keeps appended groups (test)
+- [x] `--check` exits 0 on the committed files and prints drift as information (test, plus a run on the repo)
+- [x] The test formerly named for byte-for-byte reproduction is renamed to the verification meaning
+- [x] The REQ-230 appended-group and `--check` lines match the accepted block
+
+## Notes (evidence, re-runnable)
+
+- B1, B2, B3: `node --test scripts/build-answer-quality-manifests.test.mjs` -> 14 pass, 0 fail (append, refusals, re-draw keeps groups, check pass and fail tests).
+- B4: `npm run eval:answer-quality:manifests -- --check` -> "Check passed: every case the committed manifests list is present, approved, current and matches its hashes, and the two sets are apart." then "Drift (information only, not a failure): ... would add 22 and drop 23 diagnostic cases, and add 42 and drop 42 held-out cases." Exit 0; committed manifests unchanged.
+- B5: the last committed-manifests test in `scripts/build-answer-quality-manifests.test.mjs` now names verification, not byte-for-byte reproduction.
+- B6: REQ-230 in `PRD/sections/functional-requirements.md` carries the seeded-command line, the `--append-diagnostic` line, the `--check` line and the 2026-10-10 re-draw note, as accepted.
+- The default group name when `--group` is omitted is `appended-<date>`; the build uses `--group resolution-recipe-hard-set` (slice F).
 
 ## Verification
 

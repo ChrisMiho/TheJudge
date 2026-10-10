@@ -269,7 +269,11 @@ touches `results.json`.
   `manifests/held-out.json` (case ids and hashes only, written by
   `npm run eval:answer-quality:manifests`) fence them: C and D run only on the diagnostic set,
   B, P and R also on the held-out set once frozen, and a later fix is judged once on the
-  held-out set.
+  held-out set. The seeded sets stay as drawn: `-- --check` verifies the committed files (every
+  listed case present, approved, current, hashes matching, the two sets apart) and prints how
+  far a fresh draw would drift without failing; `-- --append-diagnostic <ids> --reason <text>`
+  adds approved cases to the diagnostic set as a recorded group (ids, hashes, date, reason) and
+  never touches the held-out file; a re-draw keeps every appended group.
 
 None of these is a build gate. The findings and the owner's runbook for the paid phases are
 in `docs/eval/answer-quality-investigation/`.
