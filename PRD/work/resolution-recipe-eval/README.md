@@ -7,3 +7,8 @@ Measure whether a layer-and-timing resolution recipe (eval-only arm R, amending 
 - Idea: `IDEA.md`
 - Intake (verbatim, evidence only): `intake/GRAPH-BRIEF.md`
 - Next: `thejudge-refinement PRD/work/resolution-recipe-eval/`
+- Graph run ledger: `GRAPH-RUN.md`
+
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/resolution-recipe-eval
