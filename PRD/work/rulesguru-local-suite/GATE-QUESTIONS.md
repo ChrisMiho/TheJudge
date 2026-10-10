@@ -134,8 +134,8 @@ one closing sentence at its end; `Lives in` and `Backed by` gain the suite:
 +- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190, REQ-226, REQ-227, REQ-228, REQ-229, REQ-230, REQ-232
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## REQ-185 — the rules test corpus says the local suite is not part of it
 
@@ -174,8 +174,8 @@ this too, so the two read the same way.
 +  - REQ-232 (the local practice suite kept apart from the corpus)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## REQ-186 — the judge may grade a suite answer against RulesGuru's answer, as agreement only
 
@@ -207,8 +207,8 @@ suite would work.
 +  - REQ-232 (the local practice-suite run, judged against an external answer)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## REQ-188 — the answer run's case selection names the suite run as its one exception
 
@@ -234,8 +234,8 @@ suite run; accept both or reject both.
 +  - REQ-232 (the local practice-suite run)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## REQ-226 — the suite run reuses the experiment machinery but is its own mode
 
@@ -264,8 +264,8 @@ both.
 +  - REQ-232 (the local practice-suite run that reuses this machinery)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## NFR-018 — the validation track gains the suite, outside every gate
 
@@ -302,8 +302,8 @@ and only `REQ-232` says it is never a gate.
 +  - REQ-232 (the local practice suite beside the corpus)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## goals-and-non-goals — "no automated answer gating" covers the suite
 
@@ -328,8 +328,8 @@ on automated answer-quality gating:
 +- automated answer-quality gating in `npm run quality:check`: combo enrichment's effect on answers is measured by an opt-in, human-reviewed live-provider A/B that never blocks a build (DEC-161), and the answer-quality baseline over the committed rules test corpus is the same shape — explicitly invoked, confirmation-gated, human-reviewed, never scheduled, never asserted against a golden, and never able to fail a build (NFR-018, REQ-185, REQ-188). The offline prompt checks over the same corpus (REQ-222, REQ-223) do gate; they check what reaches the prompt, never the answer. A local-only practice suite of RulesGuru questions (REQ-232) gates nothing: CI cannot see it, so neither its retrieval check nor its answer run is ever wired into a build
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## Blocker questions
 
@@ -360,8 +360,8 @@ proposed in the `REQ-185` block:
 **What happens if you say no:** the suite only reports. No committed case may
 be added because of a suite finding, and the line above is not added.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ### B2 — where the local folder lives
 
@@ -386,5 +386,5 @@ covers it and that git tracks nothing under it.
 that path as the single suite-folder constant, and keeps the refuse-unless-
 ignored check for any path inside the repo.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).

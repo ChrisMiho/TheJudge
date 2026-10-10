@@ -172,3 +172,4 @@ Report back: PASS or FAIL, the complete findings list, the commit SHA, and the p
 | --- | --- | --- | --- |
 | "can you manage this for me, and pause when you need my input" (2026-10-10, ordering the recipe test and the RulesGuru suite) | answered-once | shape | — |
 | "every piece of RulesGuru data stays on the owner's machine and is never committed" (intake decision 1) | answered-once | define | — |
+| "Accept all recommended" (owner's answer to all 9 GATE-QUESTIONS.md slots, given in session 2026-10-10; filled by the driver at the owner's request) | answered-once | define | — |
