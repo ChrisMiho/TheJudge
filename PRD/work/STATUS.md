@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| resolution-recipe-eval | Eval-only arm R (layer and timing recipe) vs production on Luna, both flows; 18 hard cases, 6 repeats, ≈ $3.55 est.; proposal amends REQ-230/228/187/224/185 |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| resolution-recipe-eval | Eval-only arm R (layer and timing recipe) vs production on Luna, both flows; measurement only |
 
 ## owner-action
 
