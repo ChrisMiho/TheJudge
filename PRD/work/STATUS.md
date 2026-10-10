@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| resolution-recipe-eval | Mapped out 2026-10-10: 7 slices (A to G), none started. Eval-only arm R vs production on Luna, both flows; 18 hard cases × 6 repeats; dry-run estimate ≈ $3.55 |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| resolution-recipe-eval | Gate answered (24 of 24 accept, 2026-10-10); build half resumes at gate-qc. Eval-only arm R vs production on Luna, both flows; 18 hard cases × 6 repeats; dry-run estimate ≈ $3.55 |
 
 ## refining
 

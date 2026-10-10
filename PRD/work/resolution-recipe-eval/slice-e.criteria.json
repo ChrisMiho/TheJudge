@@ -1,0 +1,12 @@
+{
+  "slug": "resolution-recipe-eval",
+  "slice": "E",
+  "criteria": [
+    { "id": "E1", "statement": "Level 2 text matches the accepted REQ-187 wording", "value": false, "evidence": { "paths": ["apps/backend/src/eval/answer-quality/rubric.ts"] } },
+    { "id": "E2", "statement": "RUBRIC_REVISION is a new value and a test pins it", "value": false, "evidence": { "paths": ["apps/backend/src/eval/answer-quality/rubric.test.ts"] } },
+    { "id": "E3", "statement": "The judge prompt contains the new level-2 text (test)", "value": false, "evidence": { "command": "npm --workspace apps/backend run test .*answer-quality" } },
+    { "id": "E4", "statement": "Artifact comparison across the old and new revisions is refused (test updated)", "value": false, "evidence": { "paths": ["apps/backend/src/eval/answer-quality/artifact.test.ts"] } },
+    { "id": "E5", "statement": "The answer-quality backend tests and typecheck pass", "value": false, "evidence": { "command": "npm --workspace apps/backend run (test|typecheck)" } },
+    { "id": "E6", "statement": "The REQ-187 block is applied", "value": false, "evidence": { "paths": ["PRD/sections/functional-requirements.md"] } }
+  ]
+}

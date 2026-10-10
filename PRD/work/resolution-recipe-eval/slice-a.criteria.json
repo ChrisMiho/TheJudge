@@ -1,0 +1,14 @@
+{
+  "slug": "resolution-recipe-eval",
+  "slice": "A",
+  "criteria": [
+    { "id": "A1", "statement": "R on a lookup prompt and on a game prompt changes only the target paragraph (test)", "value": false, "evidence": { "command": "node --test .*diagnostic-arms\\.test\\.mjs" } },
+    { "id": "A2", "statement": "R refuses when the target is missing, when it appears twice, and when approvedOn is absent (tests)", "value": false, "evidence": { "command": "node --test .*diagnostic-arms\\.test\\.mjs" } },
+    { "id": "A3", "statement": "P's existing tests pass unchanged", "value": false, "evidence": { "command": "node --test .*(diagnostic-arms|eval-answer-quality)\\.test\\.mjs" } },
+    { "id": "A4", "statement": "arm-r-recipe.json replaces equals the layers paragraph in mtgReference.ts verbatim and recipe equals the accepted G2 text", "value": false, "evidence": { "paths": ["apps/backend/src/eval/answer-quality/arm-r-recipe.json"] } },
+    { "id": "A5", "statement": "--arm R parses; R is refused outside the diagnostic manifest unless frozen; the A-vs-R dry run prints calls and an estimate and spends nothing", "value": false, "evidence": { "command": "eval:answer-quality -- --run-id rr-dry-a .*--arm R" } },
+    { "id": "A6", "statement": "diagnostic-arms-check passes with R substituting once on every diagnostic case", "value": false, "evidence": { "command": "node scripts/diagnostic-arms-check\\.mjs" } },
+    { "id": "A7", "statement": "The REQ-230 arm-R lines and the build-marked doc/test lines name R", "value": false, "evidence": { "paths": ["PRD/sections/functional-requirements.md", "apps/backend/src/eval/worked-solutions/README.md"] } },
+    { "id": "A8", "statement": "Nothing under apps/backend/src/prompt changed", "value": false, "evidence": { "command": "git diff origin/main --stat -- apps/backend/src/prompt" } }
+  ]
+}

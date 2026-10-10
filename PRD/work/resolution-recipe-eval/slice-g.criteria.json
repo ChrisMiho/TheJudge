@@ -1,0 +1,13 @@
+{
+  "slug": "resolution-recipe-eval",
+  "slice": "G",
+  "criteria": [
+    { "id": "G1", "statement": "docs/eval/resolution-recipe/RUNBOOK.md exists and names the G4 rule as accepted", "value": false, "evidence": { "paths": ["docs/eval/resolution-recipe/RUNBOOK.md"] } },
+    { "id": "G2", "statement": "The runbook lists every command from the brief, the 15 USD cap rule, and no path under PRD/work/", "value": false, "evidence": { "paths": ["docs/eval/resolution-recipe/RUNBOOK.md"] } },
+    { "id": "G3", "statement": "The amendment-set grep shows no stale line from the amend or build dispositions", "value": false, "evidence": { "command": "grep -rnE .*REQ-" } },
+    { "id": "G4", "statement": "Nothing durable points into PRD/work/resolution-recipe-eval", "value": false, "evidence": { "command": "grep -rn .*PRD/work/resolution-recipe-eval" } },
+    { "id": "G5", "statement": "Nothing under apps/backend/src/prompt, routes or providers changed", "value": false, "evidence": { "command": "git diff origin/main --stat -- apps/backend/src/prompt" } },
+    { "id": "G6", "statement": "npm run quality:check passes", "value": false, "evidence": { "command": "npm run quality:check" } },
+    { "id": "G7", "statement": "A reader followed the runbook up to the first paid command and found it complete", "value": false, "evidence": { "manual": true } }
+  ]
+}

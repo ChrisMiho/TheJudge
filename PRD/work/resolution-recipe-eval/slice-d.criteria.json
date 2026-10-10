@@ -1,0 +1,11 @@
+{
+  "slug": "resolution-recipe-eval",
+  "slice": "D",
+  "criteria": [
+    { "id": "D1", "statement": "A matching game case passes the check (test)", "value": false, "evidence": { "command": "node --test .*(experiment-run|prompt-fidelity)\\.test\\.mjs" } },
+    { "id": "D2", "statement": "A game case whose raw and parsed prompts differ makes the run refuse and name the case (test with a fabricated difference)", "value": false, "evidence": { "command": "node --test .*(experiment-run|prompt-fidelity)\\.test\\.mjs" } },
+    { "id": "D3", "statement": "Lookup cases are not affected and existing prompt-fidelity tests pass unchanged", "value": false, "evidence": { "command": "node --test .*prompt-fidelity\\.test\\.mjs" } },
+    { "id": "D4", "statement": "The A-vs-R dry run still prints calls and an estimate with the check active", "value": false, "evidence": { "command": "eval:answer-quality -- --run-id rr-dry" } },
+    { "id": "D5", "statement": "The REQ-230 fidelity line matches the accepted block", "value": false, "evidence": { "paths": ["PRD/sections/functional-requirements.md"] } }
+  ]
+}
