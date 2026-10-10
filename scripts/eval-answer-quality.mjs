@@ -42,7 +42,7 @@
 // Run via tsx so the backend TypeScript modules resolve.
 
 import { readFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { compareSnapshot, loadGoldCases, loadSnapshotSources } from "./lib/gold-cases.mjs";
@@ -67,9 +67,17 @@ import {
   executeRegrade,
   findUnpricedModels,
   loadManifestFile,
+  manifestEntryFor,
   readUsage,
   validateManifestCases
 } from "./lib/experiment-run.mjs";
+import {
+  SUITE_DIR,
+  assertSuiteIgnored,
+  normalizeSuiteFilters,
+  resolveInsideSuite,
+  selectSuiteCases
+} from "./lib/rulesguru-suite.mjs";
 import {
   ARM_IDS,
   ARM_REGISTRY,
@@ -193,6 +201,12 @@ export function parseArgs(argv) {
   // Experiment-mode flags (REQ-226): none of them exists in a routine run.
   const experimentFlags = {};
   const armIds = [];
+  // Local practice-suite mode (REQ-232): its own flags, none of which exists outside `--suite rulesguru`.
+  let suiteName;
+  const suiteLevels = [];
+  const suiteComplexities = [];
+  const suiteTags = [];
+  let includeUnsupported = false;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -240,29 +254,69 @@ export function parseArgs(argv) {
     } else if (arg === "--arm") {
       armIds.push(argv[++i]);
       experimentFlags.arms = armIds;
+    } else if (arg === "--suite") {
+      suiteName = argv[++i];
+    } else if (arg === "--level") {
+      suiteLevels.push(argv[++i]);
+    } else if (arg === "--complexity") {
+      suiteComplexities.push(argv[++i]);
+    } else if (arg === "--suite-tag") {
+      suiteTags.push(argv[++i]);
+    } else if (arg === "--include-unsupported") {
+      includeUnsupported = true;
     }
   }
 
-  if (selectionFlags.length > 1) {
+  if (suiteName === undefined) {
+    const stray = ["--level", "--complexity", "--suite-tag", "--include-unsupported"].find((flag) => argv.includes(flag));
+    if (stray) throw new Error(`${stray} only applies to a local practice-suite run: add --suite rulesguru.`);
+  } else {
+    if (suiteName !== "rulesguru") throw new Error(`--suite must be "rulesguru", got "${suiteName ?? ""}".`);
+    const refused = selectionFlags.filter((flag) => flag !== "--sample");
+    if (experimentFlags.manifest !== undefined) refused.push("--manifest");
+    if (experimentFlags.regradeFrom !== undefined) refused.push("--regrade-from");
+    if (refused.length > 0) {
+      throw new Error(`A local practice-suite run builds its own case list from its filters; drop ${refused.join(" and ")}.`);
+    }
+    const otherArm = armIds.find((armId) => armId !== DEFAULT_ARM);
+    if (otherArm !== undefined) throw new Error(`A local practice-suite run uses arm ${DEFAULT_ARM} only (REQ-230), not --arm ${otherArm}.`);
+    if (sampleCount !== undefined && (!Number.isInteger(sampleCount) || sampleCount < 1)) {
+      throw new Error("--sample needs a whole number of cases, such as --sample 20.");
+    }
+    if (!Number.isInteger(seed)) throw new Error("--seed needs a whole number.");
+  }
+
+  if (suiteName === undefined && selectionFlags.length > 1) {
     throw new Error(`Name only one case selection, not ${selectionFlags.join(" and ")} (--changed is the default).`);
   }
   let mode = { kind: "changed" };
-  if (selectionFlags[0] === "--all") mode = { kind: "all" };
-  if (selectionFlags[0] === "--tag") {
+  if (suiteName !== undefined) mode = { kind: "suite" };
+  else if (selectionFlags[0] === "--all") mode = { kind: "all" };
+  if (suiteName === undefined && selectionFlags[0] === "--tag") {
     if (!tag) throw new Error("--tag needs a tag, such as --tag mechanic:702.19.");
     mode = { kind: "tag", tag };
   }
-  if (selectionFlags[0] === "--tier") {
+  if (suiteName === undefined && selectionFlags[0] === "--tier") {
     if (![1, 2, 3].includes(tier)) throw new Error("--tier needs 1, 2 or 3.");
     mode = { kind: "tier", tier };
   }
-  if (selectionFlags[0] === "--sample") {
+  if (suiteName === undefined && selectionFlags[0] === "--sample") {
     if (!Number.isInteger(sampleCount) || sampleCount < 1) throw new Error("--sample needs a whole number of cases, such as --sample 20.");
     if (!Number.isInteger(seed)) throw new Error("--seed needs a whole number.");
     mode = { kind: "sample", count: sampleCount, seed };
   }
 
-  const experiment = parseExperimentFlags(experimentFlags, selectionFlags);
+  const experiment = parseExperimentFlags(experimentFlags, suiteName !== undefined ? [] : selectionFlags, { suite: suiteName !== undefined });
+  const suite =
+    suiteName === undefined
+      ? null
+      : {
+          name: suiteName,
+          filters: normalizeSuiteFilters({ level: suiteLevels, complexity: suiteComplexities, suiteTag: suiteTags, includeUnsupported }),
+          sample: sampleCount ?? null,
+          seed,
+          outputDir: outputDir ?? null
+        };
 
   const lineup = models.length > 0 ? models : bakeOff ? [...BAKE_OFF_LINEUP] : [...DEFAULT_LINEUP];
   return {
@@ -271,7 +325,8 @@ export function parseArgs(argv) {
     excerptCaps: excerptCaps.length > 0 ? excerptCaps : [...DEFAULT_EXCERPT_CAPS],
     outputDir: resolve(repoRoot, outputDir ?? DEFAULT_OUTPUT_DIR),
     mode,
-    experiment
+    experiment,
+    suite
   };
 }
 
@@ -280,8 +335,11 @@ export function parseArgs(argv) {
  * experiment flag without it is a mistake, refused by name rather than
  * silently running a routine run that merges into the committed file.
  */
-function parseExperimentFlags(flags, selectionFlags) {
+function parseExperimentFlags(flags, selectionFlags, { suite = false } = {}) {
   const named = Object.keys(flags);
+  if (suite && flags.runId === undefined && flags.resume === undefined) {
+    throw new Error("A local practice-suite run is named with --run-id <id> (its folder lives under the suite folder's runs/).");
+  }
   if (named.length === 0) return null;
   const flagName = (key) => `--${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
   // `--resume <run-id>` names the run it continues, so it stands in for --run-id.
@@ -313,7 +371,7 @@ function parseExperimentFlags(flags, selectionFlags) {
   if (flags.regradeFrom && flags.manifest) {
     throw new Error("A regrade run takes its cases from the run it regrades; drop --manifest.");
   }
-  if (!flags.regradeFrom && !flags.manifest) {
+  if (!suite && !flags.regradeFrom && !flags.manifest) {
     throw new Error("An experiment run needs --manifest <file> listing its cases (ids with the SHA-256 of each question and reference answer).");
   }
   if (flags.repeat !== undefined && (!Number.isInteger(flags.repeat) || flags.repeat < 1)) {
@@ -1026,7 +1084,6 @@ export async function runLiveExperiment(params) {
   const embedder = await buildEmbedder(params.env);
   const { createHash } = await import("node:crypto");
   const { readdir } = await import("node:fs/promises");
-  const { join } = await import("node:path");
   const { CASES_DIR, DATA_DIR } = await import("./lib/gold-cases.mjs");
 
   const hashFile = async (path) => createHash("sha256").update(await readFile(path)).digest("hex");
@@ -1069,7 +1126,8 @@ export async function runLiveExperiment(params) {
         dataFiles[entry.name] = await hashFile(join(DATA_DIR, entry.name));
       }
       const caseFiles = {};
-      for (const caseEntry of cases) caseFiles[caseEntry.id] = await hashFile(join(CASES_DIR, `${caseEntry.id}.case.json`));
+      const casesDir = params.casesDir ?? CASES_DIR;
+      for (const caseEntry of cases) caseFiles[caseEntry.id] = await hashFile(join(casesDir, `${caseEntry.id}.case.json`));
       return { dataFiles, caseFiles, rulesIndexSha256: dataFiles["gameRulesRuleIndex.json"] ?? "" };
     },
     now: () => Date.now(),
@@ -1229,6 +1287,105 @@ async function runExperimentCommand({
   return { ran: true, experiment: true, caseIds: cases.map((c) => c.id), accessChecked: true, result };
 }
 
+/**
+ * Local practice-suite mode (REQ-232): a third mode beside routine and
+ * experiment. Reads suite cases from the suite folder in the loader's external
+ * mode, never the committed corpus; builds its manifest from its filters; runs
+ * arm A through the experiment machinery with the suite's `runs/` as its root.
+ * It never reads or writes the committed scores or coverage files.
+ */
+async function runSuiteCommand({
+  parsed,
+  env,
+  judgeModel,
+  suiteDir,
+  checkIgnore,
+  loadSuiteCases,
+  isStale,
+  measure,
+  buildClient,
+  injectedClient,
+  runExperiment,
+  log
+}) {
+  assertSuiteIgnored({ suiteDir, ...(checkIgnore ? { checkIgnore } : {}) });
+  const { suite, experiment } = parsed;
+  const runsRoot = suite.outputDir ? resolveInsideSuite(resolve(repoRoot, suite.outputDir), { suiteDir }) : resolveInsideSuite(join(suiteDir, "runs"), { suiteDir });
+  const casesDir = join(suiteDir, "cases");
+  const allCases = await loadSuiteCases(casesDir);
+  const { selected, counts } = selectSuiteCases(allCases, suite.filters, { isStale, sample: suite.sample ?? undefined, seed: suite.seed });
+  if (selected.length === 0) {
+    throw new Error(`No suite case is selected (of ${counts.total}: ${counts.excluded} excluded, ${counts.unsupported} unsupported-answer, ${counts.filteredOut} outside the filters, ${counts.stale} stale).`);
+  }
+  const manifest = {
+    formatVersion: 1,
+    suite: { name: suite.name, filters: suite.filters, sample: suite.sample, seed: suite.seed, counts },
+    cases: selected.map((caseEntry) => manifestEntryFor(caseEntry))
+  };
+  const manifestSha256 = hashPrompt(`${JSON.stringify(manifest, null, 2)}\n`);
+  // The suite's check replaces the approved check: present, not excluded, not stale, hashes match the manifest.
+  const cases = validateManifestCases({ manifest, allCases, isStale, suite: true });
+  const arms = [{ id: DEFAULT_ARM, revision: ARM_A_REVISION }];
+  const folder = resolve(runsRoot, experiment.runId);
+
+  if (!parsed.confirmed) {
+    const measured = await measure({ cases, excerptCaps: parsed.excerptCaps, env });
+    const estimate = estimateCost({
+      models: parsed.models,
+      judgeModel,
+      excerptCaps: parsed.excerptCaps,
+      goldCaseCount: cases.length * experiment.repeats,
+      avgPromptCharsByCap: averagePromptChars(cases, parsed.excerptCaps, measured)
+    });
+    log(
+      [
+        `Local practice-suite run (REQ-232): ${counts.selected} of ${counts.total} suite cases selected (dropped: ${counts.excluded} excluded, ${counts.unsupported} unsupported-answer, ${counts.filteredOut} outside the filters, ${counts.stale} stale).`,
+        "Results are reported as agreement with the source, apart from the official corpus.",
+        "",
+        describeExperimentPlan({ experiment, models: parsed.models, excerptCaps: parsed.excerptCaps, arms, estimate, caseCount: cases.length, folder, judgeModel })
+      ].join("\n")
+    );
+    return { ran: false, suite: true, caseIds: cases.map((c) => c.id), accessChecked: false, estimate };
+  }
+
+  if (experiment.maxCostUsd === null && !experiment.resume) {
+    throw new Error(`${CONFIRM_FLAG} in a suite run also needs --max-cost-usd <dollars>: the run stops cleanly before it would pass that cap.`);
+  }
+  assertAllPriced({ models: parsed.models, judgeModel, rateTable: MODEL_PRICING_USD_PER_MILLION_TOKENS });
+  assertLiveProviderConfigured(env);
+  const client = injectedClient ?? (await buildClient(env));
+  const { missing } = await checkModelAccess({ client, modelIds: [...parsed.models, judgeModel] });
+  if (missing.length > 0) {
+    throw new Error(`The configured OpenAI credentials do not have access to: ${missing.join(", ")}. Fix access and re-run.`);
+  }
+  log(`Model access verified. Running suite run ${experiment.runId} over ${cases.length} cases...`);
+  const result = await runExperiment({
+    runId: experiment.runId,
+    runsRoot,
+    client,
+    judgeModel,
+    models: parsed.models,
+    excerptCaps: parsed.excerptCaps,
+    arms,
+    repeats: experiment.repeats,
+    cases,
+    manifest,
+    manifestSha256,
+    expectCommit: experiment.expectCommit,
+    regradeFrom: null,
+    resume: experiment.resume,
+    retryErrors: experiment.retryErrors,
+    maxCostUsd: experiment.maxCostUsd,
+    heldOutIds: new Set(),
+    suite: { name: suite.name },
+    extraFiles: { "suite-manifest.json": manifest },
+    casesDir,
+    env,
+    log
+  });
+  return { ran: true, suite: true, caseIds: cases.map((c) => c.id), accessChecked: true, result };
+}
+
 /** The prior committed scores file, or null when none exists yet. */
 async function defaultReadResults(resultsPath) {
   try {
@@ -1305,13 +1462,37 @@ export async function run(options = {}) {
     loadLocalEnv = loadLocalOpenAiEnv,
     readResults = defaultReadResults,
     loadSources = loadSnapshotSources,
-    isStale: injectedIsStale
+    isStale: injectedIsStale,
+    suiteDir = SUITE_DIR,
+    checkIgnore,
+    loadSuiteCases = (dir) => loadGoldCases(dir, { external: true })
   } = options;
 
   const parsed = parseArgs(argv);
   const env = resolveRunEnv({ processEnv, confirmed: parsed.confirmed, loadLocalEnv });
   const judgeModel = resolveJudgeModel(env);
   const resultsPath = resolve(repoRoot, RESULTS_RELATIVE_PATH);
+  if (parsed.suite) {
+    let suiteIsStale = injectedIsStale;
+    if (!suiteIsStale) {
+      const sources = await loadSources();
+      suiteIsStale = (caseEntry) => compareSnapshot(caseEntry, sources).stale;
+    }
+    return runSuiteCommand({
+      parsed,
+      env,
+      judgeModel,
+      suiteDir,
+      checkIgnore,
+      loadSuiteCases,
+      isStale: suiteIsStale,
+      measure,
+      buildClient,
+      injectedClient,
+      runExperiment,
+      log
+    });
+  }
   const allCases = await loadCases();
   const hasKey = Boolean(env.OPENAI_API_KEY?.trim());
 

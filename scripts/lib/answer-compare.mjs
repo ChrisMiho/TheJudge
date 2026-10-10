@@ -256,6 +256,9 @@ export function answerLevelCounts(records, timeoutMs) {
     bump(tables.difficulty, difficultyLabel(strata), record);
     bump(tables.sourcePool, strata.sourcePool ?? "none", record);
     bump(tables.requestKind, strata.requestKind ?? "unknown", record);
+    // Local practice-suite records (REQ-232) also carry a level and a complexity; a corpus record has neither, so its tables are unchanged.
+    if (strata.level !== undefined) bump((tables.level ??= new Map()), String(strata.level), record);
+    if (strata.complexity !== undefined) bump((tables.complexity ??= new Map()), String(strata.complexity), record);
   }
   return {
     overall,
@@ -352,6 +355,8 @@ export function compareRunSides(sideA, sideB) {
     addTo(tables.difficulty, difficultyLabel(sample.strata ?? {}), transition);
     addTo(tables.sourcePool, sample.strata?.sourcePool ?? "none", transition);
     addTo(tables.requestKind, sample.strata?.requestKind ?? "unknown", transition);
+    if (sample.strata?.level !== undefined) addTo((tables.level ??= new Map()), String(sample.strata.level), transition);
+    if (sample.strata?.complexity !== undefined) addTo((tables.complexity ??= new Map()), String(sample.strata.complexity), transition);
 
     const bothPresent = groupsA.has(key) && groupsB.has(key);
     const identicalPrompt = bothPresent && a.promptHashes.length > 0 && JSON.stringify(a.promptHashes) === JSON.stringify(b.promptHashes);
@@ -490,7 +495,7 @@ export function formatComparison(result, { labelA = "A", labelB = "B" } = {}) {
 
   for (const [group, tables] of Object.entries(result.breakdowns)) {
     lines.push("", `Breakdown within ${group} (never pooled with the other tier group):`);
-    const heading = { ruleSection: "by rules section", mechanic: "by mechanic", difficulty: "by difficulty score", sourcePool: "by source pool", requestKind: "by request kind" };
+    const heading = { ruleSection: "by rules section", mechanic: "by mechanic", difficulty: "by difficulty score", sourcePool: "by source pool", requestKind: "by request kind", level: "by suite level", complexity: "by suite complexity" };
     for (const [name, table] of Object.entries(tables)) {
       lines.push(`  ${heading[name]}:`);
       const entries = Object.entries(table);

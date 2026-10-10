@@ -873,3 +873,72 @@ test("the fidelity check names a case the route's schema rejects or whose questi
   assert.match(problems[1], /game-reworded: the route's schema changes the question text/);
   assert.deepEqual(findGameFidelityProblems({ cases: [lookup], buildRequest: buildRequestFor, parseRequest, prepare: preparePrinting, resources: {} }), []);
 });
+
+// Local practice suite (REQ-232): invented cases, a fake client, a temporary folder -------------------
+
+function suiteFixtureCase(id, { level = 1, complexity = "simple", excluded = null } = {}) {
+  return fixtureCase(id, {
+    tier: "external",
+    review: { status: "draft", reviewedOn: null },
+    source: { authority: "external-unapproved" },
+    suite: { name: "rulesguru", questionId: 1, level, complexity, tags: [], citedRuleIds: ["100.1"], ruleGroups: [["100.1"]], excluded }
+  });
+}
+
+test("suite validation passes a present, non-excluded, non-stale case and refuses an excluded, stale or hash-mismatched one", () => {
+  const good = suiteFixtureCase("suite-good");
+  const excluded = suiteFixtureCase("suite-excluded", { excluded: "unresolved-card" });
+  const all = [good, excluded];
+  const manifest = manifestFor(all);
+  assert.throws(() => validateManifestCases({ manifest, allCases: all, suite: true }), /suite-excluded: excluded -- unresolved-card/);
+  assert.throws(() => validateManifestCases({ manifest, allCases: all }), /suite-good: unapproved/, "without the suite hook the approved check applies");
+  assert.deepEqual(validateManifestCases({ manifest: manifestFor([good]), allCases: all, suite: true }).map((c) => c.id), ["suite-good"]);
+  assert.throws(
+    () => validateManifestCases({ manifest: manifestFor([good]), allCases: all, suite: true, isStale: () => true }),
+    /suite-good: stale/
+  );
+  const reworded = [{ ...good, question: "A different question?" }, excluded];
+  assert.throws(() => validateManifestCases({ manifest: manifestFor([good]), allCases: reworded, suite: true }), /hash mismatch -- the question differs/);
+});
+
+test("a suite run with a fake client writes only under its temporary run folder, labels agreement, splits by level and complexity, and resumes", async () => {
+  const cases = [suiteFixtureCase("suite-a", { level: 0 }), suiteFixtureCase("suite-b", { level: "corner", complexity: "complicated" })];
+  const manifest = { formatVersion: 1, suite: { name: "rulesguru" }, cases: cases.map((c) => manifestEntryFor(c)) };
+  const params = await experimentParams({
+    cases,
+    manifest,
+    suite: { name: "rulesguru" },
+    extraFiles: { "suite-manifest.json": manifest },
+    maxCostUsd: null
+  });
+  const client = params.client;
+  const { summary, folder } = await executeExperiment(params, fakeDeps());
+  assert.equal(client.calls.length, 2);
+
+  const tree = await listTree(params.runsRoot);
+  assert.ok(Object.keys(tree).every((name) => name.startsWith("run-one/")), "everything is under runs/<id>/");
+  assert.ok(tree["run-one/suite-manifest.json"], "the filter manifest is saved in the run folder");
+  assert.ok(tree["run-one/summary.json"] && tree["run-one/manifest.json"] && tree["run-one/calls.jsonl"]);
+
+  assert.match(summary.suite.label, /agrees with RulesGuru/);
+  assert.deepEqual(summary.suite.byLevel, { 0: { graded: 1, agreesWithRulesGuru: 1 }, corner: { graded: 1, agreesWithRulesGuru: 1 } });
+  assert.deepEqual(summary.suite.byComplexity, {
+    complicated: { graded: 1, agreesWithRulesGuru: 1 },
+    simple: { graded: 1, agreesWithRulesGuru: 1 }
+  });
+  assert.deepEqual(summary.records.map((r) => [r.strata.level, r.strata.complexity]), [["0", "simple"], ["corner", "complicated"]]);
+
+  // Resume reuses the checkpoint: no new answer call.
+  const second = { ...params, client: fakeClient(), resume: true, extraFiles: {} };
+  await executeExperiment(second, fakeDeps());
+  assert.equal(second.client.calls.length, 0);
+  assert.equal(folder, join(params.runsRoot, "run-one"));
+});
+
+test("a corpus run is unchanged: no suite block in its identity or summary, no level in its strata", async () => {
+  const params = await experimentParams();
+  const { identity, summary } = await executeExperiment(params, fakeDeps());
+  assert.equal(Object.hasOwn(identity, "suite"), false);
+  assert.equal(Object.hasOwn(summary, "suite"), false);
+  assert.equal(Object.hasOwn(summary.records[0].strata, "level"), false);
+});

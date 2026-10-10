@@ -21,7 +21,7 @@ Intake (evidence, not authority): `intake/GRAPH-BRIEF.md`, `intake/FINDINGS-fit.
 | B | `slice-b-import-purge.md` | Import and purge commands | A | 10 | done |
 | C | `slice-c-lookup-headers-convert.md` | Name lookup, header mapping, convert | A | 10 | done |
 | D | `slice-d-retrieval-check.md` | Retrieval check suite mode | A, C | 8 | done |
-| E | `slice-e-answer-run.md` | Answer-quality run suite mode | A, C, D | 11 (1 manual) | planned |
+| E | `slice-e-answer-run.md` | Answer-quality run suite mode | A, C, D | 11 (1 manual) | done |
 | F | `slice-f-prd-apply-readme.md` | PRD apply, README pointer, promotion checklist | A to E | 11 (1 manual) | planned |
 
 B and C are parallel-ready after A. The build never runs the real import, convert or suite run and makes no live call.
