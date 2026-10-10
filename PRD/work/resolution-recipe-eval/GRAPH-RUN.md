@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/resolution-recipe-eval`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-resolution-recipe-eval`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/resolution-recipe-eval/`
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 13` | `PRD/work/resolution-recipe-eval/` (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md byte-identical to the staged copy, `cmp` clean); commit `96eb39d4`; 3 prior-run receipts in IDEA.md; node removed the staged copy after committing it (the committed `intake/` copy is the record) | 2026-10-10 |
 | 3 | define | opus | ok | `0 → 118` | `PRD/work/resolution-recipe-eval/DESIGN-BRIEF.md`, `PRD/work/resolution-recipe-eval/GATE-QUESTIONS.md` (5 stable-ID slots REQ-230, REQ-228, REQ-187, REQ-224, REQ-185 + blocker slots G1, G2, G3-01..G3-16, G4, G5→REQ-187), `STATUS.refined`; commit `a9daa27f`; 104-hit line-level grep with dispositions in the brief (10 amend / 20 build / 74 keep); `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty; dry-run anchor $0.0117 per graded answer (gitignored `output/` only); driver spot-checked the nine reference outcomes against CR 613.4b/c, 613.8, 707.2, 603.3b, 616.1 | 2026-10-10 |
 | 4 | gate-qc | sonnet | failed | `0 → 44` | FAIL attempt 1 — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `532b7129`, `STATUS.refining`; F1 blocking (cost anchor and reasoning-token figures cite no command or output), F2 blocking (Serra Angel not found — driver re-check: present as oracle `4b7ac066-e5c7-43e6-9e7e-2739b24a905d` via `apps/frontend/public/data/cardMetadata.json` cardId, so F2 reduces to F3), F3–F5 minor; diffs 33/33 lines match, grep 104/104 dispositioned, 16/16 references correct; loop 1 of 3 back to define | 2026-10-10 |
+| 5 | define | opus | ok | `0 → 93` | attempt 2 (gate-qc loop 1): commit `a5f98eec`; F1 dry-run command lines + `evidence/cost-anchor-dry-runs.txt` (re-run, same totals; no `--confirm-live-calls`), Luna figures sourced to backup `calls.jsonl` fields via `evidence/luna-token-stats.mjs` (two figures corrected: tier-3 judge $0.0064, hard-case median 13.1 s); F2/F3 oracle ids in all 16 G3 slots via `evidence/resolve-g3-cards.mjs` → `evidence/g3-card-ids.txt` (22 cards, 1 id each; Grizzly Bears resolved via `cardScanMap.json` because vanilla cards are absent from `cardMetadata.json`); F4 cross-ref fixed; F5 REQ-230/REQ-224 wording count-free + per-slot recommendations; diffs 33/33 lines still match; grep 104/104; `STATUS.refined`; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty | 2026-10-10 |
 
 ## Open gate
 
@@ -139,6 +140,28 @@ After fixing, re-check that every removed and context line in each stable-ID dif
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 150 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: each finding and how it was fixed (with the file and section), the dry-run command lines and output paths now cited, the oracle ids added, the commit SHA, and the push result.
+
+### gate-qc (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-resolution-recipe-eval
+
+You are node 4 (`gate-qc`), attempt 2, of graph run `graph-20261010-183425`. Invoke the `thejudge-quality-check` skill on `PRD/work/resolution-recipe-eval/` in its graph-controlled mode (no questions to the user, no approval pauses) and re-grade `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` after define attempt 2 (commit `a5f98eec`). Return PASS or FAIL with a complete findings list.
+
+Check directly:
+1. Each attempt-1 finding (F1 to F5 in `QUALITY-CHECK.md`) is resolved. For F1, the brief's dry-run command lines and `evidence/cost-anchor-dry-runs.txt` agree, and each reasoning-token and judge-cost figure names its record folder and field. For F2 and F3, every card in every G3 slot carries one oracle id; look names up in `apps/frontend/public/data/cardMetadata.json` (`name` to `cardId`, which is the oracle id; vanilla cards such as Grizzly Bears are absent there and the brief cites `cardScanMap.json` instead) and confirm the text in `apps/backend/data/cardDetailByOracleId.json.br`, which carries no names. You may run `node PRD/work/resolution-recipe-eval/evidence/resolve-g3-cards.mjs` to reproduce `evidence/g3-card-ids.txt`.
+2. Every stable-ID diff's removed and context lines still match live `PRD/sections/` word for word, and each block keeps its three-line opening and a blank verdict slot.
+3. The line-level grep still yields the hit count the brief states, each with a disposition row.
+4. Every blocker slot recommends without deciding and stays blank; the G3 reference outcomes are unchanged in substance from attempt 1 (attempt 1 found all 16 correct) and still carry no side error.
+5. Nothing outside the package changed: `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` is empty.
+6. Any new problem the edits introduced.
+
+Write the report to `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md` (replace the attempt-1 report, and keep a one-line note that attempt 1 failed on F1 to F5). On FAIL set the status the skill names. Do not edit the brief or the questions file. The driver writes the README `## Preparation gate` section, so leave it alone.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
 
 ## Instruction ledger
 
