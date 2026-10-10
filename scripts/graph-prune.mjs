@@ -209,10 +209,33 @@ function gatherLock() {
   return parseLockFile(readFileSync(LOCK_PATH, "utf8"))
 }
 
+// Worktrees go first: git refuses to delete a branch a worktree still has
+// checked out, so a branch-first order failed every `-work` branch whose
+// `implement-<slug>` worktree was in the same batch. Intake folders go last.
+const DELETION_ORDER = Object.freeze(["worktree", "branch", "intake"])
+
+/** The delete items in the order `--apply` must run them. Pure; stable within a kind. */
+export function orderDeletions(items) {
+  return items
+    .filter((item) => item.action === "delete")
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => DELETION_ORDER.indexOf(a.item.kind) - DELETION_ORDER.indexOf(b.item.kind) || a.index - b.index)
+    .map(({ item }) => item)
+}
+
 // Each failure is reported and skipped; the remaining deletions still run.
 function applyDeletion(item, runGit) {
   try {
     if (item.kind === "branch") {
+      // `branch -d` judges "merged" against the branch's own upstream, and an
+      // old `-work` branch can still track a stale docs branch. This command
+      // has already proven the tip an ancestor of origin/main, so the upstream
+      // is dropped first; a branch with no upstream makes this a no-op.
+      try {
+        runGit(["branch", "--unset-upstream", item.name])
+      } catch {
+        // No upstream configured.
+      }
       runGit(["branch", "-d", item.name])
     } else if (item.kind === "worktree") {
       runGit(["worktree", "remove", item.name])
@@ -231,7 +254,7 @@ function applyDeletion(item, runGit) {
 }
 
 function applyDeletions(items, runGit) {
-  return items.filter((item) => item.action === "delete").filter((item) => !applyDeletion(item, runGit))
+  return orderDeletions(items).filter((item) => !applyDeletion(item, runGit))
 }
 
 function main(argv) {

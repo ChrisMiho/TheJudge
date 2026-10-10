@@ -388,6 +388,40 @@ and so is deleting the sentinel. The halt path itself stays open, because a run
 that could not write its own terminal state would strand exactly the state the
 kill switch exists to avoid.
 
+## Pre-dispatch sequence
+
+Both drivers run this block, in this order, immediately before **every** node
+dispatch. Each step's rule lives in the section it names; this list fixes only
+the order.
+
+1. **Stop sentinel.** If `.worktrees/.graph-stop` exists, halt at this boundary
+   (`## The owner's stop sentinel`). Nothing below runs.
+2. **Run-state to the driver.** Write `.worktrees/.graph-run-state.json` as
+   `driver-bookkeeping/<n>` before the driver's own commits and ledger edits, so
+   they are not charged to the next node's cap.
+3. **Re-read the no-pre-authorization rule** (`### No pre-authorization of
+   product decisions`) and check the dispatch prompt against it.
+4. **Record the dispatch prompt** under `## Dispatch prompts`, carrying the
+   absolute `Working directory:` line on its own line. Write prompts with
+   single quotes or backticks: every double-quoted span of 12 or more
+   characters reads as a user quote and needs an exact `## Instruction ledger`
+   row.
+5. **Ledger check.** Run `scripts/graph-ledger-check.mjs` on the ledger. A
+   failure stops the dispatch (`## Instruction ledger`).
+6. **Heartbeat read.** Record `.worktrees/.graph-node-calls.json` for the node
+   about to run (`## Hook liveness`).
+7. **Run-state to the node.** Write the run-state file as `<node>/<attempt>` in
+   the tool call immediately before the dispatch, never after it.
+8. **Dispatch.**
+
+**File-edit mechanics in every dispatch prompt.** The session permission layer
+denies long chained Bash commands that embed a heredoc or `sed -i`, independent
+of the boundary hook, and a denied call is never retried verbatim. Every node
+prompt therefore tells the node to change files with the Write and Edit tools
+and to run git as short, separate calls (`git add <path>`, then `git commit`,
+then `git push`). A node that reports such a denial as a graph-hook block has
+misread it; re-dispatch with this instruction rather than routing around it.
+
 ## Node 7 — the no-write reviewer
 
 `review` dispatches a fresh-context subagent that grades the slice against its
