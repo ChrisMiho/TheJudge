@@ -19,7 +19,13 @@ const NEVER_IN_A_GATE = [
   "eval-evidence-trace",
   "build-answer-quality-manifests",
   "diagnostic-arms-check",
-  "--confirm-live-calls"
+  "--confirm-live-calls",
+  // The local practice suite (REQ-232): CI cannot see it, so no gate may name any of it.
+  "eval:rulesguru", // also covers :import, :convert and :purge
+  "rulesguru-import",
+  "rulesguru-convert",
+  "rulesguru-purge",
+  "--suite"
 ];
 
 test("no gate script and no CI workflow invokes the answer-quality run, its compare, its manifest generator, or the evidence trace", async () => {
@@ -68,6 +74,17 @@ test("no gate script and no CI workflow invokes the answer-quality run, its comp
     "eval:evidence-trace:compare": "node scripts/eval-evidence-trace-compare.mjs"
   };
   for (const [script, command] of Object.entries(expected)) assert.equal(rootPkg.scripts[script], command, `${script} is registered as its own on-demand script`);
+
+  // The three suite commands (REQ-232) are registered as their own on-demand scripts once the slices that
+  // add them land; until then they must simply not exist in any other form.
+  const suiteExpected = {
+    "eval:rulesguru:import": "node scripts/rulesguru-import.mjs",
+    "eval:rulesguru:convert": "node scripts/rulesguru-convert.mjs",
+    "eval:rulesguru:purge": "node scripts/rulesguru-purge.mjs"
+  };
+  for (const [script, command] of Object.entries(suiteExpected)) {
+    if (rootPkg.scripts[script] !== undefined) assert.equal(rootPkg.scripts[script], command, `${script} is registered as its own on-demand script`);
+  }
 });
 
 // A unit test inside test:scripts may not run the manifest generator or the evidence trace against the
@@ -102,4 +119,30 @@ test("no *.test.mjs under scripts/ execs the manifest generator or the evidence-
       assert.ok(!/loadGoldCases/.test(text), `${name} must not load the real corpus beside the manifest generator`);
     }
   }
+});
+
+// The local practice suite (REQ-232): no test reads or names the suite folder, and none hands the
+// importer Node's global fetch. The folder-guard test is the one test that names the path.
+test("no *.test.mjs under scripts/ names the suite folder except the folder-guard test, or gives the importer the global fetch", async () => {
+  const found = [];
+  const walk = async (dir) => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) await walk(full);
+      else if (entry.name.endsWith(".test.mjs")) found.push(full);
+    }
+  };
+  await walk(join(repoRoot, "scripts"));
+  const self = fileURLToPath(import.meta.url);
+  const folderGuardTest = join(repoRoot, "scripts/lib/rulesguru-suite.test.mjs");
+  const suitePath = ["output", "rulesguru"].join("/");
+  const globalFetch = /globalThis\.fetch|\bfetch\s*:\s*fetch\b|\bfetch\s*:\s*global\b|\bglobal\.fetch/;
+  for (const file of found) {
+    if (file === self) continue;
+    const text = await readFile(file, "utf8");
+    const name = file.slice(repoRoot.length + 1);
+    if (file !== folderGuardTest) assert.ok(!text.includes(suitePath), `${name} must not name the suite folder; pass a temporary folder instead`);
+    if (/rulesguru-import/.test(text)) assert.ok(!globalFetch.test(text), `${name} must inject a fake fetch into the importer, never the global fetch`);
+  }
+  assert.ok(found.includes(folderGuardTest), "the folder-guard test exists");
 });

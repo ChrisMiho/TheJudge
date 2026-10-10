@@ -526,3 +526,26 @@ test("right answers out of answers (every repeat) and right-but-over-budget are 
   assert.match(text, /game:[^\n]*\n\s+answers, every repeat counted: a 2\/2 right, 2 right but over budget; b 0\/2 right, 0 right but over budget/);
   assert.doesNotMatch(text, /winner|is better|beats/i, "the report states numbers only");
 });
+
+// Local practice suite (REQ-232): the report reads two suite run folders and splits them by level and complexity.
+
+test("the compare report reads two suite run folders and splits them by suite level and complexity", async () => {
+  const suiteCases = [
+    { ...fixtureCase("s1"), tier: "external", suite: { level: 0, complexity: "simple" } },
+    { ...fixtureCase("s2"), tier: "external", suite: { level: "corner", complexity: "complicated" } }
+  ];
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-suite-"));
+  const before = await makeRun({ runId: "suite-before", cases: suiteCases, right: new Set(["s1"]), runsRoot });
+  const after = await makeRun({ runId: "suite-after", cases: suiteCases, right: new Set(["s1", "s2"]), runsRoot });
+  const result = await compareFolders(before, after);
+  assert.equal(result.refused, false);
+  const text = formatComparison(result);
+  assert.match(text, /by suite level:/);
+  assert.match(text, /by suite complexity:/);
+  assert.deepEqual(Object.keys(result.breakdowns["tiers 1-2"].level), ["0", "corner"]);
+  assert.deepEqual(Object.keys(result.breakdowns["tiers 1-2"].complexity), ["complicated", "simple"]);
+  // A corpus-only comparison gains no suite tables.
+  const corpus = await makeRun({ runId: "corpus-one", right: new Set(), runsRoot });
+  const corpusResult = await compareFolders(corpus, corpus);
+  assert.equal(Object.hasOwn(corpusResult.breakdowns["tiers 1-2"], "level"), false);
+});

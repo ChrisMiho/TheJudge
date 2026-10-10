@@ -501,3 +501,69 @@ test("loadSnapshotSources reads the committed rule index, card oracle text and r
   assert.ok(sources.rulings(tarmogoyf).length > 0);
   assert.deepEqual(sources.rulings("00000000-0000-0000-0000-000000000000"), []);
 });
+
+// ---------------------------------------------------------------------------
+// External mode: the local practice suite (REQ-232). Invented questions only.
+// ---------------------------------------------------------------------------
+
+function validSuiteCase(overrides = {}) {
+  return {
+    ...validTier1Case({ id: "suite-sample-1", question: "An invented practice question?" }),
+    tier: "external",
+    expected: { outcome: null, shortAnswer: "Invented short answer.", answer: "Invented practice answer text.", decidingRuleIds: ["100.1"] },
+    source: { authority: "external-unapproved", publisher: "Invented publisher", license: "used with permission, local only", questionId: 1 },
+    suite: {
+      name: "invented-suite",
+      questionId: 1,
+      level: 1,
+      complexity: "simple",
+      tags: ["Combat"],
+      citedRuleIds: ["100.1"],
+      ruleGroups: [["100.1"]],
+      excluded: null
+    },
+    ...overrides
+  };
+}
+
+test("default mode refuses a tier external case with the suite-folder message; external mode accepts it with a null outcome", () => {
+  const suiteCase = validSuiteCase();
+  const refused = validateGoldCase(suiteCase);
+  assert.equal(refused.valid, false);
+  assert.match(refused.errors.join("\n"), /suite cases belong only in the suite folder/);
+  assert.deepEqual(validateGoldCase(suiteCase, { external: true }), { valid: true, errors: [] });
+});
+
+test("external mode refuses an approved case, a corpus tier, a missing suite block and a wrong authority", () => {
+  const errorsOf = (entry) => validateGoldCase(entry, { external: true }).errors.join("\n");
+  assert.match(errorsOf(validSuiteCase({ review: { status: "approved", reviewedOn: "2026-10-10" } })), /never approved by any path/);
+  assert.match(errorsOf(validTier1Case({ id: "corpus-1" })), /accepts only "tier": "external"/);
+  const withoutSuite = validSuiteCase();
+  delete withoutSuite.suite;
+  assert.match(errorsOf(withoutSuite), /needs a "suite" block/);
+  assert.match(errorsOf(validSuiteCase({ source: { authority: "wotc-comprehensive-rules", publisher: "P", license: "L" } })), /external-unapproved/);
+});
+
+test("default mode still requires a real outcome", () => {
+  const entry = validTier1Case();
+  entry.expected.outcome = null;
+  assert.equal(validateGoldCase(entry).valid, false);
+});
+
+test("loadGoldCases: default mode fails on a stray suite case; external mode loads it and ignores excluded duplicates", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "gold-cases-ext-"));
+  test.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const write = (name, entry) => fs.writeFileSync(path.join(dir, name), JSON.stringify(entry), "utf8");
+
+  write("a.case.json", validSuiteCase());
+  await assert.rejects(() => loadGoldCases(dir), /suite cases belong only in the suite folder/);
+  const loaded = await loadGoldCases(dir, { external: true });
+  assert.equal(loaded.length, 1);
+  assert.deepEqual(loaded[0].tags, ["mechanic:none", "cr:100"]);
+
+  write("b.case.json", validSuiteCase({ id: "suite-sample-2", suite: { ...validSuiteCase().suite, questionId: 2, excluded: "duplicate-question" } }));
+  assert.equal((await loadGoldCases(dir, { external: true })).length, 2, "an excluded twin is not a duplicate error");
+
+  write("c.case.json", validSuiteCase({ id: "suite-sample-3" }));
+  await assert.rejects(() => loadGoldCases(dir, { external: true }), /same question text as suite-sample-1/);
+});

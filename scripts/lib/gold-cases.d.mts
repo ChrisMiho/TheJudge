@@ -2,7 +2,9 @@
 // (REQ-185). Backend vitest tests import the real module at run time; this
 // file only lets the backend typecheck accept that import (rootDir `src`,
 // strict, no allowJs). It states types and never logic: a renamed or removed
-// export fails a test even if this declaration lags.
+// export fails a test even if this declaration lags. `loadGoldCases` and
+// `validateGoldCase` take the external-mode option the local practice suite
+// uses (REQ-232).
 
 export type CaseTier = 1 | 2 | 3;
 export type ReviewStatus = "draft" | "approved" | "needs-edit" | "rejected";
@@ -82,7 +84,9 @@ export const SOURCE_POOLS: string[];
 export const TIER_AUTHORITIES: Record<CaseTier, string>;
 export const REQUIRED_SIX_CASE_IDS: string[];
 
-export function validateGoldCase(caseEntry: unknown): { valid: boolean; errors: string[] };
+export function validateGoldCase(caseEntry: unknown, options?: { external?: boolean }): { valid: boolean; errors: string[] };
+export const EXTERNAL_TIER: "external";
+export const EXTERNAL_AUTHORITY: "external-unapproved";
 export function mechanicPrefixes(decidingRuleIds: readonly string[]): string[];
 export function ruleSections(decidingRuleIds: readonly string[]): string[];
 export function deriveTags(caseEntry: GoldCase): string[];
@@ -103,4 +107,4 @@ export function compareSnapshot(
   sources: SnapshotSources
 ): { stale: boolean; changed: SnapshotDependency[] };
 export function readCaseFiles(casesDir?: string): Promise<Array<{ fileName: string; case: unknown }>>;
-export function loadGoldCases(casesDir?: string): Promise<GoldCase[]>;
+export function loadGoldCases(casesDir?: string, options?: { external?: boolean }): Promise<GoldCase[]>;

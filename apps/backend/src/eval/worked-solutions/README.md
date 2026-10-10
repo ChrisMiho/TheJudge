@@ -19,6 +19,33 @@ A case scores only once the owner has approved it. The 18 first-ship cases are
 approved by the owner's accept of REQ-185; every later case is a `draft` and
 reaches `approved` only through the owner review flow below.
 
+## Local practice suite (REQ-232)
+
+Beside this corpus the owner may keep a separate practice suite of judge-style
+rules questions, used with permission, local only. It is never part of the
+corpus, never committed, never approved and never a build gate. It lives in one
+gitignored folder, `output/rulesguru/`, inside one checkout, so the owner runs it
+from the main checkout. Its cases carry `tier` `external`; the shared loader
+reads them only in its external mode and refuses one found in this folder.
+
+- `npm run eval:rulesguru:import` fetches the questions, politely and resumably,
+  and freezes each one as fetched. Only the owner runs it.
+- `npm run eval:rulesguru:convert` turns the frozen questions into local draft
+  cases and writes a counts report.
+- `npm run eval:rulesguru:purge -- --yes` deletes the whole folder.
+- `npm run eval:worked-solutions -- --suite rulesguru` runs the free retrieval
+  check over the suite: any and every cited rule group, by level, complexity and
+  rules section.
+- `npm run eval:answer-quality -- --suite rulesguru --run-id <id>` runs the paid
+  answer check, dry run first, and reports agreement with the source, never
+  correctness.
+- Filters on both runs: `--level`, `--complexity`, `--suite-tag` (each
+  repeatable) and `--include-unsupported`; the answer run also takes `--sample`
+  with `--seed`.
+
+A gap the suite exposes may become a corpus case only by the owner's hand, in the
+project's own words with a WotC answer, as a draft through the review flow below.
+
 ## Source pools
 
 A case may name the authored block it came from in `source.pool`, which the

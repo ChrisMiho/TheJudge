@@ -127,7 +127,7 @@ export async function loadManifestFile(manifestPath, { read = readFile } = {}) {
  * stale case but accepts a reworked reference answer, because the regrade
  * records the hash it graded against and the compare report checks equality.
  */
-export function validateManifestCases({ manifest, allCases, isStale = () => false, checkHashes = true }) {
+export function validateManifestCases({ manifest, allCases, isStale = () => false, checkHashes = true, suite = false }) {
   const byId = new Map(allCases.map((caseEntry) => [caseEntry.id, caseEntry]));
   const problems = [];
   const cases = [];
@@ -143,7 +143,13 @@ export function validateManifestCases({ manifest, allCases, isStale = () => fals
       problems.push(`${entry.id}: missing -- no such case in this checkout's corpus`);
       continue;
     }
-    if (caseEntry.review.status !== "approved") {
+    if (suite) {
+      // A local practice-suite run (REQ-232) replaces the approved check: a suite case is never approved, but it must not be excluded.
+      if (caseEntry.suite?.excluded) {
+        problems.push(`${entry.id}: excluded -- ${caseEntry.suite.excluded}`);
+        continue;
+      }
+    } else if (caseEntry.review.status !== "approved") {
       problems.push(`${entry.id}: unapproved -- its review status is "${caseEntry.review.status}"`);
       continue;
     }
@@ -237,6 +243,7 @@ export function buildIdentityRecord({
   client,
   productionTimeoutMs = null,
   regrade = null,
+  suite = null,
   startedAt
 }) {
   return {
@@ -265,7 +272,9 @@ export function buildIdentityRecord({
     rubricRevision,
     rateTable,
     maxCostUsd,
-    regrade
+    regrade,
+    // Present only for a local practice-suite run (REQ-232), so every other identity record is unchanged.
+    ...(suite ? { suite } : {})
   };
 }
 
@@ -284,12 +293,39 @@ export function strataOf(caseEntry) {
     mechanics: mechanicPrefixes(caseEntry.expected.decidingRuleIds),
     difficultyScore: caseEntry.difficulty?.score ?? null,
     sourcePool: caseEntry.source?.pool ?? null,
-    requestKind: requestKindOf(caseEntry)
+    requestKind: requestKindOf(caseEntry),
+    // A local practice-suite case also splits by the source's level and complexity (REQ-232).
+    ...(caseEntry.suite ? { level: String(caseEntry.suite.level), complexity: String(caseEntry.suite.complexity) } : {})
   };
 }
 
 function sumOf(records, field) {
   return records.reduce((sum, record) => sum + (record[field] ?? 0), 0);
+}
+
+/**
+ * A local practice-suite run's Correctness 2 count, labelled as agreement with
+ * the source and split by level and complexity. Numbers only; never "correct".
+ */
+export function suiteAgreementCounts(suite, okRecords) {
+  const split = (field) => {
+    const table = {};
+    for (const record of okRecords) {
+      const key = record.strata?.[field] ?? "unknown";
+      table[key] ??= { graded: 0, agreesWithRulesGuru: 0 };
+      if (!record.undetermined) {
+        table[key].graded += 1;
+        if (record.scores?.correctness === 2) table[key].agreesWithRulesGuru += 1;
+      }
+    }
+    return Object.fromEntries(Object.entries(table).sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true })));
+  };
+  return {
+    name: suite.name,
+    label: "agrees with RulesGuru (the source's own answer, never ground truth)",
+    byLevel: split("level"),
+    byComplexity: split("complexity")
+  };
 }
 
 export function buildSummary({
@@ -333,6 +369,7 @@ export function buildSummary({
     },
     records
   };
+  if (identity.suite) summary.suite = suiteAgreementCounts(identity.suite, ok);
   assertNoProseKeys(summary);
   return summary;
 }
@@ -537,6 +574,8 @@ export async function executeExperiment(params, deps) {
     retryErrors = false,
     maxCostUsd = null,
     heldOutIds = new Set(),
+    suite = null,
+    extraFiles = {},
     env,
     log
   } = params;
@@ -572,6 +611,7 @@ export async function executeExperiment(params, deps) {
     comboCatalogLoaded: deps.comboCatalogLoaded ?? false,
     client: deps.clientOptions,
     productionTimeoutMs: deps.productionTimeoutMs ?? null,
+    suite,
     startedAt: deps.nowIso()
   });
   if (resume) {
@@ -594,6 +634,8 @@ export async function executeExperiment(params, deps) {
     }
   } else {
     await writeJson(join(folder, "manifest.json"), identity);
+    // Files a caller wants saved beside the identity record (a suite run's filter manifest), written whole, once.
+    for (const [name, value] of Object.entries(extraFiles)) await writeJson(join(folder, name), value);
   }
   const capUsd = identity.maxCostUsd ?? null;
 
