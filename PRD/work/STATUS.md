@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rulesguru-local-suite](rulesguru-local-suite/) | Gate answered (9 of 9 accept), docs PR #284 merged; build half resumes at gate-qc |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rulesguru-local-suite](rulesguru-local-suite/) | Docs PR open: answer `GATE-QUESTIONS.md` (REQ-232 new, REQ-185, REQ-186, REQ-188, REQ-226, NFR-018, goals-and-non-goals, B1, B2). Merge it only after the resolution-recipe-eval code PR merges, so the build applies REQ-185 on top of the recipe's change |
 
 ## deferred
 

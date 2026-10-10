@@ -23,7 +23,27 @@
 
 ## Open gate
 
-- Owner action: answer `PRD/work/rulesguru-local-suite/GATE-QUESTIONS.md` (REQ-232, REQ-185, REQ-186, REQ-188, REQ-226, NFR-018, goals-and-non-goals, B1, B2) in the docs PR, then merge it to `main` to build (docs PR https://github.com/ChrisMiho/TheJudge/pull/284) — after the resolution-recipe-eval code PR has merged. Evidence: gate-qc PASS `60955b1d`. Resume: `/graph-implement PRD/work/rulesguru-local-suite/`.
+- None
+
+## Gate verdicts
+
+Resolved 2026-10-10: 9 of 9 slots answered, all accept (7 stable IDs and 2 blocker questions); docs PR #284 merged.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-232` | accept | — |
+| `REQ-185` | accept | — |
+| `REQ-186` | accept | — |
+| `REQ-188` | accept | — |
+| `REQ-226` | accept | — |
+| `NFR-018` | accept | — |
+| `goals-and-non-goals` | accept | — |
+| B1 (promotion) | accept | — |
+| B2 (folder) | accept | — |
+
+### Brief reconciliation
+
+none — every verdict was accept, so `DESIGN-BRIEF.md`, the README intake pointer and `GATE-QUESTIONS.md` diffs are unchanged.
 
 ## Dispatch prompts
 
