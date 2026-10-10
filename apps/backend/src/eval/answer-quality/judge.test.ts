@@ -83,6 +83,20 @@ describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
       expect(client.create.mock.calls[0][0].model).toBe("gpt-5");
     });
 
+    it("sends the strict Correctness level 2 wording and the current rubric revision, with no change to the judge itself (REQ-187)", async () => {
+      const client = fakeClient(
+        JSON.stringify({ correctness: 1, grounding: 2, calibration: 2, readability: 2, rationale: "Right outcome, wrong stack order." })
+      );
+
+      await judgeAnswerAlone({ client, ...baseInput });
+
+      const sentInput = client.create.mock.calls[0][0].input as string;
+      expect(sentInput).toContain(
+        "2 - Reaches the same outcome as the case's approved reference answer, with no material error a player could act on (an invented card or ability, a wrong timing or stack order, or a wrong intermediate rule step)."
+      );
+      expect(sentInput).toContain("revision 2026-10-10.1");
+    });
+
     it("parses JSON wrapped in a fenced code block", async () => {
       const client = fakeClient(
         "```json\n" +

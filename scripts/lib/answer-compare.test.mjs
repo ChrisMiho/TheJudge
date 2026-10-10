@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
 
-import { runCompare } from "../eval-answer-compare.mjs";
-import { compareRunSides, formatComparison, readRunFolder, resolveGroup, selectSide, DIAGNOSTIC_HEADING } from "./answer-compare.mjs";
+import { parseCompareArgs, runCompare } from "../eval-answer-compare.mjs";
+import { compareRunSides, formatComparison, parseRepeatSelector, readRunFolder, resolveGroup, selectSide, selfComparisonReasons, DIAGNOSTIC_HEADING } from "./answer-compare.mjs";
 import { executeExperiment, manifestEntryFor } from "./experiment-run.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -426,4 +426,103 @@ test("two answer models on the same prompts are not called sampling noise", asyn
   assert.equal(result.unchangedInput.label, "same prompt, different answer models");
   assert.match(formatComparison(result), /Identical-prompt stratum \(the same prompt on both sides, answered by different models/);
   assert.doesNotMatch(formatComparison(result), /differences here are sampling noise/);
+});
+
+// Repeat selectors, the self-comparison refusal and answer-level counts (REQ-228, resolution-recipe-eval) ---
+
+test("--repeats-a 1-3 --repeats-b 4-6 on one run and one arm compares the two halves, labelled a noise-floor comparison", async () => {
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const cases = [fixtureCase("steady"), fixtureCase("fades"), fixtureCase("rises")];
+  const pattern = {
+    steady: [true, true, true, true, true, true],
+    fades: [true, true, true, false, false, false],
+    rises: [false, false, false, true, true, false]
+  };
+  const folder = await makeRun({ runId: "six", cases, repeats: 6, rightByRepeat: (id, i) => pattern[id][i], runsRoot });
+  const run = await readRunFolder(folder);
+  const first = selectSide(run, { repeats: "1-3" });
+  const second = selectSide(run, { repeats: "4-6" });
+  assert.deepEqual([...new Set(first.records.map((record) => record.repeat))].sort(), [1, 2, 3]);
+  assert.deepEqual([...new Set(second.records.map((record) => record.repeat))].sort(), [4, 5, 6]);
+  const result = compareRunSides(first, second);
+  assert.equal(result.refused, false);
+  assert.equal(result.noiseFloor, true);
+  assert.equal(result.sides.a.answerLevel.overall.graded, 9);
+  assert.equal(result.sides.a.answerLevel.overall.right, 3 + 3 + 0);
+  assert.equal(result.sides.b.answerLevel.overall.right, 3 + 0 + 2);
+  assert.deepEqual(result.overall, { rightToRight: 1, wrongToRight: 1, rightToWrong: 1, wrongToWrong: 0, missing: 0 });
+  const text = formatComparison(result, { labelA: "first-half", labelB: "second-half" });
+  assert.match(text, /NOISE-FLOOR COMPARISON/);
+  assert.match(text, /first-half: run six .* repeats 1-3/);
+  assert.match(text, /second-half: run six .* repeats 4-6/);
+
+  // Through the command: --repeats-a / --repeats-b on one run, and --repeats on both sides.
+  const outputRoot = await mkdtemp(join(tmpdir(), "compare-out-"));
+  const viaCommand = await runCompare({ argv: [folder, folder, "--arm", "A", "--repeats-a", "1-3", "--repeats-b", "4-6"], log: () => {}, outputRoot, cwd: "/" });
+  assert.equal(viaCommand.noiseFloor, true);
+  assert.deepEqual(viaCommand.overall, result.overall);
+  assert.equal(parseCompareArgs([folder, folder, "--repeats", "2-4"]).selectors.repeats, "2-4");
+
+  // A list and a single repeat work; a malformed or empty selector is refused, naming it.
+  assert.equal(selectSide(run, { repeats: "1,3,5-6" }).records.length, 3 * 4);
+  assert.equal(selectSide(run, { repeats: "2" }).records.length, 3);
+  assert.equal([...parseRepeatSelector("2-4")].join(), "2,3,4");
+  for (const bad of ["3-1", "0-2", "a", "1-", ""]) assert.throws(() => parseRepeatSelector(bad), /repeat selector/);
+  assert.throws(() => selectSide(run, { repeats: "7-9" }), /no records for arm A in repeats 7-9/);
+});
+
+test("a side compared with itself is refused with a message naming the problem, and writes nothing", async () => {
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const folder = await makeRun({ runId: "self", repeats: 2, runsRoot });
+  const outputRoot = await mkdtemp(join(tmpdir(), "compare-out-"));
+  const logs = [];
+  for (const argv of [
+    [folder, folder],
+    [folder, folder, "--arm", "A"],
+    [folder, folder, "--repeats", "1-2"],
+    [folder, folder, "--repeats-a", "1", "--repeats-b", "1"]
+  ]) {
+    process.exitCode = 0;
+    const result = await runCompare({ argv, log: (line) => logs.push(line), outputRoot, cwd: "/" });
+    assert.equal(result.refused, true, argv.join(" "));
+    assert.equal(result.selfComparison, true);
+    assert.equal(process.exitCode, 1);
+  }
+  process.exitCode = 0;
+  assert.match(logs[0], /both sides select the same records \(run self, arm A, model gpt-4\.1, every repeat\)/);
+  assert.match(logs[0], /a side compared with itself says nothing/);
+  assert.match(logs[0], /--repeats-a 1-3 --repeats-b 4-6/);
+  assert.match(logs[0], /Choose two different sides to compare\./);
+  assert.doesNotMatch(logs[0], /Re-grade the earlier run/);
+  assert.deepEqual(await (await import("node:fs/promises")).readdir(outputRoot), []);
+
+  // Different repeats of one run, or the same repeats of two runs, are different sides.
+  assert.deepEqual(selfComparisonReasons(selectSide(await readRunFolder(folder), { repeats: "1" }), selectSide(await readRunFolder(folder), { repeats: "2" })), []);
+  const other = await makeRun({ runId: "self-other", repeats: 2, runsRoot });
+  assert.deepEqual(selfComparisonReasons(selectSide(await readRunFolder(folder), {}), selectSide(await readRunFolder(other), {})), []);
+});
+
+test("right answers out of answers (every repeat) and right-but-over-budget are reported per side, per tier group and per request kind", async () => {
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const lookup = fixtureCase("lookup-fast");
+  const game = { ...fixtureCase("game-slow"), gameState: { zones: {} } };
+  const cases = [lookup, game];
+  // Latencies cycle per answer: the lookup case answers in 100 ms, the game case in 20,000 ms against a 15,000 ms timeout.
+  const a = await makeRun({ runId: "ans-a", cases, repeats: 2, latencies: [100, 100, 20000, 20000], right: new Set(["lookup-fast", "game-slow"]), runsRoot, timeoutMs: 15000 });
+  const b = await makeRun({ runId: "ans-b", cases, repeats: 2, latencies: [100], right: new Set(["lookup-fast"]), runsRoot, timeoutMs: 15000 });
+  const result = await compareFolders(a, b);
+
+  assert.deepEqual(result.sides.a.answerLevel.overall, { graded: 4, right: 4, slowerThanTimeout: 2, rightOverBudget: 2 });
+  assert.deepEqual(result.sides.b.answerLevel.overall, { graded: 4, right: 2, slowerThanTimeout: 0, rightOverBudget: 0 });
+  const kinds = result.sides.a.answerLevel.breakdowns["tiers 1-2"].requestKind;
+  assert.deepEqual(kinds.lookup, { graded: 2, right: 2, slowerThanTimeout: 0, rightOverBudget: 0 });
+  assert.deepEqual(kinds.game, { graded: 2, right: 2, slowerThanTimeout: 2, rightOverBudget: 2 });
+  assert.deepEqual(result.sides.b.answerLevel.breakdowns["tiers 1-2"].requestKind.game, { graded: 2, right: 0, slowerThanTimeout: 0, rightOverBudget: 0 });
+  assert.deepEqual(result.sides.a.answerLevel.byTierGroup["tier 3"], { graded: 0, right: 0, slowerThanTimeout: 0, rightOverBudget: 0 });
+
+  const text = formatComparison(result, { labelA: "a", labelB: "b" });
+  assert.match(text, /answers: 4 right of 4 graded answers \(every repeat counted\); 2 slower than the timeout, 2 of them right/);
+  assert.match(text, /answers: 2 right of 4 graded answers/);
+  assert.match(text, /game:[^\n]*\n\s+answers, every repeat counted: a 2\/2 right, 2 right but over budget; b 0\/2 right, 0 right but over budget/);
+  assert.doesNotMatch(text, /winner|is better|beats/i, "the report states numbers only");
 });

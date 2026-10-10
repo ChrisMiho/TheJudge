@@ -13,6 +13,11 @@
       "miss": ["614.1a", "616.1", "616.1e", "616.1f"],
       "inTopic": ["614.1a", "616.1", "616.1e", "616.1f"]
     },
+    "academy-manufactor-esix-treasure-in-depth": {
+      "hit": [],
+      "miss": ["614.1a", "616.1", "616.1e", "616.1f"],
+      "inTopic": ["614.1a", "616.1", "616.1e", "616.1f"]
+    },
     "activate-chronatog": {
       "hit": [],
       "miss": ["701.2a"]
@@ -803,6 +808,24 @@
       "hit": ["704.8"],
       "miss": []
     },
+    "layers-blood-moon-urborg-dependency": {
+      "hit": [],
+      "miss": ["613.1d", "613.8a", "613.8b", "305.7"]
+    },
+    "layers-blood-moon-urborg-dependency-in-depth": {
+      "hit": [],
+      "miss": ["613.1d", "613.8a", "613.8b", "305.7"],
+      "inTopic": ["613.1d", "613.8a"]
+    },
+    "layers-clone-copies-frogified-serra-angel": {
+      "hit": ["707.2"],
+      "miss": ["613.1a"]
+    },
+    "layers-clone-copies-frogified-serra-angel-in-depth": {
+      "hit": [],
+      "miss": ["707.2", "613.1a"],
+      "inTopic": ["613.1a"]
+    },
     "layers-hand-size-timestamp-praetors-counsel": {
       "hit": ["402.2"],
       "miss": ["613.7"]
@@ -815,9 +838,27 @@
       "hit": ["613.5"],
       "miss": []
     },
+    "layers-humility-then-opalescence": {
+      "hit": [],
+      "miss": ["613.1d", "613.1f", "613.4b", "613.6", "613.7"]
+    },
+    "layers-humility-then-opalescence-in-depth": {
+      "hit": [],
+      "miss": ["613.1d", "613.1f", "613.4b", "613.6", "613.7"],
+      "inTopic": ["613.1d", "613.1f", "613.4b", "613.7"]
+    },
     "layers-independent-effects-use-timestamp": {
       "hit": ["613.9"],
       "miss": []
+    },
+    "layers-mycosynth-lattice-march-dependency": {
+      "hit": [],
+      "miss": ["613.1d", "613.8a", "613.8b", "704.5f"]
+    },
+    "layers-mycosynth-lattice-march-dependency-in-depth": {
+      "hit": [],
+      "miss": ["613.1d", "613.8a", "613.8b", "704.5f"],
+      "inTopic": ["613.1d", "613.8a"]
     },
     "layers-noncreature-artifacts-become-creatures": {
       "hit": ["613.6"],
@@ -830,6 +871,15 @@
     "layers-timestamp-order": {
       "hit": ["613.9"],
       "miss": []
+    },
+    "layers-turn-to-frog-after-giant-growth-counter": {
+      "hit": [],
+      "miss": ["613.4b", "613.4c"]
+    },
+    "layers-turn-to-frog-after-giant-growth-counter-in-depth": {
+      "hit": [],
+      "miss": ["613.4b", "613.4c"],
+      "inTopic": ["613.4b", "613.4c"]
     },
     "layers-two-switches-cancel": {
       "hit": ["613.4d"],
@@ -964,6 +1014,10 @@
       "miss": []
     },
     "necropotence-silence-borne-upon-a-wind-cleanup": {
+      "hit": ["514.1"],
+      "miss": ["514.2", "514.3a"]
+    },
+    "necropotence-silence-borne-upon-a-wind-cleanup-in-depth": {
       "hit": ["514.1"],
       "miss": ["514.2", "514.3a"]
     },
@@ -1154,6 +1208,15 @@
     "replacement-jailer-and-colossus-replacement": {
       "hit": ["614.6"],
       "miss": ["614.1a"]
+    },
+    "replacement-kalitas-blood-artist-no-dies-trigger": {
+      "hit": [],
+      "miss": ["614.1a", "614.6", "700.4"]
+    },
+    "replacement-kalitas-blood-artist-no-dies-trigger-in-depth": {
+      "hit": [],
+      "miss": ["614.1a", "614.6", "700.4"],
+      "inTopic": ["614.6"]
     },
     "replacement-lifegain-and-draw-replacements-combine": {
       "hit": ["616.2"],
@@ -1460,6 +1523,14 @@
     "tribute-fanatic-of-xenagos": {
       "hit": ["702.104a"],
       "miss": []
+    },
+    "triggers-apnap-blood-artists-at-one-life": {
+      "hit": [],
+      "miss": ["603.3b", "704.3", "704.5a"]
+    },
+    "triggers-apnap-blood-artists-at-one-life-in-depth": {
+      "hit": [],
+      "miss": ["603.3b", "704.3", "704.5a"]
     },
     "triggers-becomes-tapped-not-entering-tapped": {
       "hit": ["603.2e"],

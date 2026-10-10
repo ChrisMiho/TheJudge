@@ -172,7 +172,11 @@ needs a one-line `>>> Note:`). Apply writes `review.status`, `review.reviewedOn`
 and the note into each case file, re-records `snapshot` on an approve, refuses a
 case whose question, answer or committed rule, oracle or ruling text changed
 since the render, and rewrites `coverage.json`. An `edit` lands in `needs-edit`
-and never touches the reference answer. Nothing else writes `approved`.
+and never touches the reference answer. Nothing else writes `approved`, with two exceptions
+(REQ-224): the 18 first-ship cases, which the format-version-2 migration wrote, and a case the
+owner approved one by one in a `define`-gate verdict slot, which the build authoring it writes
+`approved` (the `resolution-recipe-eval` hard cases are the first, each with a review note
+naming its slot).
 
 ## Coverage and staleness (REQ-223, REQ-225)
 
@@ -254,6 +258,12 @@ touches `results.json`.
   missing, lists every right-to-wrong case with its transcripts, breaks the counts down by
   tier (1-2 and 3 never pooled), rules section, mechanic, difficulty, source pool and
   request kind, reports the unchanged-input stratum as sampling noise, and names no winner.
+  Per side it also counts right answers out of all graded answers (every repeat, beside the
+  per-case majorities) and right answers slower than the production timeout, in every
+  breakdown. `--repeats <from>-<to>` (and `--repeats-a` / `--repeats-b`) keeps only some
+  repeats of a side, so one arm's halves compare within one run
+  (`<run> <run> --arm A --repeats-a 1-3 --repeats-b 4-6`, labelled a noise-floor
+  comparison); two sides that select the same records are refused.
 - **Evidence trace** (REQ-229): `npm run eval:evidence-trace` (offline) shows, per deciding
   rule, its rank in the full System 3 ranking, whether it was selected, and whether its text
   reached the final prompt (curated topic, excerpt, or card ruling), with the rule's parent
@@ -261,10 +271,19 @@ touches `results.json`.
   compares two traces made from two revisions' worktrees.
 - **Arms and manifests** (REQ-230): `scripts/lib/diagnostic-arms.mjs` builds test-only
   prompt variants (B regroups the same evidence, C adds the deciding-rule bundle, D is both,
-  P swaps one approved preamble sentence). `manifests/diagnostic.json` and
+  P swaps one approved preamble sentence, R swaps the layers paragraph of the fixed reference
+  text for the owner-approved layer-and-timing resolution recipe in
+  `apps/backend/src/eval/answer-quality/arm-r-recipe.json`; P and R work on a lookup prompt
+  and an In-Depth prompt alike and refuse unless the target appears exactly once and the file
+  carries its approval date). `manifests/diagnostic.json` and
   `manifests/held-out.json` (case ids and hashes only, written by
   `npm run eval:answer-quality:manifests`) fence them: C and D run only on the diagnostic set,
-  and a later fix is judged once on the held-out set.
+  B, P and R also on the held-out set once frozen, and a later fix is judged once on the
+  held-out set. The seeded sets stay as drawn: `-- --check` verifies the committed files (every
+  listed case present, approved, current, hashes matching, the two sets apart) and prints how
+  far a fresh draw would drift without failing; `-- --append-diagnostic <ids> --reason <text>`
+  adds approved cases to the diagnostic set as a recorded group (ids, hashes, date, reason) and
+  never touches the held-out file; a re-draw keeps every appended group.
 
 None of these is a build gate. The findings and the owner's runbook for the paid phases are
 in `docs/eval/answer-quality-investigation/`.

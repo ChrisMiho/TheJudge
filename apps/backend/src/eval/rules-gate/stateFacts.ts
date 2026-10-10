@@ -142,12 +142,15 @@ export function checkStateFacts(caseEntry: GoldCase, promptText: string): string
     if (!promptText.includes(header)) failures.push(`${zoneId}: missing section header "${header}"`);
     for (const card of cards) {
       const where = `${zoneId} card ${card.name ?? card.cardId}`;
-      const match = new RegExp(`\\n[A-Z][a-z]+ \\d+\\nname: ${escapeRegExp(card.name ?? "")}\\n`).exec(promptText);
-      if (!match) {
+      // Two cards of one name (two Blood Artists with different owners) print two blocks: the card passes
+      // when any printed block of that name carries all of its stated facts.
+      const matches = [...promptText.matchAll(new RegExp(`\\n[A-Z][a-z]+ \\d+\\nname: ${escapeRegExp(card.name ?? "")}\\n`, "g"))];
+      if (matches.length === 0) {
         failures.push(`${where}: "name: ${card.name}" is not in the prompt`);
         continue;
       }
-      failures.push(...checkCardBlock(blockFrom(promptText, match.index + 1), card, players, where, false));
+      const attempts = matches.map((match) => checkCardBlock(blockFrom(promptText, match.index + 1), card, players, where, false));
+      if (!attempts.some((attempt) => attempt.length === 0)) failures.push(...attempts[0]);
     }
   }
   return failures;

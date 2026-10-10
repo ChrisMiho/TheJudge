@@ -14,11 +14,12 @@ import {
   classifyFromTrace,
   parseManifestArgs,
   resolveEmitPath,
+  runAppend,
   runManifests,
   selectHeldOut
 } from "./build-answer-quality-manifests.mjs";
 import { DIAGNOSTIC_MANIFEST_RELATIVE_PATH, HELD_OUT_MANIFEST_RELATIVE_PATH } from "./lib/diagnostic-arms.mjs";
-import { loadManifestFile } from "./lib/experiment-run.mjs";
+import { loadManifestFile, manifestEntryFor } from "./lib/experiment-run.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -128,29 +129,189 @@ test("a sample size may change only with a recorded reason, which the manifests 
   assert.throws(() => parseManifestArgs(["--seed", "abc"]), /whole number/);
 });
 
-test("check mode compares against the files on disk, and write mode writes both", async () => {
-  const { cases, classes } = syntheticCorpus();
-  const traced = [...classes].map(([caseId, klass]) => ({
+function syntheticTrace(classes) {
+  return [...classes].map(([caseId, klass]) => ({
     caseId,
     rules: klass === "full" ? [{ selectedInSearch: true }] : klass === "none" ? [{ selectedInSearch: false }] : [{ selectedInSearch: true }, { selectedInSearch: false }]
   }));
+}
+
+const SYNTHETIC_ARGV = ["--diagnostic-none", "5", "--diagnostic-full", "3", "--held-out", "20", "--reason", "synthetic"];
+const DIAGNOSTIC_PATH = `/repo/${DIAGNOSTIC_MANIFEST_RELATIVE_PATH}`;
+const HELD_OUT_PATH = `/repo/${HELD_OUT_MANIFEST_RELATIVE_PATH}`;
+
+/** Writes both synthetic manifests into a map, as the real command would write them to disk. */
+async function drawSynthetic() {
+  const { cases, classes } = syntheticCorpus();
+  const traced = syntheticTrace(classes);
   const written = new Map();
-  const argv = ["--diagnostic-none", "5", "--diagnostic-full", "3", "--held-out", "20", "--reason", "synthetic"];
   const logs = [];
-  await runManifests({ argv, approvedCases: cases, traced, write: async (path, text) => written.set(path, text), readExisting: async () => "", log: (line) => logs.push(line), root: "/repo" });
+  await runManifests({ argv: SYNTHETIC_ARGV, approvedCases: cases, traced, write: async (path, text) => written.set(path, text), readExisting: async () => "", log: (line) => logs.push(line), root: "/repo" });
+  return { cases, traced, written, logs };
+}
+
+test("write mode writes both manifests under the manifests folder and logs a changed sample size's reason", async () => {
+  const { written, logs } = await drawSynthetic();
   assert.equal(written.size, 2);
   assert.ok([...written.keys()].every((path) => path.startsWith("/repo/apps/backend/src/eval/answer-quality/manifests/")));
   assert.ok(logs.join("\n").includes("Sample size changed from its default. Reason: synthetic"));
+});
 
-  const same = await runManifests({ argv: [...argv, "--check"], approvedCases: cases, traced, write: async () => assert.fail("check mode writes nothing"), readExisting: async (path) => written.get(path), log: () => {}, root: "/repo" });
+test("--check verifies the committed files without re-drawing: it passes on sound files, writes nothing, and prints drift as information", async () => {
+  const { cases, traced, written } = await drawSynthetic();
+  const logs = [];
+  const check = (overrides = {}) =>
+    runManifests({
+      argv: [...SYNTHETIC_ARGV, "--check"],
+      approvedCases: cases,
+      traced,
+      write: async () => assert.fail("check mode writes nothing"),
+      readExisting: async (path) => written.get(path),
+      log: (line) => logs.push(line),
+      root: "/repo",
+      ...overrides
+    });
+  const same = await check();
   assert.equal(same.checked, true);
+  assert.match(logs.join("\n"), /no drift/);
+
+  // The corpus moves under the committed files: a fresh draw would differ, yet the committed files are still sound, so the check passes and reports drift.
+  const moved = cases.filter((caseEntry) => !caseEntry.id.startsWith("full-0"));
+  const drifted = await check({ approvedCases: moved, allCases: cases, traced: traced.filter((entry) => !entry.caseId.startsWith("full-0")) });
+  assert.equal(drifted.checked, true);
+  assert.match(logs.join("\n"), /Drift \(information only, not a failure\): a fresh seeded draw from the current corpus would add \d+ and drop \d+ diagnostic cases/);
+});
+
+test("--check fails, naming each problem, when a listed case is missing, unapproved, stale or changed, or when the two sets share a case", async () => {
+  const { cases, traced, written } = await drawSynthetic();
+  const diagnostic = JSON.parse(written.get(DIAGNOSTIC_PATH));
+  const heldOut = JSON.parse(written.get(HELD_OUT_PATH));
+  const [missing, unapproved, stale, changedQuestion, changedAnswer] = diagnostic.cases.map((entry) => entry.id);
+  const all = cases
+    .filter((caseEntry) => caseEntry.id !== missing)
+    .map((caseEntry) => {
+      if (caseEntry.id === unapproved) return { ...caseEntry, review: { status: "draft" } };
+      if (caseEntry.id === changedQuestion) return { ...caseEntry, question: "A reworded question?" };
+      if (caseEntry.id === changedAnswer) return { ...caseEntry, expected: { ...caseEntry.expected, answer: "A reworded answer." } };
+      return caseEntry;
+    });
+  const sharedWithHeldOut = { ...heldOut, cases: [...heldOut.cases, diagnostic.cases.at(-1)] };
+  const files = new Map([[DIAGNOSTIC_PATH, JSON.stringify(diagnostic)], [HELD_OUT_PATH, JSON.stringify(sharedWithHeldOut)]]);
   await assert.rejects(
-    () => runManifests({ argv: [...argv, "--check"], approvedCases: cases, traced, write: async () => {}, readExisting: async () => "stale", log: () => {}, root: "/repo" }),
-    /differ from a fresh seeded run/
+    () =>
+      runManifests({
+        argv: [...SYNTHETIC_ARGV, "--check"],
+        approvedCases: all.filter((caseEntry) => caseEntry.review.status === "approved"),
+        allCases: all,
+        isStale: (caseEntry) => caseEntry.id === stale,
+        traced,
+        write: async () => {},
+        readExisting: async (path) => files.get(path),
+        log: () => {},
+        root: "/repo"
+      }),
+    (error) =>
+      error.message.includes(`diagnostic: ${missing} is missing from the corpus`) &&
+      error.message.includes(`diagnostic: ${unapproved} is not approved`) &&
+      error.message.includes(`diagnostic: ${stale} is flagged stale`) &&
+      error.message.includes(`diagnostic: ${changedQuestion} no longer matches its listed question hash`) &&
+      error.message.includes(`diagnostic: ${changedAnswer} no longer matches its listed reference-answer hash`) &&
+      error.message.includes(`${diagnostic.cases.at(-1).id} is listed in both the diagnostic and the held-out manifest`)
   );
 });
 
-test("the committed manifests, read as data: disjoint, ids and hashes only, usable as an experiment manifest (byte-for-byte reproduction is the on-demand `npm run eval:answer-quality:manifests -- --check`, never a gate)", async () => {
+// Appended groups ------------------------------------------------------------
+
+function committedFiles(written) {
+  return { diagnostic: JSON.parse(written.get(DIAGNOSTIC_PATH)), heldOut: JSON.parse(written.get(HELD_OUT_PATH)) };
+}
+
+test("--append-diagnostic adds an approved case as a recorded group with its reason and date, and leaves the held-out manifest byte for byte alone", async () => {
+  const { cases, written } = await drawSynthetic();
+  const { diagnostic, heldOut } = committedFiles(written);
+  const heldOutIds = new Set(heldOut.cases.map((entry) => entry.id));
+  const diagnosticIds = new Set(diagnostic.cases.map((entry) => entry.id));
+  const outside = cases.find((caseEntry) => !heldOutIds.has(caseEntry.id) && !diagnosticIds.has(caseEntry.id));
+  assert.ok(outside, "the synthetic corpus has a case in neither set");
+  const files = new Map(written);
+  const writes = [];
+  const logs = [];
+  const result = await runAppend({
+    argv: ["--append-diagnostic", outside.id, "--group", "hard-set", "--reason", "hard layer cases"],
+    allCases: cases,
+    readExisting: async (path) => files.get(path),
+    write: async (path, text) => writes.push([path, text]),
+    log: (line) => logs.push(line),
+    root: "/repo",
+    today: () => "2026-10-10"
+  });
+  assert.deepEqual(writes.map(([path]) => path), [DIAGNOSTIC_PATH], "only the diagnostic manifest is written");
+  assert.equal(files.get(HELD_OUT_PATH), written.get(HELD_OUT_PATH), "the held-out manifest is untouched");
+  const next = JSON.parse(writes[0][1]);
+  assert.equal(next.appendedGroups.length, 1);
+  assert.deepEqual(next.appendedGroups[0], { name: "hard-set", date: "2026-10-10", reason: "hard layer cases", cases: [manifestEntryFor(outside)] });
+  assert.equal(next.caseCount, diagnostic.caseCount + 1);
+  assert.deepEqual(next.cases.map((entry) => entry.id), [...next.cases.map((entry) => entry.id)].sort());
+  assert.ok(next.cases.some((entry) => entry.id === outside.id));
+  assert.equal(result.group.name, "hard-set");
+  assert.match(logs[0], /Appended 1 cases .* group "hard-set"/);
+  assert.deepEqual(Object.keys(next.cases.find((entry) => entry.id === outside.id)).sort(), ["answerSha256", "id", "questionSha256"], "ids and hashes only");
+});
+
+test("--append-diagnostic refuses, naming each, a held-out, non-approved, stale, unknown or already-diagnostic case, and a repeated group name", async () => {
+  const { cases, written } = await drawSynthetic();
+  const { diagnostic, heldOut } = committedFiles(written);
+  const files = new Map(written);
+  const outside = cases.filter((caseEntry) => !heldOut.cases.some((entry) => entry.id === caseEntry.id) && !diagnostic.cases.some((entry) => entry.id === caseEntry.id));
+  const draft = { ...outside[0], id: "draft-new", review: { status: "draft" } };
+  const append = (ids, extra = {}) =>
+    runAppend({
+      argv: ["--append-diagnostic", ids.join(","), "--reason", "r"],
+      allCases: [...cases, draft],
+      isStale: (caseEntry) => caseEntry.id === outside[1].id,
+      readExisting: async (path) => files.get(path),
+      write: async () => assert.fail("a refused append writes nothing"),
+      log: () => {},
+      root: "/repo",
+      today: () => "2026-10-10",
+      ...extra
+    });
+  await assert.rejects(
+    () => append([heldOut.cases[0].id, "draft-new", outside[1].id, "no-such-case", diagnostic.cases[0].id]),
+    (error) =>
+      error.message.includes(`${heldOut.cases[0].id}: listed in the held-out manifest`) &&
+      error.message.includes("draft-new: not approved") &&
+      error.message.includes(`${outside[1].id}: flagged stale`) &&
+      error.message.includes("no-such-case: not in the corpus") &&
+      error.message.includes(`${diagnostic.cases[0].id}: already in the diagnostic manifest`)
+  );
+  files.set(DIAGNOSTIC_PATH, JSON.stringify({ ...diagnostic, appendedGroups: [{ name: "appended-2026-10-10", date: "2026-10-09", reason: "x", cases: [] }] }));
+  await assert.rejects(() => append([outside[0].id]), /a group named "appended-2026-10-10" already exists/);
+  assert.throws(() => parseManifestArgs(["--append-diagnostic", "a"]), /needs --reason/);
+  assert.throws(() => parseManifestArgs(["--append-diagnostic", "a", "--reason", "r", "--check"]), /cannot be combined/);
+  assert.throws(() => parseManifestArgs(["--group", "g"]), /belongs to --append-diagnostic/);
+});
+
+test("a re-draw keeps appended groups, and their cases stay out of the held-out set", async () => {
+  const { cases, traced, written } = await drawSynthetic();
+  const { diagnostic, heldOut } = committedFiles(written);
+  const heldOutIds = new Set(heldOut.cases.map((entry) => entry.id));
+  const outside = cases.find((caseEntry) => !heldOutIds.has(caseEntry.id) && !diagnostic.cases.some((entry) => entry.id === caseEntry.id));
+  const group = { name: "hard-set", date: "2026-10-10", reason: "hard layer cases", cases: [manifestEntryFor(outside)] };
+  const withGroup = { ...diagnostic, caseCount: diagnostic.caseCount + 1, appendedGroups: [group], cases: [...diagnostic.cases, manifestEntryFor(outside)].sort((a, b) => a.id.localeCompare(b.id)) };
+  const files = new Map([[DIAGNOSTIC_PATH, JSON.stringify(withGroup)], [HELD_OUT_PATH, JSON.stringify(heldOut)]]);
+  const redrawn = new Map();
+  await runManifests({ argv: SYNTHETIC_ARGV, approvedCases: cases, traced, write: async (path, text) => redrawn.set(path, text), readExisting: async (path) => files.get(path), log: () => {}, root: "/repo" });
+  const next = JSON.parse(redrawn.get(DIAGNOSTIC_PATH));
+  assert.deepEqual(next.appendedGroups, [group]);
+  assert.ok(next.cases.some((entry) => entry.id === outside.id), "the appended case stays in the diagnostic set");
+  assert.equal(next.caseCount, next.cases.length);
+  assert.ok(!JSON.parse(redrawn.get(HELD_OUT_PATH)).cases.some((entry) => entry.id === outside.id), "and out of the held-out set");
+  // A re-draw with no groups writes no appendedGroups key at all.
+  assert.equal("appendedGroups" in JSON.parse(written.get(DIAGNOSTIC_PATH)), false);
+});
+
+test("the committed manifests, read as data: disjoint, ids and hashes only, usable as an experiment manifest (verifying them against the corpus is the on-demand `npm run eval:answer-quality:manifests -- --check`, never a gate)", async () => {
   const diagnostic = JSON.parse(await readFile(join(repoRoot, DIAGNOSTIC_MANIFEST_RELATIVE_PATH), "utf8"));
   const heldOut = JSON.parse(await readFile(join(repoRoot, HELD_OUT_MANIFEST_RELATIVE_PATH), "utf8"));
   assert.equal(diagnostic.kind, "diagnostic");

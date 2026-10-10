@@ -33,7 +33,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| resolution-recipe-eval | Docs PR open: answer `GATE-QUESTIONS.md` (5 rule changes + G1, G2, G3-01..16, G4), then merge to build. Eval-only arm R vs production on Luna, both flows; 18 hard cases × 6 repeats; dry-run estimate ≈ $3.55 |
 
 ## deferred
 

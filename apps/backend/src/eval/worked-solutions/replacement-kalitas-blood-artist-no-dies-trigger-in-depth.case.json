@@ -1,0 +1,108 @@
+{
+  "id": "replacement-kalitas-blood-artist-no-dies-trigger-in-depth",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-08 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "e1cfd1cb-44a5-429f-a5c1-e6d29bad1c71",
+      "name": "Kalitas, Traitor of Ghet"
+    },
+    {
+      "oracleId": "310f141c-7f37-4729-aed6-dd9c09db448d",
+      "name": "Blood Artist"
+    },
+    {
+      "oracleId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "name": "Grizzly Bears"
+    },
+    {
+      "oracleId": "938b4e2c-88d9-4637-bc00-e228920c9a78",
+      "name": "Murder"
+    }
+  ],
+  "gameState": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "activePlayer": "Player 1",
+    "selectedZones": ["stack", "battlefield"],
+    "zones": {
+      "stack": [
+        {
+          "cardId": "938b4e2c-88d9-4637-bc00-e228920c9a78",
+          "name": "Murder",
+          "caster": "Player 1",
+          "targets": [
+            {
+              "kind": "card",
+              "zone": "battlefield",
+              "cardId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+              "cardName": "Grizzly Bears"
+            }
+          ]
+        }
+      ],
+      "battlefield": [
+        {
+          "cardId": "e1cfd1cb-44a5-429f-a5c1-e6d29bad1c71",
+          "name": "Kalitas, Traitor of Ghet",
+          "owner": "Player 1"
+        },
+        {
+          "cardId": "310f141c-7f37-4729-aed6-dd9c09db448d",
+          "name": "Blood Artist",
+          "owner": "Player 2"
+        },
+        {
+          "cardId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+          "name": "Grizzly Bears",
+          "owner": "Player 2"
+        }
+      ]
+    }
+  },
+  "question": "My Murder targets Player 2's Grizzly Bears and I control Kalitas. When Murder resolves, does Player 2's Blood Artist trigger, and can Player 2 respond before my Zombie arrives?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No to both: Kalitas exiles the Bears instead, so nothing dies, and the Zombie is part of that replacement.",
+    "answer": "No to both. Kalitas's ability is a replacement effect (614.1a): as Murder resolves, Player 2's Grizzly Bears is exiled instead of going to the graveyard, so it never dies (700.4) and Blood Artist has nothing to trigger on. The Zombie is created as part of the same modified event (614.6); it doesn't use the stack, so Player 2 gets no chance to respond between the exile and the Zombie. Player 2 can still respond to Murder now, while it is on the stack.",
+    "decidingRuleIds": ["614.1a", "614.6", "700.4"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 614.1a, 614.6, 700.4",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-08 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "c60912507eb5d08f7ac1019e9c8dfc1eeac2a6307dec9e7c7eb0ce0585ca0304",
+      "oracle": "3326ec371dfb79eec985185f86e06fcc081a880d367a8107716ecef0efb50dcd",
+      "rulings": "15d58aa717b91a74f8665c0217a2c18521856af34ee3bb8ecfc89e45ffcad49a"
+    }
+  },
+  "whyHard": "A replacement effect changes the event itself, so nothing dies and nothing triggers, and the replacement's own result never uses the stack."
+}

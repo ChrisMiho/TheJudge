@@ -1,0 +1,93 @@
+{
+  "id": "layers-clone-copies-frogified-serra-angel-in-depth",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-12 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "name": "Clone"
+    },
+    {
+      "oracleId": "32249228-e300-4865-b977-5e1f285d02f2",
+      "name": "Frogify"
+    },
+    {
+      "oracleId": "4b7ac066-e5c7-43e6-9e7e-2739b24a905d",
+      "name": "Serra Angel"
+    }
+  ],
+  "gameState": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "activePlayer": "Player 1",
+    "selectedZones": ["stack", "battlefield"],
+    "zones": {
+      "stack": [
+        {
+          "cardId": "42226b87-0746-4ebf-9fd0-108d508462af",
+          "name": "Clone",
+          "caster": "Player 1"
+        }
+      ],
+      "battlefield": [
+        {
+          "cardId": "4b7ac066-e5c7-43e6-9e7e-2739b24a905d",
+          "name": "Serra Angel",
+          "owner": "Player 2",
+          "contextNotes": "enchanted by Frogify"
+        },
+        {
+          "cardId": "32249228-e300-4865-b977-5e1f285d02f2",
+          "name": "Frogify",
+          "owner": "Player 2",
+          "contextNotes": "attached to Serra Angel"
+        }
+      ]
+    }
+  },
+  "question": "When my Clone resolves, I'll have it copy Player 2's Serra Angel, which has Frogify on it. Is my Clone a Frog, and does it have flying?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Not a Frog, and yes, it has flying: Clone copies only what's printed.",
+    "answer": "Your Clone isn't a Frog, and it has flying and vigilance: it enters as a Serra Angel. Copying takes only the copiable values — the printed card, as modified by other copy effects (707.2) — applied in layer 1 (613.1a). Frogify is an Aura's effect on Player 2's Serra Angel, not a copy effect, so it doesn't carry over to your Clone.",
+    "decidingRuleIds": ["707.2", "613.1a"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 707.2, 613.1a",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-12 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "427b7f275aed20ad6e5f4f5a811677f4496ece6178b4d32a85d0384fde4580c2",
+      "oracle": "06657c8d032b3d3c0caa4cdf68df39e92ae70d308e21e42f7205f0f492e49c8e",
+      "rulings": "c559d99a8d393b38661a02a5a7b6d8147b1106a9851a3b5fcfa0b144f6109ff0"
+    }
+  },
+  "whyHard": "A copy takes only copiable values (layer 1), so an effect that changed the original afterwards, such as an Aura, is not copied."
+}

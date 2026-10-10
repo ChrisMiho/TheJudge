@@ -10,9 +10,11 @@ import {
   CALLS_FILE,
   assertAllPriced,
   assertCheckoutReady,
+  assertGameFidelity,
   diffIdentity,
   executeExperiment,
   executeRegrade,
+  findGameFidelityProblems,
   loadManifestFile,
   manifestEntryFor,
   recordKey,
@@ -825,4 +827,49 @@ test("the blind ranking is handed the same attached-excerpt, deciding-rule and g
   assert.deepEqual(ranking[0], lone[0]);
   assert.deepEqual(ranking[0].attachedExcerpts, [{ ruleId: "100.1", text: "Rule text." }]);
   assert.deepEqual(ranking[0].decidingRuleIds, ["100.1", "200.2"]);
+});
+
+// Game-case request fidelity (REQ-230) ---------------------------------------
+
+const GAME_STATE = { zones: { battlefield: [{ cardId: "oracle-1", owner: "player1" }] } };
+const buildRequestFor = (caseEntry) =>
+  caseEntry.gameState
+    ? { mode: "game", question: caseEntry.question, gameContext: caseEntry.gameState }
+    : { mode: "lookup", question: caseEntry.question };
+// A prompt that prints the whole request, so any field the parse adds or changes shows in the prompt.
+const preparePrinting = (request) => ({ promptText: `PROMPT ${JSON.stringify(request)}` });
+
+test("a game case whose raw and parsed requests give the same prompt passes the fidelity check", () => {
+  const caseEntry = fixtureCase("game-ok", { gameState: GAME_STATE });
+  const args = { cases: [caseEntry], buildRequest: buildRequestFor, parseRequest: (raw) => structuredClone(raw), prepare: preparePrinting, resources: {}, excerptCaps: [5, 10] };
+  assert.deepEqual(findGameFidelityProblems(args), []);
+  assert.doesNotThrow(() => assertGameFidelity(args));
+});
+
+test("a game case whose parsed request would give a different prompt makes the run refuse, naming the case", () => {
+  const same = fixtureCase("game-same", { gameState: GAME_STATE });
+  const differs = fixtureCase("game-differs", { gameState: GAME_STATE });
+  // The parse fills a default the raw request lacks (as the route's schema does for a zone card's targets).
+  const parseRequest = (raw) => (raw.question.includes("game-differs") ? { ...raw, gameContext: { ...raw.gameContext, filled: [] } } : structuredClone(raw));
+  const args = { cases: [same, differs], buildRequest: buildRequestFor, parseRequest, prepare: preparePrinting, resources: {}, excerptCaps: [10] };
+  const problems = findGameFidelityProblems(args);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /^game-differs: the prompt from the raw case request differs from the prompt from the request the route's schema parses/);
+  assert.throws(() => assertGameFidelity(args), (error) => /refuses to start/.test(error.message) && /game-differs/.test(error.message) && !/game-same/.test(error.message));
+});
+
+test("the fidelity check names a case the route's schema rejects or whose question the schema changes, and skips lookup cases", () => {
+  const rejected = fixtureCase("game-rejected", { gameState: GAME_STATE });
+  const reworded = fixtureCase("game-reworded", { gameState: GAME_STATE });
+  const lookup = fixtureCase("lookup-untouched");
+  const parseRequest = (raw) => {
+    if (raw.question.includes("game-rejected")) throw new Error("zones.battlefield[0].owner is invalid");
+    if (raw.question.includes("game-reworded")) return { ...raw, question: raw.question.trim().toUpperCase() };
+    throw new Error("a lookup case is never parsed by the check");
+  };
+  const problems = findGameFidelityProblems({ cases: [rejected, reworded, lookup], buildRequest: buildRequestFor, parseRequest, prepare: preparePrinting, resources: {}, excerptCaps: [10] });
+  assert.equal(problems.length, 2);
+  assert.match(problems[0], /game-rejected: the Ask AI route's schema rejects the request this case builds \(zones\.battlefield\[0\]\.owner is invalid\)/);
+  assert.match(problems[1], /game-reworded: the route's schema changes the question text/);
+  assert.deepEqual(findGameFidelityProblems({ cases: [lookup], buildRequest: buildRequestFor, parseRequest, prepare: preparePrinting, resources: {} }), []);
 });

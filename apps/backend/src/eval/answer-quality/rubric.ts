@@ -35,7 +35,7 @@ export const RUBRIC_AXES: readonly RubricAxis[] = [
     levels: {
       0: "Reaches a different outcome than the case's approved reference answer.",
       1: "Partially right, or right with a material error or omission.",
-      2: "Reaches the same outcome as the case's approved reference answer."
+      2: "Reaches the same outcome as the case's approved reference answer, with no material error a player could act on (an invented card or ability, a wrong timing or stack order, or a wrong intermediate rule step)."
     }
   },
   {
@@ -74,11 +74,16 @@ export const RUBRIC_AXIS_IDS: readonly RubricAxisId[] = RUBRIC_AXES.map((axis) =
  * comparable only when their judge model AND rubric revision match
  * (REQ-186, REQ-189).
  */
-export const RUBRIC_REVISION = "2026-10-07.1";
+export const RUBRIC_REVISION = "2026-10-10.1";
 // 2026-10-07.1: the judge's inputs changed (REQ-186) -- it now receives the text of
 // the excerpts the answer prompt carried and the deciding rule ids under a separate
 // label -- so the revision moved, and grades under 2026-10-06.1 are never compared
 // per case with grades under this one (REQ-187, REQ-189).
+// 2026-10-10.1: Correctness level 2 now excludes a material error a player could act on
+// (the owner's strict-grading ruling of 2026-10-08, adopted by the resolution-recipe-eval
+// package), so grades under 2026-10-07.1 are never compared per case with grades under this
+// one (REQ-187); an experiment run's stored answers can be graded again under it with
+// `--regrade-from` (REQ-226).
 
 /** Renders the rubric as the exact text sent to the judge (REQ-186 layer 2). */
 export function formatRubricForJudge(): string {

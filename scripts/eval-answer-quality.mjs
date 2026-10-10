@@ -62,6 +62,7 @@ import {
   EXPERIMENT_RUNS_DIR,
   defaultGit,
   assertAllPriced,
+  assertGameFidelity,
   executeExperiment,
   executeRegrade,
   findUnpricedModels,
@@ -73,6 +74,7 @@ import {
   ARM_IDS,
   ARM_REGISTRY,
   ARM_P_CORRECTION_RELATIVE_PATH,
+  ARM_R_RECIPE_RELATIVE_PATH,
   DIAGNOSTIC_MANIFEST_RELATIVE_PATH,
   HELD_OUT_MANIFEST_RELATIVE_PATH,
   buildArmPrompt,
@@ -952,7 +954,8 @@ export async function runLiveEvaluation(params) {
 
 /**
  * The committed case sets the arms are fenced by (REQ-230): the diagnostic and held-out manifests'
- * ids, and arm P's owner-approved correction when its file exists. Read from this checkout.
+ * ids, plus arm P's owner-approved correction and arm R's owner-approved recipe when their files
+ * exist. Read from this checkout.
  */
 export async function defaultLoadArmSets() {
   const readJson = async (relativePath) => JSON.parse(await readFile(resolve(repoRoot, relativePath), "utf8"));
@@ -962,11 +965,40 @@ export async function defaultLoadArmSets() {
     if (error?.code === "ENOENT") return null;
     throw error;
   });
+  const recipe = await readJson(ARM_R_RECIPE_RELATIVE_PATH).catch((error) => {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  });
   return {
     diagnosticIds: new Set(diagnostic.cases.map((entry) => entry.id)),
     heldOutIds: new Set(heldOut.cases.map((entry) => entry.id)),
-    correction
+    correction,
+    recipe
   };
+}
+
+/**
+ * The run-start fidelity check for In-Depth cases (REQ-230): the prompt from the raw case request must equal
+ * the prompt from the request `askAiRequestSchema` parses, or the run refuses, naming the case. Loads the
+ * backend only when a selected case has a `gameState`.
+ */
+export async function defaultCheckGameFidelity({ cases, excerptCaps }) {
+  if (!cases.some((caseEntry) => caseEntry.gameState)) return;
+  const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
+  const { askAiRequestSchema } = await import("../apps/backend/src/validation/askAiRequest.ts");
+  const resources = await loadPromptResources();
+  assertGameFidelity({
+    cases,
+    buildRequest: buildCaseRequest,
+    parseRequest: (raw) => {
+      const result = askAiRequestSchema.safeParse(raw);
+      if (!result.success) throw new Error(result.error.message);
+      return result.data;
+    },
+    prepare: preparePromptInput,
+    resources,
+    excerptCaps
+  });
 }
 
 /** `DEFAULT_OPENAI_TIMEOUT_MS` from the config source of the checkout this runs from; null when it cannot be read. */
@@ -1015,7 +1047,8 @@ export async function runLiveExperiment(params) {
         promptText: prepared.promptText,
         ruleIndex: resources.gameRulesRuleIndex,
         decidingRuleIds: caseEntry.expected.decidingRuleIds,
-        correction: params.correction
+        correction: params.correction,
+        recipe: params.recipe
       }),
     resources,
     ruleIds: resources.gameRulesRuleIndex.map((entry) => entry.ruleId),
@@ -1087,6 +1120,7 @@ async function runExperimentCommand({
   runExperiment,
   loadArmSets = defaultLoadArmSets,
   armRegistry = ARM_REGISTRY,
+  checkFidelity = defaultCheckGameFidelity,
   log
 }) {
   const { experiment } = parsed;
@@ -1108,7 +1142,7 @@ async function runExperimentCommand({
     cases = validateManifestCases({ manifest, allCases, isStale });
   }
 
-  // Test-only arms run only where REQ-230 lets them: C and D on the diagnostic manifest, B and P also on a
+  // Test-only arms run only where REQ-230 lets them: C and D on the diagnostic manifest, B, P and R also on a
   // held-out case once frozen, and a live run only with frozen arms.
   const armSets = await loadArmSets();
   if (!experiment.regradeFrom) {
@@ -1119,8 +1153,11 @@ async function runExperimentCommand({
       heldOutIds: armSets.heldOutIds,
       live: parsed.confirmed,
       registry: armRegistry,
-      correction: armSets.correction
+      correction: armSets.correction,
+      recipe: armSets.recipe
     });
+    // Before any provider call, and in a dry run too: an In-Depth case must be asked exactly as the live app would ask it.
+    await checkFidelity({ cases, excerptCaps: parsed.excerptCaps });
   }
 
   const folder = resolve(runsRoot, experiment.runId);
@@ -1185,6 +1222,7 @@ async function runExperimentCommand({
     maxCostUsd: experiment.maxCostUsd,
     heldOutIds: armSets.heldOutIds,
     correction: armSets.correction,
+    recipe: armSets.recipe,
     env,
     log
   });
@@ -1263,6 +1301,7 @@ export async function run(options = {}) {
     runExperiment = runLiveExperiment,
     loadArmSets,
     armRegistry,
+    checkFidelity,
     loadLocalEnv = loadLocalOpenAiEnv,
     readResults = defaultReadResults,
     loadSources = loadSnapshotSources,
@@ -1296,6 +1335,7 @@ export async function run(options = {}) {
       runExperiment,
       loadArmSets,
       armRegistry,
+      checkFidelity,
       log
     });
   }

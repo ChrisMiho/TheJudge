@@ -1,0 +1,90 @@
+{
+  "id": "layers-humility-then-opalescence-in-depth",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-04 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+      "name": "Humility"
+    },
+    {
+      "oracleId": "59489b46-9d02-4f3c-bcd0-884e7605e9a5",
+      "name": "Opalescence"
+    },
+    {
+      "oracleId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "name": "Grizzly Bears"
+    }
+  ],
+  "gameState": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "activePlayer": "Player 1",
+    "selectedZones": ["battlefield"],
+    "zones": {
+      "battlefield": [
+        {
+          "cardId": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+          "name": "Humility",
+          "owner": "Player 1"
+        },
+        {
+          "cardId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+          "name": "Grizzly Bears",
+          "owner": "Player 1"
+        },
+        {
+          "cardId": "59489b46-9d02-4f3c-bcd0-884e7605e9a5",
+          "name": "Opalescence",
+          "owner": "Player 1",
+          "contextNotes": "resolved this turn; Humility was already on the battlefield"
+        }
+      ]
+    }
+  },
+  "question": "My Opalescence just resolved, and my Humility and Grizzly Bears were already out. What are my Humility and Grizzly Bears now?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Your Humility is a 4/4 with no abilities and your Grizzly Bears is a 1/1 with no abilities.",
+    "answer": "Your Humility is now a 4/4 enchantment creature with no abilities, and your Grizzly Bears is a 1/1 with no abilities. Opalescence makes Humility a creature in layer 4 (613.1d). Humility then removes every creature's abilities in layer 6, its own included (613.1f), and its effect still applies in later layers because it had already started to apply (613.6). In layer 7b both set base power and toughness, in timestamp order (613.4b, 613.7): Humility's earlier 1/1, then Opalescence's later mana-value setting, which makes Humility 4/4. Grizzly Bears is set to 1/1 by Humility only. Opalescence affects only other enchantments, so it is not a creature.",
+    "decidingRuleIds": ["613.1d", "613.1f", "613.4b", "613.6", "613.7"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 613.1d, 613.1f, 613.4b, 613.6, 613.7",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-04 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "2fa11fcdad4637747401c086acd874832b2bd5e0c62aadaa789449bc038cc517",
+      "oracle": "d9b41bad554f9f60e8ae165c4f1ac70dfbb5f5d3a59ce4c6b55c5ab83d513d75",
+      "rulings": "f9ddd94759eedff1d12dedd69ea2472d01a311ba81c7b0dcff5441e787893500"
+    }
+  },
+  "whyHard": "Humility keeps applying after it removes its own ability, and in the set-power-and-toughness sublayer the later timestamp wins, so the order the cards arrived in decides the result."
+}

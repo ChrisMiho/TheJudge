@@ -1,0 +1,100 @@
+{
+  "id": "layers-mycosynth-lattice-march-dependency-in-depth",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-14 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "ae1f2ab5-c6a5-4d49-a746-3cb4668bf805",
+      "name": "Mycosynth Lattice"
+    },
+    {
+      "oracleId": "51092634-308e-4779-aa51-182715dbc734",
+      "name": "March of the Machines"
+    },
+    {
+      "oracleId": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "name": "Forest"
+    },
+    {
+      "oracleId": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "name": "Island"
+    }
+  ],
+  "gameState": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "activePlayer": "Player 1",
+    "selectedZones": ["stack", "battlefield"],
+    "zones": {
+      "stack": [
+        {
+          "cardId": "ae1f2ab5-c6a5-4d49-a746-3cb4668bf805",
+          "name": "Mycosynth Lattice",
+          "caster": "Player 1"
+        }
+      ],
+      "battlefield": [
+        {
+          "cardId": "51092634-308e-4779-aa51-182715dbc734",
+          "name": "March of the Machines",
+          "owner": "Player 1"
+        },
+        {
+          "cardId": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+          "name": "Forest",
+          "owner": "Player 1"
+        },
+        {
+          "cardId": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+          "name": "Island",
+          "owner": "Player 2"
+        }
+      ]
+    }
+  },
+  "question": "My March of the Machines is out, and my Mycosynth Lattice is on the stack. When the Lattice resolves, what happens to my Forest and Player 2's Island?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Both die: each becomes a 0/0 artifact creature and is put into its owner's graveyard.",
+    "answer": "Both are put into their owners' graveyards. The Lattice and March are both layer-4 type-changing effects (613.1d), and March's effect depends on the Lattice's, because the Lattice makes the lands artifacts and so changes what March applies to (613.8a); the Lattice therefore applies first, even though March arrived earlier (613.8b). The Forest and the Island are then noncreature artifacts, so March makes each an artifact creature with power and toughness equal to its mana value, 0. Each is put into its owner's graveyard as a state-based action for having 0 toughness (704.5f).",
+    "decidingRuleIds": ["613.1d", "613.8a", "613.8b", "704.5f"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 613.1d, 613.8a, 613.8b, 704.5f",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-14 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "57565c1838fdb89e8897fd7bc03033591c7409fb6d05d9302cfe914257c7b2cb",
+      "oracle": "2897c091dc8df8d688c7348115dfd2b7c72baeee7dde69b5e3f467a7179cd368",
+      "rulings": "225a0b7299280e43813da3a6e29cddc7777c7491b75e519177880401c01509d6"
+    }
+  },
+  "whyHard": "Dependency inside layer 4 reverses the timestamp order, and the result is then settled by a state-based action."
+}

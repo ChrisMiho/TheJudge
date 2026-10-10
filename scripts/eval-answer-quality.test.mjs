@@ -1437,7 +1437,8 @@ test("the judge is handed the same inputs for every model and cap: attached exce
 test("parseArgs reads repeatable --arm flags (A by default), refuses an unknown arm, and keeps --arm out of a routine run", () => {
   assert.deepEqual(parseArgs(["--run-id", "r", "--manifest", "m.json"]).experiment.armIds, ["A"])
   assert.deepEqual(parseArgs(["--run-id", "r", "--manifest", "m.json", "--arm", "A", "--arm", "C", "--arm", "C"]).experiment.armIds, ["A", "C"])
-  assert.throws(() => parseArgs(["--run-id", "r", "--manifest", "m.json", "--arm", "Z"]), /--arm Z is not an arm: the arms are A, B, C, D, P/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--manifest", "m.json", "--arm", "Z"]), /--arm Z is not an arm: the arms are A, B, C, D, P, R/)
+  assert.deepEqual(parseArgs(["--run-id", "r", "--manifest", "m.json", "--arm", "A", "--arm", "R"]).experiment.armIds, ["A", "R"])
   assert.throws(() => parseArgs(["--arm", "C"]), /--arms belong to an experiment run/)
   assert.throws(() => parseArgs(["--run-id", "r", "--regrade-from", "e", "--arm", "C"]), /drop --arm/)
 })
@@ -1446,6 +1447,7 @@ const armSets = (overrides = {}) => async () => ({
   diagnosticIds: new Set(["arm-diag"]),
   heldOutIds: new Set(["arm-held"]),
   correction: null,
+  recipe: null,
   ...overrides
 })
 
@@ -1507,6 +1509,66 @@ test("arm P is refused until its correction file exists, and a dry run of arm B 
     loadArmSets: armSets()
   })
   assert.match(logs[0], /Arms: A \(A\.1\), B \(B\.1\)/)
+})
+
+test("arm R is refused until its recipe file carries an approval date, refused outside the diagnostic manifest, and a dry run of A and R prints both arms", async () => {
+  const { manifestPath, loadCases } = await armFixture(["arm-diag", "arm-other"])
+  const common = { loadLocalEnv: noLocalEnv, env: {}, log: () => {}, loadCases, isStale: notStale, measure: fakeMeasure }
+  const argvFor = (ids) => ["--run-id", "r-dry", "--manifest", manifestPath, "--arm", "A", "--arm", "R", ...ids]
+  await assert.rejects(() => run({ ...common, argv: argvFor([]), loadArmSets: armSets() }), /recipe text file .* does not exist yet/)
+  const recipe = { replaces: "x", recipe: "y", approvedOn: "2026-10-10" }
+  await assert.rejects(
+    () => run({ ...common, argv: argvFor([]), loadArmSets: armSets({ recipe }) }),
+    (error) => /arm-other: arm R runs only on/.test(error.message) && !/arm-diag:/.test(error.message)
+  )
+  const { manifestPath: onlyDiag, loadCases: loadDiag } = await armFixture(["arm-diag"])
+  const logs = []
+  const outcome = await run({
+    ...common,
+    argv: ["--run-id", "r-dry", "--manifest", onlyDiag, "--arm", "A", "--arm", "R"],
+    log: (line) => logs.push(line),
+    loadCases: loadDiag,
+    loadArmSets: armSets({ recipe })
+  })
+  assert.equal(outcome.ran, false)
+  assert.match(logs[0], /Arms: A \(A\.1\), R \(R\.1\)/)
+})
+
+test("the fidelity check runs before any client exists, in a dry run too, and refuses a game case whose prompts differ, naming it", async () => {
+  const lookupCase = fixtureCase("fid-lookup")
+  const gameCase = fixtureCase("fid-game", { gameState: { zones: {} }, cards: [] })
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(lookupCase), manifestEntryFor(gameCase)], cases: [lookupCase, gameCase] })
+  const common = { loadLocalEnv: noLocalEnv, env: {}, log: () => {}, loadCases, isStale: notStale, measure: fakeMeasure, loadArmSets: armSets() }
+  const seen = []
+  let clientBuilt = false
+  await assert.rejects(
+    () =>
+      run({
+        ...common,
+        argv: ["--run-id", "fid", "--manifest", manifestPath],
+        checkFidelity: async ({ cases, excerptCaps }) => {
+          seen.push({ ids: cases.map((c) => c.id), excerptCaps })
+          throw new Error("fid-game: the prompt from the raw case request differs")
+        },
+        buildClient: async () => {
+          clientBuilt = true
+        }
+      }),
+    /fid-game: the prompt from the raw case request differs/
+  )
+  assert.deepEqual(seen, [{ ids: ["fid-lookup", "fid-game"], excerptCaps: [10] }])
+  assert.equal(clientBuilt, false)
+
+  // A passing check leaves the dry run printing its calls and estimate.
+  const logs = []
+  const outcome = await run({ ...common, argv: ["--run-id", "fid-ok", "--manifest", manifestPath], log: (line) => logs.push(line), checkFidelity: async () => {} })
+  assert.equal(outcome.ran, false)
+  assert.match(logs[0], /Calls: \d+ answer calls/)
+  assert.match(logs[0], /Estimated cost: \$/)
+
+  // The default check loads nothing and passes when no selected case has a gameState.
+  const { defaultCheckGameFidelity } = await import("./eval-answer-quality.mjs")
+  await assert.doesNotReject(() => defaultCheckGameFidelity({ cases: [lookupCase], excerptCaps: [5] }))
 })
 
 test("a live run refuses an arm whose revision is not frozen, and hands the held-out ids, the correction and the arms to the runner otherwise", async () => {

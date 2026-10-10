@@ -1,0 +1,102 @@
+{
+  "id": "layers-turn-to-frog-after-giant-growth-counter-in-depth",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-06 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "name": "Grizzly Bears"
+    },
+    {
+      "oracleId": "5748ebf1-24e3-499d-ab7c-c2cebd462a24",
+      "name": "Giant Growth"
+    },
+    {
+      "oracleId": "74c4c1e2-c50d-4c8f-889a-0d5674dc6d67",
+      "name": "Turn to Frog"
+    }
+  ],
+  "gameState": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "activePlayer": "Player 1",
+    "selectedZones": ["stack", "battlefield", "graveyard"],
+    "zones": {
+      "stack": [
+        {
+          "cardId": "74c4c1e2-c50d-4c8f-889a-0d5674dc6d67",
+          "name": "Turn to Frog",
+          "caster": "Player 2",
+          "targets": [
+            {
+              "kind": "card",
+              "zone": "battlefield",
+              "cardId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+              "cardName": "Grizzly Bears"
+            }
+          ]
+        }
+      ],
+      "battlefield": [
+        {
+          "cardId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+          "name": "Grizzly Bears",
+          "owner": "Player 1",
+          "contextNotes": "one +1/+1 counter; Giant Growth resolved on it this turn"
+        }
+      ],
+      "graveyard": [
+        {
+          "cardId": "5748ebf1-24e3-499d-ab7c-c2cebd462a24",
+          "name": "Giant Growth",
+          "owner": "Player 1"
+        }
+      ]
+    }
+  },
+  "question": "If Player 2's Turn to Frog resolves, what are my Grizzly Bears' power and toughness for the rest of the turn?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "5/5: the 1/1 base is set first, then +3/+3 and +1/+1 apply.",
+    "answer": "Your Grizzly Bears will be a 5/5 blue Frog with no abilities. Turn to Frog sets base power and toughness to 1/1 in layer 7b (613.4b); Giant Growth's +3/+3 and the +1/+1 counter are modifications, applied in layer 7c (613.4c) after 7b regardless of timing. 1/1 + 3/3 + 1/1 = 5/5.",
+    "decidingRuleIds": ["613.4b", "613.4c"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 613.4b, 613.4c",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-06 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "b1f2d4b7dbfe48cc6178268d98b36948d16597177190d57e1a368f0baab89f8a",
+      "oracle": "c67a455e2f5552f52050e4a141d26caa9a1cd79c4208a8ac2be652a68185a5bb",
+      "rulings": "f80329111ed3f9049f677bc730a748566fd9ff5ce01bbb5efed825de0bfe1d32"
+    }
+  },
+  "whyHard": "Setting base power and toughness (7b) always applies before modifiers and counters (7c), so the order the spells were cast in does not matter."
+}

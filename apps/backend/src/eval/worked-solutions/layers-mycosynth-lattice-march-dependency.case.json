@@ -1,0 +1,51 @@
+{
+  "id": "layers-mycosynth-lattice-march-dependency",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-13 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "ae1f2ab5-c6a5-4d49-a746-3cb4668bf805",
+      "name": "Mycosynth Lattice"
+    },
+    {
+      "oracleId": "51092634-308e-4779-aa51-182715dbc734",
+      "name": "March of the Machines"
+    }
+  ],
+  "gameState": null,
+  "question": "March of the Machines is already on the battlefield. Then I cast Mycosynth Lattice. What happens to the lands on the battlefield?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "They die: the Lattice applies first by dependency, so every noncreature land becomes a 0/0 artifact creature.",
+    "answer": "Every land that isn't already a creature is put into its owner's graveyard. Mycosynth Lattice and March of the Machines are both type-changing effects in layer 4 (613.1d). March's effect depends on the Lattice's, because the Lattice changes what March applies to by making every permanent an artifact (613.8a), so the Lattice applies first even though March was on the battlefield earlier (613.8b). Each land is then a noncreature artifact, so March makes it an artifact creature with power and toughness equal to its mana value, which is 0 for a land. A creature with toughness 0 is put into its owner's graveyard as a state-based action (704.5f).",
+    "decidingRuleIds": ["613.1d", "613.8a", "613.8b", "704.5f"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 613.1d, 613.8a, 613.8b, 704.5f",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-13 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "57565c1838fdb89e8897fd7bc03033591c7409fb6d05d9302cfe914257c7b2cb",
+      "oracle": "0701cae5a233525b413d0ae52116abd691f44451b9b8c09d0438f9912dba9d25",
+      "rulings": "44fe9629f39c93129a4a9382b982e6e6e53eff9d63dd3570b46405293baa775d"
+    }
+  },
+  "whyHard": "Dependency inside layer 4 reverses the timestamp order, and the result is then settled by a state-based action."
+}
