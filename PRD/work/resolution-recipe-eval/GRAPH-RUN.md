@@ -23,7 +23,27 @@
 
 ## Open gate
 
-- Owner action: answer `PRD/work/resolution-recipe-eval/GATE-QUESTIONS.md` (REQ-230, REQ-228, REQ-187 = G5, REQ-224, REQ-185, G1, G2, G3-01 to G3-16, G4) in the docs PR, then merge it to `main` to build. Docs PR: https://github.com/ChrisMiho/TheJudge/pull/283. Evidence: gate-qc PASS `efda9238`. Resume: `/graph-implement PRD/work/resolution-recipe-eval/` (the background build loop picks it up after the merge).
+- None
+
+## Gate verdicts
+
+Resolved 2026-10-10: 24 of 24 slots answered `accept` (0 edit, 0 reject); docs PR #283 merged at `bcef4543`.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-230` | accept | — |
+| `REQ-228` | accept | — |
+| `REQ-187` (= G5) | accept | — |
+| `REQ-224` | accept | — |
+| `REQ-185` | accept | — |
+| `G1` | accept | — |
+| `G2` | accept | — |
+| `G3-01` to `G3-16` (16 slots) | accept | — |
+| `G4` | accept | — |
+
+### Brief reconciliation
+
+none — every verdict was `accept`; `DESIGN-BRIEF.md`, the README intake pointer, and the proposal in `GATE-QUESTIONS.md` are untouched.
 
 ## Dispatch prompts
 
