@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| resolution-recipe-eval | Built 2026-10-10: all 7 slices (A to G) done. Eval-only arm R vs production on Luna, both flows; 18 hard cases × 6 repeats; dry-run estimate ≈ $3.59. Paid run is the owner's, from `docs/eval/resolution-recipe/RUNBOOK.md` after the code PR merges |
 
 ## active
 
