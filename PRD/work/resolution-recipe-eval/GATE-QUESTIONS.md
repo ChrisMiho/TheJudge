@@ -98,8 +98,8 @@ other slots fall away.
 +  - arm R and its hard set were proposed by the `resolution-recipe-eval` package (owner request 2026-10-10) to measure whether the recipe helps `gpt-6-luna` on hard layer and timing interactions; the paid comparison is owner-run after merge (`docs/eval/resolution-recipe/RUNBOOK.md`), and adopting the recipe as production text would be its own package, judged as the constraint above requires
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## REQ-228 — the comparison report can measure its own noise
 
@@ -140,8 +140,8 @@ right-but-too-slow answers are not counted.
 +  - the repeat selectors were added by the `resolution-recipe-eval` package (2026-10-10): its decision rule reads arm A's repeats 1–3 against 4–6 as the noise floor and compares arm R with arm A half against half; the report prints those numbers, and the rule is applied by the person reading it, never by this command
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## REQ-187 — the grader's top score requires no side error (G5)
 
@@ -176,8 +176,8 @@ still runs, but a right-outcome answer with a side error may score 2.
 +  - it moves again, to a revision dated the day the build changes the Correctness text, when level 2 starts excluding a material error a player could act on (the owner's strict-grading ruling of 2026-10-08, adopted by the `resolution-recipe-eval` package); records graded under `2026-10-07.1` are incomparable per case with later ones, and an experiment run's stored answers can be graded again under the new revision with `--regrade-from` (REQ-226)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## REQ-224 — a case you approve one by one in a gate file counts as approved
 
@@ -212,8 +212,8 @@ The measurement is otherwise unchanged. Answer `REQ-185` the same way.
 
 (REQ-224 has no `Notes` section today; the diff adds one after its `Dependencies` list.)
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## REQ-185 — the corpus requirement says the same thing as REQ-224
 
@@ -239,8 +239,8 @@ both.
 +  - no case is approved by an agent; only the owner's verdict moves a case to `approved` — through the review flow (REQ-224), or a per-case `define`-gate verdict slot that the build authoring the case records (REQ-224) — except the 18 first-ship cases, which the format-version-2 migration writes as `approved` because the owner's accept of this requirement approves them
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ## Blocker questions
 
@@ -268,8 +268,8 @@ full list." (as in G2's text).
 each effect, its layer or timing step, and the order you resolved them in,
 then the conclusion."; expect slower answers.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ### G2 — arm R's exact wording
 
@@ -300,8 +300,8 @@ characters (about 225 tokens) to every prompt.
 run cannot start; with `edit`, your wording replaces this one and is frozen as
 R.1.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ### G3 — the hard cases' reference answers
 
@@ -352,8 +352,8 @@ reverses that. Urborg's own ruling in the prompt states the result.
 - Deciding rules: 613.1d, 613.8a, 613.8b, 305.7
 - Reasoning: dependency overrides timestamp, and the effect that removes Urborg's ability goes first.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-02 — Blood Moon + Urborg, In-Depth (`layers-blood-moon-urborg-dependency-in-depth`)
 
@@ -372,8 +372,8 @@ battlefield.
 - Reference answer: "No to both. Both cards change land types, which happens in layer 4 (613.1d). Urborg's effect depends on Blood Moon's, since Blood Moon removes Urborg's ability (613.8a), so Blood Moon applies first even though your Urborg arrived later (613.8b). Your Urborg becomes a Mountain and loses the abilities from its rules text (305.7): it taps for red, not black, and it makes no land a Swamp."
 - Deciding rules: 613.1d, 613.8a, 613.8b, 305.7
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-03 — Humility, then Opalescence, Quick Lookup (`layers-humility-then-opalescence`)
 
@@ -393,8 +393,8 @@ card wins. The Humility/Opalescence ruling in the prompt walks this exact order.
 - Deciding rules: 613.1d, 613.1f, 613.4b, 613.6, 613.7
 - Reasoning: within 7b the later timestamp wins, and 613.6 keeps Humility's effect alive after it removes its own ability.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-04 — Humility, then Opalescence, In-Depth (`layers-humility-then-opalescence-in-depth`)
 
@@ -411,8 +411,8 @@ card wins. The Humility/Opalescence ruling in the prompt walks this exact order.
 - Reference answer: "Your Humility is now a 4/4 enchantment creature with no abilities, and your Grizzly Bears is a 1/1 with no abilities. Opalescence makes Humility a creature in layer 4 (613.1d). Humility then removes every creature's abilities in layer 6, its own included (613.1f), and its effect still applies in later layers because it had already started to apply (613.6). In layer 7b both set base power and toughness, in timestamp order (613.4b, 613.7): Humility's earlier 1/1, then Opalescence's later mana-value setting, which makes Humility 4/4. Grizzly Bears is set to 1/1 by Humility only. Opalescence affects only other enchantments, so it is not a creature."
 - Deciding rules: 613.1d, 613.1f, 613.4b, 613.6, 613.7
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-05 — base set, then pumped, Quick Lookup (`layers-turn-to-frog-after-giant-growth-counter`)
 
@@ -432,8 +432,8 @@ Frog's ruling in the prompt says modifiers still apply.
 - Deciding rules: 613.4b, 613.4c
 - Reasoning: sublayer order beats cast order.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-06 — base set, then pumped, In-Depth (`layers-turn-to-frog-after-giant-growth-counter-in-depth`)
 
@@ -451,8 +451,8 @@ with Turn to Frog on the stack.
 - Reference answer: "Your Grizzly Bears will be a 5/5 blue Frog with no abilities. Turn to Frog sets base power and toughness to 1/1 in layer 7b (613.4b); Giant Growth's +3/+3 and the +1/+1 counter are modifications, applied in layer 7c (613.4c) after 7b regardless of timing. 1/1 + 3/3 + 1/1 = 5/5."
 - Deciding rules: 613.4b, 613.4c
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-07 — replacement vs trigger, Quick Lookup (`replacement-kalitas-blood-artist-no-dies-trigger`)
 
@@ -472,8 +472,8 @@ covers the trigger half; nothing in the prompt states the no-stack half.
 - Deciding rules: 614.1a, 614.6, 700.4
 - Reasoning: a replaced event never happens, and the replacement's own result is part of the modified event.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-08 — replacement vs trigger, In-Depth (`replacement-kalitas-blood-artist-no-dies-trigger-in-depth`)
 
@@ -491,8 +491,8 @@ with Murder on the stack.
 - Reference answer: "No to both. Kalitas's ability is a replacement effect (614.1a): as Murder resolves, Player 2's Grizzly Bears is exiled instead of going to the graveyard, so it never dies (700.4) and Blood Artist has nothing to trigger on. The Zombie is created as part of the same modified event (614.6); it doesn't use the stack, so Player 2 gets no chance to respond between the exile and the Zombie. Player 2 can still respond to Murder now, while it is on the stack."
 - Deciding rules: 614.1a, 614.6, 700.4
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-09 — Necropotence + Silence + Borne Upon a Wind, In-Depth (`necropotence-silence-borne-upon-a-wind-cleanup-in-depth`)
 
@@ -514,8 +514,8 @@ stays.
 - Reference answer: "Yes. In your cleanup step you first discard down to seven (514.1). Then all \"this turn\" effects end at the same time (514.2), so Silence no longer stops you from casting spells. Each card you discarded triggered Necropotence, and because a triggered ability is waiting, players receive priority in this cleanup step (514.3a). Borne Upon a Wind is an instant, so you can cast it then. Once the stack is empty and all players pass, another cleanup step follows (514.3a)."
 - Deciding rules: 514.1, 514.2, 514.3a
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-10 — Academy Manufactor + Esix, In-Depth (`academy-manufactor-esix-treasure-in-depth`)
 
@@ -537,8 +537,8 @@ stays.
 - Reference answer: "It depends on the order you choose. Both are replacement effects (614.1a) on the same token-creation event, and you choose which applies first (616.1, 616.1e); the process then repeats with only the effects that still apply (616.1f). If you apply Academy Manufactor first, the Treasure becomes a Clue, a Food and a Treasure, and Esix may then replace that event, so you create three tokens that are copies of Grizzly Bears. If you apply Esix first, you create one Grizzly Bears token instead of the Treasure, and Academy Manufactor has nothing left to replace, so you get one token. If you don't use Esix, Academy Manufactor gives you a Clue, a Food and a Treasure."
 - Deciding rules: 614.1a, 616.1, 616.1e, 616.1f
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-11 — Clone copies a Frogified creature, Quick Lookup (`layers-clone-copies-frogified-serra-angel`)
 
@@ -558,8 +558,8 @@ prompt states the principle. Less famous than the owner-named cases.
 - Deciding rules: 707.2, 613.1a
 - Note: the reference avoids naming Serra Angel's 4/4, because the app's card data carries no printed power or toughness.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-12 — Clone copies a Frogified creature, In-Depth (`layers-clone-copies-frogified-serra-angel-in-depth`)
 
@@ -577,8 +577,8 @@ with Clone on the stack.
 - Reference answer: "Your Clone isn't a Frog, and it has flying and vigilance: it enters as a Serra Angel. Copying takes only the copiable values — the printed card, as modified by other copy effects (707.2) — applied in layer 1 (613.1a). Frogify is an Aura's effect on Player 2's Serra Angel, not a copy effect, so it doesn't carry over to your Clone."
 - Deciding rules: 707.2, 613.1a
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-13 — Mycosynth Lattice after March of the Machines, Quick Lookup (`layers-mycosynth-lattice-march-dependency`)
 
@@ -599,8 +599,8 @@ combination, not the ordering. Less famous than the owner-named cases.
 - Deciding rules: 613.1d, 613.8a, 613.8b, 704.5f
 - Reasoning: dependency overrides timestamp; then a state-based action.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-14 — Mycosynth Lattice after March of the Machines, In-Depth (`layers-mycosynth-lattice-march-dependency-in-depth`)
 
@@ -618,8 +618,8 @@ with the Lattice on the stack.
 - Reference answer: "Both are put into their owners' graveyards. The Lattice and March are both layer-4 type-changing effects (613.1d), and March's effect depends on the Lattice's, because the Lattice makes the lands artifacts and so changes what March applies to (613.8a); the Lattice therefore applies first, even though March arrived earlier (613.8b). The Forest and the Island are then noncreature artifacts, so March makes each an artifact creature with power and toughness equal to its mana value, 0. Each is put into its owner's graveyard as a state-based action for having 0 toughness (704.5f)."
 - Deciding rules: 613.1d, 613.8a, 613.8b, 704.5f
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-15 — two Blood Artists at 1 life, Quick Lookup (`triggers-apnap-blood-artists-at-one-life`)
 
@@ -640,8 +640,8 @@ list. No ruling in the prompt states it.
 - Deciding rules: 603.3b, 704.3, 704.5a
 - Reasoning: APNAP stacking puts the non-active player's trigger on top; state-based actions are checked before priority.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 #### G3-16 — two Blood Artists at 1 life, In-Depth (`triggers-apnap-blood-artists-at-one-life-in-depth`)
 
@@ -659,8 +659,8 @@ with Murder on the stack.
 - Reference answer: "Player 2 wins. Both Blood Artists trigger when Grizzly Bears dies. As the active player you put your trigger on the stack first, and Player 2 puts theirs on top (603.3b), so Player 2's trigger resolves first and you go from 1 life to 0. State-based actions are checked before anyone gets priority (704.3), and you lose the game at 0 life (704.5a) before your own trigger can resolve."
 - Deciding rules: 603.3b, 704.3, 704.5a
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ### G4 — the rule that decides "R beats A", fixed before any money is spent
 
@@ -693,8 +693,8 @@ reasoning, so a win that comes only from the first group is visible.
 **What happens if you say no:** with `edit`, your rule replaces this one in the
 runbook before the build; with `reject`, the paid run waits until a rule is set.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted every recommendation in this file (answered in session, 2026-10-10).
 
 ### G5 — strict grading in the rubric
 

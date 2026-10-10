@@ -174,3 +174,4 @@ Report back: PASS or FAIL, the complete findings list, the commit SHA, and the p
 | "whether the player sees the full step list or only the conclusion and key reasons" — raised at the define gate as G1, not decided by the run | answered-once | define | — |
 | "Each needs a reference answer I approve; grade strictly" — raised at the define gate as G3/G5, not decided by the run | answered-once | define | — |
 | "Every live run must pass --max-cost-usd <= 15" | answered-once | define | — |
+| "Accept all recommended" (owner's answer to all 24 GATE-QUESTIONS.md slots, given in session 2026-10-10; filled by the driver at the owner's request) | answered-once | define | — |
