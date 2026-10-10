@@ -73,6 +73,7 @@ import {
   ARM_IDS,
   ARM_REGISTRY,
   ARM_P_CORRECTION_RELATIVE_PATH,
+  ARM_R_RECIPE_RELATIVE_PATH,
   DIAGNOSTIC_MANIFEST_RELATIVE_PATH,
   HELD_OUT_MANIFEST_RELATIVE_PATH,
   buildArmPrompt,
@@ -952,7 +953,8 @@ export async function runLiveEvaluation(params) {
 
 /**
  * The committed case sets the arms are fenced by (REQ-230): the diagnostic and held-out manifests'
- * ids, and arm P's owner-approved correction when its file exists. Read from this checkout.
+ * ids, plus arm P's owner-approved correction and arm R's owner-approved recipe when their files
+ * exist. Read from this checkout.
  */
 export async function defaultLoadArmSets() {
   const readJson = async (relativePath) => JSON.parse(await readFile(resolve(repoRoot, relativePath), "utf8"));
@@ -962,10 +964,15 @@ export async function defaultLoadArmSets() {
     if (error?.code === "ENOENT") return null;
     throw error;
   });
+  const recipe = await readJson(ARM_R_RECIPE_RELATIVE_PATH).catch((error) => {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  });
   return {
     diagnosticIds: new Set(diagnostic.cases.map((entry) => entry.id)),
     heldOutIds: new Set(heldOut.cases.map((entry) => entry.id)),
-    correction
+    correction,
+    recipe
   };
 }
 
@@ -1015,7 +1022,8 @@ export async function runLiveExperiment(params) {
         promptText: prepared.promptText,
         ruleIndex: resources.gameRulesRuleIndex,
         decidingRuleIds: caseEntry.expected.decidingRuleIds,
-        correction: params.correction
+        correction: params.correction,
+        recipe: params.recipe
       }),
     resources,
     ruleIds: resources.gameRulesRuleIndex.map((entry) => entry.ruleId),
@@ -1108,7 +1116,7 @@ async function runExperimentCommand({
     cases = validateManifestCases({ manifest, allCases, isStale });
   }
 
-  // Test-only arms run only where REQ-230 lets them: C and D on the diagnostic manifest, B and P also on a
+  // Test-only arms run only where REQ-230 lets them: C and D on the diagnostic manifest, B, P and R also on a
   // held-out case once frozen, and a live run only with frozen arms.
   const armSets = await loadArmSets();
   if (!experiment.regradeFrom) {
@@ -1119,7 +1127,8 @@ async function runExperimentCommand({
       heldOutIds: armSets.heldOutIds,
       live: parsed.confirmed,
       registry: armRegistry,
-      correction: armSets.correction
+      correction: armSets.correction,
+      recipe: armSets.recipe
     });
   }
 
@@ -1185,6 +1194,7 @@ async function runExperimentCommand({
     maxCostUsd: experiment.maxCostUsd,
     heldOutIds: armSets.heldOutIds,
     correction: armSets.correction,
+    recipe: armSets.recipe,
     env,
     log
   });

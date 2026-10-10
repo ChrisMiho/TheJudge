@@ -261,10 +261,15 @@ touches `results.json`.
   compares two traces made from two revisions' worktrees.
 - **Arms and manifests** (REQ-230): `scripts/lib/diagnostic-arms.mjs` builds test-only
   prompt variants (B regroups the same evidence, C adds the deciding-rule bundle, D is both,
-  P swaps one approved preamble sentence). `manifests/diagnostic.json` and
+  P swaps one approved preamble sentence, R swaps the layers paragraph of the fixed reference
+  text for the owner-approved layer-and-timing resolution recipe in
+  `apps/backend/src/eval/answer-quality/arm-r-recipe.json`; P and R work on a lookup prompt
+  and an In-Depth prompt alike and refuse unless the target appears exactly once and the file
+  carries its approval date). `manifests/diagnostic.json` and
   `manifests/held-out.json` (case ids and hashes only, written by
   `npm run eval:answer-quality:manifests`) fence them: C and D run only on the diagnostic set,
-  and a later fix is judged once on the held-out set.
+  B, P and R also on the held-out set once frozen, and a later fix is judged once on the
+  held-out set.
 
 None of these is a build gate. The findings and the owner's runbook for the paid phases are
 in `docs/eval/answer-quality-investigation/`.

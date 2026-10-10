@@ -17,7 +17,7 @@ Measure whether a layer-and-timing resolution recipe (eval-only arm R, amending 
 
 | Slice | Doc | Title | Applies accepted block | Depends on | Criteria | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | `slice-a-arm-r.md` | Arm R: recipe substitution arm | REQ-230 arm lines, G1, G2 | none | 8 | planned |
+| A | `slice-a-arm-r.md` | Arm R: recipe substitution arm | REQ-230 arm lines, G1, G2 | none | 8 | done |
 | B | `slice-b-manifests.md` | Manifests: recorded append and verifying check | REQ-230 manifest lines | none | 6 | planned |
 | C | `slice-c-compare-report.md` | Compare report: repeat selectors and answer-level counts | REQ-228 | none | 5 | planned |
 | D | `slice-d-game-fidelity.md` | Game-case request fidelity check | REQ-230 fidelity line | none | 5 | planned |

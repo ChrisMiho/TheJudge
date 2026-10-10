@@ -1,6 +1,6 @@
 # Slice A — Arm R: recipe substitution arm
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -19,14 +19,22 @@ paragraph swapped for the owner-approved recipe, in Quick Lookup and In-Depth.
 
 ## Acceptance criteria
 
-- [ ] R on a lookup prompt and on a game prompt changes only the target paragraph (test)
-- [ ] R refuses when the target is missing, when it appears twice, and when `approvedOn` is absent (tests)
-- [ ] P's existing tests pass unchanged
-- [ ] `arm-r-recipe.json` `replaces` equals the layers paragraph in `mtgReference.ts` verbatim, and `recipe` equals the accepted G2 text
-- [ ] `--arm R` parses; R is refused outside the diagnostic manifest unless frozen; the dry-run command with `--arm A --arm R` prints calls and an estimate and spends nothing
-- [ ] `node scripts/diagnostic-arms-check.mjs` passes with R substituting once on every diagnostic case
-- [ ] The REQ-230 arm-R lines and the build-marked doc/test lines name R
-- [ ] `git diff origin/main --stat -- apps/backend/src/prompt` is empty
+- [x] R on a lookup prompt and on a game prompt changes only the target paragraph (test)
+- [x] R refuses when the target is missing, when it appears twice, and when `approvedOn` is absent (tests)
+- [x] P's existing tests pass unchanged
+- [x] `arm-r-recipe.json` `replaces` equals the layers paragraph in `mtgReference.ts` verbatim, and `recipe` equals the accepted G2 text
+- [x] `--arm R` parses; R is refused outside the diagnostic manifest unless frozen; the dry-run command with `--arm A --arm R` prints calls and an estimate and spends nothing
+- [x] `node scripts/diagnostic-arms-check.mjs` passes with R substituting once on every diagnostic case
+- [x] The REQ-230 arm-R lines and the build-marked doc/test lines name R
+- [x] `git diff origin/main --stat -- apps/backend/src/prompt` is empty
+
+## Notes (evidence, re-runnable)
+
+- A1, A2, A3, A4: `node --test scripts/lib/diagnostic-arms.test.mjs scripts/eval-answer-quality.test.mjs` -> 83 pass, 0 fail (the R tests are in `diagnostic-arms.test.mjs`; the verbatim and G2 checks are in "arm R's committed file replaces the layers paragraph ...").
+- A5: `npm run eval:answer-quality -- --run-id rr-dry-a --manifest output/answer-quality/manifests/rr-diagnostic.json --model gpt-6-luna --excerpt-cap 10 --arm A --arm R --max-cost-usd 3` -> "Arms: A (A.1), R (R.1)", 92 answer calls, 92 lone judge calls, 0 blind-ranking calls, estimated cost $1.08, no `--confirm-live-calls`.
+- A6: `node scripts/diagnostic-arms-check.mjs` -> `{"cases":46,"problems":[]}` (the script now registers the tsx loader itself so the plain command runs).
+- A7: arm R lines and notes in REQ-230 (`PRD/sections/functional-requirements.md`); arms paragraph of `apps/backend/src/eval/worked-solutions/README.md`; build-marked lines in `diagnostic-arms.mjs`, `eval-answer-quality.mjs`, both test files, `diagnostic-arms-check.mjs` name R.
+- A8: `git diff origin/main --stat -- apps/backend/src/prompt` -> empty.
 
 ## Verification
 

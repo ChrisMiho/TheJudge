@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
@@ -7,10 +8,12 @@ import test from "node:test";
 
 import {
   ARM_B_HEADINGS,
+  ARM_R_RECIPE_RELATIVE_PATH,
   ARM_REGISTRY,
   addBundleToParsed,
   armRecordFlags,
   assertCorrectionApproved,
+  assertRecipeApproved,
   buildArmPrompt,
   carriedRuleIds,
   decidingRuleBundle,
@@ -213,8 +216,9 @@ test("no arm takes a case or its reference answer: only the deciding rule ids re
   });
   const a = makePrompt();
   const correction = { replaces: "Continuous effects and state-based actions use a layer system.", correction: "Continuous effects use layers.", approvedOn: "2026-10-08" };
-  for (const arm of ["A", "B", "C", "D", "P"]) {
-    const built = buildArmPrompt({ arm, promptText: a, ruleIndex: RULE_INDEX, decidingRuleIds: poisoned.decidingRuleIds, correction });
+  const recipe = { replaces: "Continuous effects and state-based actions use a layer system.", recipe: "Resolve in layers.", approvedOn: "2026-10-10" };
+  for (const arm of ["A", "B", "C", "D", "P", "R"]) {
+    const built = buildArmPrompt({ arm, promptText: a, ruleIndex: RULE_INDEX, decidingRuleIds: poisoned.decidingRuleIds, correction, recipe });
     for (const secret of Object.values(reference)) assert.ok(!built.promptText.includes(secret), `arm ${arm} adds no reference text`);
   }
 });
@@ -236,9 +240,64 @@ test("arm P is refused until its correction file exists and carries the owner's 
   assert.throws(() => buildArmPrompt({ arm: "P", promptText: a, ruleIndex: RULE_INDEX, correction: { ...correction, replaces: "A sentence that is not there." } }), /exactly once/);
 });
 
+// Arm R --------------------------------------------------------------------
+
+const LAYERS_PARAGRAPH = "Continuous effects use a layer system (rule 613); the rest of the production paragraph.";
+const RECIPE = { replaces: LAYERS_PARAGRAPH, recipe: "Resolve interactions in this order: the recipe.", approvedOn: "2026-10-10" };
+
+function withLayersParagraph(promptText) {
+  return promptText.replace("Continuous effects and state-based actions use a layer system.", LAYERS_PARAGRAPH);
+}
+
+// An In-Depth (game) prompt does not parse as a lookup prompt; R must not need it to.
+const GAME_PROMPT = `SYSTEM ROLE PREAMBLE\nYou are TheJudge assistant.\n\nMTG REFERENCE\n${LAYERS_PARAGRAPH}\n\nZONE: STACK\n- Turn to Frog\n\nQUESTION\nHow big is it?`;
+
+test("arm R on a lookup prompt and on an In-Depth prompt changes only the layers paragraph", () => {
+  for (const a of [withLayersParagraph(makePrompt()), GAME_PROMPT]) {
+    const r = buildArmPrompt({ arm: "R", promptText: a, ruleIndex: RULE_INDEX, recipe: RECIPE });
+    assert.equal(r.promptText, a.replace(LAYERS_PARAGRAPH, RECIPE.recipe));
+    assert.ok(!r.promptText.includes(LAYERS_PARAGRAPH));
+    assert.deepEqual(r.bundleRuleIds, []);
+    assert.equal(r.promptText.length - a.length, RECIPE.recipe.length - LAYERS_PARAGRAPH.length);
+  }
+  assert.throws(() => parseLookupPrompt(GAME_PROMPT), /lookup prompt/);
+});
+
+test("arm R is refused when its target is missing or appears twice, and until its file carries an approval date", () => {
+  const a = withLayersParagraph(makePrompt());
+  assert.throws(() => buildArmPrompt({ arm: "R", promptText: makePrompt(), ruleIndex: RULE_INDEX, recipe: RECIPE }), /Arm R is refused: .* exactly once/);
+  assert.throws(() => buildArmPrompt({ arm: "R", promptText: `${a}\n\n${LAYERS_PARAGRAPH}`, ruleIndex: RULE_INDEX, recipe: RECIPE }), /exactly once/);
+  assert.throws(() => buildArmPrompt({ arm: "R", promptText: a, ruleIndex: RULE_INDEX }), /Arm R is built but refused: .*does not exist yet/);
+  assert.throws(() => buildArmPrompt({ arm: "R", promptText: a, ruleIndex: RULE_INDEX, recipe: { ...RECIPE, approvedOn: undefined } }), /Arm R is refused: .*no owner approval date/);
+  assert.throws(() => assertRecipeApproved({ ...RECIPE, approvedOn: "soon" }), /no owner approval date/);
+  assert.throws(() => assertRecipeApproved({ ...RECIPE, recipe: "" }), /no "recipe" text/);
+  assert.throws(() => assertRecipeApproved({ ...RECIPE, replaces: " " }), /no "replaces" text/);
+});
+
+test("arm R's committed file replaces the layers paragraph of mtgReference.ts verbatim and carries the approved recipe", () => {
+  const recipe = JSON.parse(readFileSync(resolve(repoRoot, ARM_R_RECIPE_RELATIVE_PATH), "utf8"));
+  const source = readFileSync(resolve(repoRoot, "apps/backend/src/prompt/mtgReference.ts"), "utf8");
+  const paragraph = /\n\n(Continuous effects use a layer system \(rule 613\)[^`]*)`;/.exec(source)?.[1];
+  assert.ok(paragraph, "the layers paragraph is the last paragraph of the reference text");
+  assert.equal(recipe.replaces, paragraph);
+  assert.doesNotThrow(() => assertRecipeApproved(recipe));
+  assert.match(recipe.recipe, /^Resolve interactions in this order\. Continuous effects apply in layers \(rule 613\)/);
+  assert.match(recipe.recipe, /\(7a\) characteristic-defining abilities that define power or toughness, \(7b\) effects that set power or toughness to a value, \(7c\) effects and counters that modify power or toughness, \(7d\) effects that switch power and toughness/);
+  assert.match(recipe.recipe, /Show the player the conclusion and the key reasons, not the full list\. This assistant does not adjudicate officially\.$/);
+});
+
 // Where an arm may run -----------------------------------------------------
 
-test("arms C, D and P are refused on a case outside the diagnostic manifest, naming it; diagnostic records are marked", () => {
+test("arm R runs on the diagnostic manifest, or a held-out case once its approved file freezes it; it is refused elsewhere and without its file", () => {
+  const diagnosticIds = new Set(["diag-1"]);
+  const heldOutIds = new Set(["held-1"]);
+  assert.throws(() => validateArmUse({ armIds: ["R"], caseIds: ["diag-1"], diagnosticIds, heldOutIds }), /does not exist yet/);
+  assert.throws(() => validateArmUse({ armIds: ["R"], caseIds: ["other-1"], diagnosticIds, heldOutIds, recipe: RECIPE }), /other-1: arm R runs only on/);
+  assert.doesNotThrow(() => validateArmUse({ armIds: ["R"], caseIds: ["diag-1", "held-1"], diagnosticIds, heldOutIds, recipe: RECIPE, live: true }));
+  assert.deepEqual(armRecordFlags({ armId: "R", caseId: "diag-1", heldOutIds }), { diagnostic: true, heldOut: false });
+});
+
+test("arms C, D, P and R are refused on a case outside the diagnostic manifest, naming it; diagnostic records are marked", () => {
   const diagnosticIds = new Set(["diag-1", "diag-2"]);
   const heldOutIds = new Set(["held-1"]);
   const approved = { replaces: "x", correction: "y", approvedOn: "2026-10-08" };
@@ -249,13 +308,15 @@ test("arms C, D and P are refused on a case outside the diagnostic manifest, nam
   }
   assert.throws(() => validateArmUse({ armIds: ["P"], caseIds: ["diag-1"], diagnosticIds, heldOutIds }), /does not exist yet/);
   assert.throws(() => validateArmUse({ armIds: ["P"], caseIds: ["other-1"], diagnosticIds, heldOutIds, correction: approved }), /other-1: arm P runs only on/);
+  assert.throws(() => validateArmUse({ armIds: ["R"], caseIds: ["diag-1"], diagnosticIds, heldOutIds }), /does not exist yet/);
+  assert.throws(() => validateArmUse({ armIds: ["R"], caseIds: ["other-1"], diagnosticIds, heldOutIds, recipe: { replaces: "x", recipe: "y", approvedOn: "2026-10-10" } }), /other-1: arm R runs only on/);
   assert.doesNotThrow(() => validateArmUse({ armIds: ["A"], caseIds: ["diag-1", "held-1", "other-1"], diagnosticIds, heldOutIds }), "arm A runs on any case");
 
   assert.deepEqual(armRecordFlags({ armId: "C", caseId: "diag-1", heldOutIds }), { diagnostic: true, heldOut: false });
   assert.deepEqual(armRecordFlags({ armId: "A", caseId: "held-1", heldOutIds }), { diagnostic: false, heldOut: true });
 });
 
-test("the held-out manifest runs arm A; B and P run on a held-out case only under a frozen revision, with heldOut set", () => {
+test("the held-out manifest runs arm A; B, P and R run on a held-out case only under a frozen revision, with heldOut set", () => {
   const diagnosticIds = new Set(["diag-1"]);
   const heldOutIds = new Set(["held-1"]);
   const approved = { replaces: "x", correction: "y", approvedOn: "2026-10-08" };
@@ -292,7 +353,8 @@ test("a live run needs every non-A arm frozen under its revision id; a dry run d
 
 test("every arm carries a revision id", () => {
   for (const arm of Object.values(ARM_REGISTRY)) assert.match(arm.revision, /^[A-Z]\.\d+$/);
-  assert.deepEqual(Object.values(ARM_REGISTRY).map((arm) => arm.id), ["A", "B", "C", "D", "P"]);
+  assert.deepEqual(Object.values(ARM_REGISTRY).map((arm) => arm.id), ["A", "B", "C", "D", "P", "R"]);
+  assert.equal(ARM_REGISTRY.R.revision, "R.1");
 });
 
 // Every diagnostic case, against the real prompts ---------------------------

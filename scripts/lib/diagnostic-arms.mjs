@@ -10,6 +10,9 @@
 //   D  C's evidence in B's presentation
 //   P  A with one named preamble sentence replaced by an owner-approved
 //      correction held in a committed file (refused until it is approved)
+//   R  A with the continuous-effects paragraph of the fixed MTG reference text
+//      replaced by an owner-approved resolution recipe held in a committed
+//      file (refused until it is approved); runs on lookup and In-Depth prompts
 //
 // Each arm is a pure function from the prompt the checkout prepared (its text)
 // and committed data (the rule index) to a prompt string, with a revision id
@@ -31,16 +34,17 @@ import { letteredSubrules, parentRuleId } from "./rule-availability.mjs";
 export const DIAGNOSTIC_MANIFEST_RELATIVE_PATH = "apps/backend/src/eval/answer-quality/manifests/diagnostic.json";
 export const HELD_OUT_MANIFEST_RELATIVE_PATH = "apps/backend/src/eval/answer-quality/manifests/held-out.json";
 export const ARM_P_CORRECTION_RELATIVE_PATH = "apps/backend/src/eval/answer-quality/arm-p-correction.json";
+export const ARM_R_RECIPE_RELATIVE_PATH = "apps/backend/src/eval/answer-quality/arm-r-recipe.json";
 
 /**
  * Arm registry. `frozen` means the arm's revision id is fixed and may be used by
- * a live run and, for B and P, on a held-out case (REQ-230). B.1 was chosen from
+ * a live run and, for B, P and R, on a held-out case (REQ-230). B.1 was chosen from
  * what the production prompt does with its evidence across the diagnostic cases
  * (`node --import tsx scripts/diagnostic-arms-check.mjs --observations`, recorded in
  * docs/eval/answer-quality-investigation/OFFLINE-FINDINGS.md) and frozen on
  * 2026-10-07: any later change to its grouping is a new revision id (B.2), never an
- * edit of B.1. D inherits B's status; P is frozen only while its approved
- * correction file exists. `usesDecidingRules` marks the arms that read a case's
+ * edit of B.1. D inherits B's status; P and R are frozen only while their approved
+ * text files exist (R.1 is frozen by the date its file carries). `usesDecidingRules` marks the arms that read a case's
  * deciding-rule labels (C and D): diagnostic manifest only.
  */
 export const ARM_REGISTRY = {
@@ -48,7 +52,8 @@ export const ARM_REGISTRY = {
   B: { id: "B", revision: "B.1", title: "same evidence, regrouped and headed", frozen: true, usesDecidingRules: false },
   C: { id: "C", revision: "C.1", title: "production prompt plus the deciding-rule bundle", frozen: true, usesDecidingRules: true },
   D: { id: "D", revision: "D.1", title: "the bundle's evidence in B's presentation", frozen: true, usesDecidingRules: true },
-  P: { id: "P", revision: "P.1", title: "preamble sentence corrected", frozen: false, usesDecidingRules: false }
+  P: { id: "P", revision: "P.1", title: "preamble sentence corrected", frozen: false, usesDecidingRules: false },
+  R: { id: "R", revision: "R.1", title: "layer-and-timing resolution recipe", frozen: false, usesDecidingRules: false }
 };
 
 export const ARM_IDS = Object.keys(ARM_REGISTRY);
@@ -345,26 +350,52 @@ export function addBundleToParsed(parsed, { decidingRuleIds, ruleIndex }) {
  * "correction": "<its replacement>", "approvedOn": "YYYY-MM-DD" }`.
  */
 export function assertCorrectionApproved(correction) {
-  if (!correction) {
-    throw new Error(`Arm P is built but refused: its correction text file ${ARM_P_CORRECTION_RELATIVE_PATH} does not exist yet. The owner approves the wording first.`);
+  assertSubstitutionApproved(correction, { armId: "P", textField: "correction", label: "correction", path: ARM_P_CORRECTION_RELATIVE_PATH });
+}
+
+/**
+ * R refuses to run until its recipe file exists and carries the owner's approval date. The file:
+ * `{ "replaces": "<the continuous-effects paragraph of the fixed reference text>",
+ * "recipe": "<its replacement>", "approvedOn": "YYYY-MM-DD" }`. Approval freezes R.1.
+ */
+export function assertRecipeApproved(recipe) {
+  assertSubstitutionApproved(recipe, { armId: "R", textField: "recipe", label: "recipe", path: ARM_R_RECIPE_RELATIVE_PATH });
+}
+
+function assertSubstitutionApproved(file, { armId, textField, label, path }) {
+  if (!file) {
+    throw new Error(`Arm ${armId} is built but refused: its ${label} text file ${path} does not exist yet. The owner approves the wording first.`);
   }
-  for (const field of ["replaces", "correction"]) {
-    if (typeof correction[field] !== "string" || correction[field].trim().length === 0) {
-      throw new Error(`Arm P is refused: the correction file has no "${field}" text.`);
+  for (const field of ["replaces", textField]) {
+    if (typeof file[field] !== "string" || file[field].trim().length === 0) {
+      throw new Error(`Arm ${armId} is refused: the ${label} file has no "${field}" text.`);
     }
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(correction.approvedOn ?? ""))) {
-    throw new Error("Arm P is refused: the correction file carries no owner approval date (approvedOn: YYYY-MM-DD).");
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(file.approvedOn ?? ""))) {
+    throw new Error(`Arm ${armId} is refused: the ${label} file carries no owner approval date (approvedOn: YYYY-MM-DD).`);
   }
+}
+
+/**
+ * The one substitution P and R share: the named passage must appear exactly once in the prepared
+ * prompt, and nothing else of the prompt's structure is read, so it works on lookup and In-Depth prompts.
+ */
+function substitutePassage(promptText, { armId, replaces, replacement }) {
+  const first = promptText.indexOf(replaces);
+  if (first < 0 || promptText.indexOf(replaces, first + 1) >= 0) {
+    throw new Error(`Arm ${armId} is refused: the ${armId === "R" ? "paragraph" : "sentence"} it replaces must appear exactly once in the prompt.`);
+  }
+  return promptText.slice(0, first) + replacement + promptText.slice(first + replaces.length);
 }
 
 export function applyCorrection(promptText, correction) {
   assertCorrectionApproved(correction);
-  const first = promptText.indexOf(correction.replaces);
-  if (first < 0 || promptText.indexOf(correction.replaces, first + 1) >= 0) {
-    throw new Error("Arm P is refused: the sentence it replaces must appear exactly once in the prompt.");
-  }
-  return promptText.slice(0, first) + correction.correction + promptText.slice(first + correction.replaces.length);
+  return substitutePassage(promptText, { armId: "P", replaces: correction.replaces, replacement: correction.correction });
+}
+
+export function applyRecipe(promptText, recipe) {
+  assertRecipeApproved(recipe);
+  return substitutePassage(promptText, { armId: "R", replaces: recipe.replaces, replacement: recipe.recipe });
 }
 
 // ---------------------------------------------------------------------------
@@ -376,9 +407,10 @@ export function applyCorrection(promptText, correction) {
  * reference answer is not an input: only its deciding rule ids are, and only
  * arms C and D read them. Returns `{ promptText, bundleRuleIds }`.
  */
-export function buildArmPrompt({ arm, promptText, ruleIndex, decidingRuleIds = [], correction = null }) {
+export function buildArmPrompt({ arm, promptText, ruleIndex, decidingRuleIds = [], correction = null, recipe = null }) {
   if (arm === "A") return { promptText, bundleRuleIds: [] };
   if (arm === "P") return { promptText: applyCorrection(promptText, correction), bundleRuleIds: [] };
+  if (arm === "R") return { promptText: applyRecipe(promptText, recipe), bundleRuleIds: [] };
   const parsed = parseLookupPrompt(promptText);
   if (arm === "B") return { promptText: renderArmB(parsed), bundleRuleIds: [] };
   if (arm === "C") {
@@ -399,19 +431,20 @@ export function buildArmPrompt({ arm, promptText, ruleIndex, decidingRuleIds = [
 /**
  * Refuses an arm on a case it may not run on (REQ-230), naming the case.
  * C and D (which read deciding-rule labels) run only on the diagnostic
- * manifest. B and P run elsewhere only on a held-out case and only under a
+ * manifest. B, P and R run elsewhere only on a held-out case and only under a
  * frozen revision. A runs anywhere. A live run needs every non-A arm frozen.
  */
-export function validateArmUse({ armIds, caseIds, diagnosticIds, heldOutIds, live = false, registry = ARM_REGISTRY, correction = null }) {
+export function validateArmUse({ armIds, caseIds, diagnosticIds, heldOutIds, live = false, registry = ARM_REGISTRY, correction = null, recipe = null }) {
   const problems = [];
   for (const armId of armIds) {
     const described = describeArm(armId, registry);
     if (armId === "A") continue;
     let { frozen } = described;
-    if (armId === "P") {
+    if (armId === "P" || armId === "R") {
       try {
-        assertCorrectionApproved(correction);
-        frozen = true; // P's revision is fixed by the owner's approval of its correction text
+        if (armId === "P") assertCorrectionApproved(correction);
+        else assertRecipeApproved(recipe);
+        frozen = true; // the revision is fixed by the owner's approval of the arm's text file
       } catch (error) {
         problems.push(error.message);
         continue;

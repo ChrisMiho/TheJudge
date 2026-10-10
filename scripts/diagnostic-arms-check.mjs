@@ -1,6 +1,9 @@
 // Offline check of the diagnostic arms over the committed diagnostic manifest
 // (REQ-230), against the real prompts this checkout prepares. For every case
-// in `diagnostic.json` it builds arm A and arms B, C and D and proves:
+// in `diagnostic.json` it builds arm A and arms B, C and D (lookup cases only; an
+// In-Depth game case is not a lookup prompt) and proves, for every case, game
+// cases included, that arm R's target paragraph appears in A exactly once and
+// that R changes nothing else. For a lookup case it proves:
 //   - parsing then rendering A reproduces it byte for byte;
 //   - B's evidence units equal A's as a multiset, and B changes nothing but
 //     order and headings;
@@ -21,6 +24,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   ARM_B_HEADINGS,
+  ARM_R_RECIPE_RELATIVE_PATH,
   DIAGNOSTIC_MANIFEST_RELATIVE_PATH,
   buildArmPrompt,
   decidingRuleBundle,
@@ -62,7 +66,16 @@ export function lineBagExtra(bigger, smaller) {
 
 export const A_HEADINGS = ["GAME RULES (reference)", "ADDITIONAL RELEVANT RULE EXCERPTS", "CARD (looked up)", "OFFICIAL RULINGS (WotC reference)"];
 
-export async function checkDiagnosticArms({ cases, manifest, resources, prepare, parseRequest, freezeCheck }) {
+/** Problems with arm R on one prompt: its target must appear once, and R must change nothing else. */
+export function checkArmR({ id, promptText, recipe, ruleIndex }) {
+  const occurrences = promptText.split(recipe.replaces).length - 1;
+  if (occurrences !== 1) return [`${id}: arm R's target paragraph appears ${occurrences} times in arm A, not exactly once`];
+  const r = buildArmPrompt({ arm: "R", promptText, ruleIndex, recipe }).promptText;
+  if (r !== promptText.replace(recipe.replaces, () => recipe.recipe)) return [`${id}: arm R changed text other than the target paragraph`];
+  return [];
+}
+
+export async function checkDiagnosticArms({ cases, manifest, resources, prepare, parseRequest, freezeCheck, recipe }) {
   const byId = new Map(cases.map((caseEntry) => [caseEntry.id, caseEntry]));
   const problems = [];
   for (const entry of manifest.cases) {
@@ -75,6 +88,13 @@ export async function checkDiagnosticArms({ cases, manifest, resources, prepare,
     const freeze = freezeCheck(caseEntry.id, request);
     const prepared = prepare(request, { ...resources, queryEmbedding: freeze.state === "fresh" ? freeze.vector : null, supplementalRuleCap: 10 });
     const a = prepared.promptText;
+
+    // R (REQ-230) substitutes without parsing, so it is checked on every case, In-Depth game cases included:
+    // the layers paragraph appears exactly once in A, and R's prompt is A with only that paragraph replaced.
+    problems.push(...checkArmR({ id: entry.id, promptText: a, recipe, ruleIndex: resources.gameRulesRuleIndex }));
+
+    // B, C and D parse the lookup prompt's sections and refuse an In-Depth prompt, so a game case stops here.
+    if (caseEntry.gameState) continue;
     const parsedA = parseLookupPrompt(a);
     if (renderOriginal(parsedA) !== a) problems.push(`${entry.id}: parse then render does not reproduce arm A`);
 
@@ -229,6 +249,9 @@ function parseBExcerptIds(b) {
 }
 
 async function main() {
+  // Registers the TypeScript loader itself, so `node scripts/diagnostic-arms-check.mjs` runs without `--import tsx`.
+  const { register } = await import("tsx/esm/api");
+  register();
   const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
   const { loadFrozenVectors, checkReFreeze } = await import("../apps/backend/src/eval/rules-gate/frozenVectors.ts");
   const { parseCaseRequest } = await import("./lib/rules-gate-inputs.mjs");
@@ -253,7 +276,8 @@ async function main() {
     resources,
     prepare: preparePromptInput,
     parseRequest: parseCaseRequest,
-    freezeCheck: (caseId, request) => checkReFreeze(caseId, request, resources.cardDetailIndex, vectors)
+    freezeCheck: (caseId, request) => checkReFreeze(caseId, request, resources.cardDetailIndex, vectors),
+    recipe: JSON.parse(await readFile(resolve(repoRoot, ARM_R_RECIPE_RELATIVE_PATH), "utf8"))
   });
   console.log(JSON.stringify(result));
   if (result.problems.length > 0) process.exitCode = 1;
