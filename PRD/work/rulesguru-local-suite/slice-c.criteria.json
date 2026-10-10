@@ -1,0 +1,66 @@
+{
+  "slug": "rulesguru-local-suite",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "Name lookup resolves exact, case-insensitive, accent-folded and front-face names from injected sources and ignores ids absent from card detail",
+      "value": false,
+      "evidence": { "command": "node --test.*rulesguru-card-names", "paths": ["scripts/lib/rulesguru-card-names.test.mjs"] }
+    },
+    {
+      "id": "C2",
+      "statement": "A token loses to a non-token; two non-token matches are unresolved",
+      "value": false,
+      "evidence": { "command": "node --test.*rulesguru-card-names", "paths": ["scripts/lib/rulesguru-card-names.test.mjs"] }
+    },
+    {
+      "id": "C3",
+      "statement": "A present rule id maps to itself; a bare header maps to lettered subrules only; an unknown id excludes the case",
+      "value": false,
+      "evidence": { "command": "node --test.*rulesguru-rules", "paths": ["scripts/lib/rulesguru-rules.test.mjs"] }
+    },
+    {
+      "id": "C4",
+      "statement": "Synthetic raw files convert to case files that pass the external-mode loader with the brief's field values",
+      "value": false,
+      "evidence": { "command": "node --test.*rulesguru-convert", "paths": ["scripts/lib/rulesguru-convert.test.mjs"] }
+    },
+    {
+      "id": "C5",
+      "statement": "Each exclusion reason is produced by a test and the case file is still written with suite.excluded set",
+      "value": false,
+      "evidence": { "command": "node --test.*rulesguru-convert", "paths": ["scripts/lib/rulesguru-convert.test.mjs"] }
+    },
+    {
+      "id": "C6",
+      "statement": "Two converts of the same inputs give identical bytes and the snapshot comes from injected sources",
+      "value": false,
+      "evidence": { "command": "node --test.*rulesguru-convert", "paths": ["scripts/lib/rulesguru-convert.test.mjs"] }
+    },
+    {
+      "id": "C7",
+      "statement": "Convert fails loudly on a missing field, makes no network call, and tests use temp folders with invented questions only",
+      "value": false,
+      "evidence": { "command": "node --test.*rulesguru-convert", "paths": ["scripts/lib/rulesguru-convert.mjs"] }
+    },
+    {
+      "id": "C8",
+      "statement": "package.json has eval:rulesguru:convert and the entry runs the ignore guard first",
+      "value": false,
+      "evidence": { "paths": ["package.json", "scripts/rulesguru-convert.mjs"] }
+    },
+    {
+      "id": "C9",
+      "statement": "The REQ-232 entry gains the convert, name lookup, header and excluded criteria",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
+    },
+    {
+      "id": "C10",
+      "statement": "npm run test:scripts passes",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    }
+  ]
+}

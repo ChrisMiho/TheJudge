@@ -1,0 +1,54 @@
+{
+  "slug": "rulesguru-local-suite",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "Group scoring gives any-reached and all-reached correctly on synthetic cases, including a bare-header group reached by any member",
+      "value": false,
+      "evidence": { "command": "node --test.*eval-worked-solutions", "paths": ["scripts/eval-worked-solutions.mjs"] }
+    },
+    {
+      "id": "D2",
+      "statement": "Level, complexity and CR-section splits are correct and misses list case ids only",
+      "value": false,
+      "evidence": { "command": "node --test.*eval-worked-solutions", "paths": ["scripts/eval-worked-solutions.mjs"] }
+    },
+    {
+      "id": "D3",
+      "statement": "Filters combine (or within a flag, and across flags) in the retrieval path; excluded and stale cases dropped and counted",
+      "value": false,
+      "evidence": { "command": "node --test.*eval-worked-solutions" }
+    },
+    {
+      "id": "D4",
+      "statement": "An --output outside SUITE_DIR is refused; a path inside a temp suite folder is accepted",
+      "value": false,
+      "evidence": { "command": "node --test.*eval-worked-solutions" }
+    },
+    {
+      "id": "D5",
+      "statement": "Without --suite the existing corpus run behaves as before; existing tests are green",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    },
+    {
+      "id": "D6",
+      "statement": "The report title says local practice-suite report and the run makes no provider call",
+      "value": false,
+      "evidence": { "command": "node --test.*eval-worked-solutions", "paths": ["scripts/eval-worked-solutions.mjs"] }
+    },
+    {
+      "id": "D7",
+      "statement": "The REQ-232 entry gains the retrieval-check and filters criteria",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
+    },
+    {
+      "id": "D8",
+      "statement": "npm run test:scripts passes",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    }
+  ]
+}

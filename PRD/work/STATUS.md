@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rulesguru-local-suite](rulesguru-local-suite/) | Mapped into 6 slices (A to F); gate 9 of 9 accept, quality-check PASS; build not started |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| [rulesguru-local-suite](rulesguru-local-suite/) | Gate answered (9 of 9 accept), docs PR #284 merged; brief's amendment set refreshed at `c6dec2ce` after #285 (269 hits, no new amendment); awaiting gate-qc re-grade |
 
 ## refining
 
