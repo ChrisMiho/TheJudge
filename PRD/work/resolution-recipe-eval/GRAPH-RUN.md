@@ -1,13 +1,14 @@
 # Graph run — resolution-recipe-eval
 
-- Run ID: `graph-20261010-183425`
+- Run ID: `graph-20261010-183425` (spec-forming half); build half `graph-20261010-200144`
 - Profile: `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/resolution-recipe-eval`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-resolution-recipe-eval`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
-- Current node: `owner-action` (parked at gate-qc PASS)
+- Current node: `gate-review` (build half; docs PR #283 merged at `bcef4543`)
 - Next action: `/graph-implement PRD/work/resolution-recipe-eval/`
+- Build canary: `denied — graph tier armed (nohup true)` (build half, lock taken at the launch root)
 
 ## Node ledger
 
@@ -164,6 +165,23 @@ Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed
 
 Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
 
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval
+
+You are the gate-resolution step of the build half (run `graph-20261010-200144`) for `PRD/work/resolution-recipe-eval/`, on branch `thejudge-auto/resolution-recipe-eval-work`. The owner answered `GATE-QUESTIONS.md` (all 24 slots `accept`, answered in session 2026-10-10) and merged docs PR #283 into `main` at `bcef4543`. Invoke the `graph-gate-review` skill and follow it exactly:
+
+1. Read every verdict slot; confirm none is blank.
+2. Apply the verdicts inside `GATE-QUESTIONS.md` (finalizing the proposal in the work folder). Never edit `PRD/sections/`, code, or `intake/`.
+3. Reconcile `DESIGN-BRIEF.md` and the README's intake pointer to every `edit` or `reject` verdict, and report the `### Brief reconciliation` list (none is expected, since every verdict is accept; say so explicitly).
+4. Write `## Gate verdicts` in `GRAPH-RUN.md`, resolve `## Open gate` to `- None`, restore `STATUS.refined` as the only marker (replacing `STATUS.owner-action`), set the README `status:` line, and move the `PRD/work/STATUS.md` board row under refined. Leave the README `## Preparation gate` section and the ledger header lines alone; the driver owns them.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: the verdict tally, the brief reconciliation list, the marker and board state, the commit SHA(s), and the push result.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -175,3 +193,4 @@ Report back: PASS or FAIL, the complete findings list, the commit SHA, and the p
 | "Each needs a reference answer I approve; grade strictly" — raised at the define gate as G3/G5, not decided by the run | answered-once | define | — |
 | "Every live run must pass --max-cost-usd <= 15" | answered-once | define | — |
 | "Accept all recommended" (owner's answer to all 24 GATE-QUESTIONS.md slots, given in session 2026-10-10; filled by the driver at the owner's request) | answered-once | define | — |
+| "can you merge and drive for me" (2026-10-10; owner then merged #282 and #283 with `!`, the driver builds) | answered-once | gate-review | — |

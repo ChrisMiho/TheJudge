@@ -20,4 +20,4 @@ Measure whether a layer-and-timing resolution recipe (eval-only arm R, amending 
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/resolution-recipe-eval
+- Autonomous base: origin/main
