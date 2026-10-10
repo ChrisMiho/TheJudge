@@ -62,6 +62,7 @@ import {
   EXPERIMENT_RUNS_DIR,
   defaultGit,
   assertAllPriced,
+  assertGameFidelity,
   executeExperiment,
   executeRegrade,
   findUnpricedModels,
@@ -976,6 +977,30 @@ export async function defaultLoadArmSets() {
   };
 }
 
+/**
+ * The run-start fidelity check for In-Depth cases (REQ-230): the prompt from the raw case request must equal
+ * the prompt from the request `askAiRequestSchema` parses, or the run refuses, naming the case. Loads the
+ * backend only when a selected case has a `gameState`.
+ */
+export async function defaultCheckGameFidelity({ cases, excerptCaps }) {
+  if (!cases.some((caseEntry) => caseEntry.gameState)) return;
+  const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
+  const { askAiRequestSchema } = await import("../apps/backend/src/validation/askAiRequest.ts");
+  const resources = await loadPromptResources();
+  assertGameFidelity({
+    cases,
+    buildRequest: buildCaseRequest,
+    parseRequest: (raw) => {
+      const result = askAiRequestSchema.safeParse(raw);
+      if (!result.success) throw new Error(result.error.message);
+      return result.data;
+    },
+    prepare: preparePromptInput,
+    resources,
+    excerptCaps
+  });
+}
+
 /** `DEFAULT_OPENAI_TIMEOUT_MS` from the config source of the checkout this runs from; null when it cannot be read. */
 export async function readProductionTimeoutMs(configPath = resolve(repoRoot, "apps/backend/src/config/index.ts")) {
   try {
@@ -1095,6 +1120,7 @@ async function runExperimentCommand({
   runExperiment,
   loadArmSets = defaultLoadArmSets,
   armRegistry = ARM_REGISTRY,
+  checkFidelity = defaultCheckGameFidelity,
   log
 }) {
   const { experiment } = parsed;
@@ -1130,6 +1156,8 @@ async function runExperimentCommand({
       correction: armSets.correction,
       recipe: armSets.recipe
     });
+    // Before any provider call, and in a dry run too: an In-Depth case must be asked exactly as the live app would ask it.
+    await checkFidelity({ cases, excerptCaps: parsed.excerptCaps });
   }
 
   const folder = resolve(runsRoot, experiment.runId);
@@ -1273,6 +1301,7 @@ export async function run(options = {}) {
     runExperiment = runLiveExperiment,
     loadArmSets,
     armRegistry,
+    checkFidelity,
     loadLocalEnv = loadLocalOpenAiEnv,
     readResults = defaultReadResults,
     loadSources = loadSnapshotSources,
@@ -1306,6 +1335,7 @@ export async function run(options = {}) {
       runExperiment,
       loadArmSets,
       armRegistry,
+      checkFidelity,
       log
     });
   }

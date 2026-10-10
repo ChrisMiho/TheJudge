@@ -399,6 +399,50 @@ export function findUnpricedModels(modelIds, rateTable) {
   return [...new Set(modelIds)].filter((model) => !rateTable?.[model]);
 }
 
+/**
+ * Game-case request fidelity (REQ-230): for every case with a `gameState`, the prompt prepared from the
+ * request the harness builds (`buildCaseRequest`, never parsed) must equal the prompt prepared from that
+ * request after the route's schema (`askAiRequestSchema`) parsed it, so an In-Depth case is asked exactly
+ * as the live app would ask it. An assertion only: nothing here changes a request, so no prompt hash moves.
+ * `parseRequest` returns the parsed request or throws; `prepare` is `preparePromptInput`. Returns one
+ * problem per differing case, naming it; lookup cases are not checked.
+ */
+export function findGameFidelityProblems({ cases, buildRequest, parseRequest, prepare, resources, excerptCaps = [10] }) {
+  const problems = [];
+  for (const caseEntry of cases) {
+    if (!caseEntry.gameState) continue;
+    const raw = buildRequest(caseEntry);
+    let parsed;
+    try {
+      parsed = parseRequest(raw);
+    } catch (error) {
+      problems.push(`${caseEntry.id}: the Ask AI route's schema rejects the request this case builds (${error?.message ?? error})`);
+      continue;
+    }
+    if (raw.question !== parsed.question) {
+      problems.push(`${caseEntry.id}: the route's schema changes the question text, so the harness would ask something a player's request would not`);
+      continue;
+    }
+    for (const cap of excerptCaps) {
+      const options = { ...resources, supplementalRuleCap: cap, queryEmbedding: null };
+      if (prepare(raw, options).promptText !== prepare(parsed, options).promptText) {
+        problems.push(`${caseEntry.id}: the prompt from the raw case request differs from the prompt from the request the route's schema parses (excerpt cap ${cap})`);
+        break;
+      }
+    }
+  }
+  return problems;
+}
+
+export function assertGameFidelity(args) {
+  const problems = findGameFidelityProblems(args);
+  if (problems.length > 0) {
+    throw new Error(
+      `The run refuses to start: ${problems.length} In-Depth case${problems.length === 1 ? " is" : "s are"} not asked exactly as the live app would ask ${problems.length === 1 ? "it" : "them"}:\n  ${problems.join("\n  ")}`
+    );
+  }
+}
+
 export function assertAllPriced({ models, judgeModel, rateTable }) {
   const unpriced = findUnpricedModels([...models, judgeModel], rateTable);
   if (unpriced.length > 0) {
