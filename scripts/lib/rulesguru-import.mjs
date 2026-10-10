@@ -16,7 +16,9 @@
 // to import-state.json after every saved batch, and a new run resumes from
 // the larger of the saved last id and 1. It stops cleanly, progress saved, on
 // a network error, on a rate-limit answer that repeats after one 30 s wait,
-// after 10 failed requests in a row, and at the end (an empty batch).
+// after 10 failed requests in a row, and at the end (an empty batch, or a batch
+// whose highest id is not above the cursor -- the API wraps to id 1 past the
+// last question).
 
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -35,10 +37,11 @@ export function buildSettings({ previousId, count, from = FROM_NAME }) {
   return {
     previousId,
     count,
-    levels: [0, 1, 2, 3, 4],
-    complexities: ["simple", "intermediate", "complicated"],
+    level: ["0", "1", "2", "3", "Corner Case"],
+    complexity: ["Simple", "Intermediate", "Complicated"],
     legality: "all",
     tags: [],
+    tagsConjunc: "NOT",
     from
   };
 }
@@ -59,7 +62,13 @@ export function classifyResponse(status, bodyText) {
   } catch {
     return { kind: "failed" };
   }
-  const questions = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.questions) ? parsed.questions : null;
+  const questions = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(parsed?.questions)
+      ? parsed.questions
+      : Array.isArray(parsed?.data)
+        ? parsed.data
+        : null;
   if (questions === null) return { kind: "failed" };
   if (questions.length === 0) return { kind: "empty" };
   const idOk = (question) => question !== null && typeof question === "object" && /^\d+$/.test(String(question.id));
@@ -170,6 +179,8 @@ export async function importQuestions({
       let highest = previousId;
       for (const question of result.questions) {
         const id = String(question.id);
+        // At or below the cursor: already frozen, or the API wrapped back to the start.
+        if (Number(id) <= previousId) continue;
         const target = join(rawDir, `${id}.json`);
         if (await exists(target)) {
           counts.alreadyFrozen += 1;
@@ -180,8 +191,10 @@ export async function importQuestions({
         highest = Math.max(highest, Number(id));
       }
       if (highest <= previousId) {
-        // A batch that does not move the cursor would loop forever; count it as a failed request.
-        result = { kind: "failed" };
+        // The API wraps back to the start past the last question: that is the end.
+        state.complete = true;
+        counts.stopReason = "end";
+        break;
       } else {
         failures = 0;
         successes += 1;

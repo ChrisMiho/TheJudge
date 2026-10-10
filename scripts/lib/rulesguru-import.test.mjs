@@ -72,8 +72,47 @@ test("the first request starts at previousId 1 and names TheJudge; settings cove
   assert.match(w.calls[0].settings.from, /TheJudge/);
   assert.equal(w.calls[0].settings.legality, "all");
   assert.deepEqual(w.calls[0].settings.tags, []);
-  assert.deepEqual(buildSettings({ previousId: 1, count: 1 }).complexities, ["simple", "intermediate", "complicated"]);
+  assert.deepEqual(buildSettings({ previousId: 7, count: 3 }), {
+    previousId: 7,
+    count: 3,
+    level: ["0", "1", "2", "3", "Corner Case"],
+    complexity: ["Simple", "Intermediate", "Complicated"],
+    legality: "all",
+    tags: [],
+    tagsConjunc: "NOT",
+    from: "TheJudge"
+  });
   assert.equal(counts.stopReason, "end");
+});
+
+test("a wrapped batch (highest id not above the cursor) ends the import as complete without overwriting", async () => {
+  const suiteDir = tempSuite();
+  mkdirSync(join(suiteDir, "raw"), { recursive: true });
+  writeFileSync(join(suiteDir, "raw", "1.json"), '{"id":1,"frozen":"original"}\n');
+  writeFileSync(join(suiteDir, "import-state.json"), JSON.stringify({ lastSavedId: 9, cursor: 9, skippedIds: [], batchSizeHistory: [] }));
+  const w = world(() => json([invented(1), invented(2), invented(3)]));
+  const counts = await importQuestions({ ...w, suiteDir });
+  assert.equal(counts.stopReason, "end");
+  assert.equal(counts.saved, 0);
+  assert.equal(w.calls.length, 1);
+  assert.equal(JSON.parse(readFileSync(join(suiteDir, "raw", "1.json"), "utf8")).frozen, "original");
+  assert.deepEqual(readdirSync(join(suiteDir, "raw")), ["1.json"]);
+  const state = JSON.parse(readFileSync(join(suiteDir, "import-state.json"), "utf8"));
+  assert.equal(state.complete, true);
+  assert.equal(state.lastSavedId, 9);
+});
+
+test("a mixed batch saves the new ids, advances the cursor, then the wrap ends the import", async () => {
+  const suiteDir = tempSuite();
+  const w = world((call) => json(call.settings.previousId === 1 ? [invented(2), invented(3), invented(1), invented(2)] : [invented(1), invented(2)]));
+  const counts = await importQuestions({ ...w, suiteDir });
+  assert.equal(counts.saved, 2);
+  assert.equal(counts.stopReason, "end");
+  assert.deepEqual(readdirSync(join(suiteDir, "raw")).sort(), ["2.json", "3.json"]);
+  assert.equal(w.calls[1].settings.previousId, 3);
+  const state = JSON.parse(readFileSync(join(suiteDir, "import-state.json"), "utf8"));
+  assert.equal(state.lastSavedId, 3);
+  assert.equal(state.complete, true);
 });
 
 test("no request starts less than 3 seconds after the previous one finished", async () => {
@@ -214,6 +253,8 @@ test("fetch and the clock are required", async () => {
 test("classifyResponse sorts API answers", () => {
   assert.equal(classifyResponse(200, "[]").kind, "empty");
   assert.equal(classifyResponse(200, JSON.stringify({ questions: [invented(3)] })).kind, "ok");
+  assert.equal(classifyResponse(200, JSON.stringify({ data: [invented(3)] })).kind, "ok");
+  assert.equal(classifyResponse(200, JSON.stringify({ data: [invented(3)] })).questions.length, 1);
   assert.equal(classifyResponse(200, JSON.stringify([{ nope: true }])).kind, "failed");
   assert.equal(classifyResponse(400, "Incorrectly formatted json.").kind, "malformed");
   assert.equal(classifyResponse(429, "slow down").kind, "rate-limited");
