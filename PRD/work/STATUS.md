@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rulesguru-local-suite](rulesguru-local-suite/) | Local-only RulesGuru practice suite: import, convert, suite and filter selection on the harness runs |
 
 ## owner-action
 
