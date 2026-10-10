@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/rulesguru-local-suite`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rulesguru-local-suite`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-193032/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/rulesguru-local-suite/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/rulesguru-local-suite` pushed from `.worktrees/kickoff-rulesguru-local-suite` at `dabad406` (`git ls-remote --heads origin thejudge-auto/rulesguru-local-suite`); lock `.worktrees/.graph-run.lock` pid 81708; launch checkout untouched (still on `main`) | 2026-10-10 |
 | 2 | shape | sonnet | ok | `0 → 12` | `PRD/work/rulesguru-local-suite/` (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md and intake/FINDINGS-fit.md byte-identical to the staged copies, `cmp` clean); commit `4cde331b`; 5 prior-run receipts in IDEA.md | 2026-10-10 |
+| 3 | define | opus | ok | `0 → 77` | `PRD/work/rulesguru-local-suite/DESIGN-BRIEF.md`, `PRD/work/rulesguru-local-suite/GATE-QUESTIONS.md` (7 stable-ID slots: REQ-232 new, REQ-185, REQ-186, REQ-188, REQ-226, NFR-018, goals-and-non-goals; blockers B1, B2), `STATUS.refined`; commit `09a2779b`; 251-hit line-level grep with dispositions (12 amend / 9 build / 230 keep); REQ-185 diff inserts only, anchored on lines PR #283 does not change; no network request; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs .gitignore` empty | 2026-10-10 |
 
 ## Open gate
 
@@ -93,6 +94,29 @@ Outputs:
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 150 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: the files written, the commit SHA(s), the push result, the stable-ID slots and blocker-question slots (one line each), the grep hit count with its dispositions, and how the REQ-185 overlap is handled.
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rulesguru-local-suite
+
+You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261010-193032`. Invoke the `thejudge-quality-check` skill on `PRD/work/rulesguru-local-suite/` and follow it in its graph-controlled mode: no questions to the user, no approval pauses. Grade `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` against PRD alignment and agent-readiness and return PASS or FAIL with a complete findings list.
+
+Check directly, at least:
+1. Every stable-ID block in `GATE-QUESTIONS.md` (REQ-232, REQ-185, REQ-186, REQ-188, REQ-226, NFR-018, goals-and-non-goals): its removed and context lines match the live `PRD/sections/` text word for word, it carries the three-line plain-language opening, and its `- Verdict:` / `- Reason:` slot is blank. REQ-232 is genuinely unused: no `REQ-232` anywhere in `PRD/sections` today.
+2. The brief's line-level grep: re-run the exact command the brief names and confirm every hit has a disposition row and the count matches.
+3. The blocker questions B1 and B2 each recommend without deciding and leave the slot blank.
+4. The package files contain no RulesGuru question, answer or card-roll text: the suite is described by counts and field names only. Make no network request to rulesguru.org or any other external site.
+5. The design keeps the five intake decisions: local only in a gitignored folder ignored before the first import; nothing about the permission beyond used with permission, local only; not ground truth and reported apart from the official headline; never a build gate (no dependency from `npm test`, `npm run quality:check` or CI); tooling tested on synthetic data.
+6. The REQ-185 overlap with docs PR #283: read `git show origin/thejudge-auto/resolution-recipe-eval:PRD/work/resolution-recipe-eval/GATE-QUESTIONS.md` and confirm this package's REQ-185 diff touches no line that package rewrites, and that the brief says how the build applies it by intent if that change lands first.
+7. Numbers in the brief (name-lookup coverage, grep count) trace to a command or file named in the brief.
+
+Write the report to `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md`. On FAIL set the status the skill names. Do not edit the brief or the questions file yourself. The driver writes the README `## Preparation gate` section, so leave it alone.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
 
 ## Instruction ledger
 
