@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/resolution-recipe-eval/`
 - Build canary: `denied — graph tier armed (nohup true)` (build half, lock taken at the launch root); run `graph-20261010-200917` re-armed the same way, `denied — graph tier armed (nohup true)`
 
@@ -23,6 +23,7 @@
 | 7 | gate-review | sonnet | ok | `0 → 15` | build half run `graph-20261010-200144`: claim commit `a1683a9d` on `thejudge-auto/resolution-recipe-eval-work` cut from `origin/main` `bcef4543` (kickoff worktree removed clean); `graph-gate-review` commit `2e4720cd`: 24 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty | 2026-10-10 |
 | 8 | gate-qc | sonnet | ok | `0 → 18` | PASS build-half re-grade, findings none — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `831c0ee7`; 33/33 diff lines match at `bcef4543`; grep 104/104; 24/24 accept; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; README `## Preparation gate` PASS written by the driver | 2026-10-10 |
 | 9 | plan | sonnet | ok | `0 → 35` | commit `edf9e904` — `GAMEPLAN.md` + 7 slices with criteria files (A arm R 8; B manifests 6; C compare report 5; D game fidelity 5; E strict grading 6; F hard cases 8, manual F8; G runbook + ship 7, manual G7), all criteria `false`; Preparation gate PASS verified first; `STATUS.active` only marker; board row under active; runbook at `docs/eval/resolution-recipe/RUNBOOK.md`, no deliverable inside `PRD/work/`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-10 |
+| 10 | build | sonnet | ok | `0 → 292` | run `graph-20261010-200917`; code PR https://github.com/ChrisMiho/TheJudge/pull/285 (open, `thejudge-auto/resolution-recipe-eval-work → main`); slice commits A `a4db3115`, B `73dfc317`, C `99ff78f6`, D `dd5fca3a`, E `96691614`, F `46f4fc7a`, G `e1467adb`; 45/45 criteria `true` (self-reported: the hook reads criteria from the launch checkout, which holds no slice criteria files, so no evidence was logged — review re-verifies); `STATUS.ship-ready` only marker; builder reports `npm run quality:check` exit 0 on `e1467adb`; return-side checks: launch `git status --porcelain` identical before/after (`diff` clean), `classifyBuildWrites` over `git diff --name-only origin/main...HEAD` (62 files) → ok, 0 outside; `git diff --stat origin/main -- apps/backend/src/prompt apps/backend/src/routes apps/backend/src/providers` empty; no `--confirm-live-calls`; deviation (mechanics, not denied): Bash heredocs used for edits in slices A and C; out-of-repo scratch only (session scratchpad, one `/tmp/qc.txt`) | 2026-10-10 |
 
 ## Open gate
 
@@ -268,6 +269,87 @@ Criteria:
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). Never force-push. End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; no sleeping or polling; run no dev server or browser (nothing here needs one). A script that rewrites a tracked result file (for example under `apps/backend/src/eval/benchmark/`) must not leave it dirty unless the slice intends the change. Prettier governs only JSON and YAML here: never run prettier on `.ts` or `.mjs`; run `npm run format` for JSON a script wrote. A linked worktree lacks gitignored caches; if a step needs `apps/backend/data/models/`, check it exists before relying on it. Stay well under 4000 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: per slice — status, commit SHA, criteria true/total; every path written (absolute); the PR URL; the final `npm run quality:check` result; the dry-run outputs (calls and estimate) for A5, D4 and F6; anything left unresolved.
+
+### review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval
+
+You are node 7 (`review`) of run `graph-20261010-200917`: a fresh-context, no-write reviewer of code PR #285 (`thejudge-auto/resolution-recipe-eval-work → main`). You hold no Write, Edit or NotebookEdit tool and must not change any file, commit, push, or comment on the PR. Read-only git, file reads, and the test and dry-run commands below are allowed.
+
+What it is: an eval-only test bench. It adds arm R (a layer-and-timing resolution recipe substituted into the prompt for one comparison) next to production arm A, sixteen new hard worked cases, a stricter grading rubric, manifest and compare-report changes, a game-case request fidelity check, and a runbook for the owner's later paid run. Nothing a player sees changes.
+
+Inputs: the diff `git diff origin/main...HEAD`; the package `PRD/work/resolution-recipe-eval/` (`DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` with all 24 slots accepted, `GAMEPLAN.md`, the seven `slice-*.md` docs and their `slice-*.criteria.json`).
+
+Rubric — the slices' own acceptance criteria, and nothing else:
+
+Slice A:
+- A1: R on a lookup prompt and on a game prompt changes only the target paragraph (test)
+- A2: R refuses when the target is missing, when it appears twice, and when approvedOn is absent (tests)
+- A3: P's existing tests pass unchanged
+- A4: arm-r-recipe.json replaces equals the layers paragraph in mtgReference.ts verbatim and recipe equals the accepted G2 text
+- A5: --arm R parses; R is refused outside the diagnostic manifest unless frozen; the A-vs-R dry run prints calls and an estimate and spends nothing
+- A6: diagnostic-arms-check passes with R substituting once on every diagnostic case
+- A7: The REQ-230 arm-R lines and the build-marked doc/test lines name R
+- A8: Nothing under apps/backend/src/prompt changed
+
+Slice B:
+- B1: Append of an approved id adds a group with its reason and leaves the held-out manifest byte-identical (test)
+- B2: Append refuses a held-out id and refuses a non-approved id (tests)
+- B3: A re-draw keeps appended groups (test)
+- B4: --check exits 0 on the committed files and prints drift as information (test, plus a run on the repo)
+- B5: The test formerly named for byte-for-byte reproduction is renamed to the verification meaning
+- B6: The REQ-230 appended-group and --check lines match the accepted block
+
+Slice C:
+- C1: --repeats-a 1-3 --repeats-b 4-6 on one run and one arm compares the two halves (test)
+- C2: Identical sides are refused with a message naming the problem (test)
+- C3: Answer-level right count and right-but-over-budget count appear per side and per request kind (test)
+- C4: Existing compare tests pass unchanged
+- C5: The REQ-228 block is applied; the command still only prints numbers
+
+Slice D:
+- D1: A matching game case passes the check (test)
+- D2: A game case whose raw and parsed prompts differ makes the run refuse and name the case (test with a fabricated difference)
+- D3: Lookup cases are not affected and existing prompt-fidelity tests pass unchanged
+- D4: The A-vs-R dry run still prints calls and an estimate with the check active
+- D5: The REQ-230 fidelity line matches the accepted block
+
+Slice E:
+- E1: Level 2 text matches the accepted REQ-187 wording
+- E2: RUBRIC_REVISION is a new value and a test pins it
+- E3: The judge prompt contains the new level-2 text (test)
+- E4: Artifact comparison across the old and new revisions is refused (test updated)
+- E5: The answer-quality backend tests and typecheck pass
+- E6: The REQ-187 block is applied
+
+Slice F:
+- F1: 16 new case files exist, one per slot G3-01 to G3-16, and the corpus loader accepts them (no duplicate errors)
+- F2: Every new case is approved with reviewedOn and a review note naming its slot
+- F3: Card oracle ids in each case equal the ids in evidence/g3-card-ids.txt and the resolve script reports 0 problems
+- F4: The diagnostic manifest holds group resolution-recipe-hard-set with the 16 ids and the held-out manifest is unchanged
+- F5: Offline rules gate is green after vectors, baseline and coverage are rebuilt
+- F6: Dry run of --arm A --arm R --repeat 6 over the 18 hard ids prints 216 answer calls and an estimate, with no --confirm-live-calls
+- F7: REQ-224, REQ-185 and the worked-solutions README line match the accepted blocks
+- F8: A reader compared each reference answer with its G3 slot and found them equal
+
+Slice G:
+- G1: docs/eval/resolution-recipe/RUNBOOK.md exists and names the G4 rule as accepted
+- G2: The runbook lists every command from the brief, the 15 USD cap rule, and no path under PRD/work/
+- G3: The amendment-set grep shows no stale line from the amend or build dispositions
+- G4: Nothing durable points into PRD/work/resolution-recipe-eval
+- G5: Nothing under apps/backend/src/prompt, routes or providers changed
+- G6: npm run quality:check passes
+- G7: A reader followed the runbook up to the first paid command and found it complete
+
+Distrust the `true` flags. The boundary hook logged no evidence for this build (it reads criteria from the launch checkout), so every flag is the builder's own claim. Re-verify independently: run `npm run test:scripts`, `npm --workspace apps/backend run test -- src/eval`, `npm run typecheck`, `node scripts/diagnostic-arms-check.mjs`, `npm run eval:answer-quality:manifests -- --check`, and at least the F6 dry run from `slice-f-hard-cases.md` (never with `--confirm-live-calls`). Check by reading: the `PRD/sections/functional-requirements.md` edits against each accepted block in `GATE-QUESTIONS.md` (applied once, by intent), each new case reference answer against its accepted G3 slot (spot-check at least six, including G3-16), and the A4 verbatim equalities. Also judge correctness of the changes the builder made beyond the slice text: `apps/backend/src/eval/rules-gate/stateFacts.ts` (two same-name cards matched to their own printed blocks), the pinned in-topic count in `rulesGate.test.ts` (11 to 18), and the self-comparison refusal living in `scripts/eval-answer-compare.mjs` rather than the library.
+
+Severity rule: Critical or Important is reserved for a gap that breaks correctness or a stated criterion above. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never sends the run back to build; report those as Minor. The builder's use of Bash heredocs for some edits is a process note, not a finding.
+
+Leave the worktree as you found it: if a command rewrites a tracked file, say which, and report `git status --porcelain` at the end. Spawn no subagents; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: verdict APPROVE or CHANGES REQUESTED; per criterion id, verified or not with the command or file you used; findings as Critical, Important or Minor, each with file and line and the criterion it breaks; the final `git status --porcelain`.
 
 ## Instruction ledger
 
