@@ -11,7 +11,11 @@
 // and reports the unchanged-input stratum (identical prompt hash) as sampling
 // noise. Per side it reports latency, answers slower than the revision's
 // production timeout, errors, tokens (reasoning included) and cost, answer
-// and judge apart. It states counts and lists and draws no conclusion: a number
+// and judge apart, plus the right answers out of all graded answers (every
+// repeat counted, beside the per-case majorities) and how many of those right
+// answers were slower than the timeout, in every breakdown. A repeat selector
+// (`--repeats 1-3`) keeps only some repeats of a side, so one arm's repeats can
+// be split into halves and compared within one run (the noise floor). It states counts and lists and draws no conclusion: a number
 // moving is a fact to investigate, not a verdict. Diagnostic arms (REQ-230) print under a
 // "diagnostic control, not a product score" heading.
 //
@@ -47,10 +51,15 @@ const isRight = (record) => record.scores.correctness === 2;
  * prompt) and model (default: the run's only model). Refuses an ambiguous
  * model rather than guessing.
  */
-export function selectSide(run, { arm = "A", model, cap } = {}) {
-  const records = run.summary.records.filter((record) => record.arm === arm && (cap === undefined || record.excerptCap === Number(cap)));
+export function selectSide(run, { arm = "A", model, cap, repeats } = {}) {
+  const wanted = repeats === undefined || repeats === null ? null : parseRepeatSelector(repeats);
+  const records = run.summary.records.filter(
+    (record) => record.arm === arm && (cap === undefined || record.excerptCap === Number(cap)) && (wanted === null || wanted.has(record.repeat ?? 1))
+  );
   if (records.length === 0) {
-    throw new Error(`Run ${run.identity.runId} has no records for arm ${arm}${cap === undefined ? "" : ` at excerpt cap ${cap}`}.`);
+    throw new Error(
+      `Run ${run.identity.runId} has no records for arm ${arm}${cap === undefined ? "" : ` at excerpt cap ${cap}`}${wanted === null ? "" : ` in repeats ${repeats}`}.`
+    );
   }
   const models = [...new Set(records.map((record) => record.model))].sort();
   const chosenModel = model ?? (models.length === 1 ? models[0] : null);
@@ -59,7 +68,44 @@ export function selectSide(run, { arm = "A", model, cap } = {}) {
   }
   const selected = records.filter((record) => record.model === chosenModel);
   if (selected.length === 0) throw new Error(`Run ${run.identity.runId} has no records for model ${chosenModel} on arm ${arm}.`);
-  return { run, arm, model: chosenModel, records: selected };
+  return { run, arm, model: chosenModel, repeats: wanted === null ? null : String(repeats), records: selected };
+}
+
+/**
+ * A repeat selector: whole numbers and ranges joined by commas, such as `1-3`, `4-6` or `1,3,5-6`.
+ * Returns the set of repeat indexes; refuses anything else, naming it.
+ */
+export function parseRepeatSelector(spec) {
+  const text = String(spec).trim();
+  const wanted = new Set();
+  for (const part of text.split(",")) {
+    const match = /^(\d+)(?:-(\d+))?$/.exec(part.trim());
+    const from = match ? Number(match[1]) : NaN;
+    const to = match ? Number(match[2] ?? match[1]) : NaN;
+    if (!match || from < 1 || to < from) {
+      throw new Error(`The repeat selector "${text}" must be repeat numbers or ranges counted from 1, such as 1-3 or 4-6 or 1,3,5-6.`);
+    }
+    for (let repeat = from; repeat <= to; repeat++) wanted.add(repeat);
+  }
+  return wanted;
+}
+
+const sideRecordKeys = (side) => side.records.map((record) => `${record.caseId}|${record.model}|${record.excerptCap}|${record.arm}|${record.repeat ?? 1}`).sort();
+
+/**
+ * Why a side cannot be compared with itself (REQ-228): both sides select the same records of the same
+ * run (same run, arm, model, cap and repeats). Empty when the sides differ in any of them.
+ */
+export function selfComparisonReasons(sideA, sideB) {
+  if (sideA.run.folder !== sideB.run.folder) return [];
+  const keysA = sideRecordKeys(sideA);
+  const keysB = sideRecordKeys(sideB);
+  if (keysA.length !== keysB.length || keysA.some((key, index) => key !== keysB[index])) return [];
+  return [
+    `both sides select the same records (run ${sideA.run.identity.runId}, arm ${sideA.arm}, model ${sideA.model}${sideA.repeats ? `, repeats ${sideA.repeats}` : ", every repeat"}): ` +
+      "a side compared with itself says nothing. Pick two different arms, runs or repeat ranges " +
+      "(the noise floor is one arm's halves: --arm A --repeats-a 1-3 --repeats-b 4-6)"
+  ];
 }
 
 function groupByKey(records) {
@@ -173,6 +219,53 @@ function percentile(sortedValues, fraction) {
   return sortedValues[Math.max(0, index)];
 }
 
+function emptyAnswerCounts() {
+  return { graded: 0, right: 0, slowerThanTimeout: 0, rightOverBudget: 0 };
+}
+
+/**
+ * The answer-level counts (REQ-228) over a side's records, every repeat counted: graded answers, right
+ * answers (Correctness 2), answers slower than the timeout, and right answers that were also slower than
+ * it (a player would have seen the failure screen). Overall, per tier group and per breakdown label.
+ */
+export function answerLevelCounts(records, timeoutMs) {
+  const overall = emptyAnswerCounts();
+  const byTierGroup = { "tiers 1-2": emptyAnswerCounts(), "tier 3": emptyAnswerCounts() };
+  const breakdowns = { "tiers 1-2": newBreakdownTables(), "tier 3": newBreakdownTables() };
+  const add = (counts, record) => {
+    const graded = isGraded(record);
+    const right = graded && isRight(record);
+    const slow = record.status === "ok" && typeof record.latencyMs === "number" && record.latencyMs > timeoutMs;
+    if (graded) counts.graded += 1;
+    if (right) counts.right += 1;
+    if (slow) counts.slowerThanTimeout += 1;
+    if (right && slow) counts.rightOverBudget += 1;
+  };
+  const bump = (table, label, record) => {
+    if (!table.has(label)) table.set(label, emptyAnswerCounts());
+    add(table.get(label), record);
+  };
+  for (const record of records) {
+    const group = record.tier === 3 ? "tier 3" : "tiers 1-2";
+    const strata = record.strata ?? {};
+    add(overall, record);
+    add(byTierGroup[group], record);
+    const tables = breakdowns[group];
+    for (const section of strata.ruleSections?.length ? strata.ruleSections : ["none"]) bump(tables.ruleSection, section, record);
+    for (const mechanic of strata.mechanics?.length ? strata.mechanics : ["none"]) bump(tables.mechanic, mechanic, record);
+    bump(tables.difficulty, difficultyLabel(strata), record);
+    bump(tables.sourcePool, strata.sourcePool ?? "none", record);
+    bump(tables.requestKind, strata.requestKind ?? "unknown", record);
+  }
+  return {
+    overall,
+    byTierGroup,
+    breakdowns: Object.fromEntries(
+      Object.entries(breakdowns).map(([group, tables]) => [group, Object.fromEntries(Object.entries(tables).map(([name, table]) => [name, tableToObject(table)]))])
+    )
+  };
+}
+
 /** Latency, errors, tokens and cost for one side (REQ-228), the two cost lines apart. */
 export function summarizeSide(side) {
   const records = side.records;
@@ -180,10 +273,13 @@ export function summarizeSide(side) {
   const latencies = ok.map((record) => record.latencyMs).filter((value) => typeof value === "number").sort((x, y) => x - y);
   const timeoutMs = side.run.identity.productionTimeoutMs ?? ASSUMED_TIMEOUT_MS;
   const sum = (field, list = records) => list.reduce((total, record) => total + (record[field] ?? 0), 0);
+  const answerLevel = answerLevelCounts(records, timeoutMs);
   return {
     runId: side.run.identity.runId,
     commit: side.run.identity.commit,
     arm: side.arm,
+    repeats: side.repeats ?? null,
+    answerLevel,
     armRevision: records[0]?.armRevision ?? null,
     model: side.model,
     reportedModel: side.run.identity.models?.reported?.[side.model] ?? null,
@@ -284,6 +380,8 @@ export function compareRunSides(sideA, sideB) {
   const total = keys.length;
   return {
     refused: false,
+    // One arm's repeats split into two sets within one run: the difference is chance alone, the noise floor.
+    noiseFloor: sideA.run.folder === sideB.run.folder && sideA.arm === sideB.arm && sideA.model === sideB.model && sideA.repeats !== sideB.repeats,
     diagnostic: sideA.records.some((r) => r.diagnostic) || sideB.records.some((r) => r.diagnostic),
     sides: { a: summarizeSide(sideA), b: summarizeSide(sideB) },
     denominators: { cases: total, bothGraded: total - overall.missing },
@@ -323,10 +421,18 @@ function countsLine(counts, denominator) {
 
 const total = (counts) => Object.values(counts).reduce((x, y) => x + y, 0);
 
+/** `7 right of 12 graded answers (every repeat counted); 2 slower than the timeout, 1 of them right`. */
+function answerLevelText(counts) {
+  return `${counts.right} right of ${counts.graded} graded answers (every repeat counted); ${counts.slowerThanTimeout} slower than the timeout, ${counts.rightOverBudget} of them right`;
+}
+
+const answerShort = (counts) => `${counts.right}/${counts.graded} right, ${counts.rightOverBudget} right but over budget`;
+
 function sideBlock(label, side) {
   const timeoutNote = side.timeoutIsAssumed ? " (assumed: this run's identity record names none)" : "";
   return [
-    `  ${label}: run ${side.runId} at commit ${side.commit}, arm ${side.arm}${side.armRevision ? ` (${side.armRevision})` : ""}, model ${side.model}${side.reportedModel ? ` (reported ${side.reportedModel})` : ""}`,
+    `  ${label}: run ${side.runId} at commit ${side.commit}, arm ${side.arm}${side.armRevision ? ` (${side.armRevision})` : ""}, model ${side.model}${side.reportedModel ? ` (reported ${side.reportedModel})` : ""}${side.repeats ? `, repeats ${side.repeats}` : ""}`,
+    `    answers: ${answerLevelText(side.answerLevel.overall)}`,
     `    latency: mean ${ms(side.latencyMs.mean)}, p50 ${ms(side.latencyMs.p50)}, p95 ${ms(side.latencyMs.p95)}; ${side.slowerThanTimeout} answers slower than the ${side.timeoutMs} ms production timeout${timeoutNote}`,
     `    errors ${side.errors} (of which timeouts ${side.timeouts}) across ${side.records} records`,
     `    tokens: answer in ${side.tokens.input} / out ${side.tokens.output} (reasoning ${side.tokens.reasoning} inside out); judge in ${side.tokens.judgeInput} / out ${side.tokens.judgeOutput} (reasoning ${side.tokens.judgeReasoning} inside out)`,
@@ -340,18 +446,30 @@ export function formatComparison(result, { labelA = "A", labelB = "B" } = {}) {
     return [
       "These two runs cannot be compared; nothing was reported.",
       ...result.reasons.map((reason) => `  - ${reason}`),
-      "Re-grade the earlier run's stored answers under the current judge and rubric (a regrade run), then compare."
+      result.selfComparison
+        ? "Choose two different sides to compare."
+        : "Re-grade the earlier run's stored answers under the current judge and rubric (a regrade run), then compare."
     ].join("\n");
   }
   const lines = [];
   if (result.diagnostic) {
     lines.push(`=== ${DIAGNOSTIC_HEADING} ===`, "These arms are test-only prompt variants. They answer \"would complete evidence rescue this answer?\", never \"how good is the product?\".", "");
   }
+  if (result.noiseFloor) {
+    lines.push(
+      "=== NOISE-FLOOR COMPARISON ===",
+      "Both sides are the same arm of the same run, split by repeat. Any difference here is chance alone: the gap two identical setups drift apart by.",
+      ""
+    );
+  }
   lines.push("Paired comparison of two experiment runs (offline; right = Correctness 2, wrong = 0 or 1):");
   lines.push(...sideBlock(labelA, result.sides.a), ...sideBlock(labelB, result.sides.b), "");
   lines.push(`Judge ${result.sides.a.judgeModel}, rubric ${result.sides.a.rubricRevision} on both sides.`);
   lines.push(`Overall: ${countsLine(result.overall, result.denominators.cases)}`);
-  for (const [group, counts] of Object.entries(result.byTierGroup)) lines.push(`  ${group}: ${countsLine(counts, total(counts))}`);
+  for (const [group, counts] of Object.entries(result.byTierGroup)) {
+    lines.push(`  ${group}: ${countsLine(counts, total(counts))}`);
+    lines.push(`    answers, every repeat counted: ${labelA} ${answerShort(result.sides.a.answerLevel.byTierGroup[group])}; ${labelB} ${answerShort(result.sides.b.answerLevel.byTierGroup[group])}`);
+  }
   lines.push(
     result.unchangedInput.label === "sampling noise"
       ? `Unchanged-input stratum (identical prompt hash on both sides; differences here are sampling noise, not an effect): ${result.unchangedInput.cases} cases: ${countsLine(result.unchangedInput.counts, result.unchangedInput.cases)}`
@@ -377,7 +495,15 @@ export function formatComparison(result, { labelA = "A", labelB = "B" } = {}) {
       lines.push(`  ${heading[name]}:`);
       const entries = Object.entries(table);
       if (entries.length === 0) lines.push("    none");
-      for (const [label, counts] of entries) lines.push(`    ${label}: ${countsLine(counts, total(counts))}`);
+      for (const [label, counts] of entries) {
+        lines.push(`    ${label}: ${countsLine(counts, total(counts))}`);
+        const a = result.sides.a.answerLevel.breakdowns[group]?.[name]?.[label];
+        const b = result.sides.b.answerLevel.breakdowns[group]?.[name]?.[label];
+        if (a || b) {
+          const none = emptyAnswerCounts();
+          lines.push(`      answers, every repeat counted: ${labelA} ${answerShort(a ?? none)}; ${labelB} ${answerShort(b ?? none)}`);
+        }
+      }
     }
   }
   if (result.onlyInA.length > 0) lines.push("", `Only in ${labelA}: ${result.onlyInA.join(", ")}`);

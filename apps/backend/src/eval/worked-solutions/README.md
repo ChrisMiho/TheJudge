@@ -254,6 +254,12 @@ touches `results.json`.
   missing, lists every right-to-wrong case with its transcripts, breaks the counts down by
   tier (1-2 and 3 never pooled), rules section, mechanic, difficulty, source pool and
   request kind, reports the unchanged-input stratum as sampling noise, and names no winner.
+  Per side it also counts right answers out of all graded answers (every repeat, beside the
+  per-case majorities) and right answers slower than the production timeout, in every
+  breakdown. `--repeats <from>-<to>` (and `--repeats-a` / `--repeats-b`) keeps only some
+  repeats of a side, so one arm's halves compare within one run
+  (`<run> <run> --arm A --repeats-a 1-3 --repeats-b 4-6`, labelled a noise-floor
+  comparison); two sides that select the same records are refused.
 - **Evidence trace** (REQ-229): `npm run eval:evidence-trace` (offline) shows, per deciding
   rule, its rank in the full System 3 ranking, whether it was selected, and whether its text
   reached the final prompt (curated topic, excerpt, or card ruling), with the rule's parent

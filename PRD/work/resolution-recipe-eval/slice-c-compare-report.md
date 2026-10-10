@@ -1,6 +1,6 @@
 # Slice C — Compare report: repeat selectors and answer-level counts
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -18,11 +18,17 @@ flow.
 
 ## Acceptance criteria
 
-- [ ] `--repeats-a 1-3 --repeats-b 4-6` on one run and one arm compares the two halves (test)
-- [ ] Identical sides are refused with a message naming the problem (test)
-- [ ] Answer-level right count and right-but-over-budget count appear per side and per request kind (test)
-- [ ] Existing compare tests pass unchanged
-- [ ] The REQ-228 block is applied; REQ-228 still decides nothing (the command only prints numbers)
+- [x] `--repeats-a 1-3 --repeats-b 4-6` on one run and one arm compares the two halves (test)
+- [x] Identical sides are refused with a message naming the problem (test)
+- [x] Answer-level right count and right-but-over-budget count appear per side and per request kind (test)
+- [x] Existing compare tests pass unchanged
+- [x] The REQ-228 block is applied; REQ-228 still decides nothing (the command only prints numbers)
+
+## Notes (evidence, re-runnable)
+
+- C1 to C4: `node --test scripts/lib/answer-compare.test.mjs` -> 17 pass, 0 fail (14 existing tests unchanged apart from the import line, 3 new).
+- The self-comparison refusal lives in the command (`scripts/eval-answer-compare.mjs`, via `selfComparisonReasons`), not in `compareRunSides`, so the existing library tests that pass one run on both sides stay unchanged.
+- C5: the REQ-228 lines and note in `PRD/sections/functional-requirements.md` match the accepted block; the report prints counts and names no winner (asserted in the new test).
 
 ## Verification
 

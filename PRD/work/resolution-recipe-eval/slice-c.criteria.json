@@ -2,10 +2,10 @@
   "slug": "resolution-recipe-eval",
   "slice": "C",
   "criteria": [
-    { "id": "C1", "statement": "--repeats-a 1-3 --repeats-b 4-6 on one run and one arm compares the two halves (test)", "value": false, "evidence": { "command": "node --test .*answer-compare\\.test\\.mjs" } },
-    { "id": "C2", "statement": "Identical sides are refused with a message naming the problem (test)", "value": false, "evidence": { "command": "node --test .*answer-compare\\.test\\.mjs" } },
-    { "id": "C3", "statement": "Answer-level right count and right-but-over-budget count appear per side and per request kind (test)", "value": false, "evidence": { "command": "node --test .*answer-compare\\.test\\.mjs" } },
-    { "id": "C4", "statement": "Existing compare tests pass unchanged", "value": false, "evidence": { "command": "node --test .*answer-compare\\.test\\.mjs" } },
-    { "id": "C5", "statement": "The REQ-228 block is applied; the command still only prints numbers", "value": false, "evidence": { "paths": ["PRD/sections/functional-requirements.md"] } }
+    { "id": "C1", "statement": "--repeats-a 1-3 --repeats-b 4-6 on one run and one arm compares the two halves (test)", "value": true, "evidence": { "command": "node --test .*answer-compare\\.test\\.mjs" } },
+    { "id": "C2", "statement": "Identical sides are refused with a message naming the problem (test)", "value": true, "evidence": { "command": "node --test .*answer-compare\\.test\\.mjs" } },
+    { "id": "C3", "statement": "Answer-level right count and right-but-over-budget count appear per side and per request kind (test)", "value": true, "evidence": { "command": "node --test .*answer-compare\\.test\\.mjs" } },
+    { "id": "C4", "statement": "Existing compare tests pass unchanged", "value": true, "evidence": { "command": "node --test .*answer-compare\\.test\\.mjs" } },
+    { "id": "C5", "statement": "The REQ-228 block is applied; the command still only prints numbers", "value": true, "evidence": { "paths": ["PRD/sections/functional-requirements.md"] } }
   ]
 }
