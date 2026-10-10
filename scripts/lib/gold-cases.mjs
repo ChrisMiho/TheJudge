@@ -54,6 +54,15 @@ export const SNAPSHOT_DEPENDENCIES = ["rules", "oracle", "rulings"];
  */
 export const SOURCE_POOLS = ["mechanic", "cr-example", "two-card-ruling", "tester"];
 
+/**
+ * The local practice suite (REQ-232) shares this format but is its own kind:
+ * `tier` "external", never approved, answered by an unapproved outside
+ * source. It is read only in the loader's external mode, from the suite
+ * folder; the default mode every corpus reader uses refuses it.
+ */
+export const EXTERNAL_TIER = "external";
+export const EXTERNAL_AUTHORITY = "external-unapproved";
+
 /** The answer authority each tier's `source.authority` must name. */
 export const TIER_AUTHORITIES = {
   1: "wotc-comprehensive-rules",
@@ -153,12 +162,32 @@ function validateGameState(gameState, cards, id) {
   return errors;
 }
 
+/** The `suite` block a local practice-suite case carries (REQ-232); required in external mode. */
+function validateSuiteBlock(suite, id) {
+  const errors = [];
+  if (!isPlainObject(suite)) {
+    errors.push(`${id}: external mode needs a "suite" block`);
+    return errors;
+  }
+  if (!isNonEmptyString(suite.name)) errors.push(`${id}: suite.name must be non-empty`);
+  if (suite.questionId === undefined || suite.questionId === null) errors.push(`${id}: suite.questionId is required`);
+  if (suite.level === undefined || suite.level === null) errors.push(`${id}: suite.level is required`);
+  if (!isNonEmptyString(suite.complexity)) errors.push(`${id}: suite.complexity must be non-empty`);
+  if (!Array.isArray(suite.tags)) errors.push(`${id}: suite.tags must be an array`);
+  if (!Array.isArray(suite.citedRuleIds)) errors.push(`${id}: suite.citedRuleIds must be an array`);
+  if (!Array.isArray(suite.ruleGroups)) errors.push(`${id}: suite.ruleGroups must be an array`);
+  if (suite.excluded !== null && !isNonEmptyString(suite.excluded)) {
+    errors.push(`${id}: suite.excluded must be null or a reason string`);
+  }
+  return errors;
+}
+
 /**
  * Validates one rules test case object against format version 2. Returns an
  * explicit `{ valid, errors }` result -- never a silent pass -- so a caller
  * can fail loudly rather than treat a malformed case as a retrieval miss.
  */
-export function validateGoldCase(caseEntry) {
+export function validateGoldCase(caseEntry, { external = false } = {}) {
   const errors = [];
   const id = isNonEmptyString(caseEntry?.id) ? caseEntry.id : "<missing id>";
 
@@ -168,7 +197,16 @@ export function validateGoldCase(caseEntry) {
   if (caseEntry?.formatVersion !== CASE_FORMAT_VERSION) {
     errors.push(`${id}: "formatVersion" must be ${CASE_FORMAT_VERSION}, got ${JSON.stringify(caseEntry?.formatVersion)}`);
   }
-  if (![1, 2, 3].includes(caseEntry?.tier)) {
+  if (external) {
+    if (caseEntry?.tier !== EXTERNAL_TIER) {
+      errors.push(`${id}: external mode accepts only "tier": "${EXTERNAL_TIER}" cases, got ${JSON.stringify(caseEntry?.tier)}`);
+    }
+    errors.push(...validateSuiteBlock(caseEntry?.suite, id));
+  } else if (caseEntry?.tier === EXTERNAL_TIER) {
+    errors.push(
+      `${id}: "tier": "${EXTERNAL_TIER}" marks a local practice-suite case; suite cases belong only in the suite folder (REQ-232), never in the rules test corpus`
+    );
+  } else if (![1, 2, 3].includes(caseEntry?.tier)) {
     errors.push(`${id}: "tier" must be 1, 2 or 3, got ${JSON.stringify(caseEntry?.tier)}`);
   }
   for (const derived of ["tags", "difficulty"]) {
@@ -186,6 +224,9 @@ export function validateGoldCase(caseEntry) {
     }
     if (review.reviewedOn !== null && review.reviewedOn !== undefined && !ISO_DATE.test(String(review.reviewedOn))) {
       errors.push(`${id}: review.reviewedOn must be null or a YYYY-MM-DD date`);
+    }
+    if (external && review.status !== "draft") {
+      errors.push(`${id}: a suite case is never approved by any path; review.status must be "draft", got ${JSON.stringify(review.status)}`);
     }
     if (REVIEW_STATUSES.includes(review.status) && review.status !== "draft" && !ISO_DATE.test(String(review.reviewedOn ?? ""))) {
       errors.push(`${id}: review.reviewedOn is required once a case is not a draft`);
@@ -225,7 +266,9 @@ export function validateGoldCase(caseEntry) {
   if (!isPlainObject(expected)) {
     errors.push(`${id}: missing "expected" block`);
   } else {
-    if (!OUTCOMES.includes(expected.outcome)) {
+    if (external && expected.outcome === null) {
+      // The external source gives no works / does-not-work label; outcome is a review aid the judge never sees.
+    } else if (!OUTCOMES.includes(expected.outcome)) {
       errors.push(`${id}: expected.outcome must be one of ${OUTCOMES.join(", ")}, got ${JSON.stringify(expected.outcome)}`);
     }
     if (!isNonEmptyString(expected.shortAnswer)) {
@@ -251,6 +294,10 @@ export function validateGoldCase(caseEntry) {
   } else {
     if (!isNonEmptyString(source.authority)) {
       errors.push(`${id}: source.authority must be non-empty`);
+    } else if (external) {
+      if (source.authority !== EXTERNAL_AUTHORITY) {
+        errors.push(`${id}: a suite case source.authority must be "${EXTERNAL_AUTHORITY}"`);
+      }
     } else if ([1, 2, 3].includes(caseEntry?.tier) && source.authority !== TIER_AUTHORITIES[caseEntry.tier]) {
       errors.push(`${id}: a tier ${caseEntry.tier} source.authority must be "${TIER_AUTHORITIES[caseEntry.tier]}"`);
     }
@@ -516,20 +563,25 @@ export async function readCaseFiles(casesDir = CASES_DIR) {
  * naming every invalid case and its errors, rather than returning a malformed
  * case that would silently score as a miss downstream. A writer must read raw
  * files with readCaseFiles(), not write back what this returns.
+ *
+ * Default mode is the corpus reader and refuses a `tier: "external"` case.
+ * `{ external: true }` is the suite reader (REQ-232): it accepts only external
+ * draft cases that carry a `suite` block.
  */
-export async function loadGoldCases(casesDir = CASES_DIR) {
+export async function loadGoldCases(casesDir = CASES_DIR, { external = false } = {}) {
   const entries = await readCaseFiles(casesDir);
   const problems = [];
   const cases = [];
   for (const { fileName, case: caseEntry } of entries) {
-    const { valid, errors } = validateGoldCase(caseEntry);
+    const { valid, errors } = validateGoldCase(caseEntry, { external });
     if (!valid) {
       problems.push(`${fileName}: ${errors.join("; ")}`);
     } else {
       cases.push({ ...caseEntry, tags: deriveTags(caseEntry), difficulty: deriveDifficulty(caseEntry) });
     }
   }
-  problems.push(...findDuplicateErrors(cases));
+  // Excluded suite cases are kept on disk but never selected, so they are not checked for duplicates.
+  problems.push(...findDuplicateErrors(external ? cases.filter((caseEntry) => !caseEntry.suite?.excluded) : cases));
   if (problems.length > 0) {
     throw new Error(`Invalid gold case(s):\n${problems.join("\n")}`);
   }

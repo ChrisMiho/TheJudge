@@ -74,6 +74,10 @@ output/evidence-trace/
 # files under apps/backend/src/eval/worked-solutions/ through the apply command, REQ-224)
 output/rules-review/
 
+# Local practice suite (used with permission, local only; REQ-232). Never committed: every
+# question, converted case, run and result lives here. Must be ignored before any import.
+output/rulesguru/
+
 # Card-scan fingerprint build logs / pid (transient; the bin ships under public/data/)
 output/cardhash-build/
 

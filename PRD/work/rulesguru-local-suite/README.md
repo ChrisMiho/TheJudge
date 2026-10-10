@@ -17,7 +17,7 @@ Intake (evidence, not authority): `intake/GRAPH-BRIEF.md`, `intake/FINDINGS-fit.
 
 | Slice | Doc | Title | Depends on | Criteria | Status |
 | --- | --- | --- | --- | --- | --- |
-| A | `slice-a-folder-guards-loader.md` | Suite folder, ignore line, guards, loader external mode | none | 10 | planned |
+| A | `slice-a-folder-guards-loader.md` | Suite folder, ignore line, guards, loader external mode | none | 10 | done |
 | B | `slice-b-import-purge.md` | Import and purge commands | A | 10 | planned |
 | C | `slice-c-lookup-headers-convert.md` | Name lookup, header mapping, convert | A | 10 | planned |
 | D | `slice-d-retrieval-check.md` | Retrieval check suite mode | A, C | 8 | planned |
