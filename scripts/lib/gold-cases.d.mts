@@ -2,7 +2,9 @@
 // (REQ-185). Backend vitest tests import the real module at run time; this
 // file only lets the backend typecheck accept that import (rootDir `src`,
 // strict, no allowJs). It states types and never logic: a renamed or removed
-// export fails a test even if this declaration lags.
+// export fails a test even if this declaration lags. `loadGoldCases` and
+// `validateGoldCase` take the external-mode option the local practice suite
+// uses (REQ-232).
 
 export type CaseTier = 1 | 2 | 3;
 export type ReviewStatus = "draft" | "approved" | "needs-edit" | "rejected";

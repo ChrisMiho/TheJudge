@@ -1,7 +1,8 @@
 // Answer-quality run (REQ-188, REQ-190; NFR-018).
 //
 // Asks the live provider the selected approved cases of the rules test corpus
-// (scripts/lib/gold-cases.mjs, REQ-185) and scores each answer. By default it
+// (scripts/lib/gold-cases.mjs, REQ-185; a --suite run asks the local suite's
+// external cases instead, below) and scores each answer. By default it
 // asks only the deployed model, `gpt-6-luna`, at the deployed excerpt cap, `10`,
 // and only the cases that need it: `--changed` picks an approved, non-stale
 // case whose prompt hash or reference-answer hash differs from its last graded
@@ -9,6 +10,13 @@
 // four-model bake-off and other caps are explicit flags (`--bake-off`,
 // `--model`, `--excerpt-cap`), as are the other selections (`--tag`, `--tier`,
 // `--sample N`, `--all`).
+//
+// `--suite rulesguru --run-id <id>` is a third mode (REQ-232): it grades the
+// local practice suite's unapproved, external cases (never the committed
+// corpus), selected by `--level`, `--complexity`, `--suite-tag` and
+// `--include-unsupported` (plus `--sample N --seed S`), arm A only, through the
+// experiment-run machinery, writing only under the suite folder's `runs/`. Its
+// results are agreement with the source, never correctness.
 //
 // Every answer goes through the production preparePromptInput path
 // (apps/backend/src/prompt/preparation.ts) with the same inputs a player's
@@ -331,7 +339,9 @@ export function parseArgs(argv) {
 }
 
 /**
- * Experiment mode (REQ-226) is on exactly when `--run-id` is named; every other
+ * Experiment mode (REQ-226) is on exactly when `--run-id` is named (with
+ * `--suite rulesguru`, `--run-id` names a suite run, REQ-232, not experiment
+ * mode: it takes no manifest and builds its own from its filters); every other
  * experiment flag without it is a mistake, refused by name rather than
  * silently running a routine run that merges into the committed file.
  */

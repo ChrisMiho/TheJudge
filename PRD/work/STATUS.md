@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rulesguru-local-suite](rulesguru-local-suite/) | All 6 slices (A to F) done; code PR open; product truth applied; owner runs the first import by hand after merge |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| [rulesguru-local-suite](rulesguru-local-suite/) | Mapped into 6 slices (A to F); gate 9 of 9 accept, quality-check PASS; build not started |
 
 ## refined
 

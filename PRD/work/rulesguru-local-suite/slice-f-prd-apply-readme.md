@@ -1,6 +1,6 @@
 # Slice F — PRD apply, README pointer, promotion checklist
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -24,17 +24,17 @@ The product truth matches the code: every accepted amendment is in `PRD/sections
 
 ## Acceptance criteria
 
-- [ ] `REQ-185` holds the local-suite criterion, the constraint, the dependency and the B1 promotion line; the recipe change's two rewritten lines are untouched
-- [ ] `REQ-186`, `REQ-188` and `REQ-226` carry their accepted scoped edits and a `REQ-232` dependency line
-- [ ] `NFR-018` carries the description sentence, the gating constraint and the dependency line
-- [ ] `goals-and-non-goals.md` and both `system-map.md` entries carry the accepted edits
-- [ ] The `REQ-232` entry is complete against the accepted block, with the same suite folder path `output/rulesguru/` everywhere
-- [ ] The nine code, test or doc amendments are applied and the amendment grep shows no line contradicting `REQ-232`
-- [ ] The worked-solutions README has the suite pointer section (counts and field names only)
-- [ ] Manual: a read-through of the diff finds no suite question, answer, card roll or result text and no wording on the permission beyond used with permission, local only
-- [ ] `git diff --stat main -- apps/backend/src/prompt` is empty, and no route, provider or frontend file changed
-- [ ] `npm run quality:check` passes
-- [ ] `git ls-files output/rulesguru` is empty and `git status --short` shows no path under `output/rulesguru/`
+- [x] `REQ-185` holds the local-suite criterion, the constraint, the dependency and the B1 promotion line; the recipe change's two rewritten lines are untouched
+- [x] `REQ-186`, `REQ-188` and `REQ-226` carry their accepted scoped edits and a `REQ-232` dependency line
+- [x] `NFR-018` carries the description sentence, the gating constraint and the dependency line
+- [x] `goals-and-non-goals.md` and both `system-map.md` entries carry the accepted edits
+- [x] The `REQ-232` entry is complete against the accepted block, with the same suite folder path `output/rulesguru/` everywhere
+- [x] The nine code, test or doc amendments are applied and the amendment grep shows no line contradicting `REQ-232`
+- [x] The worked-solutions README has the suite pointer section (counts and field names only)
+- [x] Manual: a read-through of the diff finds no suite question, answer, card roll or result text and no wording on the permission beyond used with permission, local only
+- [x] `git diff --stat main -- apps/backend/src/prompt` is empty, and no route, provider or frontend file changed
+- [x] `npm run quality:check` passes
+- [x] `git ls-files output/rulesguru` is empty and `git status --short` shows no path under `output/rulesguru/`
 
 ## Verification
 
@@ -44,6 +44,21 @@ git diff --stat main -- apps/backend/src/prompt
 git ls-files output/rulesguru
 npm run quality:check
 ```
+
+## Notes (evidence, self-reported; re-run to confirm)
+
+- F1: `grep -n "local practice suite is not the corpus\|a gap the local practice suite" PRD/sections/functional-requirements.md` finds the two `REQ-185` criteria; the constraint and `REQ-232` dependency line sit at their anchors; `git diff origin/main -- PRD/sections/functional-requirements.md` shows no change to the recipe change's two rewritten `REQ-185` lines.
+- F2: the same diff shows the scoped edits and a `REQ-232` dependency line in `REQ-186`, `REQ-188` and `REQ-226`.
+- F3: `git diff origin/main -- PRD/sections/non-functional-requirements.md` shows the description sentence, the gating constraint and the dependency line.
+- F4: `git diff origin/main -- PRD/sections/goals-and-non-goals.md PRD/sections/system-map.md` shows the non-goal sentence and both `system-map.md` entries.
+- F5: the `REQ-232` entry compared line by line with the accepted block in `GATE-QUESTIONS.md` gives zero differences; `output/rulesguru/` is the only suite path.
+- F6: the nine at-build amendments are applied: worked-solutions README section, `scripts/eval-answer-quality.mjs` header (three places), `scripts/answer-quality-no-gate.test.mjs` guard list, `scripts/lib/gold-cases.d.mts`, `scripts/lib/gold-cases.mjs`, `scripts/eval-worked-solutions.mjs` header. The amendment grep from the brief now returns 281 hits (269 before, plus this change's own new lines); none contradicts `REQ-232`.
+- F7: `grep -n "Local practice suite (REQ-232)" apps/backend/src/eval/worked-solutions/README.md`; counts and field names only.
+- F9: `git diff --stat origin/main -- apps/backend/src/prompt` is empty, and `git diff --name-only origin/main` lists no route, provider or frontend file.
+- F10: `npm run quality:check` exit 0 on the final tree.
+- F11: `git ls-files output/rulesguru` prints nothing; `git status --short` lists no path under `output/`.
+
+2026-10-10 F8 — Read the full branch diff against origin/main (code, tests, PRD sections, README, slice docs). Every test question, answer, card and rule in it is invented ("Invented ..." text and made-up card names); no suite question, answer, card roll or per-question result appears. The only wording on the permission anywhere in the diff is "used with permission, local only".
 
 ## Files touched
 

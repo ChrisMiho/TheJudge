@@ -1,5 +1,5 @@
 // Deletes the local practice suite's whole folder and nothing else (REQ-232).
-// Used with permission, local only: this is the way to withdraw it.
+// Used with permission, local only.
 //
 //   npm run eval:rulesguru:purge             prints how many files it would delete
 //   npm run eval:rulesguru:purge -- --yes    deletes the suite folder

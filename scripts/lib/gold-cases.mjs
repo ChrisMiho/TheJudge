@@ -5,7 +5,9 @@
 // (scripts/eval-answer-quality.mjs), and the offline gate, coverage gate,
 // review commands and staleness report built on top of them -- reads cases
 // through this one module, so no two of them diverge into separate readers of
-// the same committed files. Backend TypeScript tests reach it through the
+// the same committed files. The local practice suite (REQ-232) is read through
+// the same module in an external mode (`loadGoldCases(dir, { external: true })`);
+// the default mode refuses its `tier: "external"` cases. Backend TypeScript tests reach it through the
 // sibling declaration `gold-cases.d.mts`, never a second copy.
 //
 // A case is valid only when it carries: `id`; `formatVersion` 2; `tier` 1, 2
