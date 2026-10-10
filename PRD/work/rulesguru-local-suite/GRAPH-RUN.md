@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/rulesguru-local-suite`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rulesguru-local-suite`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-193032/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff PRD/work/rulesguru-local-suite/`
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/rulesguru-local-suite` pushed from `.worktrees/kickoff-rulesguru-local-suite` at `dabad406` (`git ls-remote --heads origin thejudge-auto/rulesguru-local-suite`); lock `.worktrees/.graph-run.lock` pid 81708; launch checkout untouched (still on `main`) | 2026-10-10 |
 | 2 | shape | sonnet | ok | `0 → 12` | `PRD/work/rulesguru-local-suite/` (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md and intake/FINDINGS-fit.md byte-identical to the staged copies, `cmp` clean); commit `4cde331b`; 5 prior-run receipts in IDEA.md | 2026-10-10 |
 | 3 | define | opus | ok | `0 → 77` | `PRD/work/rulesguru-local-suite/DESIGN-BRIEF.md`, `PRD/work/rulesguru-local-suite/GATE-QUESTIONS.md` (7 stable-ID slots: REQ-232 new, REQ-185, REQ-186, REQ-188, REQ-226, NFR-018, goals-and-non-goals; blockers B1, B2), `STATUS.refined`; commit `09a2779b`; 251-hit line-level grep with dispositions (12 amend / 9 build / 230 keep); REQ-185 diff inserts only, anchored on lines PR #283 does not change; no network request; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs .gitignore` empty | 2026-10-10 |
+| 4 | gate-qc | sonnet | failed | `0 → 27` | FAIL attempt 1 — `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md`, commit `6e5cd0d0`, `STATUS.refining`; 3 findings (abbreviated removed line at GATE-QUESTIONS.md:129; permission wording at :67; name-lookup counts lack a command); everything else passed (18/19 diff lines exact, REQ-232 unused, grep 251/251, no RulesGuru text, #283 overlap clean); loop 1 of 3 back to define | 2026-10-10 |
 
 ## Open gate
 
@@ -117,6 +118,28 @@ Write the report to `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md`. On FAIL s
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
+
+### define (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rulesguru-local-suite
+
+You are node 3 (`define`), attempt 2 (gate-qc loop 1 of 3), of graph run `graph-20261010-193032`. Invoke the `thejudge-refinement` skill on `PRD/work/rulesguru-local-suite/` in its graph-controlled mode (no questions to the user, no approval pauses) and fix the gate-qc attempt-1 findings in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md`. Read `QUALITY-CHECK.md` in full first. Refinement proposes only: no edit to `PRD/sections/`, code, `.gitignore`, or anything outside the package folder. Keep every verdict slot blank. No RulesGuru question, answer or card-roll text in any file, and no network request to any external site.
+
+The findings, as gate-qc wrote them:
+
+> 1. GATE-QUESTIONS.md line 129: the removed system-map Answer-quality `Summary` line is abbreviated with an ellipsis and an unchanged marker, so it is not word for word against `PRD/sections/system-map.md:501`. Quote the full live line as the `-` line and the same line plus the new sentence as the `+` line, then drop the shown-on-its-own-line-for-readability note at lines 137-138.
+>
+> 2. GATE-QUESTIONS.md line 67 says the purge command deletes the folder if the permission is ever withdrawn. Intake decision 2 allows nothing about the permission beyond 'used with permission, local only'. Reword it to: A purge command deletes the whole folder. Check the brief and every other package file for the same kind of wording and apply the same rule.
+>
+> 3. The brief's name-lookup numbers (assumption 5 and the Measured coverage paragraph) name files but no command or script, so a reader cannot repeat them. Gate-qc re-measured and all of them hold (37,854 detail ids; 34,639 names in cardMetadata; 34,973 with cardScanMap; 341 of 348 non-token creatures with no rules text named; 19 duplicate non-token names; 400 corpus case files). Keep a small script under `PRD/work/rulesguru-local-suite/evidence/` that prints them, run it, save its output beside it, and cite both.
+
+After fixing, re-check that every removed and context line in every stable-ID diff matches live `PRD/sections/` text word for word, and that the grep disposition table still covers every hit of the brief's grep command. Set `STATUS.refined` again (replacing `STATUS.refining`; exactly one marker), set the README `status:` line, and move the `PRD/work/STATUS.md` board row back under refined. Leave the README `## Preparation gate` section alone; the driver owns it.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 150 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: each finding and how it was fixed (file and section), the evidence script and output paths, the commit SHA, and the push result.
 
 ## Instruction ledger
 
