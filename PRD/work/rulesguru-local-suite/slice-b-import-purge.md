@@ -1,6 +1,6 @@
 # Slice B — Import and purge commands
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -18,16 +18,16 @@ The owner can import the question set politely and resumably into the suite fold
 
 ## Acceptance criteria
 
-- [ ] First request uses `previousId` 1 and a `from` value naming TheJudge (injected fetch)
-- [ ] With an injected clock, no request starts less than 3 s after the previous one finished
-- [ ] A malformed error halves the size 50, 25, 12, 6, 3, 1 at the same `previousId`; a failing size-1 request records a skip and advances one id; size regrows after five consecutive successes
-- [ ] A frozen file is never overwritten; resume starts after the saved id; state is rewritten after each batch
-- [ ] A network error, 10 consecutive failures, and a repeated rate-limit answer after one 30 s wait each stop with state saved; an empty batch ends cleanly; output is counts only
-- [ ] Purge without `--yes` deletes nothing and prints the count; with `--yes` it deletes only a temporary suite folder; it refuses a path outside the suite folder
-- [ ] Every import and purge test uses a temporary folder and an injected fetch and clock; no test names `output/rulesguru` or passes the global `fetch`
-- [ ] `package.json` has the two scripts, the entry point runs the ignore guard first, and no live request was made during the build (no `--confirm-live-calls`, no real fetch in verification)
-- [ ] The `REQ-232` entry gains the import, freeze, resumable and purge criteria
-- [ ] `npm run test:scripts` passes
+- [x] First request uses `previousId` 1 and a `from` value naming TheJudge (injected fetch)
+- [x] With an injected clock, no request starts less than 3 s after the previous one finished
+- [x] A malformed error halves the size 50, 25, 12, 6, 3, 1 at the same `previousId`; a failing size-1 request records a skip and advances one id; size regrows after five consecutive successes
+- [x] A frozen file is never overwritten; resume starts after the saved id; state is rewritten after each batch
+- [x] A network error, 10 consecutive failures, and a repeated rate-limit answer after one 30 s wait each stop with state saved; an empty batch ends cleanly; output is counts only
+- [x] Purge without `--yes` deletes nothing and prints the count; with `--yes` it deletes only a temporary suite folder; it refuses a path outside the suite folder
+- [x] Every import and purge test uses a temporary folder and an injected fetch and clock; no test names `output/rulesguru` or passes the global `fetch`
+- [x] `package.json` has the two scripts, the entry point runs the ignore guard first, and no live request was made during the build (no `--confirm-live-calls`, no real fetch in verification)
+- [x] The `REQ-232` entry gains the import, freeze, resumable and purge criteria
+- [x] `npm run test:scripts` passes
 
 ## Verification
 
@@ -35,6 +35,16 @@ The owner can import the question set politely and resumably into the suite fold
 node --test scripts/lib/rulesguru-import.test.mjs scripts/rulesguru-purge.test.mjs
 npm run test:scripts
 ```
+
+## Notes (evidence, self-reported; re-run to confirm)
+
+- B1 to B5: `node --test scripts/lib/rulesguru-import.test.mjs` 14 pass, 0 fail (injected fetch, clock and sleep, invented questions, temporary folders).
+- B6: `node --test scripts/rulesguru-purge.test.mjs` 5 pass, 0 fail.
+- B7: `node --test scripts/lib/rulesguru-suite.test.mjs scripts/answer-quality-no-gate.test.mjs` 9 pass, 0 fail; the name guard scans both new test files.
+- B8: `package.json` has `eval:rulesguru:import` and `eval:rulesguru:purge`; `scripts/rulesguru-import.mjs` calls `assertSuiteIgnored()` first in `main()`. No import entry run, no real fetch and no `--confirm-live-calls` in this slice's verification; only `npm run eval:rulesguru:purge` (dry run, prints a count, deletes nothing) was run.
+- B9: the `REQ-232` entry in `PRD/sections/functional-requirements.md` now holds the import, freeze on import, resumable and purge criteria (`grep -n "freeze on import" PRD/sections/functional-requirements.md`).
+- B10: `npm run test:scripts` 815 pass, 0 fail.
+- Open for the owner's first real run: the request settings key names and the response envelope are not recorded anywhere in the repo, so the importer sends `previousId, count, levels, complexities, legality, tags, from` and accepts either a bare array or `{ questions: [...] }`. A response it cannot read counts as a failed request, so a wrong guess stops after 10 failures with nothing frozen and no harm done. Both guesses live in `buildSettings` and `classifyResponse` in `scripts/lib/rulesguru-import.mjs`.
 
 ## Files touched
 

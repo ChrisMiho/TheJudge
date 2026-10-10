@@ -49,6 +49,8 @@
     "eval:answer-quality:manifests": "tsx scripts/build-answer-quality-manifests.mjs",
     "eval:evidence-trace": "tsx scripts/eval-evidence-trace.mjs",
     "eval:evidence-trace:compare": "node scripts/eval-evidence-trace-compare.mjs",
+    "eval:rulesguru:import": "node scripts/rulesguru-import.mjs",
+    "eval:rulesguru:purge": "node scripts/rulesguru-purge.mjs",
     "data:scan-vectors": "tsx scripts/build-scan-vectors.mjs",
     "data:scan-fingerprints": "tsx scripts/build-card-hashes.mjs",
     "data:scan-fingerprints:fresh": "tsx scripts/build-card-hashes.mjs --fresh",

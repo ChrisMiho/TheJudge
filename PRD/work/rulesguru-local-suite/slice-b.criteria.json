@@ -5,62 +5,109 @@
     {
       "id": "B1",
       "statement": "First request uses previousId 1 and a from value naming TheJudge (injected fetch)",
-      "value": false,
-      "evidence": { "command": "node --test.*rulesguru-import", "paths": ["scripts/lib/rulesguru-import.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test.*rulesguru-import",
+        "paths": [
+          "scripts/lib/rulesguru-import.test.mjs"
+        ]
+      }
     },
     {
       "id": "B2",
       "statement": "With an injected clock no request starts less than 3 s after the previous one finished",
-      "value": false,
-      "evidence": { "command": "node --test.*rulesguru-import", "paths": ["scripts/lib/rulesguru-import.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test.*rulesguru-import",
+        "paths": [
+          "scripts/lib/rulesguru-import.test.mjs"
+        ]
+      }
     },
     {
       "id": "B3",
       "statement": "Malformed error halves 50 to 1; failing size-1 records a skip and advances one id; size regrows after five successes",
-      "value": false,
-      "evidence": { "command": "node --test.*rulesguru-import", "paths": ["scripts/lib/rulesguru-import.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test.*rulesguru-import",
+        "paths": [
+          "scripts/lib/rulesguru-import.test.mjs"
+        ]
+      }
     },
     {
       "id": "B4",
       "statement": "A frozen file is never overwritten; resume starts after the saved id; state rewritten after each batch",
-      "value": false,
-      "evidence": { "command": "node --test.*rulesguru-import", "paths": ["scripts/lib/rulesguru-import.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test.*rulesguru-import",
+        "paths": [
+          "scripts/lib/rulesguru-import.test.mjs"
+        ]
+      }
     },
     {
       "id": "B5",
       "statement": "Network error, 10 consecutive failures and repeated rate-limit after one 30 s wait each stop with state saved; empty batch ends cleanly; counts only",
-      "value": false,
-      "evidence": { "command": "node --test.*rulesguru-import", "paths": ["scripts/lib/rulesguru-import.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test.*rulesguru-import",
+        "paths": [
+          "scripts/lib/rulesguru-import.test.mjs"
+        ]
+      }
     },
     {
       "id": "B6",
       "statement": "Purge without --yes deletes nothing and prints the count; with --yes deletes only a temp suite folder; refuses a path outside it",
-      "value": false,
-      "evidence": { "command": "node --test.*rulesguru-purge", "paths": ["scripts/rulesguru-purge.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test.*rulesguru-purge",
+        "paths": [
+          "scripts/rulesguru-purge.test.mjs"
+        ]
+      }
     },
     {
       "id": "B7",
       "statement": "Every import and purge test uses a temp folder with injected fetch and clock; none names output/rulesguru or passes the global fetch",
-      "value": false,
-      "evidence": { "command": "node --test.*(answer-quality-no-gate|rulesguru-suite)", "paths": ["scripts/lib/rulesguru-import.test.mjs", "scripts/rulesguru-purge.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test.*(answer-quality-no-gate|rulesguru-suite)",
+        "paths": [
+          "scripts/lib/rulesguru-import.test.mjs",
+          "scripts/rulesguru-purge.test.mjs"
+        ]
+      }
     },
     {
       "id": "B8",
       "statement": "package.json has eval:rulesguru:import and eval:rulesguru:purge, the entry runs the ignore guard first, and no live request was made during the build",
-      "value": false,
-      "evidence": { "paths": ["package.json", "scripts/rulesguru-import.mjs"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "package.json",
+          "scripts/rulesguru-import.mjs"
+        ]
+      }
     },
     {
       "id": "B9",
       "statement": "The REQ-232 entry gains the import, freeze, resumable and purge criteria",
-      "value": false,
-      "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md"
+        ]
+      }
     },
     {
       "id": "B10",
       "statement": "npm run test:scripts passes",
-      "value": false,
-      "evidence": { "command": "npm run test:scripts" }
+      "value": true,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
     }
   ]
 }
