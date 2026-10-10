@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-193032/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/rulesguru-local-suite/`
 
 ## Node ledger
@@ -334,6 +334,106 @@ Criteria:
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). Never force-push. End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; no sleeping or polling; run no dev server or browser. A script that rewrites a tracked result file must not leave it dirty unless the slice intends the change. Prettier governs only JSON and YAML here: never run prettier on `.ts` or `.mjs`; run `npm run format` for JSON a script wrote. Stay well under 4000 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: per slice — status, commit SHA, criteria true/total; every path written (absolute); the PR URL; the final `npm run quality:check` result; anything left unresolved.
+
+### review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite
+
+You are node 7 (`review`) of run `graph-20261010-205704`: a fresh-context, no-write reviewer of code PR #286 (`thejudge-auto/rulesguru-local-suite-work → main`). You hold no Write, Edit or NotebookEdit tool and must not change any file, commit, push, or comment on the PR. Read-only git, file reads, and the local test commands below are allowed.
+
+What it is: owner-only tooling for a private practice suite kept on the owner's machine. It adds a gitignored suite folder `output/rulesguru/` with guards, an importer and purge command, a converter from imported questions to external-tier case files, and a suite mode for the retrieval check and the answer-quality run, plus the accepted `PRD/sections/` edits (new REQ-232; REQ-185, REQ-186, REQ-188, REQ-226, NFR-018, goals-and-non-goals, system-map). Nothing a player sees changes.
+
+Inputs: the diff `git diff origin/main...HEAD`; the package `PRD/work/rulesguru-local-suite/` (`DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` with all 9 slots accepted, `GAMEPLAN.md`, the six `slice-*.md` docs and their `slice-*.criteria.json`, and `intake/FINDINGS-fit.md`).
+
+Rubric — the slices' own acceptance criteria, and nothing else:
+
+Slice A:
+- A1: .gitignore contains the output/rulesguru/ line and git check-ignore matches a path inside it
+- A2: A committed test asserts check-ignore matches a path in SUITE_DIR and git ls-files lists nothing there
+- A3: The ignore guard refuses when check-ignore reports not ignored, naming the .gitignore line
+- A4: The path check refuses any target that is not SUITE_DIR or inside it, including symlink escape and parent path
+- A5: Default-mode loadGoldCases refuses tier external with the suite-folder message and all corpus cases load unchanged
+- A6: External-mode loader accepts a valid null-outcome suite case and refuses approved, corpus tier and missing suite block; excluded duplicates ignored
+- A7: Filter and selection helpers are unit-tested on synthetic cases (or within a flag, and across flags, unsupported dropped, excluded and stale counted, seeded sample)
+- A8: The no-gate guard lists the new command names and the suite-name guard test passes
+- A9: The REQ-232 entry exists in functional-requirements.md with folder, loader, never-a-gate and synthetic-data criteria and no suite question text
+- A10: npm run test:scripts and npm run typecheck pass
+
+Slice B:
+- B1: First request uses previousId 1 and a from value naming TheJudge (injected fetch)
+- B2: With an injected clock no request starts less than 3 s after the previous one finished
+- B3: Malformed error halves 50 to 1; failing size-1 records a skip and advances one id; size regrows after five successes
+- B4: A frozen file is never overwritten; resume starts after the saved id; state rewritten after each batch
+- B5: Network error, 10 consecutive failures and repeated rate-limit after one 30 s wait each stop with state saved; empty batch ends cleanly; counts only
+- B6: Purge without --yes deletes nothing and prints the count; with --yes deletes only a temp suite folder; refuses a path outside it
+- B7: Every import and purge test uses a temp folder with injected fetch and clock; none names output/rulesguru or passes the global fetch
+- B8: package.json has eval:rulesguru:import and eval:rulesguru:purge, the entry runs the ignore guard first, and no live request was made during the build
+- B9: The REQ-232 entry gains the import, freeze, resumable and purge criteria
+- B10: npm run test:scripts passes
+
+Slice C:
+- C1: Name lookup resolves exact, case-insensitive, accent-folded and front-face names from injected sources and ignores ids absent from card detail
+- C2: A token loses to a non-token; two non-token matches are unresolved
+- C3: A present rule id maps to itself; a bare header maps to lettered subrules only; an unknown id excludes the case
+- C4: Synthetic raw files convert to case files that pass the external-mode loader with the brief's field values
+- C5: Each exclusion reason is produced by a test and the case file is still written with suite.excluded set
+- C6: Two converts of the same inputs give identical bytes and the snapshot comes from injected sources
+- C7: Convert fails loudly on a missing field, makes no network call, and tests use temp folders with invented questions only
+- C8: package.json has eval:rulesguru:convert and the entry runs the ignore guard first
+- C9: The REQ-232 entry gains the convert, name lookup, header and excluded criteria
+- C10: npm run test:scripts passes
+
+Slice D:
+- D1: Group scoring gives any-reached and all-reached correctly on synthetic cases, including a bare-header group reached by any member
+- D2: Level, complexity and CR-section splits are correct and misses list case ids only
+- D3: Filters combine (or within a flag, and across flags) in the retrieval path; excluded and stale cases dropped and counted
+- D4: An --output outside SUITE_DIR is refused; a path inside a temp suite folder is accepted
+- D5: Without --suite the existing corpus run behaves as before; existing tests are green
+- D6: The report title says local practice-suite report and the run makes no provider call
+- D7: The REQ-232 entry gains the retrieval-check and filters criteria
+- D8: npm run test:scripts passes
+
+Slice E:
+- E1: A --suite dry run prints the selected count and estimate and makes no client call
+- E2: A fake-client live path writes only under the temp runs/<id>/ and leaves results.json and coverage.json byte-identical
+- E3: Each refused flag (manifest, changed, all, tier, tag, regrade-from, arm other than A, output-dir outside suite) is refused with a message
+- E4: The manifest is built from the filters and saved in the run folder; --sample with --seed is repeatable and the seed recorded
+- E5: Suite validation passes a present non-excluded non-stale case and refuses excluded, stale or hash-mismatched ones
+- E6: Summary labels Correctness 2 as agreement with RulesGuru split by level and complexity; strata carry level and complexity; compare reads two suite run folders
+- E7: --resume reuses the checkpoint and --confirm-live-calls without --max-cost-usd is refused
+- E8: Experiment and routine modes are unchanged; existing tests green
+- E9: No live call was made in verification; no --confirm-live-calls outside fake-client tests
+- E10: The REQ-232 entry gains the answer-quality-run criterion
+- E11: npm run test:scripts passes
+
+Slice F:
+- F1: REQ-185 holds the local-suite criterion, the constraint, the dependency and the B1 promotion line; the recipe change's two rewritten lines are untouched
+- F2: REQ-186, REQ-188 and REQ-226 carry their accepted scoped edits and a REQ-232 dependency line
+- F3: NFR-018 carries the description sentence, the gating constraint and the dependency line
+- F4: goals-and-non-goals.md and both system-map.md entries carry the accepted edits
+- F5: The REQ-232 entry is complete against the accepted block with output/rulesguru/ as the one path
+- F6: The nine code, test or doc amendments are applied and the amendment grep shows no line contradicting REQ-232
+- F7: The worked-solutions README has the suite pointer section with counts and field names only
+- F8: A read-through of the diff finds no suite question, answer, card roll or result text and no permission wording beyond used with permission, local only
+- F9: git diff --stat main for apps/backend/src/prompt is empty and no route, provider or frontend file changed
+- F10: npm run quality:check passes
+- F11: git ls-files output/rulesguru is empty and git status shows no path under output/rulesguru/
+
+Distrust the `true` flags. The boundary hook logged no evidence for this build (it reads criteria from the launch checkout), so every flag is the builder's own claim. Re-verify independently: run `npm run test:scripts`, `npm run typecheck`, `npm --workspace apps/backend run test -- src/eval`, `git check-ignore -v output/rulesguru/x.json`, `git ls-files output/rulesguru`, and `npm run quality:check`. Never run the import, convert, or a suite run against the live source, make no network request to it, and never pass `--confirm-live-calls`.
+
+Look hardest at these, which the builder flagged as its own judgement:
+1. The importer's request settings keys and response handling (`buildSettings`, `classifyResponse` in `scripts/lib/rulesguru-import.mjs`) and the converter's field reads (`readRawQuestion` in `scripts/lib/rulesguru-convert.mjs`). The builder said the API shape is not recorded in the repo, but `intake/FINDINGS-fit.md` and the brief's import section document the endpoint, the settings and the response fields. Compare the code against both. A mismatch that would make the owner's first real import or convert fail is a correctness finding.
+2. External mode exempting excluded suite cases from the deciding-rule requirement: is it consistent with the accepted REQ-232 and REQ-185 blocks?
+3. The compare report gaining suite level and complexity tables, and tier `external` records counted in the compare report's tiers 1-2 group: is that correct against REQ-228 and the accepted blocks?
+4. Privacy: the diff carries no suite question, answer, card roll or result text, and no permission wording beyond used with permission, local only.
+
+Severity rule: Critical or Important is reserved for a gap that breaks correctness or a stated criterion above. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never sends the run back to build; report those as Minor. The builder's use of inline scripts or one `sed -i` for edits is a process note, not a finding.
+
+Leave the worktree as you found it: if a command rewrites a tracked file, say which, and report `git status --porcelain` at the end. Spawn no subagents; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: verdict APPROVE or CHANGES REQUESTED; per criterion id, verified or not with the command or file you used; findings as Critical, Important or Minor, each with file and line and the criterion it breaks; the final `git status --porcelain`.
 
 ## Instruction ledger
 
