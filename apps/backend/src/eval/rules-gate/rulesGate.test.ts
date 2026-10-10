@@ -262,7 +262,8 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
       it("records the Manufactor + Esix case's four deciding rules as inTopic in the committed baseline (REQ-220)", () => {
         expect(baseline.cases["academy-manufactor-esix-treasure"].inTopic).toEqual(["614.1a", "616.1", "616.1e", "616.1f"]);
         const withTopic = Object.values(baseline.cases).filter((entry) => (entry.inTopic?.length ?? 0) > 0);
-        expect(withTopic.length).toBe(11);
+        // 11 before the resolution-recipe-eval hard cases; the 16 new cases add seven In-Depth twins whose rules a curated topic carries.
+        expect(withTopic.length).toBe(18);
         expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(297);
       });
     });
@@ -363,6 +364,32 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
       const prompt = preparedPrompt(fixture);
       const swapped = prompt.replace("card: Panharmonicon\n", "card: Placeholder\n").replace("card: Tarmogoyf\n", "card: Panharmonicon\n");
       expect(checkStateFacts(fixture, swapped).join("\n")).toMatch(/stack order differs/);
+    });
+
+    it("checks two cards of the same name against their own printed blocks, each with its own owner", () => {
+      const base = fixtureGameCase();
+      const twoCopies = fixtureGameCase({
+        cards: [PANHARMONICON],
+        gameState: {
+          ...base.gameState!,
+          selectedZones: ["battlefield"],
+          zones: {
+            battlefield: [
+              { cardId: PANHARMONICON.oracleId, name: "Panharmonicon", owner: "Player 1" },
+              { cardId: PANHARMONICON.oracleId, name: "Panharmonicon", owner: "Player 2" }
+            ]
+          }
+        }
+      });
+      const prompt = preparedPrompt(twoCopies);
+      expect(prompt.match(/name: Panharmonicon\n/g)).toHaveLength(2);
+      expect(checkStateFacts(twoCopies, prompt)).toEqual([]);
+      // A fact no printed block of that name carries still fails.
+      const wrongOwner = fixtureGameCase({
+        cards: [PANHARMONICON],
+        gameState: { ...twoCopies.gameState!, zones: { battlefield: [{ cardId: PANHARMONICON.oracleId, name: "Panharmonicon", owner: "Player 2", contextNotes: "no such note" }] } }
+      });
+      expect(checkStateFacts(wrongOwner, prompt).join("\n")).toMatch(/missing line "contextNotes: no such note"/);
     });
 
     it("has no state facts to check for a case without a game state", () => {

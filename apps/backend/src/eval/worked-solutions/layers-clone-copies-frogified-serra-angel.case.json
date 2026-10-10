@@ -1,0 +1,55 @@
+{
+  "id": "layers-clone-copies-frogified-serra-angel",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-11 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "name": "Clone"
+    },
+    {
+      "oracleId": "32249228-e300-4865-b977-5e1f285d02f2",
+      "name": "Frogify"
+    },
+    {
+      "oracleId": "4b7ac066-e5c7-43e6-9e7e-2739b24a905d",
+      "name": "Serra Angel"
+    }
+  ],
+  "gameState": null,
+  "question": "My opponent's Serra Angel is enchanted with Frogify. I cast Clone and copy the Serra Angel. What does my Clone look like?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "A normal Serra Angel with flying and vigilance, not a Frog: a copy takes only copiable values.",
+    "answer": "Your Clone is a Serra Angel: a white Angel with flying and vigilance and Serra Angel's printed power and toughness, not a 1/1 blue Frog. A copy effect takes only the copiable values of the original — what is printed on the card, as modified by other copy effects (707.2) — and copy effects apply in layer 1 (613.1a). Frogify's effect is not a copy effect and applies only to the creature it enchants, so your Clone doesn't get it.",
+    "decidingRuleIds": ["707.2", "613.1a"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 707.2, 613.1a",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-11 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "427b7f275aed20ad6e5f4f5a811677f4496ece6178b4d32a85d0384fde4580c2",
+      "oracle": "06657c8d032b3d3c0caa4cdf68df39e92ae70d308e21e42f7205f0f492e49c8e",
+      "rulings": "c559d99a8d393b38661a02a5a7b6d8147b1106a9851a3b5fcfa0b144f6109ff0"
+    }
+  },
+  "whyHard": "A copy takes only copiable values (layer 1), so an effect that changed the original afterwards, such as an Aura, is not copied."
+}

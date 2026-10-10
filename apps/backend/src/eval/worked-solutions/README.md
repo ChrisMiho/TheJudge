@@ -172,7 +172,11 @@ needs a one-line `>>> Note:`). Apply writes `review.status`, `review.reviewedOn`
 and the note into each case file, re-records `snapshot` on an approve, refuses a
 case whose question, answer or committed rule, oracle or ruling text changed
 since the render, and rewrites `coverage.json`. An `edit` lands in `needs-edit`
-and never touches the reference answer. Nothing else writes `approved`.
+and never touches the reference answer. Nothing else writes `approved`, with two exceptions
+(REQ-224): the 18 first-ship cases, which the format-version-2 migration wrote, and a case the
+owner approved one by one in a `define`-gate verdict slot, which the build authoring it writes
+`approved` (the `resolution-recipe-eval` hard cases are the first, each with a review note
+naming its slot).
 
 ## Coverage and staleness (REQ-223, REQ-225)
 

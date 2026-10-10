@@ -1,0 +1,94 @@
+{
+  "id": "necropotence-silence-borne-upon-a-wind-cleanup-in-depth",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-09 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "94a844d2-0574-45a7-b347-e0e329767c42",
+      "name": "Necropotence"
+    },
+    {
+      "oracleId": "ce19962d-94f9-4b2b-b668-963c0acce308",
+      "name": "Borne Upon a Wind"
+    },
+    {
+      "oracleId": "8aed54cb-d1bb-45ad-adbe-38e55d84ff31",
+      "name": "Silence"
+    }
+  ],
+  "gameState": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "cleanup",
+    "activePlayer": "Player 1",
+    "selectedZones": ["battlefield", "hand", "graveyard"],
+    "zones": {
+      "battlefield": [
+        {
+          "cardId": "94a844d2-0574-45a7-b347-e0e329767c42",
+          "name": "Necropotence",
+          "owner": "Player 1"
+        }
+      ],
+      "hand": [
+        {
+          "cardId": "ce19962d-94f9-4b2b-b668-963c0acce308",
+          "name": "Borne Upon a Wind",
+          "owner": "Player 1"
+        }
+      ],
+      "graveyard": [
+        {
+          "cardId": "8aed54cb-d1bb-45ad-adbe-38e55d84ff31",
+          "name": "Silence",
+          "owner": "Player 2",
+          "contextNotes": "Player 2 cast it during Player 1's first main phase this turn"
+        }
+      ]
+    }
+  },
+  "question": "It's my cleanup step with nine cards in hand, and Player 2 cast Silence earlier this turn. After I discard down to seven, can I cast Borne Upon a Wind from my hand?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: Silence's this-turn effect ends in the cleanup step, and Necropotence's discard trigger gives you priority.",
+    "answer": "Yes. In your cleanup step you first discard down to seven (514.1). Then all \"this turn\" effects end at the same time (514.2), so Silence no longer stops you from casting spells. Each card you discarded triggered Necropotence, and because a triggered ability is waiting, players receive priority in this cleanup step (514.3a). Borne Upon a Wind is an instant, so you can cast it then. Once the stack is empty and all players pass, another cleanup step follows (514.3a).",
+    "decidingRuleIds": ["514.1", "514.2", "514.3a"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 514.1, 514.2, 514.3a",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-09 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "5d46ad4b2a35207ae5522f787b1080a3afb1aff98a7cb79d3a328ddd4fc4995a",
+      "oracle": "f80583be5b931087b5461cf98ea903569ff56bdff4091674950a1dd143704f75",
+      "rulings": "e30afb5cc015df38a1d1c238330b5256b237c8da82cf3d64fd5b7d25328cc835"
+    }
+  },
+  "whyHard": "Silence's this-turn effect ends in the cleanup step, and a trigger from the discard gives players priority in a step where they normally get none."
+}

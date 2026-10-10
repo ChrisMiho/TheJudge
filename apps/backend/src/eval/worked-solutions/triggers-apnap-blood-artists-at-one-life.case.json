@@ -1,0 +1,55 @@
+{
+  "id": "triggers-apnap-blood-artists-at-one-life",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-15 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "310f141c-7f37-4729-aed6-dd9c09db448d",
+      "name": "Blood Artist"
+    },
+    {
+      "oracleId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "name": "Grizzly Bears"
+    },
+    {
+      "oracleId": "938b4e2c-88d9-4637-bc00-e228920c9a78",
+      "name": "Murder"
+    }
+  ],
+  "gameState": null,
+  "question": "It's my turn. My opponent and I are each at 1 life, and we each control a Blood Artist. I cast Murder on my opponent's Grizzly Bears, and each of us targets the other with our Blood Artist trigger. Who wins?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "Your opponent wins: their trigger goes on the stack last, resolves first, and you lose to state-based actions.",
+    "answer": "Your opponent wins. When Grizzly Bears dies, both Blood Artists trigger. Triggered abilities are put on the stack in APNAP order: you, the active player, put yours on the stack first, then your opponent puts theirs on top (603.3b), so theirs resolves first. You lose 1 life and go to 0. Before anyone receives priority again, the game checks state-based actions (704.3), and a player with 0 or less life loses the game (704.5a), so your trigger never resolves.",
+    "decidingRuleIds": ["603.3b", "704.3", "704.5a"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 603.3b, 704.3, 704.5a",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-15 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "c964a43c4baf0f64ac6a5bdcc171777defa54b08ff289d1c74d153a752f6cd5b",
+      "oracle": "70939e7b0e7fa9d26316467a1152ae2652b5a4efe5f46a6bdeb2e390f5b00ec7",
+      "rulings": "b001a0e5b603723eaad1390cf6bfda125c1bc2ffeca60d38648876b7e3b7a5df"
+    }
+  },
+  "whyHard": "Triggers go on the stack in active-player-first order, so the other player's trigger resolves first, and state-based actions are checked before the active player's trigger can resolve."
+}

@@ -1,0 +1,51 @@
+{
+  "id": "layers-blood-moon-urborg-dependency",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-01 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "94fac5fe-97d5-4c12-a80c-8efff9d853ae",
+      "name": "Blood Moon"
+    },
+    {
+      "oracleId": "db6174d7-211d-4817-b8e4-8384594c83f9",
+      "name": "Urborg, Tomb of Yawgmoth"
+    }
+  ],
+  "gameState": null,
+  "question": "My opponent controls Blood Moon. I play Urborg, Tomb of Yawgmoth after it. Can Urborg and my other nonbasic lands tap for black mana?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Urborg's effect depends on Blood Moon's, so Blood Moon applies first and Urborg makes nothing a Swamp.",
+    "answer": "No. Blood Moon and Urborg are both type-changing effects, applied in layer 4 (613.1d). Urborg's effect depends on Blood Moon's, because applying Blood Moon removes Urborg's ability (613.8a), so Blood Moon applies first even though Urborg entered later (613.8b). Blood Moon makes Urborg a Mountain, and a land whose subtype is set to a basic land type loses the abilities from its rules text (305.7), so Urborg makes no land a Swamp. Urborg and your other nonbasic lands are Mountains: they tap for red, not black. Basic Swamps you control still tap for black.",
+    "decidingRuleIds": ["613.1d", "613.8a", "613.8b", "305.7"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 613.1d, 613.8a, 613.8b, 305.7",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-01 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "0b5a2b71cb1f200b85214852e3be13cdfab1f4dee0209601b25baa5eaf4b157f",
+      "oracle": "ee335e2b90a242c65c82c733df64cfc353e618aea4c8c6202780b73404c9e75d",
+      "rulings": "b77551269fc11304838976b3c2ffe66c10cacb1ffa1444f9faa4d50fd98e5493"
+    }
+  },
+  "whyHard": "Timestamp order says Urborg applies last, but Urborg's effect depends on Blood Moon's, so dependency reverses the order inside layer 4 and Urborg never makes a Swamp."
+}

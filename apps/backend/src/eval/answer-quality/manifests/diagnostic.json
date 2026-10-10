@@ -19,7 +19,7 @@
     },
     "caseCount": 46
   },
-  "caseCount": 46,
+  "caseCount": 62,
   "cases": [
     {
       "id": "absorb-lymph-sliver",
@@ -30,6 +30,11 @@
       "id": "academy-manufactor-esix-treasure",
       "questionSha256": "41e5421b9166d35f470f93d6c909896a7c6998b07753876dd6fc15a40eb64793",
       "answerSha256": "123b284e0b1d2f0765b1fc193beda68e9f9738d8e36f18f5a5fa4d9c4bdc4779"
+    },
+    {
+      "id": "academy-manufactor-esix-treasure-in-depth",
+      "questionSha256": "6719015cc8c1edc7e164ef41618be55cded91040b6896206d239147195777f42",
+      "answerSha256": "74bc898a574027df3376f7460fa436d33fc6d77ec3f2c136b91246fe8b14ace7"
     },
     {
       "id": "amass-crush-dissent",
@@ -117,6 +122,26 @@
       "answerSha256": "aedf1bfa5a9ee04d7c1ab0cecee651baf09a9a1f0750a19adbb68d87a342ef36"
     },
     {
+      "id": "layers-blood-moon-urborg-dependency",
+      "questionSha256": "1889e9ec4133c89e8fe94ba63a3dddbfbb1d1aa3fca68da2e14b64d7ab84206d",
+      "answerSha256": "228ef6000d1a945884416bf365267f61d2eb811a3677dc14a65155e7b01fab5f"
+    },
+    {
+      "id": "layers-blood-moon-urborg-dependency-in-depth",
+      "questionSha256": "a9b5ee76e27217d851a26d63a3f229bba751ff3a014f5f8f6b0745f9e069d454",
+      "answerSha256": "3e985346b8bcbb4e539249ff89c6bc3ec1963f2183466a68105dfc7c60a39bdc"
+    },
+    {
+      "id": "layers-clone-copies-frogified-serra-angel",
+      "questionSha256": "2581e89f49e025f703d3f661cc3a3f27e94cab07f1bcdd173b47eec826b695aa",
+      "answerSha256": "c6b1b58c6acd105cc25de79011b1b014d6e51ae04466eb5ccc8990e05c6c3383"
+    },
+    {
+      "id": "layers-clone-copies-frogified-serra-angel-in-depth",
+      "questionSha256": "7e597c29240a631e398640b3a2ca77e8b679fa837273be37ff2f0b7f76a01b08",
+      "answerSha256": "2f9eb0347bdd4745b91a4a0874326077bd9fa448487f9e0233534baa7b08ce81"
+    },
+    {
       "id": "layers-hand-size-timestamp-praetors-counsel",
       "questionSha256": "d4a9e980ef59acf858f1d33a87c4a2570882fe8ace864b9e7f10e1c137705c68",
       "answerSha256": "828a78ceef4b6fda87ff932db6722553fa5aedd8f664c6c109458d2689aae1d5"
@@ -125,6 +150,36 @@
       "id": "layers-hand-size-timestamp-thought-eater",
       "questionSha256": "e549911a8d06cd51ea385de0915e4a5548e2bf881165336bc251f3a9ee6d9ac7",
       "answerSha256": "d8e814b3108a94e4d902cad13cfa92ddd6405fe9fc50184f98e2b50ae4702c9a"
+    },
+    {
+      "id": "layers-humility-then-opalescence",
+      "questionSha256": "ab51130c9928113f6733a05d6513dcba23687a59f3001c5337f754c7789116a4",
+      "answerSha256": "a309a3f4bfd6cf9b3c61297c5f58f780b369e3ee0fd0d4cacbeadda8c62f4d8c"
+    },
+    {
+      "id": "layers-humility-then-opalescence-in-depth",
+      "questionSha256": "491aa334d7559531155d65d0d41838eecfab10bc80a33f7ea6c838ed31a1c10d",
+      "answerSha256": "dd78c84bd94e5718d3e153c5932d57c366219768384017e417a183d606147154"
+    },
+    {
+      "id": "layers-mycosynth-lattice-march-dependency",
+      "questionSha256": "9f7d2e713d97e07287d14c568703c099897a4ea08afd07c81257aa569b00a149",
+      "answerSha256": "9152298f41533997a736fc78837e3875b9c14b12b413fe0561a5df8001eda88b"
+    },
+    {
+      "id": "layers-mycosynth-lattice-march-dependency-in-depth",
+      "questionSha256": "920d59ef62a5f805b17bfe7257d58455fea860b75326916a53028f585cb135b1",
+      "answerSha256": "b345ca1845c81f6dd2d5f4dbe0f4c89c742daf171f68bcb6092e1b16603a9439"
+    },
+    {
+      "id": "layers-turn-to-frog-after-giant-growth-counter",
+      "questionSha256": "06ebb9ddb6ddf246b575994e03b57066488b763fd663f4ef2511e32e300dd67e",
+      "answerSha256": "7a1e60935910b78d2b961b123d35955b1cd974137174058b98852f8fcae26d4c"
+    },
+    {
+      "id": "layers-turn-to-frog-after-giant-growth-counter-in-depth",
+      "questionSha256": "60470a402244e415d6ef002ac53b71a65f1e8e1a88a63f4e8e3767139ae4ae2d",
+      "answerSha256": "4961f74f1b0844c4a16690531b067e751dcd069a4f68acb9f7661794345e4f36"
     },
     {
       "id": "mayhem-oscorp-industries",
@@ -157,6 +212,11 @@
       "answerSha256": "17fe5c22ebaa364e064e163a90cc161b967027a5c32103fa8eabfb8f6520c2a1"
     },
     {
+      "id": "necropotence-silence-borne-upon-a-wind-cleanup-in-depth",
+      "questionSha256": "44b2b948b5fe87a238d048bdf6c099b3ef2c06dc0db3fb5ca9e958bf1b56cdfa",
+      "answerSha256": "2728ce17f9e3c06a4d09dac1177660a9aa232c0f3fdf24c929971d1a6fb9b045"
+    },
+    {
       "id": "panharmonicon-controller-not-entering-permanent",
       "questionSha256": "0c7bb641525be1113658709b578cd0ec39faa29d4875f52e19dc7bf9cc2816da",
       "answerSha256": "e199f4fe47677e1fb8a816c4a71fb8b166f3efccf4c7025484e3e13609dd6ca7"
@@ -185,6 +245,16 @@
       "id": "replacement-jailer-and-colossus-replacement",
       "questionSha256": "644ec1a17965ca5342faecc1500c1b2b5e26f5bce3c8bdb3bafad6e6f7f13c41",
       "answerSha256": "d53e4f0f54d9ec5a866936a1822ee9e5c344106b51c8f5f3098994c66985d27d"
+    },
+    {
+      "id": "replacement-kalitas-blood-artist-no-dies-trigger",
+      "questionSha256": "f91b2be566daa4b183c67573a8b593df62fc9de6dc6d6d65b53133fbba52a5b2",
+      "answerSha256": "767c51e5848546366ddd03e454e3230d5824bb761433449a58bd39bf348ed0fa"
+    },
+    {
+      "id": "replacement-kalitas-blood-artist-no-dies-trigger-in-depth",
+      "questionSha256": "1f572b832a6ba295317bd8a9df100433a09b97f7cc88d9566a6116f8d9c683eb",
+      "answerSha256": "0d61d69f7a804b061a434ef7ab318043fca4413bf471529000eafb69cc8c574f"
     },
     {
       "id": "replacement-rukarumel-and-bramblewood-paragon",
@@ -232,6 +302,16 @@
       "answerSha256": "edd405e8e57389136ea23ba6b44f461c7985545707e142cc503256ff5e65e475"
     },
     {
+      "id": "triggers-apnap-blood-artists-at-one-life",
+      "questionSha256": "c83dc3bdc9b614fa36861f4261f49352e0579d6d29ce114acd31fc1991e99d18",
+      "answerSha256": "75b255b6c689a3acc27e64a8890bbd8fc9663cea1ea87e022bc1443ba8634a28"
+    },
+    {
+      "id": "triggers-apnap-blood-artists-at-one-life-in-depth",
+      "questionSha256": "03eb2af0ad2253b3d24880a1e62c4610469a598e40f5fddbd7a17a4d6caf2052",
+      "answerSha256": "ef84845b44db32ec132c1396c0244610f638d6b7fa06d2e124995f9b364ac3d7"
+    },
+    {
       "id": "triggers-devouring-hellion-and-kronch-wrangler",
       "questionSha256": "cd57bcb4241018eccf7f50f9ec98cf9d2773ff656a4667f279a53474cd05eadb",
       "answerSha256": "fc1357879c60387675214a576fcadea369bf95b7b6cf0723534b172a3659153b"
@@ -250,6 +330,95 @@
       "id": "vigilance-herald-of-dromoka",
       "questionSha256": "3f0abd3fb763f77dbdf5f17843127e3490a6bb0e4f752b1f4ed7b65ecff2a2f4",
       "answerSha256": "6368fa134d7e71d835550c4e10e134f7772dbcacb90f9276b3583a0570f2b605"
+    }
+  ],
+  "appendedGroups": [
+    {
+      "name": "resolution-recipe-hard-set",
+      "date": "2026-10-10",
+      "reason": "Hard layer and timing interaction cases authored from the define-gate slots G3-01 to G3-16 the owner accepted (resolution-recipe-eval, 2026-10-10), to measure the layer-and-timing resolution recipe (arm R).",
+      "cases": [
+        {
+          "id": "academy-manufactor-esix-treasure-in-depth",
+          "questionSha256": "6719015cc8c1edc7e164ef41618be55cded91040b6896206d239147195777f42",
+          "answerSha256": "74bc898a574027df3376f7460fa436d33fc6d77ec3f2c136b91246fe8b14ace7"
+        },
+        {
+          "id": "layers-blood-moon-urborg-dependency",
+          "questionSha256": "1889e9ec4133c89e8fe94ba63a3dddbfbb1d1aa3fca68da2e14b64d7ab84206d",
+          "answerSha256": "228ef6000d1a945884416bf365267f61d2eb811a3677dc14a65155e7b01fab5f"
+        },
+        {
+          "id": "layers-blood-moon-urborg-dependency-in-depth",
+          "questionSha256": "a9b5ee76e27217d851a26d63a3f229bba751ff3a014f5f8f6b0745f9e069d454",
+          "answerSha256": "3e985346b8bcbb4e539249ff89c6bc3ec1963f2183466a68105dfc7c60a39bdc"
+        },
+        {
+          "id": "layers-clone-copies-frogified-serra-angel",
+          "questionSha256": "2581e89f49e025f703d3f661cc3a3f27e94cab07f1bcdd173b47eec826b695aa",
+          "answerSha256": "c6b1b58c6acd105cc25de79011b1b014d6e51ae04466eb5ccc8990e05c6c3383"
+        },
+        {
+          "id": "layers-clone-copies-frogified-serra-angel-in-depth",
+          "questionSha256": "7e597c29240a631e398640b3a2ca77e8b679fa837273be37ff2f0b7f76a01b08",
+          "answerSha256": "2f9eb0347bdd4745b91a4a0874326077bd9fa448487f9e0233534baa7b08ce81"
+        },
+        {
+          "id": "layers-humility-then-opalescence",
+          "questionSha256": "ab51130c9928113f6733a05d6513dcba23687a59f3001c5337f754c7789116a4",
+          "answerSha256": "a309a3f4bfd6cf9b3c61297c5f58f780b369e3ee0fd0d4cacbeadda8c62f4d8c"
+        },
+        {
+          "id": "layers-humility-then-opalescence-in-depth",
+          "questionSha256": "491aa334d7559531155d65d0d41838eecfab10bc80a33f7ea6c838ed31a1c10d",
+          "answerSha256": "dd78c84bd94e5718d3e153c5932d57c366219768384017e417a183d606147154"
+        },
+        {
+          "id": "layers-mycosynth-lattice-march-dependency",
+          "questionSha256": "9f7d2e713d97e07287d14c568703c099897a4ea08afd07c81257aa569b00a149",
+          "answerSha256": "9152298f41533997a736fc78837e3875b9c14b12b413fe0561a5df8001eda88b"
+        },
+        {
+          "id": "layers-mycosynth-lattice-march-dependency-in-depth",
+          "questionSha256": "920d59ef62a5f805b17bfe7257d58455fea860b75326916a53028f585cb135b1",
+          "answerSha256": "b345ca1845c81f6dd2d5f4dbe0f4c89c742daf171f68bcb6092e1b16603a9439"
+        },
+        {
+          "id": "layers-turn-to-frog-after-giant-growth-counter",
+          "questionSha256": "06ebb9ddb6ddf246b575994e03b57066488b763fd663f4ef2511e32e300dd67e",
+          "answerSha256": "7a1e60935910b78d2b961b123d35955b1cd974137174058b98852f8fcae26d4c"
+        },
+        {
+          "id": "layers-turn-to-frog-after-giant-growth-counter-in-depth",
+          "questionSha256": "60470a402244e415d6ef002ac53b71a65f1e8e1a88a63f4e8e3767139ae4ae2d",
+          "answerSha256": "4961f74f1b0844c4a16690531b067e751dcd069a4f68acb9f7661794345e4f36"
+        },
+        {
+          "id": "necropotence-silence-borne-upon-a-wind-cleanup-in-depth",
+          "questionSha256": "44b2b948b5fe87a238d048bdf6c099b3ef2c06dc0db3fb5ca9e958bf1b56cdfa",
+          "answerSha256": "2728ce17f9e3c06a4d09dac1177660a9aa232c0f3fdf24c929971d1a6fb9b045"
+        },
+        {
+          "id": "replacement-kalitas-blood-artist-no-dies-trigger",
+          "questionSha256": "f91b2be566daa4b183c67573a8b593df62fc9de6dc6d6d65b53133fbba52a5b2",
+          "answerSha256": "767c51e5848546366ddd03e454e3230d5824bb761433449a58bd39bf348ed0fa"
+        },
+        {
+          "id": "replacement-kalitas-blood-artist-no-dies-trigger-in-depth",
+          "questionSha256": "1f572b832a6ba295317bd8a9df100433a09b97f7cc88d9566a6116f8d9c683eb",
+          "answerSha256": "0d61d69f7a804b061a434ef7ab318043fca4413bf471529000eafb69cc8c574f"
+        },
+        {
+          "id": "triggers-apnap-blood-artists-at-one-life",
+          "questionSha256": "c83dc3bdc9b614fa36861f4261f49352e0579d6d29ce114acd31fc1991e99d18",
+          "answerSha256": "75b255b6c689a3acc27e64a8890bbd8fc9663cea1ea87e022bc1443ba8634a28"
+        },
+        {
+          "id": "triggers-apnap-blood-artists-at-one-life-in-depth",
+          "questionSha256": "03eb2af0ad2253b3d24880a1e62c4610469a598e40f5fddbd7a17a4d6caf2052",
+          "answerSha256": "ef84845b44db32ec132c1396c0244610f638d6b7fa06d2e124995f9b364ac3d7"
+        }
+      ]
     }
   ]
 }

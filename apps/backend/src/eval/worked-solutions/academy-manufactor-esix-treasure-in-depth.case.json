@@ -1,0 +1,90 @@
+{
+  "id": "academy-manufactor-esix-treasure-in-depth",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-10",
+    "note": "Approved one by one in define-gate slot G3-10 of the resolution-recipe-eval package (REQ-224 exception (b)); the docs PR carrying the answered slot merged 2026-10-10."
+  },
+  "cards": [
+    {
+      "oracleId": "f36d1d8b-8303-44a9-ab56-531931641ea2",
+      "name": "Academy Manufactor"
+    },
+    {
+      "oracleId": "9d22960b-babc-4cf3-b228-d32e13bc6014",
+      "name": "Esix, Fractal Bloom"
+    },
+    {
+      "oracleId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "name": "Grizzly Bears"
+    }
+  ],
+  "gameState": {
+    "playerCount": 2,
+    "players": [
+      {
+        "label": "Player 1",
+        "lifeTotal": 20
+      },
+      {
+        "label": "Player 2",
+        "lifeTotal": 20
+      }
+    ],
+    "turnPhase": "main_1",
+    "activePlayer": "Player 1",
+    "selectedZones": ["battlefield"],
+    "zones": {
+      "battlefield": [
+        {
+          "cardId": "f36d1d8b-8303-44a9-ab56-531931641ea2",
+          "name": "Academy Manufactor",
+          "owner": "Player 1"
+        },
+        {
+          "cardId": "9d22960b-babc-4cf3-b228-d32e13bc6014",
+          "name": "Esix, Fractal Bloom",
+          "owner": "Player 1",
+          "contextNotes": "Player 1 has not created a token this turn"
+        },
+        {
+          "cardId": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+          "name": "Grizzly Bears",
+          "owner": "Player 1"
+        }
+      ]
+    }
+  },
+  "question": "It's my main phase and I haven't created any tokens this turn. I'm about to create a Treasure token, and I want Esix to copy my Grizzly Bears. What do I end up with?",
+  "expected": {
+    "outcome": "depends",
+    "shortAnswer": "You choose the order: Manufactor first gives three Grizzly Bears tokens; Esix first gives one.",
+    "answer": "It depends on the order you choose. Both are replacement effects (614.1a) on the same token-creation event, and you choose which applies first (616.1, 616.1e); the process then repeats with only the effects that still apply (616.1f). If you apply Academy Manufactor first, the Treasure becomes a Clue, a Food and a Treasure, and Esix may then replace that event, so you create three tokens that are copies of Grizzly Bears. If you apply Esix first, you create one Grizzly Bears token instead of the Treasure, and Academy Manufactor has nothing left to replace, so you get one token. If you don't use Esix, Academy Manufactor gives you a Clue, a Food and a Treasure.",
+    "decidingRuleIds": ["614.1a", "616.1", "616.1e", "616.1f"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 614.1a, 616.1, 616.1e, 616.1f",
+    "research": [
+      "The reference answer is the owner's accept of define-gate slot G3-10 of the resolution-recipe-eval package, checked against the committed rule text and the attached cards' committed oracle text; none of any ruling's text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "c6cd8800eedc664b20756d7a3837e21f373211a9a1edcedb3dd55bb1bf5bdd8a",
+      "oracle": "696e1ee2044a740f28b7e77ed37bfbdea6c3ee2a7b23bb970d0ef996ae5706be",
+      "rulings": "ebf33a59eb399d265d6a4ebf9d2be8b3ed37cbcd28f6329ca27bf39ece668057"
+    }
+  },
+  "whyHard": "Two replacement effects apply to one event and the player picks the order, and the order decides how many tokens are created."
+}
