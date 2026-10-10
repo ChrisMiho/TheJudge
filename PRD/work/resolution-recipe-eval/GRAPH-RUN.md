@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
-- Current node: `gate-qc`
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/resolution-recipe-eval/`
 - Build canary: `denied — graph tier armed (nohup true)` (build half, lock taken at the launch root)
 
@@ -20,7 +20,10 @@
 | 4 | gate-qc | sonnet | failed | `0 → 44` | FAIL attempt 1 — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `532b7129`, `STATUS.refining`; F1 blocking (cost anchor and reasoning-token figures cite no command or output), F2 blocking (Serra Angel not found — driver re-check: present as oracle `4b7ac066-e5c7-43e6-9e7e-2739b24a905d` via `apps/frontend/public/data/cardMetadata.json` cardId, so F2 reduces to F3), F3–F5 minor; diffs 33/33 lines match, grep 104/104 dispositioned, 16/16 references correct; loop 1 of 3 back to define | 2026-10-10 |
 | 5 | define | opus | ok | `0 → 93` | attempt 2 (gate-qc loop 1): commit `a5f98eec`; F1 dry-run command lines + `evidence/cost-anchor-dry-runs.txt` (re-run, same totals; no `--confirm-live-calls`), Luna figures sourced to backup `calls.jsonl` fields via `evidence/luna-token-stats.mjs` (two figures corrected: tier-3 judge $0.0064, hard-case median 13.1 s); F2/F3 oracle ids in all 16 G3 slots via `evidence/resolve-g3-cards.mjs` → `evidence/g3-card-ids.txt` (22 cards, 1 id each; Grizzly Bears resolved via `cardScanMap.json` because vanilla cards are absent from `cardMetadata.json`); F4 cross-ref fixed; F5 REQ-230/REQ-224 wording count-free + per-slot recommendations; diffs 33/33 lines still match; grep 104/104; `STATUS.refined`; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty | 2026-10-10 |
 | 6 | gate-qc | sonnet | ok | `0 → 17` | PASS attempt 2, findings none — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `efda9238`; F1–F5 resolved; 33/33 diff lines match; grep 104/104; 24 verdict slots blank; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/283 | 2026-10-10 |
-| 7 | gate-review | sonnet | ok | `0 → 15` | build half run `graph-20261010-200144`: claim commit `a1683a9d` on `thejudge-auto/resolution-recipe-eval-work` cut from `origin/main` `bcef4543` (kickoff worktree removed clean); `graph-gate-review` commit `2e4720cd`: 24 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty | 2026-10-10 |
+| 7 | gate-review | sonnet | ok | `0 → 15` | build half run `graph-20261010-200144`: claim commit `a1683a9d` on `thejudge-auto/resolution-recipe-eval-work` cut from `origin/main` `bcef4543` (kickoff worktree removed clean); `graph-gate-review` commit `2e4720cd`: 24 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `
+| 8 | gate-qc | sonnet | ok | `0 → 18` | PASS build-half re-grade, findings none — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `831c0ee7`; 33/33 diff lines match at `bcef4543`; grep 104/104; 24/24 accept; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; README `## Preparation gate` PASS written by the driver | 2026-10-10 |
+
+## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty | 2026-10-10 |
 
 ## Open gate
 
@@ -222,6 +225,25 @@ Write the report to `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md` (replace 
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
+
+### plan
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval
+
+You are node 5 (`plan`) of run `graph-20261010-200144` on branch `thejudge-auto/resolution-recipe-eval-work`. Invoke the `thejudge-map-out` skill on `PRD/work/resolution-recipe-eval/` in its graph-controlled mode (no questions to the user, no approval pauses). First verify `Quality-check: PASS` in the README `## Preparation gate` section; you cannot self-certify one.
+
+Write `GAMEPLAN.md`, the lettered `slice-*.md` docs, and one `slice-<letter>.criteria.json` beside each (every criterion `false`, each with an evidence block), set `STATUS.active` as the only marker, update the README slice table and status line, and move the `PRD/work/STATUS.md` row under active. Slice from `DESIGN-BRIEF.md` and the finalized `GATE-QUESTIONS.md` (all 24 slots accepted). The build applies the accepted `PRD/sections/` truth by intent, together with the code, so name in each slice which accepted block it applies.
+
+Placement rules:
+- Anything that must outlive the package (the paid-run runbook, any report template) goes under `docs/eval/resolution-recipe/`, never under `PRD/work/`, because close deletes the package folder. Committed case files go under `apps/backend/src/eval/worked-solutions/`.
+- The build makes no live OpenAI call: no `--confirm-live-calls` anywhere in a slice's verification. Dry runs are fine.
+- Nothing under `apps/backend/src/prompt/`, routes or providers changes.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: the slice list (letter, title, criteria count, manual criteria), where every deliverable lands, the marker and board state, the commit SHA, and the push result.
 
 ## Instruction ledger
 

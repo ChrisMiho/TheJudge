@@ -16,7 +16,7 @@ Measure whether a layer-and-timing resolution recipe (eval-only arm R, amending 
 
 - Quality-check: PASS
 - Checked artifact: `PRD/work/resolution-recipe-eval/DESIGN-BRIEF.md`
-- Findings: none (attempt 2, commit `efda9238`; attempt 1 failed on F1–F5, fixed by define attempt 2). Report: `QUALITY-CHECK.md`.
+- Findings: none (build-half re-grade, commit `831c0ee7`, after the owner's 24/24 accept; spec-forming attempt 1 FAIL, attempt 2 PASS). Report: `QUALITY-CHECK.md`.
 
 ## Autonomous metadata
 
