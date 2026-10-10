@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-193032/`
-- Current node: `owner-action` (parked at gate-qc PASS)
+- Current node: `gate-review`
 - Next action: `/graph-implement PRD/work/rulesguru-local-suite/`
 
 ## Node ledger
@@ -166,6 +166,25 @@ Write the report to `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md` (replace t
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
+
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite
+
+You are the gate-resolution step of the build half (run `graph-20261010-205704`) for `PRD/work/rulesguru-local-suite/`, on branch `thejudge-auto/rulesguru-local-suite-work` (claim commit `5ca804dc`, cut from `origin/main` `c6dec2ce`). The owner answered `GATE-QUESTIONS.md` (all 9 slots `accept`, answered in session 2026-10-10) and merged docs PR #284 into `main`. Invoke the `graph-gate-review` skill and follow it exactly:
+
+1. Read every verdict slot; confirm none is blank.
+2. Apply the verdicts inside `GATE-QUESTIONS.md` (finalizing the proposal in the work folder). Never edit `PRD/sections/`, code, or `intake/`.
+3. Reconcile `DESIGN-BRIEF.md` and the README's intake pointer to every `edit` or `reject` verdict, and report the `### Brief reconciliation` list (none is expected, since every verdict is accept; say so explicitly).
+4. Write `## Gate verdicts` in `GRAPH-RUN.md`, resolve `## Open gate` to `- None`, restore `STATUS.refined` as the only marker (replacing `STATUS.owner-action`), set the README `status:` line, and move the `PRD/work/STATUS.md` board row under refined. Leave the README `## Preparation gate` and `## Autonomous metadata` sections and the ledger header lines alone; the driver owns them.
+
+Privacy: this package concerns a local-only practice suite. Write no question or answer text from that source into any file, and add nothing about how use of it was agreed beyond the words used with permission, local only.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: the verdict tally, the brief reconciliation list, the marker and board state, the commit SHA(s), and the push result.
 
 ## Instruction ledger
 
