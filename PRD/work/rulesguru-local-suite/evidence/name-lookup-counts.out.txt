@@ -1,0 +1,11 @@
+commit: 8b0a3a88
+cardDetailByOracleId.json.br oracle ids: 37854
+cardDetailByOracleId.json.br entries carry a name field: false
+cardMetadata.json rows: 34639
+detail ids named from cardMetadata.json: 34568
+detail ids named from cardMetadata.json plus cardScanMap.json: 34973
+detail ids left unnamed: 2881
+non-token creatures with no rules text: 348
+  of those, named: 341
+names matching two or more non-token cards: 19
+corpus case files (apps/backend/src/eval/worked-solutions/*.case.json): 400
