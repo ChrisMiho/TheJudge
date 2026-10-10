@@ -179,8 +179,7 @@ export async function importQuestions({
       let highest = previousId;
       for (const question of result.questions) {
         const id = String(question.id);
-        // At or below the cursor: already frozen, or the API wrapped back to the start.
-        if (Number(id) <= previousId) continue;
+        // Every id is frozen if absent (id 1 only ever arrives in the wrap batch); only ids above the cursor move it.
         const target = join(rawDir, `${id}.json`);
         if (await exists(target)) {
           counts.alreadyFrozen += 1;
@@ -188,7 +187,7 @@ export async function importQuestions({
           await writeWhole(target, `${JSON.stringify(question, null, 2)}\n`);
           counts.saved += 1;
         }
-        highest = Math.max(highest, Number(id));
+        if (Number(id) > previousId) highest = Math.max(highest, Number(id));
       }
       if (highest <= previousId) {
         // The API wraps back to the start past the last question: that is the end.

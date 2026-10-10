@@ -38,10 +38,10 @@ npm run test:scripts
 
 ## Notes (evidence, self-reported; re-run to confirm)
 
-- B1: `node --test scripts/lib/rulesguru-import.test.mjs` 16 pass, 0 fail; the first request starts at previousId 1, `from` is TheJudge, and `buildSettings` is asserted key for key (`level`, `complexity`, `legality`, `tags`, `tagsConjunc`).
-- B2, B5: same command, same 16 pass (injected fetch, clock and sleep, invented questions, temporary folders).
+- B1: `node --test scripts/lib/rulesguru-import.test.mjs` 17 pass, 0 fail; the first request starts at previousId 1, `from` is TheJudge, and `buildSettings` is asserted key for key (`level`, `complexity`, `legality`, `tags`, `tagsConjunc`).
+- B2, B5: `node --test scripts/lib/rulesguru-import.test.mjs` 17 pass, 0 fail, and `npm run test:scripts` 846 pass, 0 fail, both re-run and read after the id-1 fix (injected fetch, clock and sleep, invented questions, temporary folders).
 - B3: same command; halving 50 to 1, the skip at size 1 and the regrow after five successes pass.
-- B4: same command; frozen files are never overwritten (including a wrapped batch), resume starts after the saved id, state is saved per batch. A batch whose highest id is not above the cursor ends the import as complete (stop reason `end`); a mixed batch saves the new ids first. `classifyResponse` also reads a list under `data`.
+- B4: same command; frozen files are never overwritten (including a wrapped batch), resume starts after the saved id, state is saved per batch. Every id in a batch is frozen when its file is absent (counted `alreadyFrozen` when present), including id 1, which only arrives in the wrap batch; only ids above the cursor move it. A batch with no id above the cursor ends the import as complete (stop reason `end`); a mixed batch saves 1, 2 and 3; a wrap test with 1.json absent saves it and leaves other files byte-unchanged. `classifyResponse` also reads a list under `data`.
 - B6: `node --test scripts/rulesguru-purge.test.mjs` 5 pass, 0 fail.
 - B7: `node --test scripts/lib/rulesguru-suite.test.mjs scripts/answer-quality-no-gate.test.mjs` 9 pass, 0 fail; the name guard scans both new test files.
 - B8: `package.json` has `eval:rulesguru:import` and `eval:rulesguru:purge`; `scripts/rulesguru-import.mjs` calls `assertSuiteIgnored()` first in `main()`. No import entry run, no real fetch and no `--confirm-live-calls` in this slice's verification; only `npm run eval:rulesguru:purge` (dry run, prints a count, deletes nothing) was run.

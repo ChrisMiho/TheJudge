@@ -88,27 +88,46 @@ test("the first request starts at previousId 1 and names TheJudge; settings cove
 test("a wrapped batch (highest id not above the cursor) ends the import as complete without overwriting", async () => {
   const suiteDir = tempSuite();
   mkdirSync(join(suiteDir, "raw"), { recursive: true });
-  writeFileSync(join(suiteDir, "raw", "1.json"), '{"id":1,"frozen":"original"}\n');
+  for (const id of [1, 2, 3]) writeFileSync(join(suiteDir, "raw", `${id}.json`), `{"id":${id},"frozen":"original"}\n`);
   writeFileSync(join(suiteDir, "import-state.json"), JSON.stringify({ lastSavedId: 9, cursor: 9, skippedIds: [], batchSizeHistory: [] }));
   const w = world(() => json([invented(1), invented(2), invented(3)]));
   const counts = await importQuestions({ ...w, suiteDir });
   assert.equal(counts.stopReason, "end");
   assert.equal(counts.saved, 0);
+  assert.equal(counts.alreadyFrozen, 3);
   assert.equal(w.calls.length, 1);
   assert.equal(JSON.parse(readFileSync(join(suiteDir, "raw", "1.json"), "utf8")).frozen, "original");
-  assert.deepEqual(readdirSync(join(suiteDir, "raw")), ["1.json"]);
+  assert.deepEqual(readdirSync(join(suiteDir, "raw")).sort(), ["1.json", "2.json", "3.json"]);
   const state = JSON.parse(readFileSync(join(suiteDir, "import-state.json"), "utf8"));
   assert.equal(state.complete, true);
   assert.equal(state.lastSavedId, 9);
+});
+
+test("a wrap batch with id 1 absent freezes it, leaves other files unchanged, and ends complete", async () => {
+  const suiteDir = tempSuite();
+  mkdirSync(join(suiteDir, "raw"), { recursive: true });
+  for (const id of [2, 3]) writeFileSync(join(suiteDir, "raw", `${id}.json`), `{"id":${id},"frozen":"original"}\n`);
+  writeFileSync(join(suiteDir, "import-state.json"), JSON.stringify({ lastSavedId: 3, cursor: 3, skippedIds: [], batchSizeHistory: [] }));
+  const w = world(() => json([invented(1), invented(2), invented(3)]));
+  const counts = await importQuestions({ ...w, suiteDir });
+  assert.equal(counts.stopReason, "end");
+  assert.equal(counts.saved, 1);
+  assert.equal(counts.alreadyFrozen, 2);
+  assert.equal(JSON.parse(readFileSync(join(suiteDir, "raw", "1.json"), "utf8")).id, 1);
+  for (const id of [2, 3]) assert.equal(readFileSync(join(suiteDir, "raw", `${id}.json`), "utf8"), `{"id":${id},"frozen":"original"}\n`);
+  assert.deepEqual(readdirSync(join(suiteDir, "raw")).sort(), ["1.json", "2.json", "3.json"]);
+  const state = JSON.parse(readFileSync(join(suiteDir, "import-state.json"), "utf8"));
+  assert.equal(state.complete, true);
+  assert.equal(state.lastSavedId, 3);
 });
 
 test("a mixed batch saves the new ids, advances the cursor, then the wrap ends the import", async () => {
   const suiteDir = tempSuite();
   const w = world((call) => json(call.settings.previousId === 1 ? [invented(2), invented(3), invented(1), invented(2)] : [invented(1), invented(2)]));
   const counts = await importQuestions({ ...w, suiteDir });
-  assert.equal(counts.saved, 2);
+  assert.equal(counts.saved, 3);
   assert.equal(counts.stopReason, "end");
-  assert.deepEqual(readdirSync(join(suiteDir, "raw")).sort(), ["2.json", "3.json"]);
+  assert.deepEqual(readdirSync(join(suiteDir, "raw")).sort(), ["1.json", "2.json", "3.json"]);
   assert.equal(w.calls[1].settings.previousId, 3);
   const state = JSON.parse(readFileSync(join(suiteDir, "import-state.json"), "utf8"));
   assert.equal(state.lastSavedId, 3);
