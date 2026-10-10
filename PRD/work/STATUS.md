@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rulesguru-local-suite](rulesguru-local-suite/) | Gate answered (9 of 9 accept), docs PR #284 merged; build half resumes at gate-qc |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [rulesguru-local-suite](rulesguru-local-suite/) | Gate answered (9 of 9 accept), docs PR #284 merged; gate-qc re-grade after #285 FAIL: refresh the brief's amendment-set count and rows |
 
 ## ideation
 

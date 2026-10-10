@@ -1,69 +1,92 @@
 # Quality check — rulesguru-local-suite
 
-Graph run `graph-20261010-193032`, node 4 (`gate-qc`), attempt 2, 2026-10-10,
-after define attempt 2 (commit `62296b1e`).
+Graph run `graph-20261010-205704`, node 4 (`gate-qc`), build-half re-grade,
+2026-10-10, against base `c6dec2ce` (includes code PR #285,
+resolution-recipe-eval) after the gate was answered (commit `714b5354`).
 
-Attempt 1 failed on findings 1 to 3 (a non-verbatim removed line, a permission
-sentence that said too much, and name-lookup numbers with no command).
+History: attempt 1 FAIL (verbatim removed line, permission wording, name-lookup
+numbers); attempt 2 PASS; this re-grade (post-#285) FAIL on bookkeeping only.
 
-**Result: PASS.** All three attempt-1 findings are resolved and no new problem
-was found. Package stays at `refined`.
+**Result: FAIL.** The product text and the build scope are sound. One check
+fails: the brief's amendment-set count and line keys are stale at this base.
+No `PRD/sections` wording needs to change. Status set to `refining`.
 
-## Attempt-1 findings
+## Findings
 
-1. **Resolved.** The system-map `### Answer-quality baseline` `Summary` diff now
-   quotes the full live line as the `-` line and the same line plus the new
-   sentence as the `+` line; the "shown on its own line" note is gone. A script
-   checked every removed and context line in every diff block against the live
-   `PRD/sections/*.md` lines: 19 checked, 0 mismatches.
-2. **Resolved.** The REQ-232 plain-terms text now reads "A purge command deletes
-   the whole folder." The withdrawal clause is gone. Outside the verbatim
-   intake, the only permission wording left in the brief, questions file, IDEA
-   and evidence is "used with permission, local only".
-3. **Resolved.** The brief ("Measured coverage", assumption 5, the verification
-   list) names `evidence/name-lookup-counts.mjs`, how it counts, and the saved
-   output. Re-ran it: every number matches `evidence/name-lookup-counts.out.txt`
-   and the brief (37,854 detail ids; 34,639 `cardMetadata.json` rows; 34,568
-   named from it; 34,973 with `cardScanMap.json`; 2,881 unnamed; 341 of 348
-   non-token creatures with no rules text named; 19 shared names; 400 corpus
-   case files). The only line that differs is the script's own `commit:` stamp
-   (HEAD now, `8b0a3a88` when saved). The script reads files only: no network,
-   no writes.
+1. **FAIL — the line-level grep no longer yields the stated count.** The brief's
+   command returns 269 hits at `c6dec2ce`, not 251 (251 was right at
+   `dabad406`). Every `file:line` key for `functional-requirements.md` and many
+   code files has also shifted, because #285 added lines above them. The
+   brief's headline ("251 hits: 12 amended, 9 amended at build, 230 no
+   change") and its 251 rows must be refreshed against this base.
+2. **The 18 new hits need rows, and none needs an amendment.** All 18 are "no
+   change":
+   - 16 `license` lines ("no outside text is copied") in the 16 new
+     committed diagnostic case files from #285 (corpus data, tier 3 drafts).
+   - REQ-187: the new rubric-revision criterion ("it moves again ... adopted
+     by the `resolution-recipe-eval` package ... `--regrade-from` (REQ-226)").
+   - `apps/backend/src/eval/answer-quality/rubric.ts:86` comment (REQ-226).
+3. **Three existing hits changed text, so their rows are stale.**
+   - REQ-185 `Description` (row 12): the row says the parked recipe package
+     "rewrites this line"; #285 has now rewritten it. Disposition stays "no
+     change by this package".
+   - REQ-185 constraint "no case is approved by an agent" (the REQ-224 and
+     REQ-185 approval lines): #285 added the per-case define-gate path. The new
+     REQ-185 criterion says a suite case is "never approved by any path", which
+     still covers it. Disposition stays "no change", but the row's reason
+     should name the gate-slot path.
+   - REQ-230 `Description` (arm list): #285 added arm R. A suite run refuses
+     every arm but A, so no change.
+4. **Stale prose about the recipe package (non-blocking).** The brief's
+   "Overlap with resolution-recipe-eval (docs PR #283)", assumption text and
+   the REQ-187 "third-party collision" note, and the questions file's overlap
+   paragraph, still describe the recipe change as parked. It has merged. The
+   conclusions hold (no REQ-185 line this package inserts conflicts; REQ-187
+   still needs no amendment, now because a suite case is never approved, not
+   because of a collision), but the wording should say it landed first.
 
-## Checks
+## Checks passed
 
-1. **Stable-ID blocks.** Nine blocks (REQ-232, REQ-185, REQ-186, REQ-188,
-   REQ-226, NFR-018, goals-and-non-goals, B1, B2). Nine "What this decides", nine
-   "In plain terms", nine "What happens if you say no", nine blank `- Verdict:`
-   and nine blank `- Reason:` slots. `REQ-232` appears nowhere in
-   `PRD/sections`; `REQ-231` is still the last entry.
-2. **Line-level grep.** The brief's exact command returns 251 hits. The brief's
-   251 `file:line` keys equal the live list exactly (diffed). Dispositions: 12
-   amend in `PRD/sections`, 9 amend at build, 230 no change. The list of edited
-   lines the grep misses is consistent with the blocks.
-3. **Blockers.** B1 recommends yes by hand only; B2 recommends
-   `output/rulesguru/`. Both say what no does and stay blank.
-4. **No RulesGuru content.** Counts, field names and invented description only;
-   no question, answer or card-roll text. No network request made.
-5. **Nothing outside the package changed.** `git diff --stat dabad406 HEAD --
+1. **Stable-ID diffs.** A script checked every removed (`-`) and context (` `)
+   line in all diff blocks of `GATE-QUESTIONS.md` against live
+   `PRD/sections/*.md` lines: 19 checked, 0 mismatches. Each added line sits
+   correctly beside the #285 wording: the REQ-185 criterion follows the
+   community-sources criterion; the REQ-185 constraint follows "commits only
+   WotC text" and precedes #285's "no case is approved by an agent" line; the
+   REQ-185 dependency follows REQ-230; REQ-226 and NFR-018 lines unchanged by
+   #285; REQ-232 appears nowhere in `PRD/sections`; `REQ-231` is still the
+   last entry.
+2. **Build scope names.** Still present: `executeExperiment`, `manifestEntryFor`,
+   `runExperimentCommand`, `loadGoldCases`, `loadCases`, `computeSnapshot`,
+   `embedGoldCaseQueries`, `buildCaseRequest`, `preparePromptInput`,
+   `describeRetrieval`, `CASES_DIR`, `NEVER_IN_A_GATE`, the `--arm` flag, and
+   `scripts/lib/{gold-cases.mjs,gold-cases.d.mts,experiment-run.mjs}`. No
+   `scripts/lib/rulesguru-*` file exists yet. One detail to keep straight at
+   build: the case-file hashing that joins `CASES_DIR` is the `fileHashes`
+   dependency defined in `scripts/eval-answer-quality.mjs` (about line 1066),
+   injected into `experiment-run.mjs`, so the folder parameter is added there.
+   #285's new game-state fidelity check in `experiment-run.mjs` skips cases
+   with null `gameState`, which every suite case has.
+3. **Verdict slots.** Nine blocks (REQ-232, REQ-185, REQ-186, REQ-188, REQ-226,
+   NFR-018, goals-and-non-goals, B1, B2), each answered `accept` with a reason;
+   consistent with the brief (B1 yes by hand with the added REQ-185 line; B2
+   `output/rulesguru/`, the brief's `SUITE_DIR`). The brief carries no
+   edit or reject to reconcile.
+4. **Nothing outside the package changed.** `git diff --stat origin/main HEAD --
    PRD/sections apps scripts docs .gitignore` is empty; the working tree was
    clean at the start.
-6. **Edits introduced no new problem.** The attempt-2 diff touches only the
-   brief, questions file, README note, GRAPH-RUN, status marker and the two
-   evidence files. The REQ-185 overlap with docs PR #283 text is unchanged.
+5. **No suite content.** Counts and field names only; no question, answer or
+   card-roll text; no network request made. The only permission wording is
+   "used with permission, local only".
+6. **Other checklist items.** No contradiction with REQ-185 to REQ-188, REQ-222
+   to REQ-230 or NFR-018 beyond what the amendments resolve; no screen change;
+   no runtime, route, schema, provider or dependency change; open questions
+   limited to B1 and B2, now answered.
 
-## Other checklist items
+## What refinement must do
 
-- No contradiction with REQ-185 to REQ-188, REQ-222 to REQ-230 or NFR-018 beyond
-  what the amendments resolve.
-- No user-visible screen or overlay: the `screen-layout.md` row check does not
-  apply.
-- `technical-design-rules.md`: no runtime, route, schema or provider change; no
-  new dependency.
-- Open questions are limited to B1 and B2, both genuine owner choices.
-
-## Non-blocking note
-
-`README.md` line 18 (the driver's preparation-gate text) quotes attempt-1
-finding 2, including the withdrawal wording. It is a record of a finding, not a
-claim in the package's design text; the driver owns that section.
+Refresh the amendment set in `DESIGN-BRIEF.md` against `c6dec2ce`: new count
+(269), 18 added "no change" rows, updated line keys, updated reasons for the
+three changed rows, and the recipe-package prose. No change to the diffs, the
+verdicts or the build scope is needed. The owner's accepted verdicts stay as
+they are.
