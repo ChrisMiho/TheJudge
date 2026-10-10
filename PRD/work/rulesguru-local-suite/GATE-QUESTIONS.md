@@ -64,7 +64,7 @@ the paid answer run it grades a filtered slice, with the same dry-run-first,
 confirm-flag and spending-cap rules every paid run has. RulesGuru's answers are
 community-written, so a match is reported as "agrees with RulesGuru", never as
 correct, and never mixed into the official score. A purge command deletes the
-whole folder if the permission is ever withdrawn. Nothing here is a build gate:
+whole folder. Nothing here is a build gate:
 CI cannot see the data.
 
 **What happens if you say no:** nothing is built; the AI judge stays tested
@@ -109,7 +109,7 @@ after `### REQ-231`:
 +  - NFR-018 (the validation track the suite sits beside)
 +- Notes:
 +  - measured 2026-10-10 (probe of 918 of about 1,500 questions, ids 2–2249; counts only): 830 cite at least one rule, 820 of them only rules in the committed index; 7 cited ids are bare keyword headers whose subrules the index holds; 686 cite a rule no corpus case decides on (470 distinct rule ids, against the 372 the corpus decides on); 110 share any card with the corpus; level 0/1/2/3/corner 89/330/295/141/63; complexity simple/intermediate/complicated 835/78/5; 43 tagged `Unsupported answers`; a 50-question request took about 30 seconds, so a full import takes roughly 15–20 minutes; some batches came back malformed and halving the batch size got past each one
-+  - measured 2026-10-10 against the committed data at `dabad406`: `cardDetailByOracleId.json.br` holds 37,854 oracle ids and no names; `cardMetadata.json` names 34,639 cards and leaves out cards with no rules text; adding `cardScanMap.json` names 34,973 of the 37,854 ids, including 341 of the 348 non-token creatures with no rules text, and the unnamed rest are almost all art cards and tokens; 19 names match two non-token cards and stay unresolved. The probe's lookup, from `cardMetadata.json` alone, resolved every card for only 676 of 918 questions
++  - measured 2026-10-10 against the committed data at `dabad406`, by joining the three files below by oracle id (a name from `cardMetadata.json`, else the first `cardScanMap.json` printing) and counting named ids, non-token creature ids with empty oracle text, and names shared by two or more non-token ids: `cardDetailByOracleId.json.br` holds 37,854 oracle ids and no names; `cardMetadata.json` names 34,639 cards and leaves out cards with no rules text; adding `cardScanMap.json` names 34,973 of the 37,854 ids, including 341 of the 348 non-token creatures with no rules text, and the unnamed rest are almost all art cards and tokens; 19 names match two non-token cards and stay unresolved. The probe's lookup, from `cardMetadata.json` alone, resolved every card for only 676 of 918 questions
 ```
 
 Consequential edits in the same entry — `PRD/sections/system-map.md`,
@@ -123,19 +123,16 @@ Consequential edits in the same entry — `PRD/sections/system-map.md`,
 ```
 
 In `### Answer-quality baseline`, the `Summary` line keeps its text and gains
-one closing sentence; `Lives in` and `Backed by` gain the suite:
+one closing sentence at its end; `Lives in` and `Backed by` gain the suite:
 
 ```diff
- - Summary: On-demand, confirmation-gated run that asks the selected approved cases of the rules test corpus — … (unchanged) … labelled diagnostic prompt arms run only on a committed diagnostic case set, apart from a held-out set (REQ-230).
-+  A local practice-suite run (`--suite rulesguru`, REQ-232) answers RulesGuru questions kept only on the owner's machine, writes only to the suite's gitignored folder, and reports agreement with RulesGuru apart from the corpus.
+-- Summary: On-demand, confirmation-gated run that asks the selected approved cases of the rules test corpus — by default the cases whose prompt or reference answer changed since they were last graded, or whose last graded record predates those hashes, answered by the deployed model at the deployed ten-excerpt cap — and scores each answer against that case's approved reference answer: deterministic assertions (including rule ids the answer cites that are not in the committed rule index), a reference-grounded judge model stronger than every contestant, a blind side-by-side ranking when two or more models answer, over four 0–2 axes, then a human review pass. The four-model bake-off and other excerpt caps are explicit options. Never in `quality:check`, never asserted against a golden, never a build gate. A routine run writes a small committed scores file merged per case and gitignored transcripts; tier-3 scores are always reported apart from the official tiers. Experiment runs (REQ-226) answer a fixed manifest of cases, optionally repeated and optionally regraded from an earlier run's stored answers, save each record as it completes and stop at an owner-set spending cap (REQ-227), and write only to their own gitignored run folder; a paired comparison report reads two runs (REQ-228); an offline evidence trace shows where each deciding rule ranks and whether it reaches the prompt (REQ-229); labelled diagnostic prompt arms run only on a committed diagnostic case set, apart from a held-out set (REQ-230).
++- Summary: On-demand, confirmation-gated run that asks the selected approved cases of the rules test corpus — by default the cases whose prompt or reference answer changed since they were last graded, or whose last graded record predates those hashes, answered by the deployed model at the deployed ten-excerpt cap — and scores each answer against that case's approved reference answer: deterministic assertions (including rule ids the answer cites that are not in the committed rule index), a reference-grounded judge model stronger than every contestant, a blind side-by-side ranking when two or more models answer, over four 0–2 axes, then a human review pass. The four-model bake-off and other excerpt caps are explicit options. Never in `quality:check`, never asserted against a golden, never a build gate. A routine run writes a small committed scores file merged per case and gitignored transcripts; tier-3 scores are always reported apart from the official tiers. Experiment runs (REQ-226) answer a fixed manifest of cases, optionally repeated and optionally regraded from an earlier run's stored answers, save each record as it completes and stop at an owner-set spending cap (REQ-227), and write only to their own gitignored run folder; a paired comparison report reads two runs (REQ-228); an offline evidence trace shows where each deciding rule ranks and whether it reaches the prompt (REQ-229); labelled diagnostic prompt arms run only on a committed diagnostic case set, apart from a held-out set (REQ-230). A local practice-suite run (`--suite rulesguru`, REQ-232) answers RulesGuru questions kept only on the owner's machine, writes only to the suite's gitignored folder, and reports agreement with RulesGuru apart from the corpus.
 -- Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/` (including `manifests/`), `scripts/eval-answer-quality.mjs`, and the compare and evidence-trace scripts beside it
 +- Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/` (including `manifests/`), `scripts/eval-answer-quality.mjs`, the compare and evidence-trace scripts beside it, and the `eval:rulesguru` import, convert and purge scripts
 -- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190, REQ-226, REQ-227, REQ-228, REQ-229, REQ-230
 +- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190, REQ-226, REQ-227, REQ-228, REQ-229, REQ-230, REQ-232
 ```
-
-(The added sentence is appended to the end of the existing one-line `Summary`,
-not a new line; the diff shows it on its own line only for readability.)
 
 - Verdict:
 - Reason:

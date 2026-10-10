@@ -163,9 +163,19 @@ Full name lookup (`scripts/lib/rulesguru-card-names.mjs`):
   stripped); a double-faced `A // B` also answers to `A`.
 - Ambiguity: prefer a non-token card (type line without `Token`) over a token;
   if two non-token cards still match, the name is unresolved.
-- Measured coverage: 34,973 of 37,854 oracle ids named; 341 of the 348
-  non-token creatures with no rules text; the unnamed rest are almost all art
-  cards and tokens; 19 names ambiguous among non-token cards.
+- Measured coverage: 34,973 of 37,854 oracle ids named (34,568 from
+  `cardMetadata.json`, which has 34,639 rows, and the rest from
+  `cardScanMap.json`); 341 of the 348 non-token creatures with no rules text;
+  the unnamed rest are almost all art cards and tokens; 19 names ambiguous
+  among non-token cards. How counted: the script
+  `PRD/work/rulesguru-local-suite/evidence/name-lookup-counts.mjs` joins the
+  three files by oracle id (keys from the card detail file, a name from
+  `cardMetadata.json` else the first `cardScanMap.json` printing), then counts
+  named ids, non-token creature ids with empty `oracleText`, and names shared
+  by two or more non-token ids. Its saved output is
+  `PRD/work/rulesguru-local-suite/evidence/name-lookup-counts.out.txt`; rerun
+  it with `node PRD/work/rulesguru-local-suite/evidence/name-lookup-counts.mjs`
+  from the repo root. It reads committed data only.
 
 Bare keyword headers (`scripts/lib/rulesguru-rules.mjs`):
 - A cited id present in `gameRulesRuleIndex.json` maps to itself.
@@ -369,7 +379,9 @@ If this package builds first, the recipe build sees the three inserted
    judge's instructions would bump the rubric revision and split comparability
    for the corpus. Evidence: REQ-186, REQ-187, `rubric.ts`.
 5. **Name lookup = card detail ids named from `cardMetadata.json` plus
-   `cardScanMap.json`.** Measured on this branch (numbers above). The intake's
+   `cardScanMap.json`.** Measured on this branch (numbers above) by
+   `evidence/name-lookup-counts.mjs`, output saved beside it in
+   `evidence/name-lookup-counts.out.txt`. The intake's
    suggestion that `cardDetailByOracleId.json.br` carries the missing cards is
    right about the ids but it carries no names.
 6. **Header mapping by rule groups.** Keeps "every cited rule reached" honest
@@ -395,12 +407,15 @@ If this package builds first, the recipe build sees the three inserted
 - `cardDetailByOracleId.json.br` has 37,854 entries with fields `oracleText,
   typeLine, manaCost, manaValue, colors, supertypes, subtypes, keywords` and no
   name. The full lookup therefore joins two committed name sources (above).
+  Counted by `evidence/name-lookup-counts.mjs` (output in
+  `evidence/name-lookup-counts.out.txt`).
 - `loadGoldCases(casesDir)` and `loadCases(casesDir)` take a folder, as the
   intake said; but the answer run's experiment path hashes case files from the
   fixed `CASES_DIR`, so it needs a folder parameter.
 - `.gitignore` ignores `output/` subfolders one by one; `output/` itself is not
   ignored, so the suite needs its own line.
-- The corpus folder holds 400 case files.
+- The corpus folder holds 400 case files (also printed by
+  `evidence/name-lookup-counts.mjs`).
 - `PRD/work/probe-rulesguru/` and `PRD/work/probe-rules-test-harness/` are not
   on this branch (they are the owner's untracked probe folders). The intake's
   note that row 4f of the external-sources findings is out of date is left to

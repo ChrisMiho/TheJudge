@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rulesguru-local-suite](rulesguru-local-suite/) | Local-only RulesGuru practice suite: import, convert, suite and filter selection on the harness runs; brief + GATE-QUESTIONS (new REQ-232, two blockers); define attempt 2 fixed the three gate-qc attempt-1 findings, awaiting re-check |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| [rulesguru-local-suite](rulesguru-local-suite/) | Local-only RulesGuru practice suite: import, convert, suite and filter selection on the harness runs; brief + GATE-QUESTIONS (new REQ-232, two blockers); gate-qc FAIL attempt 1, see QUALITY-CHECK.md |
 
 ## ideation
 
