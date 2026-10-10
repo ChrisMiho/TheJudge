@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/resolution-recipe-eval`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-resolution-recipe-eval`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff PRD/work/resolution-recipe-eval/`
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 6` | branch `thejudge-auto/resolution-recipe-eval` pushed from `.worktrees/kickoff-resolution-recipe-eval` at `dabad406` (`git ls-remote --heads origin thejudge-auto/resolution-recipe-eval`); lock `.worktrees/.graph-run.lock` pid 81708; launch checkout untouched (porcelain unchanged, still on `main`) | 2026-10-10 |
 | 2 | shape | sonnet | ok | `0 → 13` | `PRD/work/resolution-recipe-eval/` (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md byte-identical to the staged copy, `cmp` clean); commit `96eb39d4`; 3 prior-run receipts in IDEA.md; node removed the staged copy after committing it (the committed `intake/` copy is the record) | 2026-10-10 |
 | 3 | define | opus | ok | `0 → 118` | `PRD/work/resolution-recipe-eval/DESIGN-BRIEF.md`, `PRD/work/resolution-recipe-eval/GATE-QUESTIONS.md` (5 stable-ID slots REQ-230, REQ-228, REQ-187, REQ-224, REQ-185 + blocker slots G1, G2, G3-01..G3-16, G4, G5→REQ-187), `STATUS.refined`; commit `a9daa27f`; 104-hit line-level grep with dispositions in the brief (10 amend / 20 build / 74 keep); `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty; dry-run anchor $0.0117 per graded answer (gitignored `output/` only); driver spot-checked the nine reference outcomes against CR 613.4b/c, 613.8, 707.2, 603.3b, 616.1 | 2026-10-10 |
+| 4 | gate-qc | sonnet | failed | `0 → 44` | FAIL attempt 1 — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `532b7129`, `STATUS.refining`; F1 blocking (cost anchor and reasoning-token figures cite no command or output), F2 blocking (Serra Angel not found — driver re-check: present as oracle `4b7ac066-e5c7-43e6-9e7e-2739b24a905d` via `apps/frontend/public/data/cardMetadata.json` cardId, so F2 reduces to F3), F3–F5 minor; diffs 33/33 lines match, grep 104/104 dispositioned, 16/16 references correct; loop 1 of 3 back to define | 2026-10-10 |
 
 ## Open gate
 
@@ -112,6 +113,32 @@ Write the report to `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`. On FAIL 
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
+
+### define (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-resolution-recipe-eval
+
+You are node 3 (`define`), attempt 2 (gate-qc loop 1 of 3), of graph run `graph-20261010-183425`. Invoke the `thejudge-refinement` skill on `PRD/work/resolution-recipe-eval/` in its graph-controlled mode (no questions to the user, no approval pauses) and fix the gate-qc attempt-1 findings in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md`. Read `QUALITY-CHECK.md` in full first. Refinement proposes only: no edit to `PRD/sections/`, code, or anything outside the package folder. Keep every verdict slot blank.
+
+The findings, as gate-qc wrote them, with the driver's note on F2:
+
+> F1 (blocking): the cost anchor ($0.84 for 72 answers, $1.08 for 92) names no command, manifest, flags or saved output, and the Luna reasoning-token figures (mean 323, tier-3 mean 1,286, max 2,026) and judge cost ($0.0054 mean) name no run folder or field. Fix: put the exact dry-run command lines in the brief and cite the saved output path (or re-run the dry runs, no `--confirm-live-calls`, and cite what they print), and name the record folder and field each reasoning-token and judge-cost figure was read from.
+>
+> F2 (blocking): G3-11 and G3-12 use Serra Angel, which gate-qc did not find in `apps/backend/data/cardDetailByOracleId.json.br` because that file carries no names. Driver check: Serra Angel is present. `apps/frontend/public/data/cardMetadata.json` maps name to `cardId` (the oracle id), and `4b7ac066-e5c7-43e6-9e7e-2739b24a905d` in the backend file reads {3}{W}{W}, Creature — Angel, Flying, Vigilance. The fix is to cite the oracle id and its text, not to swap the card.
+>
+> F3 (minor): Grizzly Bears, Murder, Serra Angel, Forest and Island carry no oracle ids, although the brief says every G3 slot lists the ids used to verify; the data holds several {1}{B}{B} destroy-target-creature instants and several vanilla {1}{G} Bears, so name alone is ambiguous. Fix: resolve every card named in every G3 slot to its oracle id through `cardMetadata.json` (name to `cardId`), confirm the text in the backend file, and list the id in the slot.
+>
+> F4 (minor): the brief's printed power/toughness fact cites G3-13 for Serra Angel; Serra Angel is G3-11, and its reference deliberately avoids 4/4.
+>
+> F5 (minor): the REQ-230 diff hard-codes the 16 hard cases, which becomes false if any G3 slot is rejected; and the G3 slots carry no per-slot recommendation, only a top-line one. Fix: word the REQ-230 diff so it stays true for whichever cases the owner approves, and give each G3 slot its own one-line recommendation.
+
+After fixing, re-check that every removed and context line in each stable-ID diff still matches the live `PRD/sections/` text word for word, and that the grep disposition table still covers every hit. Set `STATUS.refined` again (replacing `STATUS.refining`; exactly one marker), set the README `status:` line, and move the `PRD/work/STATUS.md` board row back under refined. Leave the README `## Preparation gate` section alone; the driver owns it.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 150 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: each finding and how it was fixed (with the file and section), the dry-run command lines and output paths now cited, the oracle ids added, the commit SHA, and the push result.
 
 ## Instruction ledger
 

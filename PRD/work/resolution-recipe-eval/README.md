@@ -11,6 +11,12 @@ Measure whether a layer-and-timing resolution recipe (eval-only arm R, amending 
 - Next: `thejudge-quality-check PRD/work/resolution-recipe-eval/`
 - Graph run ledger: `GRAPH-RUN.md`
 
+## Preparation gate
+
+- Quality-check: FAIL
+- Checked artifact: `PRD/work/resolution-recipe-eval/DESIGN-BRIEF.md`
+- Findings: F1 (blocking) the cost anchor and Luna reasoning-token figures name no command, flags or saved output; F2 (blocking, per gate-qc) Serra Angel not shown in the committed card data — driver check: it is there, oracle id `4b7ac066-e5c7-43e6-9e7e-2739b24a905d` ({3}{W}{W}, Flying, Vigilance) via `apps/frontend/public/data/cardMetadata.json` `cardId` → `apps/backend/data/cardDetailByOracleId.json.br`, so the fix is to cite oracle ids; F3 (minor) Grizzly Bears, Murder, Serra Angel, Forest, Island carry no oracle ids; F4 (minor) the brief's power/toughness fact cites G3-13 for Serra Angel, which is G3-11; F5 (minor) the REQ-230 diff hard-codes the 16 hard cases, and the G3 slots carry no per-slot recommendation. Full report: `QUALITY-CHECK.md`.
+
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/resolution-recipe-eval
