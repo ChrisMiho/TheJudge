@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/resolution-recipe-eval/`
 - Build canary: `denied — graph tier armed (nohup true)` (build half, lock taken at the launch root)
 
@@ -22,12 +22,13 @@
 | 6 | gate-qc | sonnet | ok | `0 → 17` | PASS attempt 2, findings none — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `efda9238`; F1–F5 resolved; 33/33 diff lines match; grep 104/104; 24 verdict slots blank; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/283 | 2026-10-10 |
 | 7 | gate-review | sonnet | ok | `0 → 15` | build half run `graph-20261010-200144`: claim commit `a1683a9d` on `thejudge-auto/resolution-recipe-eval-work` cut from `origin/main` `bcef4543` (kickoff worktree removed clean); `graph-gate-review` commit `2e4720cd`: 24 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `
 | 8 | gate-qc | sonnet | ok | `0 → 18` | PASS build-half re-grade, findings none — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `831c0ee7`; 33/33 diff lines match at `bcef4543`; grep 104/104; 24/24 accept; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; README `## Preparation gate` PASS written by the driver | 2026-10-10 |
+| 9 | plan | sonnet | ok | `0 → 35` | commit `edf9e904` — `GAMEPLAN.md` + 7 slices with criteria files (A arm R 8; B manifests 6; C compare report 5; D game fidelity 5; E strict grading 6; F hard cases 8, manual F8; G runbook + ship 7, manual G7), all criteria `false`; Preparation gate PASS verified first; `STATUS.active` only marker; board row under active; runbook at `docs/eval/resolution-recipe/RUNBOOK.md`, no deliverable inside `PRD/work/`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-10 |
 
 ## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty | 2026-10-10 |
 
 ## Open gate
 
-- None
+- Paused before `build` at the owner's request (2026-10-10: start a fresh session before implementation). Not a product gate: the marker stays `STATUS.active` so the entry-point table resumes at `build`. Resume in a fresh session: `/graph-implement PRD/work/resolution-recipe-eval/` (takes the lock with a new run id, canary, then dispatches node 6 `build` on `thejudge-auto/resolution-recipe-eval-work`). Before dispatching build, snapshot the launch checkout's `git status --porcelain`.
 
 ## Gate verdicts
 
@@ -257,3 +258,4 @@ Report back: the slice list (letter, title, criteria count, manual criteria), wh
 | "Every live run must pass --max-cost-usd <= 15" | answered-once | define | — |
 | "Accept all recommended" (owner's answer to all 24 GATE-QUESTIONS.md slots, given in session 2026-10-10; filled by the driver at the owner's request) | answered-once | define | — |
 | "can you merge and drive for me" (2026-10-10; owner then merged #282 and #283 with `!`, the driver builds) | answered-once | gate-review | — |
+| "before implementation though, can we start a fresh session?" (2026-10-10) | answered-once | build | — |
