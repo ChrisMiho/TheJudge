@@ -277,7 +277,9 @@ export function validateGoldCase(caseEntry, { external = false } = {}) {
     if (!isNonEmptyString(expected.answer)) {
       errors.push(`${id}: missing non-empty "expected.answer"`);
     }
-    if (!Array.isArray(expected.decidingRuleIds) || expected.decidingRuleIds.length === 0) {
+    // An excluded suite case is kept on disk but never selected, so it may have no deciding rule (no-cited-rule, unknown-rule).
+    const mayLackRules = external && isNonEmptyString(caseEntry?.suite?.excluded);
+    if (!Array.isArray(expected.decidingRuleIds) || (expected.decidingRuleIds.length === 0 && !mayLackRules)) {
       errors.push(`${id}: needs at least one "expected.decidingRuleIds" entry`);
     } else if (!isStringArray(expected.decidingRuleIds)) {
       errors.push(`${id}: expected.decidingRuleIds entries must be non-empty strings`);
