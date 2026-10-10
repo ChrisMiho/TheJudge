@@ -1,6 +1,6 @@
 # Slice E — Strict grading revision
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -18,12 +18,20 @@ are judged by the same stricter rule.
 
 ## Acceptance criteria
 
-- [ ] Level 2 text matches the accepted REQ-187 wording
-- [ ] `RUBRIC_REVISION` is a new value and a test pins it
-- [ ] The judge prompt contains the new level-2 text (test)
-- [ ] Artifact comparison across the old and new revisions is refused (test updated)
-- [ ] `npm --workspace apps/backend run test -- src/eval/answer-quality` passes
-- [ ] The REQ-187 block is applied
+- [x] Level 2 text matches the accepted REQ-187 wording
+- [x] `RUBRIC_REVISION` is a new value and a test pins it
+- [x] The judge prompt contains the new level-2 text (test)
+- [x] Artifact comparison across the old and new revisions is refused (test updated)
+- [x] `npm --workspace apps/backend run test -- src/eval/answer-quality` passes
+- [x] The REQ-187 block is applied
+
+## Notes (evidence, re-runnable)
+
+- E1: `rubric.ts` level 2 reads "Reaches the same outcome as the case's approved reference answer, with no material error a player could act on (an invented card or ability, a wrong timing or stack order, or a wrong intermediate rule step)." (the accepted wording).
+- E2: `RUBRIC_REVISION` is `2026-10-10.1`; pinned in `rubric.test.ts`.
+- E3, E5: `npm --workspace apps/backend run test -- src/eval/answer-quality` -> 4 files, 76 tests passed (the judge prompt test is in `judge.test.ts`); `npm --workspace apps/backend run typecheck` -> clean. No `judge.ts` edit was needed.
+- E4: `artifact.test.ts` refuses a per-case comparison across both earlier revisions (`2026-10-06.1`, `2026-10-07.1`) and the current one.
+- E6: REQ-187 Correctness line and the new Notes line in `PRD/sections/functional-requirements.md`.
 
 ## Verification
 

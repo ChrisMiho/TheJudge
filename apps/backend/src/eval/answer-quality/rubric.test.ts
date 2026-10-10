@@ -19,8 +19,20 @@ describe("Backend - Eval - Answer quality - rubric (REQ-187)", () => {
 
   it("moved to a new revision when the judge's inputs changed (REQ-186, REQ-187)", () => {
     expect(RUBRIC_REVISION).not.toBe("2026-10-06.1");
-    expect(RUBRIC_REVISION).toBe("2026-10-07.1");
+    expect(RUBRIC_REVISION).not.toBe("2026-10-07.1");
     expect(formatRubricForJudge()).toContain(`revision ${RUBRIC_REVISION}`);
+  });
+
+  it("moved again to 2026-10-10.1 when Correctness level 2 started excluding a material error a player could act on (REQ-187)", () => {
+    expect(RUBRIC_REVISION).toBe("2026-10-10.1");
+    const level2 = RUBRIC_AXES.find((axis) => axis.id === "correctness")?.levels[2];
+    expect(level2).toBe(
+      "Reaches the same outcome as the case's approved reference answer, with no material error a player could act on (an invented card or ability, a wrong timing or stack order, or a wrong intermediate rule step)."
+    );
+    // Level 1 already carries the other half: right with a material error or omission scores 1.
+    expect(RUBRIC_AXES.find((axis) => axis.id === "correctness")?.levels[1]).toContain("right with a material error or omission");
+    // The judge reads the rubric text verbatim, so the new wording reaches it with no judge edit.
+    expect(formatRubricForJudge()).toContain(`2 - ${level2}`);
   });
 
   it("formatRubricForJudge includes every axis title and the revision, and is the exact text sent to the judge", () => {

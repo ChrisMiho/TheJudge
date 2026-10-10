@@ -302,11 +302,13 @@ describe("Backend - Eval - Answer quality - artifact (REQ-189)", () => {
       });
     });
 
-    it("refuses a per-case comparison between grades under the previous rubric revision and the current one (REQ-187)", () => {
-      const previous = { ...base, rubricRevision: "2026-10-06.1" };
+    it("refuses a per-case comparison between grades under the previous rubric revisions and the current one (REQ-187)", () => {
       const current = { ...base, rubricRevision: RUBRIC_REVISION };
-      expect(RUBRIC_REVISION).not.toBe("2026-10-06.1");
-      expect(compareRecords(previous, current)).toEqual({ comparable: false, reason: "rubric revisions differ" });
+      for (const earlier of ["2026-10-06.1", "2026-10-07.1"]) {
+        const previous = { ...base, rubricRevision: earlier };
+        expect(RUBRIC_REVISION).not.toBe(earlier);
+        expect(compareRecords(previous, current)).toEqual({ comparable: false, reason: "rubric revisions differ" });
+      }
       expect(compareRecords(current, { ...current })).toEqual({ comparable: true, kind: "same-model" });
     });
 

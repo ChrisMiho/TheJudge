@@ -4481,7 +4481,7 @@
 - Priority: medium
 - Description: An answer-quality run scores each answer on four axes, each 0–2, against the case's approved reference answer (REQ-185). Correctness is the run's single headline figure; the other three axes are diagnostic and explain movement rather than defining it.
 - Acceptance Criteria:
-  - **Correctness (0–2)** — 2: reaches the same outcome as the case's approved reference answer; 1: partially right, or right with a material error or omission; 0: reaches a different outcome. This is the only axis that produces the headline figure
+  - **Correctness (0–2)** — 2: reaches the same outcome as the case's approved reference answer, with no material error a player could act on (an invented card or ability, a wrong timing or stack order, or a wrong intermediate rule step); 1: partially right, or right with a material error or omission; 0: reaches a different outcome. This is the only axis that produces the headline figure
   - **Grounding (0–2)** — 2: the answer's reasoning uses the supplemental rule excerpts the prompt actually attached and names the gold rule id; 1: uses them without naming the rule, or names it without using it; 0: neither
   - **Calibration (0–2)** — 2: as definite as the approved reference answer is, and no more; 1: over-hedged or mildly overconfident; 0: refuses a question the reference answers, or states a firm answer the reference does not support
   - **Readability (0–2)** — 2: a player at a table can act on it as written; 1: correct but needs re-reading; 0: unusable at a table
@@ -4502,6 +4502,7 @@
   - the deliberate choice of a 0–2 scale over a wider one: with six cases, a finer scale invents precision the sample cannot support, and a coarse scale is what a human reviewer can confirm or overturn on the third layer
   - the rubric revision at first ship was `2026-09-07.1` (`RUBRIC_REVISION`); it moved to `2026-10-06.1` when the Correctness and Calibration wording changed from "the published worked solution" to "the case's approved reference answer" (so tier-3 cases read correctly), which makes records graded under the first revision incomparable per case (REQ-189)
   - it moves again, to a revision dated the day the build changes the judge's inputs, when the judge starts receiving the attached excerpts' rule ids and text, the deciding rule ids labelled apart, and any game-state lines (REQ-186); the four axis definitions are unchanged, and records graded under `2026-10-06.1` are incomparable per case with later ones
+  - it moves again, to a revision dated the day the build changes the Correctness text, when level 2 starts excluding a material error a player could act on (the owner's strict-grading ruling of 2026-10-08, adopted by the `resolution-recipe-eval` package); records graded under `2026-10-07.1` are incomparable per case with later ones, and an experiment run's stored answers can be graded again under the new revision with `--regrade-from` (REQ-226)
 ### REQ-188
 - Title: Answer-quality runs are on demand, confirmation-gated, and never a build gate
 - Priority: medium
