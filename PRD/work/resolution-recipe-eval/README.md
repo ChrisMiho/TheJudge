@@ -1,4 +1,4 @@
-status: refining
+status: refined
 
 # resolution-recipe-eval
 
@@ -8,6 +8,7 @@ Measure whether a layer-and-timing resolution recipe (eval-only arm R, amending 
 - Intake (verbatim, evidence only): `intake/GRAPH-BRIEF.md`
 - Design brief: `DESIGN-BRIEF.md`
 - Proposal and owner questions: `GATE-QUESTIONS.md` (REQ-230, REQ-228, REQ-187, REQ-224, REQ-185; blockers G1, G2, G3-01 to G3-16, G4; G5 = the REQ-187 slot)
+- Evidence (re-runnable, offline; build deletes it with the package): `evidence/` — cost dry runs and recorded Luna figures (`cost-anchor-dry-runs.txt`, `luna-token-stats.mjs`), G3 card oracle ids (`g3-card-ids.txt`, `resolve-g3-cards.mjs`)
 - Next: `thejudge-quality-check PRD/work/resolution-recipe-eval/`
 - Graph run ledger: `GRAPH-RUN.md`
 

@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| resolution-recipe-eval | Eval-only arm R (layer and timing recipe) vs production on Luna, both flows; 18 hard cases, 6 repeats, ≈ $3.55 est.; proposal amends REQ-230/228/187/224/185. Define attempt 2 fixed gate-qc F1–F5; awaiting re-grade |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| resolution-recipe-eval | Eval-only arm R (layer and timing recipe) vs production on Luna, both flows; 18 hard cases, 6 repeats, ≈ $3.55 est.; proposal amends REQ-230/228/187/224/185. gate-qc FAIL attempt 1 (see QUALITY-CHECK.md) |
 
 ## ideation
 

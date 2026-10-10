@@ -26,7 +26,9 @@ build makes no paid call; you run the paid comparison after the code merges.
 - Package: `PRD/work/resolution-recipe-eval/` · run `graph-20261010-183425` · node `define`
 - Intake (evidence, not authority): `intake/GRAPH-BRIEF.md`
 - Facts below were re-verified in this worktree (base `dabad406`, branch head
-  `313f1225`) on 2026-10-10 unless marked as taken from the intake.
+  `313f1225`) on 2026-10-10 unless marked as taken from the intake. Define
+  attempt 2 (branch head `1f6162bc`) re-ran the cost dry runs and resolved every
+  G3 card to its oracle id; the saved outputs are in `evidence/` in this folder.
 
 ## Scope
 
@@ -72,7 +74,8 @@ Non-goals:
 | Rubric Correctness level 2 is "Reaches the same outcome as the case's approved reference answer"; level 1 already says "right with a material error or omission". Revision `2026-10-07.1`. | Read `apps/backend/src/eval/answer-quality/rubric.ts:31-40`. |
 | The compare report has majority-over-repeats, an `unstable` list, a request-kind breakdown and a slower-than-budget count, but no repeat selector, no answer-level right count, and no right-but-too-slow count. | Read `scripts/lib/answer-compare.mjs`, `scripts/eval-answer-compare.mjs`. |
 | The dry-run estimate assumes 600 answer output tokens and 1,500 in / 800 out per judge call (`scripts/eval-answer-quality.mjs:165-167`). | Read the source. |
-| The committed card data carries no printed power or toughness (fields: oracle text, type line, mana cost, mana value, colors, types, keywords). | Read `cardDetailByOracleId.json.br`. Questions are written so no reference depends on a printed P/T the prompt lacks, except Serra Angel's 4/4 (named in G3-13). |
+| The committed card data carries no printed power or toughness (fields: oracle text, type line, mana cost, mana value, colors, types, keywords). | Read `cardDetailByOracleId.json.br`. No reference depends on a printed power or toughness: G3-11 and G3-12 (Clone copying Serra Angel) deliberately say "Serra Angel's printed power and toughness" and never name 4/4, and every other number a reference states comes from card text (Humility's 1/1, Turn to Frog's 1/1, Giant Growth's +3/+3, mana values). |
+| Every card named in a G3 slot resolves to exactly one oracle id, and its committed text supports the reference. | Ran `node PRD/work/resolution-recipe-eval/evidence/resolve-g3-cards.mjs` (output: `evidence/g3-card-ids.txt`, 22 names, 0 problems). Name to oracle id through `apps/frontend/public/data/cardMetadata.json` (`name` to `cardId`); text from `apps/backend/data/cardDetailByOracleId.json.br`. Grizzly Bears is the one exception: `cardMetadata.json` skips every card with empty oracle text (`scripts/build-card-metadata.mjs`, `finalizeTransformState`; 673 vanilla creatures), so its id comes from `apps/frontend/public/data/cardScanMap.json` (the scanner's index, `name` to `oracleId`): `14c8f55d-d177-4c25-a931-ebeb9e6062a0`, {1}{G} Creature — Bear, no text. A player adds it by scanning it; the request carries the same oracle id. Each id is listed in every G3 slot that uses the card. |
 
 ## Arm R
 
@@ -135,8 +138,9 @@ More than three additions would add cost without a different kind of test.
 Authoring rules for the build: each In-Depth twin uses its own question wording
 and its own reference wording (the loader rejects duplicates); its `gameState`
 holds only the facts the ruling depends on (worked-solutions README); every
-zone card is one of `cards`; card oracle ids are resolved from the committed
-data at authoring (ids used during verification are listed in each G3 slot).
+zone card is one of `cards`; each card carries the oracle id its G3 slot lists
+(resolved and text-checked by `evidence/resolve-g3-cards.mjs`, see Verified
+facts), and the build re-runs that resolution against the data it authors from.
 
 ## Comparison design
 
@@ -195,15 +199,31 @@ through `--regrade-from`.
 
 ## Cost dry run (anchor)
 
-Run on 2026-10-10 in this worktree, no `--confirm-live-calls`, nothing spent.
-Arm B stood in for R (R does not exist yet; the recipe adds ≈ 900 characters,
-≈ 225 input tokens, about $0.00002 per Luna call).
+Two dry runs, re-run 2026-10-10 in this worktree (branch head `1f6162bc`), no
+`--confirm-live-calls`, no provider request, nothing spent. Arm B stood in for R
+(R does not exist yet; the recipe adds ≈ 900 characters, ≈ 225 input tokens,
+about $0.00002 per Luna call). The full printed output of every command below is
+saved verbatim in `evidence/cost-anchor-dry-runs.txt` in this folder (evidence
+only; the build deletes it with the package).
 
-- 6 existing hard cases (both tester cases, Saheeli, Devouring Hellion, both
-  Thought-Eater/Praetor's Counsel layer cases) × A, B × 6 repeats: 72 answers +
-  72 judge calls, **$0.84** → $0.0117 per graded answer.
-- The 46 diagnostic cases × A, B × 1: 92 + 92 calls, **$1.08** → $0.0117 per
-  graded answer.
+```bash
+# run manifests (offline; gitignored output/)
+npm run eval:answer-quality:manifests -- --emit output/answer-quality/manifests/rr-hard-anchor.json --from approved --ids academy-manufactor-esix-treasure,layers-hand-size-timestamp-praetors-counsel,layers-hand-size-timestamp-thought-eater,necropotence-silence-borne-upon-a-wind-cleanup,replacement-saheeli-three-artifacts-sculpting-steel,triggers-devouring-hellion-and-kronch-wrangler
+npm run eval:answer-quality:manifests -- --emit output/answer-quality/manifests/rr-diagnostic.json --from diagnostic
+# dry run 1: prints "Calls: 72 answer calls, 72 lone judge calls" and "Estimated cost: $0.84"
+npm run eval:answer-quality -- --run-id rr-hard-anchor --manifest output/answer-quality/manifests/rr-hard-anchor.json --model gpt-6-luna --excerpt-cap 10 --arm A --arm B --repeat 6 --max-cost-usd 6
+# dry run 2: prints "Calls: 92 answer calls, 92 lone judge calls" and "Estimated cost: $1.08"
+npm run eval:answer-quality -- --run-id rr-diagnostic-anchor --manifest output/answer-quality/manifests/rr-diagnostic.json --model gpt-6-luna --excerpt-cap 10 --arm A --arm B --max-cost-usd 3
+```
+
+Judge model `gpt-6.1-sol` is the tool's default (`DEFAULT_JUDGE_MODEL`,
+`scripts/eval-answer-quality.mjs:118`), printed by both dry runs.
+
+- Dry run 1 — 6 existing hard cases (both tester cases, Saheeli, Devouring
+  Hellion, both Thought-Eater/Praetor's Counsel layer cases) × A, B × 6 repeats:
+  72 answers + 72 judge calls, **$0.84** → $0.0117 per graded answer.
+- Dry run 2 — the 46 diagnostic cases × A, B × 1: 92 + 92 calls, **$1.08** →
+  $0.0117 per graded answer.
 - Projection: `rr-hard` 216 × $0.0117 ≈ **$2.52**; `rr-regression` 88 ×
   $0.0117 ≈ **$1.03**; total ≈ **$3.55** by the estimate.
 
@@ -213,8 +233,19 @@ billed as output) is mean 323 overall but 1,286 on tier 3, max 2,026. At Luna's
 $0.50 per million output tokens even 10,000 tokens cost $0.005, so a recipe that
 quintupled Luna's reasoning would add about $0.50 to `rr-hard`. Meanwhile the
 estimate's judge assumption ($0.011 per call at `gpt-6.1-sol` $2 / $10) is about
-twice the recorded judge cost ($0.0054 mean, $0.0065 tier 3), an over-count of
-roughly $1 on `rr-hard` alone. The judge dominates cost, and the estimate already
+twice the recorded judge cost ($0.0054 mean, $0.0064 tier 3), an over-count of
+roughly $1 on `rr-hard` alone.
+
+Where those recorded figures come from: the 2026-10-09 paid runs backed up at
+`~/Coding/Projects/TheJudge-backups/answer-quality-paid-run-2026-10-09/answer-quality/runs/`,
+every `<run>/calls.jsonl` record with `model` `gpt-6-luna` and `status` `ok`
+(181 records, all in `phase-4-arm-a`, `phase-4-best-arm` and `phase-4-repeats`;
+10 of them tier 3). Output tokens are the record field `outputTokens` (mean
+322.9, tier-3 mean 1,286.2, max 2,026); judge cost is `judgeCostUsd` (mean
+$0.005394, tier-3 mean $0.006447); answer time is `latencyMs` (max 22,683 ms,
+tier-3 median 13,114.5 ms, used in G1). The script that reads them is
+`evidence/luna-token-stats.mjs`; its output is step 4 of
+`evidence/cost-anchor-dry-runs.txt`. The judge dominates cost, and the estimate already
 over-counts it by more than any plausible Luna reasoning growth. The runbook
 states this arithmetic; REQ-227's estimate method and cap guard stay unchanged.
 This drops the intake's build item 4 (assumption A3 below).
@@ -232,8 +263,9 @@ Map-out decides slicing; this is the content.
    every diagnostic case, game cases included. Tests: R on a lookup prompt and a
    game prompt changes only the target paragraph; refuses when the target is
    missing or appears twice; refuses without `approvedOn`; P unchanged.
-2. **The hard cases**: 16 new case files per the G3 verdicts (an `edit` verdict's
-   text applied, a `reject` authors nothing), snapshot recorded at authoring.
+2. **The hard cases**: one new case file per accepted or edited G3 slot (16 if
+   every slot is accepted; an `edit` verdict's text applied, a `reject` authors
+   nothing), snapshot recorded at authoring.
    Approval status per the REQ-224 / REQ-185 verdict:
    - accepted: written `approved`, `reviewedOn` = the docs PR merge date, a
      review note naming the G3 slot;
@@ -253,9 +285,12 @@ Map-out decides slicing; this is the content.
    adds approved cases to the committed diagnostic manifest as a recorded group
    (refusing any held-out or non-approved id); `--check` verifies the committed
    files instead of re-drawing them, and reports drift without failing; a
-   re-draw keeps appended groups. The 16 new ids are appended as group
-   `resolution-recipe-hard-set` (diagnostic becomes 62 cases; the two existing
-   lookup cases are already in it).
+   re-draw keeps appended groups. The new case ids the build authored are
+   appended as group `resolution-recipe-hard-set` (diagnostic becomes 46 plus
+   that count, 62 if all 16 slots are accepted; the two existing lookup cases
+   are already in it). The REQ-230 text names no count, so it stays true
+   whichever slots are rejected; the count lives in the group's record and the
+   build note.
 5. **Compare report** (REQ-228 diff): `--repeats` / `--repeats-a` /
    `--repeats-b` selectors; refusal of a side compared with itself; per-side
    right answers out of answers (all repeats), and right-but-over-budget count,

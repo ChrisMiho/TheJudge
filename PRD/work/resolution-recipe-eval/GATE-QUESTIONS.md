@@ -49,8 +49,9 @@ instruction to place each effect and resolve in order. It works on Quick Lookup
 and In-Depth prompts alike, because it swaps text without reading the prompt's
 structure. R refuses to run until you approve its wording (G2), like P. Variants
 may only run on a committed "diagnostic" list of cases kept apart from an 80-case
-"held-out" list saved for judging a real prompt change once. The 16 new hard
-cases join the diagnostic list as a recorded addition, not by re-drawing it:
+"held-out" list saved for judging a real prompt change once. The new hard
+cases you accept in G3 (up to 16) join the diagnostic list as a recorded
+addition, not by re-drawing it:
 re-drawing today would reshuffle both lists, because the corpus changed since
 they were drawn (the seeded check fails today even though every listed case is
 still sound). So the check changes from "would a re-draw match?" to "is every
@@ -81,7 +82,7 @@ other slots fall away.
 +  - the committed held-out manifest (`apps/backend/src/eval/answer-quality/manifests/held-out.json`) lists approved cases disjoint from the diagnostic manifest, and a test asserts disjointness; arms B, P and R run on a held-out case only under a frozen revision id, and every such record carries `heldOut: true`
 -  - both manifests are written by one seeded command (`npm run eval:answer-quality:manifests`; `-- --check` re-runs it and fails if the committed files would change) from the evidence trace (REQ-229), recording its seed and selection rule: diagnostic — the two tester cases, `multiplayer-only-blood-ends-your-nightmares-opponents`, every approved case whose deciding rules are partly selected in search, a seeded sample of 20 cases with none selected, and a seeded sample of 10 fully selected cases as passing controls; held-out — a seeded sample of 80 of the remaining approved cases, stratified by Comprehensive Rules section; a sample size may change only with the reason recorded in the command's output
 +  - both manifests are written by one seeded command (`npm run eval:answer-quality:manifests`) from the evidence trace (REQ-229), recording its seed and selection rule: diagnostic — the two tester cases, `multiplayer-only-blood-ends-your-nightmares-opponents`, every approved case whose deciding rules are partly selected in search, a seeded sample of 20 cases with none selected, and a seeded sample of 10 fully selected cases as passing controls, plus every appended group (below); held-out — a seeded sample of 80 of the remaining approved cases, stratified by Comprehensive Rules section; a sample size may change only with the reason recorded in the command's output; the seeded sets are kept as drawn, and a re-draw is a deliberate run of the command that keeps every appended group
-+  - `npm run eval:answer-quality:manifests -- --append-diagnostic <ids> --reason <text>` adds named cases to the committed diagnostic manifest as a recorded group — the group's case ids with their question and reference-answer hashes, the date, and the reason — outside the seeded selection; it refuses, naming each, a case that is not approved, is flagged stale (REQ-225), or is listed in the held-out manifest. The first group, `resolution-recipe-hard-set`, holds the 16 hard layer and timing cases the `resolution-recipe-eval` package authored in both flows, so the diagnostic manifest holds In-Depth (game) cases
++  - `npm run eval:answer-quality:manifests -- --append-diagnostic <ids> --reason <text>` adds named cases to the committed diagnostic manifest as a recorded group — the group's case ids with their question and reference-answer hashes, the date, and the reason — outside the seeded selection; it refuses, naming each, a case that is not approved, is flagged stale (REQ-225), or is listed in the held-out manifest. The first group, `resolution-recipe-hard-set`, holds the hard layer and timing cases the `resolution-recipe-eval` package authored from the define-gate slots the owner accepted or edited, and its record lists their ids; because those cases may be In-Depth (game) cases, the diagnostic manifest can hold game cases
 +  - `npm run eval:answer-quality:manifests -- --check` verifies the committed manifests without re-drawing them: it fails, naming each problem, when a listed case is missing, is not approved, is flagged stale, or no longer matches its listed question or reference-answer hash, or when the two manifests share a case; it also prints, without failing, how many cases a fresh seeded draw from the current corpus would change (drift)
 +  - before its first paid call, an experiment run that selects any case with a `gameState` proves, for each such case, that the prompt prepared from the case's request equals the prompt prepared from that request after the route's request schema (`askAiRequestSchema`) parses it, and refuses, naming the case, when they differ — so an In-Depth case is asked exactly as the live app would ask it; a unit test proves the refusal
  - Constraints:
@@ -180,7 +181,7 @@ still runs, but a right-outcome answer with a side error may score 2.
 
 ## REQ-224 — a case you approve one by one in a gate file counts as approved
 
-**What this decides:** whether the 16 hard cases you approve case by case in
+**What this decides:** whether the hard cases you approve case by case in
 this file (G3) are written as approved by the build, or go through the usual
 review batch again after the merge.
 
@@ -192,7 +193,7 @@ requirement. This adds a second: a case you approve in a gate slot that shows
 its question, reference answer, outcome and deciding rules — exactly what G3
 shows — is written approved by the build that creates it, with the date the docs
 PR carrying your answer merged and a note naming the slot. Without it, the build
-writes the 16 cases as drafts; after the code merges you would render a batch,
+writes those cases as drafts; after the code merges you would render a batch,
 approve them again, apply, add them to the diagnostic list, and merge that as a
 small extra PR before the paid run (the paid run refuses uncommitted changes).
 
@@ -206,7 +207,7 @@ The measurement is otherwise unchanged. Answer `REQ-185` the same way.
 +  - no agent sets `approved`; only the apply command, run on an owner-filled batch, does — except (a) the 18 first-ship cases, which the format-version-2 migration writes as `approved` because the owner's accept of REQ-185 approves them, each with `review.reviewedOn` set to the migration date and a review note naming that accept as the approval source (REQ-185); and (b) a case the owner approves one by one in a `define`-gate verdict slot (`GATE-QUESTIONS.md`) that shows its question, reference answer, outcome and deciding rule ids: the build that authors the case writes it `approved`, with `review.reviewedOn` set to the date the docs PR carrying the answered slot merged, a review note naming the package and slot as the approval source, and its `snapshot` recorded from the committed data at authoring; an `edit` verdict's text is applied before authoring, and a `reject` verdict authors no case
    - REQ-186 (grading only `approved` cases)
 +- Notes:
-+  - exception (b) was added by the `resolution-recipe-eval` package (2026-10-10), whose 16 hard cases are approved case by case in its G3 slots; without it, the cases would be authored as drafts and need a second review and a separate merge before the paid run that uses them
++  - exception (b) was added by the `resolution-recipe-eval` package (2026-10-10), whose hard cases are approved case by case in its G3 slots; without it, the cases would be authored as drafts and need a second review and a separate merge before the paid run that uses them
 ```
 
 (REQ-224 has no `Notes` section today; the diff adds one after its `Dependencies` list.)
@@ -254,8 +255,9 @@ layer or timing step before answering. That working can either appear in the
 answer or stay in Luna's head. Showing it makes every answer longer, and longer
 answers take longer to write; Luna's slowest recorded answer was already 22.7
 seconds against the 30-second budget (REQ-231: a player waits at most 30 s on
-the AI before seeing the failure screen), and the middle of its ten hardest
-recorded answers sat at 12.5 s. The choice also changes what the grader reads. Testing both would
+the AI before seeing the failure screen), and its ten recorded answers on the
+hardest (tier 3) cases had a median of 13.1 s (both read from the 2026-10-09
+runs; source in `DESIGN-BRIEF.md`, "Cost dry run"). The choice also changes what the grader reads. Testing both would
 double the cost and the cases.
 
 **Recommendation:** conclusion and key reasons only. Arm R's last instruction
@@ -316,8 +318,18 @@ two existing approved lookup cases (Necropotence + Silence + Borne Upon a Wind,
 Academy Manufactor + Esix) are reused as they are and need no slot. Accepting a
 slot also approves that case for scoring, if `REQ-224` is accepted. "Outcome" is
 a review label only (works / does-not-work / depends); the grader reads the
-answer text. Card ids are the ones used to verify; the build confirms each by
-name.
+answer text. Every card in every slot carries its oracle id (the card's
+permanent Scryfall id, which the app's card data is keyed by). Each id was
+found from the card's name in the app's card-name index
+(`apps/frontend/public/data/cardMetadata.json`), or, for Grizzly Bears, which
+that index leaves out because it has no rules text, in the scanner's index
+(`cardScanMap.json`); the text was then read from the card data the prompt
+prints (`apps/backend/data/cardDetailByOracleId.json.br`). The saved run is
+`evidence/g3-card-ids.txt` in this folder: 22 cards, each with exactly one id.
+
+**Recommendation:** accept each slot. Every reference reaches the right outcome
+under the cited rules and the card text, with no side error of its own; each
+slot below repeats this in one line.
 
 **What happens if you say no to a case:** with `reject`, that case is not
 authored and the set shrinks; with `edit`, your text is used.
@@ -329,6 +341,7 @@ when it is played after Blood Moon.
 **In plain terms:** timestamp order says Urborg applies last; dependency
 (rule 613.8: an effect that another effect would switch off waits for it)
 reverses that. Urborg's own ruling in the prompt states the result.
+**Recommendation:** accept — the reference matches rules 613.8a–b and 305.7 and Urborg's ruling.
 **What happens if you say no:** this case is not authored.
 
 - Cards: Blood Moon (`94fac5fe-97d5-4c12-a80c-8efff9d853ae`), Urborg, Tomb of Yawgmoth (`db6174d7-211d-4817-b8e4-8384594c83f9`)
@@ -348,8 +361,10 @@ reverses that. Urborg's own ruling in the prompt states the result.
 board.
 **In plain terms:** same reasoning as G3-01, with the cards placed on the
 battlefield.
+**Recommendation:** accept — same checked reasoning as G3-01, own wording.
 **What happens if you say no:** this case is not authored.
 
+- Cards: Blood Moon (`94fac5fe-97d5-4c12-a80c-8efff9d853ae`), Urborg, Tomb of Yawgmoth (`db6174d7-211d-4817-b8e4-8384594c83f9`)
 - Board: 2 players at 20 life; Player 1's first main phase, Player 1 active. Battlefield: Blood Moon (owner Player 2); Urborg, Tomb of Yawgmoth (owner Player 1, note "played this turn, after Blood Moon was on the battlefield").
 - Question: "Player 2's Blood Moon was already out when I played Urborg this turn. Does my Urborg tap for black, and does it turn my other lands into Swamps?"
 - Outcome: `does-not-work`
@@ -367,9 +382,10 @@ become when Opalescence arrives after Humility.
 **In plain terms:** Humility's effect keeps working after it strips its own
 ability (rule 613.6), and in the "set power and toughness" sublayer the later
 card wins. The Humility/Opalescence ruling in the prompt walks this exact order.
+**Recommendation:** accept — the reference follows rules 613.6 and 613.7 and the Humility/Opalescence ruling.
 **What happens if you say no:** this case is not authored.
 
-- Cards: Humility (`ed7bdb3e-5c51-4547-9266-76a791e0b2b0`), Opalescence (`59489b46-9d02-4f3c-bcd0-884e7605e9a5`), Grizzly Bears (vanilla 2/2, resolved by name)
+- Cards: Humility (`ed7bdb3e-5c51-4547-9266-76a791e0b2b0`), Opalescence (`59489b46-9d02-4f3c-bcd0-884e7605e9a5`), Grizzly Bears (`14c8f55d-d177-4c25-a931-ebeb9e6062a0`, {1}{G} Creature — Bear, no rules text)
 - Question: "I control Humility and Grizzly Bears. Then I cast Opalescence. What are Humility and Grizzly Bears now?"
 - Outcome: `works`
 - Short answer: "Humility is a 4/4 enchantment creature with no abilities; Grizzly Bears is a 1/1 with no abilities."
@@ -384,8 +400,10 @@ card wins. The Humility/Opalescence ruling in the prompt walks this exact order.
 
 **What this decides:** the reference for the same interaction from a board.
 **In plain terms:** same reasoning as G3-03.
+**Recommendation:** accept — same checked reasoning as G3-03, own wording.
 **What happens if you say no:** this case is not authored.
 
+- Cards: Humility (`ed7bdb3e-5c51-4547-9266-76a791e0b2b0`), Opalescence (`59489b46-9d02-4f3c-bcd0-884e7605e9a5`), Grizzly Bears (`14c8f55d-d177-4c25-a931-ebeb9e6062a0`)
 - Board: 2 players at 20 life; Player 1's first main phase, Player 1 active. Battlefield (all owner Player 1): Humility, Grizzly Bears, Opalescence (note "resolved this turn; Humility was already on the battlefield").
 - Question: "My Opalescence just resolved, and my Humility and Grizzly Bears were already out. What are my Humility and Grizzly Bears now?"
 - Outcome: `works`
@@ -403,9 +421,10 @@ counter is after Turn to Frog sets it to 1/1.
 **In plain terms:** "set to 1/1" happens in sublayer 7b, and pumps and counters
 in 7c, which always comes later, whatever order the spells were cast in. Turn to
 Frog's ruling in the prompt says modifiers still apply.
+**Recommendation:** accept — 1/1 + 3/3 + 1/1 = 5/5 follows rules 613.4b–c and Turn to Frog's ruling.
 **What happens if you say no:** this case is not authored.
 
-- Cards: Grizzly Bears, Giant Growth (`5748ebf1-24e3-499d-ab7c-c2cebd462a24`), Turn to Frog (`74c4c1e2-c50d-4c8f-889a-0d5674dc6d67`)
+- Cards: Grizzly Bears (`14c8f55d-d177-4c25-a931-ebeb9e6062a0`), Giant Growth (`5748ebf1-24e3-499d-ab7c-c2cebd462a24`), Turn to Frog (`74c4c1e2-c50d-4c8f-889a-0d5674dc6d67`)
 - Question: "My Grizzly Bears has a +1/+1 counter on it, and I cast Giant Growth on it. After Giant Growth resolves, my opponent casts Turn to Frog on it. How big is it once Turn to Frog resolves?"
 - Outcome: `works`
 - Short answer: "5/5: Turn to Frog sets the base to 1/1, then Giant Growth's +3/+3 and the counter's +1/+1 still apply."
@@ -421,8 +440,10 @@ Frog's ruling in the prompt says modifiers still apply.
 **What this decides:** the reference for the same interaction from a board,
 with Turn to Frog on the stack.
 **In plain terms:** same reasoning as G3-05.
+**Recommendation:** accept — same checked reasoning as G3-05, own wording.
 **What happens if you say no:** this case is not authored.
 
+- Cards: Grizzly Bears (`14c8f55d-d177-4c25-a931-ebeb9e6062a0`), Giant Growth (`5748ebf1-24e3-499d-ab7c-c2cebd462a24`), Turn to Frog (`74c4c1e2-c50d-4c8f-889a-0d5674dc6d67`)
 - Board: 2 players at 20 life; Player 1's first main phase, Player 1 active. Battlefield: Grizzly Bears (owner Player 1, note "one +1/+1 counter; Giant Growth resolved on it this turn"). Graveyard: Giant Growth (owner Player 1). Stack: Turn to Frog (caster Player 2, targeting Grizzly Bears).
 - Question: "If Player 2's Turn to Frog resolves, what are my Grizzly Bears' power and toughness for the rest of the turn?"
 - Outcome: `works`
@@ -440,9 +461,10 @@ fires, and whether they can respond, when Kalitas exiles their creature instead.
 **In plain terms:** Kalitas replaces the death, so nothing dies, and the Zombie
 comes from the same replacement, which never uses the stack. Kalitas's ruling
 covers the trigger half; nothing in the prompt states the no-stack half.
+**Recommendation:** accept — the reference follows rules 614.1a, 614.6 and 700.4 and Kalitas's text.
 **What happens if you say no:** this case is not authored.
 
-- Cards: Kalitas, Traitor of Ghet (`e1cfd1cb-44a5-429f-a5c1-e6d29bad1c71`), Blood Artist (`310f141c-7f37-4729-aed6-dd9c09db448d`), Grizzly Bears, Murder (the {1}{B}{B} instant "Destroy target creature.", resolved by name)
+- Cards: Kalitas, Traitor of Ghet (`e1cfd1cb-44a5-429f-a5c1-e6d29bad1c71`), Blood Artist (`310f141c-7f37-4729-aed6-dd9c09db448d`), Grizzly Bears (`14c8f55d-d177-4c25-a931-ebeb9e6062a0`), Murder (`938b4e2c-88d9-4637-bc00-e228920c9a78`, {1}{B}{B} instant "Destroy target creature.")
 - Question: "I control Kalitas, Traitor of Ghet. My opponent controls Blood Artist and Grizzly Bears, and I cast Murder on their Grizzly Bears. Does Blood Artist trigger, and can my opponent respond before I get my Zombie?"
 - Outcome: `does-not-work`
 - Short answer: "No and no: the Bears is exiled instead of dying, and the Zombie comes from the same replacement, which doesn't use the stack."
@@ -458,8 +480,10 @@ covers the trigger half; nothing in the prompt states the no-stack half.
 **What this decides:** the reference for the same interaction from a board,
 with Murder on the stack.
 **In plain terms:** same reasoning as G3-07.
+**Recommendation:** accept — same checked reasoning as G3-07, own wording.
 **What happens if you say no:** this case is not authored.
 
+- Cards: Kalitas, Traitor of Ghet (`e1cfd1cb-44a5-429f-a5c1-e6d29bad1c71`), Blood Artist (`310f141c-7f37-4729-aed6-dd9c09db448d`), Grizzly Bears (`14c8f55d-d177-4c25-a931-ebeb9e6062a0`), Murder (`938b4e2c-88d9-4637-bc00-e228920c9a78`)
 - Board: 2 players at 20 life; Player 1's first main phase, Player 1 active. Battlefield: Kalitas, Traitor of Ghet (owner Player 1); Blood Artist (owner Player 2); Grizzly Bears (owner Player 2). Stack: Murder (caster Player 1, targeting Grizzly Bears).
 - Question: "My Murder targets Player 2's Grizzly Bears and I control Kalitas. When Murder resolves, does Player 2's Blood Artist trigger, and can Player 2 respond before my Zombie arrives?"
 - Outcome: `does-not-work`
@@ -478,6 +502,7 @@ from a board in the cleanup step.
 in the cleanup step, and the Necropotence trigger from discarding gives players
 priority in a step where they normally get none. No ruling in the prompt states
 it.
+**Recommendation:** accept — the reference follows rules 514.1, 514.2 and 514.3a and Necropotence's discard trigger.
 **What happens if you say no:** this case is not authored; the lookup case
 stays.
 
@@ -500,10 +525,11 @@ asked from a board.
 **In plain terms:** two replacement effects apply to one event and you choose
 the order (rule 616.1); the order decides how many tokens you get. Layers play
 no part. No ruling in the prompt states it.
+**Recommendation:** accept — three tokens or one, by the chosen order, follows rule 616.1 and both cards' text.
 **What happens if you say no:** this case is not authored; the lookup case
 stays.
 
-- Cards: Academy Manufactor (`f36d1d8b-8303-44a9-ab56-531931641ea2`), Esix, Fractal Bloom (`9d22960b-babc-4cf3-b228-d32e13bc6014`), Grizzly Bears
+- Cards: Academy Manufactor (`f36d1d8b-8303-44a9-ab56-531931641ea2`), Esix, Fractal Bloom (`9d22960b-babc-4cf3-b228-d32e13bc6014`), Grizzly Bears (`14c8f55d-d177-4c25-a931-ebeb9e6062a0`)
 - Board: 2 players at 20 life; Player 1's first main phase, Player 1 active. Battlefield (all owner Player 1): Academy Manufactor, Esix, Fractal Bloom (note "Player 1 has not created a token this turn"), Grizzly Bears.
 - Question: "It's my main phase and I haven't created any tokens this turn. I'm about to create a Treasure token, and I want Esix to copy my Grizzly Bears. What do I end up with?"
 - Outcome: `depends`
@@ -521,9 +547,10 @@ creature turned into a Frog by an Aura.
 **In plain terms:** a copy takes only what is printed on the card (plus other
 copy effects) — layer 1 — so the Frog effect isn't copied. Clone's ruling in the
 prompt states the principle. Less famous than the owner-named cases.
+**Recommendation:** accept — the reference follows rules 707.2 and 613.1a and Clone's ruling, and names no power or toughness the card data lacks.
 **What happens if you say no:** this case is not authored.
 
-- Cards: Clone (`42226b87-0746-4ebf-9fd0-108d508462af`), Frogify (`32249228-e300-4865-b977-5e1f285d02f2`), Serra Angel (resolved by name; flying and vigilance, {3}{W}{W})
+- Cards: Clone (`42226b87-0746-4ebf-9fd0-108d508462af`), Frogify (`32249228-e300-4865-b977-5e1f285d02f2`), Serra Angel (`4b7ac066-e5c7-43e6-9e7e-2739b24a905d`, {3}{W}{W} Creature — Angel, "Flying / Vigilance")
 - Question: "My opponent's Serra Angel is enchanted with Frogify. I cast Clone and copy the Serra Angel. What does my Clone look like?"
 - Outcome: `works`
 - Short answer: "A normal Serra Angel with flying and vigilance, not a Frog: a copy takes only copiable values."
@@ -539,8 +566,10 @@ prompt states the principle. Less famous than the owner-named cases.
 **What this decides:** the reference for the same interaction from a board,
 with Clone on the stack.
 **In plain terms:** same reasoning as G3-11.
+**Recommendation:** accept — same checked reasoning as G3-11, own wording.
 **What happens if you say no:** this case is not authored.
 
+- Cards: Clone (`42226b87-0746-4ebf-9fd0-108d508462af`), Frogify (`32249228-e300-4865-b977-5e1f285d02f2`), Serra Angel (`4b7ac066-e5c7-43e6-9e7e-2739b24a905d`)
 - Board: 2 players at 20 life; Player 1's first main phase, Player 1 active. Battlefield: Serra Angel (owner Player 2, note "enchanted by Frogify"); Frogify (owner Player 2, note "attached to Serra Angel"). Stack: Clone (caster Player 1).
 - Question: "When my Clone resolves, I'll have it copy Player 2's Serra Angel, which has Frogify on it. Is my Clone a Frog, and does it have flying?"
 - Outcome: `works`
@@ -559,6 +588,7 @@ Lattice arrives while March of the Machines is already out.
 artifacts and miss them; dependency makes the Lattice apply first, so every land
 becomes a 0/0 artifact creature and dies. The rulings in the prompt mention the
 combination, not the ordering. Less famous than the owner-named cases.
+**Recommendation:** accept — the reference follows rules 613.8a–b and 704.5f and both cards' text.
 **What happens if you say no:** this case is not authored.
 
 - Cards: Mycosynth Lattice (`ae1f2ab5-c6a5-4d49-a746-3cb4668bf805`), March of the Machines (`51092634-308e-4779-aa51-182715dbc734`)
@@ -577,9 +607,10 @@ combination, not the ordering. Less famous than the owner-named cases.
 **What this decides:** the reference for the same interaction from a board,
 with the Lattice on the stack.
 **In plain terms:** same reasoning as G3-13.
+**Recommendation:** accept — same checked reasoning as G3-13, own wording.
 **What happens if you say no:** this case is not authored.
 
-- Cards: Mycosynth Lattice, March of the Machines, Forest, Island (basic lands, resolved by name)
+- Cards: Mycosynth Lattice (`ae1f2ab5-c6a5-4d49-a746-3cb4668bf805`), March of the Machines (`51092634-308e-4779-aa51-182715dbc734`), Forest (`b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6`, Basic Land — Forest), Island (`b2c6aa39-2d2a-459c-a555-fb48ba993373`, Basic Land — Island)
 - Board: 2 players at 20 life; Player 1's first main phase, Player 1 active. Battlefield: March of the Machines (owner Player 1); Forest (owner Player 1); Island (owner Player 2). Stack: Mycosynth Lattice (caster Player 1).
 - Question: "My March of the Machines is out, and my Mycosynth Lattice is on the stack. When the Lattice resolves, what happens to my Forest and Player 2's Island?"
 - Outcome: `works`
@@ -598,9 +629,10 @@ have a Blood Artist and a creature dies on the active player's turn.
 other player's resolves first; the active player drops to 0 and loses to a
 state-based action before their own trigger resolves. Tests the recipe's timing
 list. No ruling in the prompt states it.
+**Recommendation:** accept — the reference follows rules 603.3b, 704.3 and 704.5a and Blood Artist's text.
 **What happens if you say no:** this case is not authored.
 
-- Cards: Blood Artist (`310f141c-7f37-4729-aed6-dd9c09db448d`), Grizzly Bears, Murder (resolved by name)
+- Cards: Blood Artist (`310f141c-7f37-4729-aed6-dd9c09db448d`), Grizzly Bears (`14c8f55d-d177-4c25-a931-ebeb9e6062a0`), Murder (`938b4e2c-88d9-4637-bc00-e228920c9a78`)
 - Question: "It's my turn. My opponent and I are each at 1 life, and we each control a Blood Artist. I cast Murder on my opponent's Grizzly Bears, and each of us targets the other with our Blood Artist trigger. Who wins?"
 - Outcome: `does-not-work`
 - Short answer: "Your opponent wins: their trigger goes on the stack last, resolves first, and you lose to state-based actions."
@@ -616,8 +648,10 @@ list. No ruling in the prompt states it.
 **What this decides:** the reference for the same interaction from a board,
 with Murder on the stack.
 **In plain terms:** same reasoning as G3-15.
+**Recommendation:** accept — same checked reasoning as G3-15, own wording.
 **What happens if you say no:** this case is not authored.
 
+- Cards: Blood Artist (`310f141c-7f37-4729-aed6-dd9c09db448d`), Grizzly Bears (`14c8f55d-d177-4c25-a931-ebeb9e6062a0`), Murder (`938b4e2c-88d9-4637-bc00-e228920c9a78`)
 - Board: Player 1 at 1 life, Player 2 at 1 life; Player 1's first main phase, Player 1 active. Battlefield: Blood Artist (owner Player 1); Blood Artist (owner Player 2); Grizzly Bears (owner Player 2). Stack: Murder (caster Player 1, targeting Grizzly Bears).
 - Question: "When my Murder resolves and both Blood Artists trigger, each of us targeting the other player, which of us wins?"
 - Outcome: `does-not-work`
