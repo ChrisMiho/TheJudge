@@ -1,6 +1,6 @@
 # Graph run — resolution-recipe-eval
 
-- Run ID: `graph-20261010-183425` (spec-forming half); build half `graph-20261010-200144`
+- Run ID: `graph-20261010-183425` (spec-forming half); build half `graph-20261010-200144` (gate-review, gate-qc, plan), then `graph-20261010-200917` (build onward, fresh session, lock pid 90418)
 - Profile: `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
 - Autonomous base: `origin/main`
@@ -8,7 +8,7 @@
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-183425/`
 - Current node: `build`
 - Next action: `/graph-implement PRD/work/resolution-recipe-eval/`
-- Build canary: `denied — graph tier armed (nohup true)` (build half, lock taken at the launch root)
+- Build canary: `denied — graph tier armed (nohup true)` (build half, lock taken at the launch root); run `graph-20261010-200917` re-armed the same way, `denied — graph tier armed (nohup true)`
 
 ## Node ledger
 
@@ -20,15 +20,13 @@
 | 4 | gate-qc | sonnet | failed | `0 → 44` | FAIL attempt 1 — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `532b7129`, `STATUS.refining`; F1 blocking (cost anchor and reasoning-token figures cite no command or output), F2 blocking (Serra Angel not found — driver re-check: present as oracle `4b7ac066-e5c7-43e6-9e7e-2739b24a905d` via `apps/frontend/public/data/cardMetadata.json` cardId, so F2 reduces to F3), F3–F5 minor; diffs 33/33 lines match, grep 104/104 dispositioned, 16/16 references correct; loop 1 of 3 back to define | 2026-10-10 |
 | 5 | define | opus | ok | `0 → 93` | attempt 2 (gate-qc loop 1): commit `a5f98eec`; F1 dry-run command lines + `evidence/cost-anchor-dry-runs.txt` (re-run, same totals; no `--confirm-live-calls`), Luna figures sourced to backup `calls.jsonl` fields via `evidence/luna-token-stats.mjs` (two figures corrected: tier-3 judge $0.0064, hard-case median 13.1 s); F2/F3 oracle ids in all 16 G3 slots via `evidence/resolve-g3-cards.mjs` → `evidence/g3-card-ids.txt` (22 cards, 1 id each; Grizzly Bears resolved via `cardScanMap.json` because vanilla cards are absent from `cardMetadata.json`); F4 cross-ref fixed; F5 REQ-230/REQ-224 wording count-free + per-slot recommendations; diffs 33/33 lines still match; grep 104/104; `STATUS.refined`; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty | 2026-10-10 |
 | 6 | gate-qc | sonnet | ok | `0 → 17` | PASS attempt 2, findings none — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `efda9238`; F1–F5 resolved; 33/33 diff lines match; grep 104/104; 24 verdict slots blank; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/283 | 2026-10-10 |
-| 7 | gate-review | sonnet | ok | `0 → 15` | build half run `graph-20261010-200144`: claim commit `a1683a9d` on `thejudge-auto/resolution-recipe-eval-work` cut from `origin/main` `bcef4543` (kickoff worktree removed clean); `graph-gate-review` commit `2e4720cd`: 24 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `
+| 7 | gate-review | sonnet | ok | `0 → 15` | build half run `graph-20261010-200144`: claim commit `a1683a9d` on `thejudge-auto/resolution-recipe-eval-work` cut from `origin/main` `bcef4543` (kickoff worktree removed clean); `graph-gate-review` commit `2e4720cd`: 24 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty | 2026-10-10 |
 | 8 | gate-qc | sonnet | ok | `0 → 18` | PASS build-half re-grade, findings none — `PRD/work/resolution-recipe-eval/QUALITY-CHECK.md`, commit `831c0ee7`; 33/33 diff lines match at `bcef4543`; grep 104/104; 24/24 accept; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; README `## Preparation gate` PASS written by the driver | 2026-10-10 |
 | 9 | plan | sonnet | ok | `0 → 35` | commit `edf9e904` — `GAMEPLAN.md` + 7 slices with criteria files (A arm R 8; B manifests 6; C compare report 5; D game fidelity 5; E strict grading 6; F hard cases 8, manual F8; G runbook + ship 7, manual G7), all criteria `false`; Preparation gate PASS verified first; `STATUS.active` only marker; board row under active; runbook at `docs/eval/resolution-recipe/RUNBOOK.md`, no deliverable inside `PRD/work/`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-10 |
 
-## Open gate` resolved; `STATUS.refined` only marker; board row under refined; worktree porcelain empty | 2026-10-10 |
-
 ## Open gate
 
-- Paused before `build` at the owner's request (2026-10-10: start a fresh session before implementation). Not a product gate: the marker stays `STATUS.active` so the entry-point table resumes at `build`. Resume in a fresh session: `/graph-implement PRD/work/resolution-recipe-eval/` (takes the lock with a new run id, canary, then dispatches node 6 `build` on `thejudge-auto/resolution-recipe-eval-work`). Before dispatching build, snapshot the launch checkout's `git status --porcelain`.
+- None. The owner's pause before `build` was lifted 2026-10-10 by `/graph-implement PRD/work/resolution-recipe-eval/` in a fresh session (build run `graph-20261010-200917`).
 
 ## Gate verdicts
 
@@ -245,6 +243,31 @@ Placement rules:
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: the slice list (letter, title, criteria count, manual criteria), where every deliverable lands, the marker and board state, the commit SHA, and the push result.
+
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-resolution-recipe-eval
+
+You are node 6 (`build`) of run `graph-20261010-200917` for `PRD/work/resolution-recipe-eval/`. Shared branch: `thejudge-auto/resolution-recipe-eval-work` — the worktree above is already checked out on it, cut from `origin/main` `bcef4543` and pushed; confirm with `git branch --show-current` before anything else. Invoke the `thejudge-implement-all` skill in its graph-controlled mode (no questions to the user, no approval pauses; any stop ends the node `failed` with evidence) and complete slices A to G in the GAMEPLAN order (A to E in any order, F after B, G last).
+
+Scope:
+- Work only inside the worktree above. The package lives at its `PRD/work/resolution-recipe-eval/`; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` or anywhere else in the launch checkout. Report every path you wrote as an absolute path.
+- Apply each accepted `PRD/sections/` block exactly once, by intent against current truth, in the slice the GAMEPLAN names, committed with that slice's code. `GATE-QUESTIONS.md` (all 24 slots accepted) and `DESIGN-BRIEF.md` are the source.
+- No live OpenAI call: never pass `--confirm-live-calls`. Dry runs only. Never read `.secrets/`.
+- Nothing under `apps/backend/src/prompt/`, routes, or providers changes.
+- If a product question arises that the brief and the accepted slots do not answer, apply the assumption ladder in `PRD/instructions/preparation-contract.md` to that one question; if it does not resolve, end the node `failed` with the question as evidence. Do not decide product behavior.
+- Open the code PR with `gh pr create --base main --head thejudge-auto/resolution-recipe-eval-work` after the first slice push. Its body opens with the plain-language block from `PRD/instructions/plain-language-standard.md` (what a player sees: nothing; this builds the test bench for the owner's paid A-vs-R comparison) and ends with the line `🤖 Generated with [Claude Code](https://claude.com/claude-code)`. Never merge or close it.
+
+Criteria:
+- Known gap: the boundary hook reads criteria from the launch checkout, which has no slice criteria files, so it logs no evidence and does not guard your flips. Your criteria are self-reported. For each criterion, issue its evidence command in a form its `evidence.command` regex matches (for example `node --test scripts/diagnostic-arms.test.mjs`, or `npm run eval:answer-quality -- --run-id rr-dry-a ... --arm A --arm R ...`), read the real output, and only then set it `true`. A failing command is not evidence. Record the exact command and a one-line result per criterion in the slice doc's notes, so review can re-run it.
+- Manual criteria F8 and G7: do the reader check yourself (F8: compare every committed reference answer with its accepted G3 slot word for word; G7: walk the runbook up to the first paid command and confirm every step runs or is plainly the owner's), then write a dated observation line in the slice doc of the form `2026-10-10 F8 — <what you compared and found>`.
+- Report `ok` only when every criterion in every `slice-*.criteria.json` is `true`, `npm run quality:check` is green on the final commit, and the package is `STATUS.ship-ready` with the board row under ship-ready.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). Never force-push. End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; no sleeping or polling; run no dev server or browser (nothing here needs one). A script that rewrites a tracked result file (for example under `apps/backend/src/eval/benchmark/`) must not leave it dirty unless the slice intends the change. Prettier governs only JSON and YAML here: never run prettier on `.ts` or `.mjs`; run `npm run format` for JSON a script wrote. A linked worktree lacks gitignored caches; if a step needs `apps/backend/data/models/`, check it exists before relying on it. Stay well under 4000 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: per slice — status, commit SHA, criteria true/total; every path written (absolute); the PR URL; the final `npm run quality:check` result; the dry-run outputs (calls and estimate) for A5, D4 and F6; anything left unresolved.
 
 ## Instruction ledger
 
