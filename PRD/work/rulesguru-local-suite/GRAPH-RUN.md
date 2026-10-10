@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-193032/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/rulesguru-local-suite/`
 
 ## Node ledger
@@ -29,6 +29,7 @@
 | 13 | review | opus | failed | `0 → 55` | CHANGES REQUESTED at head `ea93c45b`, 1 Important / 0 Critical / 4 Minor; no-write `Plan`-type subagent re-ran `npm run test:scripts` (843 pass), `npm run typecheck`, `npm --workspace apps/backend run test -- src/eval` (135 pass), `npm run quality:check` (exit 0), `git check-ignore -v output/rulesguru/x.json` (`.gitignore:79`), `git ls-files output/rulesguru` (empty); 56/56 accepted added lines present; 60 of 62 criteria verified, B1 and B9 not. Important: `scripts/lib/rulesguru-import.mjs:34-44` `buildSettings` sends plural `levels` (numbers) and `complexities` (lowercase), not the recorded API vocabulary. Driver verified against ground truth — the probe's own crawl script that fetched 918 questions (`/private/tmp/claude-501/-Users-chrismiho-Coding-Projects-TheJudge/2a9717f9-2099-4bce-8a8f-72461dd3bcdf/scratchpad/crawl_rulesguru.py`, settings block lines 5-12, stop rule line 55): singular `level` with the five level strings, singular `complexity` with the three capitalized names, `legality` all, `tags` empty, `tagsConjunc` NOT; and the API wraps back to id 1 past the last question instead of returning an empty batch, which the importer counts as failed requests (`rulesguru-import.mjs:182`), so a complete import would end too-many-failures and never mark complete. Minor (to the receipt): (2) compare report labels suite records under the tiers 1-2 heading (`scripts/lib/answer-compare.mjs:249,348`); (3) excluded suite cases skip the deciding-rule requirement — consistent, no change; (4) loader same-cards-same-answer duplicate check can reject the whole suite (`scripts/lib/gold-cases.mjs:455-462`); (5) rate-limit pattern misses a curly apostrophe. Loop 1 of 2 back to build | 2026-10-10 |
 | 14 | build | sonnet | ok | `0 → 23` | attempt 2 (review loop 1): commit `826c5187` — `buildSettings` now sends singular `level` / `complexity` with the probe's values, `legality` all, `tags` empty, `tagsConjunc` NOT (driver read `scripts/lib/rulesguru-import.mjs` and confirmed it matches the probe script); a batch whose highest id is not above the cursor ends the import `end` and complete; mixed batch saves new ids then ends on the wrap; `classifyResponse` accepts a `data` list; 3 tests added; driver re-ran `node --test scripts/lib/rulesguru-import.test.mjs` (16 pass, 0 fail); builder reports `npm run test:scripts` 845 pass and `npm run quality:check` exit 0; return-side checks: launch porcelain identical (`diff` clean), `git diff --name-only 73700b6d HEAD` = 3 files, all inside the worktree; `STATUS.ship-ready`; criteria 60/60 `true` | 2026-10-10 |
 | 15 | review | opus | failed | `0 → 17` | CHANGES REQUESTED at head `a73081fa`, 1 Important / 0 Critical / 1 Minor; request settings verified key for key against the probe script; `git diff --stat ea93c45b HEAD` = ledger + 3 slice-B files, so the other 52 criteria stand; re-ran `node --test scripts/lib/rulesguru-import.test.mjs` (16 pass), `npm run test:scripts` (845 pass), `npm run quality:check` (exit 0); B1–B10 verified. Important: `scripts/lib/rulesguru-import.mjs:183` drops every id at or below the cursor before the frozen check, and the API returns question id 1 only on the wrap (it reads `previousId` as after-this-id and rejects 0; the probe crawl began at id 2 and kept id 1 from the wrap), so a complete import never freezes id 1; the mixed-batch test at `rulesguru-import.test.mjs:105-111` encodes the loss. Driver confirmed at line 183; cause: the attempt-2 dispatch said ids at or below the cursor are already frozen, which the builder read as skip. Minor: wrapped ids no longer counted in `alreadyFrozen`. Loop 2 of 2 back to build | 2026-10-10 |
+| 16 | build | sonnet | ok | `0 → 21` | attempt 3 (review loop 2): commit `161aff73` — early skip removed; every id in an ok batch is frozen if absent, counted `alreadyFrozen` if present, never overwritten; only ids above the cursor raise `highest`; end rule unchanged (driver read `scripts/lib/rulesguru-import.mjs:178-198`); mixed-batch test now expects `1.json`/`2.json`/`3.json`, new wrap test saves an absent `1.json` and leaves others byte-unchanged; the existing wrap test now pre-seeds 1–3 and expects `alreadyFrozen` 3 (builder change beyond the instruction, consistent with the rule); driver re-ran `node --test scripts/lib/rulesguru-import.test.mjs` (17 pass, 0 fail); builder reports `npm run test:scripts` 846 pass and `npm run quality:check` exit 0; launch porcelain identical; `git diff --name-only 597ea673 HEAD` = 3 files inside the worktree; `STATUS.ship-ready` | 2026-10-10 |
 
 ## Open gate
 
@@ -532,6 +533,44 @@ Rules unchanged: work only inside the worktree above; never run the real import 
 Finish with `npm run quality:check` green on the final commit and the package still `STATUS.ship-ready`. Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no inline edit scripts, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call). Never force-push. End every commit message with the lines: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com> and Claude-Session: https://claude.ai/code/session_01VLj4GodNz818wYDBXFXcJc. Spawn no subagents or forks; no sleeping or polling. Stay well under 4000 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: the code change, the tests changed and added, the commit SHA, every path written (absolute), the test and `npm run quality:check` results, and the criteria state.
+
+### review (attempt 3)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite
+
+You are node 7 (`review`), attempt 3, of run `graph-20261010-205704`: a fresh-context, no-write reviewer of code PR #286 (`thejudge-auto/rulesguru-local-suite-work → main`). You hold no Write, Edit or NotebookEdit tool and must not change any file, commit, push, or comment on the PR. Read-only git, file reads, and local test commands are allowed. Never run the import, convert or a suite run against the live source, make no network request to it, and never pass `--confirm-live-calls`.
+
+What it is: owner-only tooling for a private practice suite kept on the owner's machine. Reviews 1 and 2 verified every criterion except the importer's batch handling; their findings are node-ledger rows 13 and 15 of `PRD/work/rulesguru-local-suite/GRAPH-RUN.md`. Build attempt 3 (commit `161aff73`) changed only `scripts/lib/rulesguru-import.mjs`, its test, and `slice-b-import-purge.md`.
+
+API ground truth (from the probe that fetched 918 questions): the settings are singular `level` and `complexity` with the recorded values, `legality` all, `tags` empty, `tagsConjunc` NOT; the API reads `previousId` as after-this-id and rejects 0, so question id 1 arrives only when the API wraps back to the start past the last question, and the wrap, not an empty batch, is the end of the data.
+
+Grade against the slice B acceptance criteria, quoted:
+
+- B1: First request uses previousId 1 and a from value naming TheJudge (injected fetch)
+- B2: With an injected clock no request starts less than 3 s after the previous one finished
+- B3: Malformed error halves 50 to 1; failing size-1 records a skip and advances one id; size regrows after five successes
+- B4: A frozen file is never overwritten; resume starts after the saved id; state rewritten after each batch
+- B5: Network error, 10 consecutive failures and repeated rate-limit after one 30 s wait each stop with state saved; empty batch ends cleanly; counts only
+- B6: Purge without --yes deletes nothing and prints the count; with --yes deletes only a temp suite folder; refuses a path outside it
+- B7: Every import and purge test uses a temp folder with injected fetch and clock; none names output/rulesguru or passes the global fetch
+- B8: package.json has eval:rulesguru:import and eval:rulesguru:purge, the entry runs the ignore guard first, and no live request was made during the build
+- B9: The REQ-232 entry gains the import, freeze, resumable and purge criteria
+- B10: npm run test:scripts passes
+
+Check directly:
+1. Read the batch loop in `scripts/lib/rulesguru-import.mjs`, not only the tests: a complete import freezes every question the API returns, id 1 included; no frozen file is overwritten; the cursor moves only on ids above it; the wrap and the empty batch both end as complete; no path loops forever or drops a real new id; counts stay correct.
+2. The changed and added tests in `scripts/lib/rulesguru-import.test.mjs` assert that behaviour, including the existing wrap test the builder changed to pre-seed ids 1 to 3.
+3. `git diff --stat a73081fa HEAD` shows only those three files plus the ledger, so every other criterion verified in reviews 1 and 2 still stands.
+4. Re-run `node --test scripts/lib/rulesguru-import.test.mjs`, `npm run test:scripts`, and `npm run quality:check`.
+5. Privacy: no suite question, answer, card roll or result text, and no permission wording beyond used with permission, local only.
+
+Severity rule: Critical or Important is reserved for a gap that breaks correctness or a stated criterion. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important; report those as Minor. Minor findings already recorded in rows 13 and 15 need not be repeated.
+
+Leave the worktree as you found it and report `git status --porcelain` at the end. Spawn no subagents; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: verdict APPROVE or CHANGES REQUESTED; B1 to B10 verified or not with the command or file used; findings as Critical, Important or Minor with file and line; the final `git status --porcelain`.
 
 ## Instruction ledger
 
