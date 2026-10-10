@@ -324,41 +324,44 @@ Recorded in `GATE-QUESTIONS.md`, applied at build together with the code:
   suite.
 - `REQ-187` is not amended: its headline counts approved cases only, which a
   suite case never is, and `REQ-186`'s amended criterion scopes the external
-  reference. The parked recipe package also amends `REQ-187`, so leaving it
-  alone avoids a third-party collision.
+  reference. The recipe package (code PR #285, merged at `81739f35`) amended
+  `REQ-187`'s rubric-revision criterion on its own; no diff here touches a
+  `REQ-187` line, so nothing collides.
 
-## Overlap with resolution-recipe-eval (docs PR #283)
+## Overlap with resolution-recipe-eval (merged: code PR #285 at `81739f35`)
 
-That package's `REQ-185` block rewrites two existing lines: the `Description`
-(adding a define-gate approval path for cases approved one by one in a gate
-slot) and the constraint beginning "no case is approved by an agent". Its
-`REQ-224` block adds the same exception. This package's `REQ-185` diff rewrites
-neither line; it only inserts a new criterion after the community-sources
-criterion, a new constraint after the "corpus commits only WotC text"
-constraint, and a dependency line.
+The recipe change has landed (docs PR #283, then code PR #285, merged at
+`81739f35`), so its wording is live at this package's base `c6dec2ce`. Its
+`REQ-185` block rewrote two existing lines: the `Description` (adding a
+define-gate approval path for cases approved one by one in a gate slot) and
+the constraint beginning "no case is approved by an agent". Its `REQ-224`
+block added the same exception. This package's `REQ-185` diff rewrites neither
+line; it only inserts a new criterion after the community-sources criterion, a
+new constraint after the "corpus commits only WotC text" constraint, and a
+dependency line.
 
-How the build applies it, by intent, if the recipe change has landed first:
+How the build applies it, by intent, now that the recipe change has landed:
 1. Insert the three `REQ-185` lines at the same anchors (the anchors are lines
-   the recipe package does not change). If an anchor moved, place the criterion
-   among the acceptance criteria after the community-sources criterion, the
-   constraint after the "commits only WotC text" constraint, and the dependency
-   at the end of `Dependencies`.
-2. Keep the recipe's wording of the two lines it changed. This package's text
-   says a suite case is "never approved by any path", which already covers the
-   recipe's new define-gate path: a suite case cannot be approved by a review
-   batch, by a gate slot, or by the first-ship exception.
-3. If B1 is accepted, its promotion line says a promoted case enters "as a
-   `draft` through the owner review flow (REQ-224)". If the recipe's gate-slot
-   path exists by then, the line stays as written: promotion is by review
-   batch only, because a gate slot belongs to a package's build, not to a suite
-   finding.
-4. The recipe package touches no line this package amends in `REQ-186`,
-   `REQ-188`, `REQ-226`, `NFR-018` or `goals-and-non-goals.md`. Its harness flags
-   in `scripts/eval-answer-quality.mjs` (arm R) live in experiment mode; a suite
+   #285 did not change; the quality check confirmed they still sit correctly at
+   `c6dec2ce`). If an anchor moves again, place the criterion among the
+   acceptance criteria after the community-sources criterion, the constraint
+   after the "commits only WotC text" constraint, and the dependency at the end
+   of `Dependencies`.
+2. Keep #285's wording of the two lines it changed. This package's text says a
+   suite case is "never approved by any path", which already covers #285's
+   define-gate path: a suite case cannot be approved by a review batch, by a
+   gate slot, or by the first-ship exception.
+3. B1's promotion line says a promoted case enters "as a `draft` through the
+   owner review flow (REQ-224)". #285's gate-slot path now exists, and the line
+   stays as written: promotion is by review batch only, because a gate slot
+   belongs to a package's build, not to a suite finding.
+4. #285 touched no line this package amends in `REQ-186`, `REQ-188`,
+   `REQ-226`, `NFR-018` or `goals-and-non-goals.md`. Its harness flags in
+   `scripts/eval-answer-quality.mjs` (arm R) live in experiment mode; a suite
    run refuses every arm but A, so arm R needs no suite handling.
 
-If this package builds first, the recipe build sees the three inserted
-`REQ-185` lines as unchanged context and nothing contradicts.
+This package builds second, so the earlier "if this package builds first" case
+no longer arises.
 
 ## Assumptions (conservative ladder) and evidence
 
@@ -414,8 +417,9 @@ If this package builds first, the recipe build sees the three inserted
   fixed `CASES_DIR`, so it needs a folder parameter.
 - `.gitignore` ignores `output/` subfolders one by one; `output/` itself is not
   ignored, so the suite needs its own line.
-- The corpus folder holds 400 case files (also printed by
-  `evidence/name-lookup-counts.mjs`).
+- The corpus folder held 400 case files when measured (also printed by
+  `evidence/name-lookup-counts.mjs`); #285 added 16, so it holds 416 at
+  `c6dec2ce`.
 - `PRD/work/probe-rulesguru/` and `PRD/work/probe-rules-test-harness/` are not
   on this branch (they are the owner's untracked probe folders). The intake's
   note that row 4f of the external-sources findings is out of date is left to
@@ -436,269 +440,301 @@ If this package builds first, the recipe build sees the three inserted
 
 ## Amendment set
 
-One line-level grep, run on this branch:
+One line-level grep, run at base `c6dec2ce` (after code PR #285 merged at
+`81739f35`):
 
 ```
 grep -rnE 'REQ-185|REQ-186|REQ-188|REQ-226|NFR-018|rules test corpus|outside-source|outside text' PRD/sections apps scripts docs --exclude-dir=node_modules
 ```
 
-251 hits: 12 amended in `PRD/sections/` through `GATE-QUESTIONS.md`, 9 amended
-at build in code comments, tests or docs, and 230 with no change. Excerpts are
-the first 60 characters of the hit line.
+269 hits: 12 amended in `PRD/sections/` through `GATE-QUESTIONS.md`, 9 amended
+at build in code comments, tests or docs, and 248 with no change. The exact
+command is saved in `PRD/work/rulesguru-local-suite/evidence/amendment-grep.cmd.txt`
+and its raw hit list in `PRD/work/rulesguru-local-suite/evidence/amendment-grep.hits.txt`
+(regenerate with `node PRD/work/rulesguru-local-suite/evidence/amendment-grep.mjs`
+from the repo root). Rows follow that file's order.
+
+Against the 251 hits at `dabad406`: 18 hits are new and none needs an
+amendment — 16 licence notes in the diagnostic case files #285 added, the
+`REQ-187` rubric-revision criterion #285 added (row 30), and its comment at
+`rubric.ts:86` (row 185). No earlier hit is gone. Three rows keep "no change"
+with reasons updated because #285 rewrote their lines: the `REQ-185`
+`Description` (row 5), the agent-approval rule with its new define-gate path
+(row 63), and the `REQ-230` arm list, which gained arm R (row 89). Excerpts
+are the first 60 characters of the hit line, with quotes and backticks
+dropped.
 
 | # | Hit | Excerpt | Disposition |
 | --- | --- | --- | --- |
-| 1 | `PRD/sections/system-map.md:473` | - Summary: Context-evaluation harness with fixtures, golden | Amend (REQ-232 block, system-map diff): the eval-harness summary names the local practice suite |
-| 2 | `PRD/sections/system-map.md:475` | - Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NF | Amend (REQ-232 block, system-map diff): add REQ-232 to Backed by |
-| 3 | `PRD/sections/system-map.md:501` | - Summary: On-demand, confirmation-gated run that asks the s | Amend (REQ-232 block, system-map diff): the answer-quality summary gains the suite run sentence |
-| 4 | `PRD/sections/system-map.md:503` | - Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, RE | Amend (REQ-232 block, system-map diff): add REQ-232 to Backed by |
-| 5 | `PRD/sections/system-map.md:508` | - Summary: Offline checks over the rules test corpus that ru | No change: the corpus gates read only the committed folder; the suite is never in quality:check (REQ-232) |
-| 6 | `PRD/sections/system-map.md:510` | - Backed by: REQ-185, REQ-222, REQ-223, REQ-224, REQ-225, NF | No change: the corpus gates read only the committed folder; the suite is never in quality:check (REQ-232) |
-| 7 | `PRD/sections/goals-and-non-goals.md:83` | - automated answer-quality gating in npm run quality:check | Amend (goals-and-non-goals block): the line covers the suite too |
-| 8 | `PRD/sections/functional-requirements.md:3562` | - do not grow this into a general-purpose LLM evaluation fra | No change: REQ-146 combo comparison; its statement about the committed corpus stays true |
-| 9 | `PRD/sections/functional-requirements.md:3568` | - REQ-188 (the answer-quality baseline whose non-gating, con | No change: REQ-146 combo comparison; its statement about the committed corpus stays true |
-| 10 | `PRD/sections/functional-requirements.md:3570` | - the existing prompt:preview tooling extracts assembled p | No change: REQ-146 combo comparison; its statement about the committed corpus stays true |
-| 11 | `PRD/sections/functional-requirements.md:4399` | ### REQ-185 | Amend (REQ-185 block): new criterion, constraint and dependency; no existing line rewritten |
-| 12 | `PRD/sections/functional-requirements.md:4402` | - Description: The answer-quality baseline (NFR-018) and the | No change here: the parked recipe package (PR #283) rewrites this line; this package adds a separate criterion instead |
-| 13 | `PRD/sections/functional-requirements.md:4404` | - the corpus contains the 18 first-ship cases — the six orig | No change: first-ship cases, test layers and the NFR-018 dependency are unaffected |
-| 14 | `PRD/sections/functional-requirements.md:4410` | - shortAnswer and outcome are review and reporting aids; | No change: suite cases carry these locally; outcome may be null only in the loader's external mode (REQ-232) |
-| 15 | `PRD/sections/functional-requirements.md:4413` | - **six test layers, three on in run 1**: the format carries | No change: first-ship cases, test layers and the NFR-018 dependency are unaffected |
-| 16 | `PRD/sections/functional-requirements.md:4415` | - the corpus grows through tiers 1 and 2 first, under the sa | No change: still true (no outside text is committed); blocker B1, if accepted, adds one line after it |
-| 17 | `PRD/sections/functional-requirements.md:4419` | - the gold cases remain committed evaluation data; they neve | No change: holds; REQ-232 adds the same never-in-a-prompt rule for the suite |
-| 18 | `PRD/sections/functional-requirements.md:4423` | - the corpus commits only WotC text the project already ship | No change: still true; the new REQ-185 constraint follows it |
-| 19 | `PRD/sections/functional-requirements.md:4426` | - NFR-018 (the worked-solutions validation track this extend | No change: first-ship cases, test layers and the NFR-018 dependency are unaffected |
-| 20 | `PRD/sections/functional-requirements.md:4427` | - REQ-186 (the judge that grades against these cases) | No change: dependency line |
-| 21 | `PRD/sections/functional-requirements.md:4444` | ### REQ-186 | Amend (REQ-186 block): description and the approved-only criterion scope the suite exception; dependency added |
-| 22 | `PRD/sections/functional-requirements.md:4455` | - layer 2b, the blind ranking (judgeBlindRanking): when th | No change: REQ-186 judging rules apply to suite runs unchanged |
-| 23 | `PRD/sections/functional-requirements.md:4461` | - never auto-gate or fail a build on a judge score (REQ-188) | No change: REQ-186 judging rules apply to suite runs unchanged |
-| 24 | `PRD/sections/functional-requirements.md:4463` | - the judge never sees which excerpt-cap leg or which answer | No change: REQ-186 judging rules apply to suite runs unchanged |
-| 25 | `PRD/sections/functional-requirements.md:4466` | - REQ-185 (the rules test corpus and its reference answers) | No change: REQ-186 judging rules apply to suite runs unchanged |
-| 26 | `PRD/sections/functional-requirements.md:4469` | - REQ-188 (the command that runs it and its cost posture) | No change: REQ-186 judging rules apply to suite runs unchanged |
-| 27 | `PRD/sections/functional-requirements.md:4474` | - grounding the judge in an approved reference answer is wha | No change: suite answers are never a corpus reference; the REQ-186 amendment scopes the suite exception |
-| 28 | `PRD/sections/functional-requirements.md:4482` | - Description: An answer-quality run scores each answer on f | No change by this package: REQ-186 (amended) and REQ-232 scope the external reference; REQ-187 is also amended by the parked recipe package (G5), so its text is left alone |
-| 29 | `PRD/sections/functional-requirements.md:4488` | - the headline figure is the count of approved, non-stale ca | No change: the headline counts approved cases only; suite cases are never approved |
-| 30 | `PRD/sections/functional-requirements.md:4489` | - the deterministic assertion namesGoldRuleId (REQ-186 lay | No change: REQ-187 axis internals; suite runs use the same rubric |
-| 31 | `PRD/sections/functional-requirements.md:4490` | - no axis for WotC card-ruling citation is defined: tier-2 a | No change: axes and their rules are unchanged; suite runs use the same rubric revision |
-| 32 | `PRD/sections/functional-requirements.md:4491` | - the four axis names, their 0/1/2 definitions, and the rubr | No change: REQ-187 axis internals; suite runs use the same rubric |
-| 33 | `PRD/sections/functional-requirements.md:4494` | - no numeric pass threshold is set on any axis (REQ-188); th | No change: axes and their rules are unchanged; suite runs use the same rubric revision |
-| 34 | `PRD/sections/functional-requirements.md:4497` | - REQ-186 (the judge that applies these axes) | No change: REQ-187 axis internals; suite runs use the same rubric |
-| 35 | `PRD/sections/functional-requirements.md:4498` | - REQ-185 (the reference answers they are scored against) | No change: axes and their rules are unchanged; suite runs use the same rubric revision |
-| 36 | `PRD/sections/functional-requirements.md:4504` | - it moves again, to a revision dated the day the build chan | No change: REQ-187 axis internals; suite runs use the same rubric |
-| 37 | `PRD/sections/functional-requirements.md:4505` | ### REQ-188 | Amend (REQ-188 block): case-selection criterion gains the suite run; dependency added |
-| 38 | `PRD/sections/functional-requirements.md:4512` | - the answer models are a lineup, given as a repeatable --m | No change: a suite run takes the same lineup options |
-| 39 | `PRD/sections/functional-requirements.md:4513` | - **case selection**: the run grades only approved, non-st | Amend (REQ-188 block): this is the case-selection criterion the block rewrites |
-| 40 | `PRD/sections/functional-requirements.md:4514` | - the prompt is the one a player's lookup would get: prepar | No change: suite runs build the prompt through the same path |
-| 41 | `PRD/sections/functional-requirements.md:4535` | - REQ-186 (the judging it invokes) | No change: dependency line |
-| 42 | `PRD/sections/functional-requirements.md:4538` | - NFR-018 (the non-gating validation track this belongs to) | No change: dependency and measurement note |
-| 43 | `PRD/sections/functional-requirements.md:4539` | - REQ-226 (experiment mode) | No change: dependency line |
-| 44 | `PRD/sections/functional-requirements.md:4543` | - measured 2026-09-07, offline, over the actual 18-case gold | No change: dependency and measurement note |
-| 45 | `PRD/sections/functional-requirements.md:4554` | - it carries: run-level metadata for the latest run (selecti | No change: a suite run never writes the committed scores file |
-| 46 | `PRD/sections/functional-requirements.md:4559` | - a recorded run **merges** into the committed results file | No change: a suite run never reads or writes results.json (REQ-232) |
-| 47 | `PRD/sections/functional-requirements.md:4560` | - an experiment run (REQ-226) never reads or writes this fil | No change: a suite run never writes the committed scores file |
-| 48 | `PRD/sections/functional-requirements.md:4566` | - only the dated human-reviewed conclusion becomes durable p | No change: a suite run never writes the committed scores file |
-| 49 | `PRD/sections/functional-requirements.md:4569` | - REQ-188 (the run metadata it records) | No change: a suite run never reads or writes results.json (REQ-232) |
-| 50 | `PRD/sections/functional-requirements.md:4573` | - REQ-226 (the experiment runs that write elsewhere) | No change: a suite run never writes the committed scores file |
-| 51 | `PRD/sections/functional-requirements.md:4583` | - Description: An answer-quality run may answer the same gol | No change: excerpt caps work the same in a suite run |
-| 52 | `PRD/sections/functional-requirements.md:4594` | - the judge is not told which cap or which model produced an | No change: REQ-190 cap legs; unchanged in a suite run |
-| 53 | `PRD/sections/functional-requirements.md:4598` | - REQ-188 (the run that executes the legs) | No change: excerpt caps work the same in a suite run |
-| 54 | `PRD/sections/functional-requirements.md:4602` | - the design brief's earlier measurement (2026-09-06, six co | No change: excerpt caps work the same in a suite run |
-| 55 | `PRD/sections/functional-requirements.md:4603` | - measured 2026-09-07 (run 3 of the answer-quality baseline, | No change: excerpt caps work the same in a suite run |
-| 56 | `PRD/sections/functional-requirements.md:5811` | - for the approved rules test case academy-manufactor-esix- | No change: REQ-220 tester case is a committed corpus case |
-| 57 | `PRD/sections/functional-requirements.md:5823` | - REQ-185 (the approved tester case this fix is measured on) | No change: REQ-220 tester case is a committed corpus case |
-| 58 | `PRD/sections/functional-requirements.md:5832` | - Title: Offline prompt gate over the rules test corpus | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
-| 59 | `PRD/sections/functional-requirements.md:5834` | - Description: Every pull request checks, with no provider c | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
-| 60 | `PRD/sections/functional-requirements.md:5840` | - **state-fact check (layer 3)**: for every case with a non- | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
-| 61 | `PRD/sections/functional-requirements.md:5845` | - eval data never enters a live prompt (NFR-018); the frozen | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
-| 62 | `PRD/sections/functional-requirements.md:5849` | - REQ-185 (the corpus it reads) | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
-| 63 | `PRD/sections/functional-requirements.md:5854` | - NFR-018 (the track whose prompt half this makes gating) | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
-| 64 | `PRD/sections/functional-requirements.md:5860` | - Title: Mechanic coverage gate and coverage report for the | No change: coverage counts only the committed corpus; the suite is never counted (REQ-232) |
-| 65 | `PRD/sections/functional-requirements.md:5862` | - Description: Every real mechanic in the committed rule ind | No change: coverage counts only the committed corpus; the suite is never counted (REQ-232) |
-| 66 | `PRD/sections/functional-requirements.md:5866` | - a case covers a mechanic when one of its decidingRuleIds | No change: coverage counts only the committed corpus; the suite is never counted (REQ-232) |
-| 67 | `PRD/sections/functional-requirements.md:5874` | - REQ-185 (the corpus and its derived tags) | No change: coverage counts only the committed corpus; the suite is never counted (REQ-232) |
-| 68 | `PRD/sections/functional-requirements.md:5884` | - Description: Every rules test case (REQ-185) other than th | No change: the review flow never sees suite cases |
-| 69 | `PRD/sections/functional-requirements.md:5891` | - no agent sets approved; only the apply command, run on a | No change: also amended by the recipe package; no path can approve a suite case (REQ-232) |
-| 70 | `PRD/sections/functional-requirements.md:5897` | - REQ-185 (the case format and review field) | No change: the review flow never sees suite cases |
-| 71 | `PRD/sections/functional-requirements.md:5900` | - REQ-186 (grading only approved cases) | No change: about corpus review; the REQ-186 amendment scopes the suite |
-| 72 | `PRD/sections/functional-requirements.md:5905` | - Description: Each rules test case (REQ-185) records conten | No change: the staleness report reads the committed corpus; a suite run applies the same snapshot comparison to its own cases |
-| 73 | `PRD/sections/functional-requirements.md:5909` | - a stale approved case is not selected by the answer-qual | No change: the staleness report reads the committed corpus; a suite run applies the same snapshot comparison to its own cases |
-| 74 | `PRD/sections/functional-requirements.md:5916` | - REQ-185 (the snapshot field) | No change: the staleness report reads the committed corpus; a suite run applies the same snapshot comparison to its own cases |
-| 75 | `PRD/sections/functional-requirements.md:5918` | - REQ-188 (the run that skips stale cases) | No change: the staleness report reads the committed corpus; a suite run applies the same snapshot comparison to its own cases |
-| 76 | `PRD/sections/functional-requirements.md:5924` | ### REQ-226 | Amend (REQ-226 block): first criterion names the suite run as a separate mode; dependency added |
-| 77 | `PRD/sections/functional-requirements.md:5927` | - Description: Beside the routine answer-quality run (REQ-18 | No change to this line; REQ-226's first criterion is amended (REQ-226 block) |
-| 78 | `PRD/sections/functional-requirements.md:5935` | - the identity record holds: run id; the commit executed fro | No change: a suite run's identity record hashes its own case files (REQ-232) |
-| 79 | `PRD/sections/functional-requirements.md:5939` | - REQ-188's confirmation gate, credential loading, sequentia | No change: REQ-188 and REQ-227 gates apply to suite runs unchanged |
-| 80 | `PRD/sections/functional-requirements.md:5943` | - REQ-188 (the routine run and its gates) | No change: REQ-188 and REQ-227 gates apply to suite runs unchanged |
-| 81 | `PRD/sections/functional-requirements.md:5956` | - Description: An experiment run (REQ-226) saves each comple | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
-| 82 | `PRD/sections/functional-requirements.md:5958` | - each completed record — answer, deterministic assertions, | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
-| 83 | `PRD/sections/functional-requirements.md:5959` | - a provider error or timeout on an answer is appended as an | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
-| 84 | `PRD/sections/functional-requirements.md:5960` | - --resume <run-id> reloads the run folder, refuses when a | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
-| 85 | `PRD/sections/functional-requirements.md:5966` | - calls stay sequential (REQ-188); the cap is a stop, never | No change: REQ-188 and REQ-227 gates apply to suite runs unchanged |
-| 86 | `PRD/sections/functional-requirements.md:5969` | - REQ-226 (the run folder and identity record) | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
-| 87 | `PRD/sections/functional-requirements.md:5970` | - REQ-188 (the confirmation gate and cost estimate method) | No change: REQ-188 and REQ-227 gates apply to suite runs unchanged |
-| 88 | `PRD/sections/functional-requirements.md:5977` | - Description: A report command compares two experiment runs | No change: the compare report reads any two run-folder paths |
-| 89 | `PRD/sections/functional-requirements.md:5990` | - never states an overall winner, never sets or checks a thr | No change: the compare report reads any two run-folder paths, suite runs included |
-| 90 | `PRD/sections/functional-requirements.md:5993` | - REQ-226 (the run folders it reads) | No change: the compare report reads any two run-folder paths |
-| 91 | `PRD/sections/functional-requirements.md:6001` | - Title: Offline evidence trace for the rules test corpus | No change: the evidence trace reads the committed corpus only; the suite is out of its scope |
-| 92 | `PRD/sections/functional-requirements.md:6003` | - Description: An offline report follows each rules test cas | No change: the evidence trace reads the committed corpus only; the suite is out of its scope |
-| 93 | `PRD/sections/functional-requirements.md:6006` | - the trace measures the checkout it runs from, as an experi | No change: evidence trace reads the committed corpus only |
-| 94 | `PRD/sections/functional-requirements.md:6020` | - REQ-185 (the corpus and its deciding rule ids) | No change: the evidence trace reads the committed corpus only; the suite is out of its scope |
-| 95 | `PRD/sections/functional-requirements.md:6031` | - Description: An experiment run (REQ-226) can answer a case | No change: arms other than A are refused in a suite run |
-| 96 | `PRD/sections/functional-requirements.md:6046` | - REQ-226 (the experiment run that carries an arm) | No change: arms other than A are refused in a suite run |
-| 97 | `PRD/sections/functional-requirements.md:6048` | - REQ-185 (the deciding rule ids and the gold-data separatio | No change: arms other than A are refused in a suite run |
-| 98 | `PRD/sections/functional-requirements.md:6060` | - the deployed answer model is gpt-6-luna: scripts/aws-de | No change: REQ-231 deployed model; unaffected |
-| 99 | `PRD/sections/functional-requirements.md:6074` | - REQ-188 (no reasoning-effort value is sent) | No change: REQ-231 deployed model; unaffected |
-| 100 | `PRD/sections/non-functional-requirements.md:302` | ### NFR-018 | Amend (NFR-018 block) |
-| 101 | `PRD/sections/non-functional-requirements.md:304` | - Description: Today prompt and retrieval quality is regress | Amend (NFR-018 block): description gains one sentence |
-| 102 | `PRD/sections/non-functional-requirements.md:308` | - The prompt half is a build-blocking gate: the offline prom | No change to this line; the new NFR-018 constraint after it puts the suite outside both halves' gating |
-| 103 | `PRD/sections/non-functional-requirements.md:309` | - The prompt half stays offline and makes no provider call a | No change: offline/online split unchanged |
-| 104 | `PRD/sections/non-functional-requirements.md:310` | - A case enters the corpus only with an approved correct ans | No change: suite cases never enter the corpus; the new constraint says so |
-| 105 | `PRD/sections/non-functional-requirements.md:314` | - REQ-185 (the rules test corpus this track's cases now serv | No change: dependency lines and measurement note (REQ-232 is added as its own dependency line) |
-| 106 | `PRD/sections/non-functional-requirements.md:315` | - REQ-186, REQ-187, REQ-188, REQ-189, REQ-190 (the answer-qu | No change: dependency lines and measurement note (REQ-232 is added as its own dependency line) |
-| 107 | `PRD/sections/non-functional-requirements.md:317` | - REQ-226, REQ-227, REQ-228, REQ-229, REQ-230 (experiment ru | No change: dependency line |
-| 108 | `PRD/sections/non-functional-requirements.md:321` | - Measured 2026-09-07 (build): the gold set grew from 6 to 1 | No change: dependency lines and measurement note (REQ-232 is added as its own dependency line) |
-| 109 | `apps/backend/src/prompt/preparation.test.ts:14` | * The six worked-solution gold cases (REQ-185), mirrored fro | No change: prompt code and its tests are untouched |
-| 110 | `apps/backend/src/eval/caseRequest.test.ts:2` | // The rules test corpus has one loader and one request buil | No change: the one request builder serves suite cases too |
-| 111 | `apps/backend/src/eval/caseRequest.test.ts:68` | describe(Backend - Eval - rules test case request (REQ-185), | No change: the one request builder serves suite cases too |
-| 112 | `apps/backend/src/prompt/preparation.ts:48` | * exactly this value; the answer-quality run (REQ-188) is th | No change: prompt code and its tests are untouched |
+| 1 | `PRD/sections/functional-requirements.md:3562` | - do not grow this into a general-purpose LLM evaluation fra | No change: REQ-146 combo comparison; its statement about the committed corpus stays true |
+| 2 | `PRD/sections/functional-requirements.md:3568` | - REQ-188 (the answer-quality baseline whose non-gating, con | No change: REQ-146 combo comparison; its statement about the committed corpus stays true |
+| 3 | `PRD/sections/functional-requirements.md:3570` | - the existing prompt:preview tooling extracts assembled pro | No change: REQ-146 combo comparison; its statement about the committed corpus stays true |
+| 4 | `PRD/sections/functional-requirements.md:4399` | ### REQ-185 | Amend (REQ-185 block): new criterion, constraint and dependency; no existing line rewritten |
+| 5 | `PRD/sections/functional-requirements.md:4402` | - Description: The answer-quality baseline (NFR-018) and the | No change by this package: #285 (merged at 81739f35) rewrote this line to add the define-gate approval path; this package adds a separate criterion instead |
+| 6 | `PRD/sections/functional-requirements.md:4404` | - the corpus contains the 18 first-ship cases — the six orig | No change: first-ship cases, test layers and the NFR-018 dependency are unaffected |
+| 7 | `PRD/sections/functional-requirements.md:4410` | - shortAnswer and outcome are review and reporting aids; the | No change: suite cases carry these locally; outcome may be null only in the loader's external mode (REQ-232) |
+| 8 | `PRD/sections/functional-requirements.md:4413` | - **six test layers, three on in run 1**: the format carries | No change: first-ship cases, test layers and the NFR-018 dependency are unaffected |
+| 9 | `PRD/sections/functional-requirements.md:4415` | - the corpus grows through tiers 1 and 2 first, under the sa | No change: still true (no outside text is committed); blocker B1, if accepted, adds one line after it |
+| 10 | `PRD/sections/functional-requirements.md:4419` | - the gold cases remain committed evaluation data; they neve | No change: holds; REQ-232 adds the same never-in-a-prompt rule for the suite |
+| 11 | `PRD/sections/functional-requirements.md:4423` | - the corpus commits only WotC text the project already ship | No change: still true; the new REQ-185 constraint follows it |
+| 12 | `PRD/sections/functional-requirements.md:4426` | - NFR-018 (the worked-solutions validation track this extend | No change: first-ship cases, test layers and the NFR-018 dependency are unaffected |
+| 13 | `PRD/sections/functional-requirements.md:4427` | - REQ-186 (the judge that grades against these cases) | No change: dependency line |
+| 14 | `PRD/sections/functional-requirements.md:4444` | ### REQ-186 | Amend (REQ-186 block): description and the approved-only criterion scope the suite exception; dependency added |
+| 15 | `PRD/sections/functional-requirements.md:4455` | - layer 2b, the blind ranking (judgeBlindRanking): when the  | No change: REQ-186 judging rules apply to suite runs unchanged |
+| 16 | `PRD/sections/functional-requirements.md:4461` | - never auto-gate or fail a build on a judge score (REQ-188) | No change: REQ-186 judging rules apply to suite runs unchanged |
+| 17 | `PRD/sections/functional-requirements.md:4463` | - the judge never sees which excerpt-cap leg or which answer | No change: REQ-186 judging rules apply to suite runs unchanged |
+| 18 | `PRD/sections/functional-requirements.md:4466` | - REQ-185 (the rules test corpus and its reference answers) | No change: REQ-186 judging rules apply to suite runs unchanged |
+| 19 | `PRD/sections/functional-requirements.md:4469` | - REQ-188 (the command that runs it and its cost posture) | No change: REQ-186 judging rules apply to suite runs unchanged |
+| 20 | `PRD/sections/functional-requirements.md:4474` | - grounding the judge in an approved reference answer is wha | No change: suite answers are never a corpus reference; the REQ-186 amendment scopes the suite exception |
+| 21 | `PRD/sections/functional-requirements.md:4482` | - Description: An answer-quality run scores each answer on f | No change: the headline counts approved cases only and a suite case is never approved; REQ-186 (amended) and REQ-232 scope the external reference. #285 amended REQ-187 separately and nothing here collides |
+| 22 | `PRD/sections/functional-requirements.md:4488` | - the headline figure is the count of approved, non-stale ca | No change: the headline counts approved cases only; suite cases are never approved |
+| 23 | `PRD/sections/functional-requirements.md:4489` | - the deterministic assertion namesGoldRuleId (REQ-186 layer | No change: REQ-187 axis internals; suite runs use the same rubric |
+| 24 | `PRD/sections/functional-requirements.md:4490` | - no axis for WotC card-ruling citation is defined: tier-2 a | No change: axes and their rules are unchanged; suite runs use the same rubric revision |
+| 25 | `PRD/sections/functional-requirements.md:4491` | - the four axis names, their 0/1/2 definitions, and the rubr | No change: REQ-187 axis internals; suite runs use the same rubric |
+| 26 | `PRD/sections/functional-requirements.md:4494` | - no numeric pass threshold is set on any axis (REQ-188); th | No change: axes and their rules are unchanged; suite runs use the same rubric revision |
+| 27 | `PRD/sections/functional-requirements.md:4497` | - REQ-186 (the judge that applies these axes) | No change: REQ-187 axis internals; suite runs use the same rubric |
+| 28 | `PRD/sections/functional-requirements.md:4498` | - REQ-185 (the reference answers they are scored against) | No change: axes and their rules are unchanged; suite runs use the same rubric revision |
+| 29 | `PRD/sections/functional-requirements.md:4504` | - it moves again, to a revision dated the day the build chan | No change: REQ-187 axis internals; suite runs use the same rubric |
+| 30 | `PRD/sections/functional-requirements.md:4505` | - it moves again, to a revision dated the day the build chan | No change: REQ-187 rubric-revision criterion #285 added; a suite run uses the same rubric revision and refuses --regrade-from (REQ-232) |
+| 31 | `PRD/sections/functional-requirements.md:4506` | ### REQ-188 | Amend (REQ-188 block): case-selection criterion gains the suite run; dependency added |
+| 32 | `PRD/sections/functional-requirements.md:4513` | - the answer models are a lineup, given as a repeatable --mo | No change: a suite run takes the same lineup options |
+| 33 | `PRD/sections/functional-requirements.md:4514` | - **case selection**: the run grades only approved, non-stal | Amend (REQ-188 block): this is the case-selection criterion the block rewrites |
+| 34 | `PRD/sections/functional-requirements.md:4515` | - the prompt is the one a player's lookup would get: prepare | No change: suite runs build the prompt through the same path |
+| 35 | `PRD/sections/functional-requirements.md:4536` | - REQ-186 (the judging it invokes) | No change: dependency line |
+| 36 | `PRD/sections/functional-requirements.md:4539` | - NFR-018 (the non-gating validation track this belongs to) | No change: dependency and measurement note |
+| 37 | `PRD/sections/functional-requirements.md:4540` | - REQ-226 (experiment mode) | No change: dependency line |
+| 38 | `PRD/sections/functional-requirements.md:4544` | - measured 2026-09-07, offline, over the actual 18-case gold | No change: dependency and measurement note |
+| 39 | `PRD/sections/functional-requirements.md:4555` | - it carries: run-level metadata for the latest run (selecti | No change: a suite run never writes the committed scores file |
+| 40 | `PRD/sections/functional-requirements.md:4560` | - a recorded run **merges** into the committed results file  | No change: a suite run never reads or writes results.json (REQ-232) |
+| 41 | `PRD/sections/functional-requirements.md:4561` | - an experiment run (REQ-226) never reads or writes this fil | No change: a suite run never writes the committed scores file |
+| 42 | `PRD/sections/functional-requirements.md:4567` | - only the dated human-reviewed conclusion becomes durable p | No change: a suite run never writes the committed scores file |
+| 43 | `PRD/sections/functional-requirements.md:4570` | - REQ-188 (the run metadata it records) | No change: a suite run never reads or writes results.json (REQ-232) |
+| 44 | `PRD/sections/functional-requirements.md:4574` | - REQ-226 (the experiment runs that write elsewhere) | No change: a suite run never writes the committed scores file |
+| 45 | `PRD/sections/functional-requirements.md:4584` | - Description: An answer-quality run may answer the same gol | No change: excerpt caps work the same in a suite run |
+| 46 | `PRD/sections/functional-requirements.md:4595` | - the judge is not told which cap or which model produced an | No change: REQ-190 cap legs; unchanged in a suite run |
+| 47 | `PRD/sections/functional-requirements.md:4599` | - REQ-188 (the run that executes the legs) | No change: excerpt caps work the same in a suite run |
+| 48 | `PRD/sections/functional-requirements.md:4603` | - the design brief's earlier measurement (2026-09-06, six co | No change: excerpt caps work the same in a suite run |
+| 49 | `PRD/sections/functional-requirements.md:4604` | - measured 2026-09-07 (run 3 of the answer-quality baseline, | No change: excerpt caps work the same in a suite run |
+| 50 | `PRD/sections/functional-requirements.md:5812` | - for the approved rules test case academy-manufactor-esix-t | No change: REQ-220 tester case is a committed corpus case |
+| 51 | `PRD/sections/functional-requirements.md:5824` | - REQ-185 (the approved tester case this fix is measured on) | No change: REQ-220 tester case is a committed corpus case |
+| 52 | `PRD/sections/functional-requirements.md:5833` | - Title: Offline prompt gate over the rules test corpus | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
+| 53 | `PRD/sections/functional-requirements.md:5835` | - Description: Every pull request checks, with no provider c | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
+| 54 | `PRD/sections/functional-requirements.md:5841` | - **state-fact check (layer 3)**: for every case with a non- | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
+| 55 | `PRD/sections/functional-requirements.md:5846` | - eval data never enters a live prompt (NFR-018); the frozen | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
+| 56 | `PRD/sections/functional-requirements.md:5850` | - REQ-185 (the corpus it reads) | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
+| 57 | `PRD/sections/functional-requirements.md:5855` | - NFR-018 (the track whose prompt half this makes gating) | No change: the offline gate reads only the committed folder; the loader refuses an external case found there, so a stray copy fails loudly (REQ-232) |
+| 58 | `PRD/sections/functional-requirements.md:5861` | - Title: Mechanic coverage gate and coverage report for the  | No change: coverage counts only the committed corpus; the suite is never counted (REQ-232) |
+| 59 | `PRD/sections/functional-requirements.md:5863` | - Description: Every real mechanic in the committed rule ind | No change: coverage counts only the committed corpus; the suite is never counted (REQ-232) |
+| 60 | `PRD/sections/functional-requirements.md:5867` | - a case covers a mechanic when one of its decidingRuleIds i | No change: coverage counts only the committed corpus; the suite is never counted (REQ-232) |
+| 61 | `PRD/sections/functional-requirements.md:5875` | - REQ-185 (the corpus and its derived tags) | No change: coverage counts only the committed corpus; the suite is never counted (REQ-232) |
+| 62 | `PRD/sections/functional-requirements.md:5885` | - Description: Every rules test case (REQ-185) other than th | No change: the review flow never sees suite cases |
+| 63 | `PRD/sections/functional-requirements.md:5892` | - no agent sets approved; only the apply command, run on an  | No change: #285 added a second approval path, a per-case define-gate verdict slot; a suite case is never approved by any path (review batch, gate slot or first-ship migration), so the rule still covers it (REQ-232) |
+| 64 | `PRD/sections/functional-requirements.md:5898` | - REQ-185 (the case format and review field) | No change: the review flow never sees suite cases |
+| 65 | `PRD/sections/functional-requirements.md:5901` | - REQ-186 (grading only approved cases) | No change: about corpus review; the REQ-186 amendment scopes the suite |
+| 66 | `PRD/sections/functional-requirements.md:5908` | - Description: Each rules test case (REQ-185) records conten | No change: the staleness report reads the committed corpus; a suite run applies the same snapshot comparison to its own cases |
+| 67 | `PRD/sections/functional-requirements.md:5912` | - a stale approved case is not selected by the answer-qualit | No change: the staleness report reads the committed corpus; a suite run applies the same snapshot comparison to its own cases |
+| 68 | `PRD/sections/functional-requirements.md:5919` | - REQ-185 (the snapshot field) | No change: the staleness report reads the committed corpus; a suite run applies the same snapshot comparison to its own cases |
+| 69 | `PRD/sections/functional-requirements.md:5921` | - REQ-188 (the run that skips stale cases) | No change: the staleness report reads the committed corpus; a suite run applies the same snapshot comparison to its own cases |
+| 70 | `PRD/sections/functional-requirements.md:5927` | ### REQ-226 | Amend (REQ-226 block): first criterion names the suite run as a separate mode; dependency added |
+| 71 | `PRD/sections/functional-requirements.md:5930` | - Description: Beside the routine answer-quality run (REQ-18 | No change to this line; REQ-226's first criterion is amended (REQ-226 block) |
+| 72 | `PRD/sections/functional-requirements.md:5938` | - the identity record holds: run id; the commit executed fro | No change: a suite run's identity record hashes its own case files (REQ-232) |
+| 73 | `PRD/sections/functional-requirements.md:5942` | - REQ-188's confirmation gate, credential loading, sequentia | No change: REQ-188 and REQ-227 gates apply to suite runs unchanged |
+| 74 | `PRD/sections/functional-requirements.md:5946` | - REQ-188 (the routine run and its gates) | No change: REQ-188 and REQ-227 gates apply to suite runs unchanged |
+| 75 | `PRD/sections/functional-requirements.md:5959` | - Description: An experiment run (REQ-226) saves each comple | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
+| 76 | `PRD/sections/functional-requirements.md:5961` | - each completed record — answer, deterministic assertions,  | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
+| 77 | `PRD/sections/functional-requirements.md:5962` | - a provider error or timeout on an answer is appended as an | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
+| 78 | `PRD/sections/functional-requirements.md:5963` | - --resume <run-id> reloads the run folder, refuses when any | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
+| 79 | `PRD/sections/functional-requirements.md:5969` | - calls stay sequential (REQ-188); the cap is a stop, never  | No change: REQ-188 and REQ-227 gates apply to suite runs unchanged |
+| 80 | `PRD/sections/functional-requirements.md:5972` | - REQ-226 (the run folder and identity record) | No change: a suite run reuses checkpoint, resume and the spending cap unchanged |
+| 81 | `PRD/sections/functional-requirements.md:5973` | - REQ-188 (the confirmation gate and cost estimate method) | No change: REQ-188 and REQ-227 gates apply to suite runs unchanged |
+| 82 | `PRD/sections/functional-requirements.md:5980` | - Description: A report command compares two experiment runs | No change: the compare report reads any two run-folder paths |
+| 83 | `PRD/sections/functional-requirements.md:5993` | - never states an overall winner, never sets or checks a thr | No change: the compare report reads any two run-folder paths, suite runs included |
+| 84 | `PRD/sections/functional-requirements.md:5996` | - REQ-226 (the run folders it reads) | No change: the compare report reads any two run-folder paths |
+| 85 | `PRD/sections/functional-requirements.md:6005` | - Title: Offline evidence trace for the rules test corpus | No change: the evidence trace reads the committed corpus only; the suite is out of its scope |
+| 86 | `PRD/sections/functional-requirements.md:6007` | - Description: An offline report follows each rules test cas | No change: the evidence trace reads the committed corpus only; the suite is out of its scope |
+| 87 | `PRD/sections/functional-requirements.md:6010` | - the trace measures the checkout it runs from, as an experi | No change: evidence trace reads the committed corpus only |
+| 88 | `PRD/sections/functional-requirements.md:6024` | - REQ-185 (the corpus and its deciding rule ids) | No change: the evidence trace reads the committed corpus only; the suite is out of its scope |
+| 89 | `PRD/sections/functional-requirements.md:6035` | - Description: An experiment run (REQ-226) can answer a case | No change: #285 added arm R to this arm list; a suite run refuses every arm but A |
+| 90 | `PRD/sections/functional-requirements.md:6054` | - REQ-226 (the experiment run that carries an arm) | No change: arms other than A are refused in a suite run |
+| 91 | `PRD/sections/functional-requirements.md:6056` | - REQ-185 (the deciding rule ids and the gold-data separatio | No change: arms other than A are refused in a suite run |
+| 92 | `PRD/sections/functional-requirements.md:6070` | - the deployed answer model is gpt-6-luna: scripts/aws-deplo | No change: REQ-231 deployed model; unaffected |
+| 93 | `PRD/sections/functional-requirements.md:6084` | - REQ-188 (no reasoning-effort value is sent) | No change: REQ-231 deployed model; unaffected |
+| 94 | `PRD/sections/goals-and-non-goals.md:83` | - automated answer-quality gating in npm run quality:check:  | Amend (goals-and-non-goals block): the line covers the suite too |
+| 95 | `PRD/sections/system-map.md:473` | - Summary: Context-evaluation harness with fixtures, golden  | Amend (REQ-232 block, system-map diff): the eval-harness summary names the local practice suite |
+| 96 | `PRD/sections/system-map.md:475` | - Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NF | Amend (REQ-232 block, system-map diff): add REQ-232 to Backed by |
+| 97 | `PRD/sections/system-map.md:501` | - Summary: On-demand, confirmation-gated run that asks the s | Amend (REQ-232 block, system-map diff): the answer-quality summary gains the suite run sentence |
+| 98 | `PRD/sections/system-map.md:503` | - Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, RE | Amend (REQ-232 block, system-map diff): add REQ-232 to Backed by |
+| 99 | `PRD/sections/system-map.md:508` | - Summary: Offline checks over the rules test corpus that ru | No change: the corpus gates read only the committed folder; the suite is never in quality:check (REQ-232) |
+| 100 | `PRD/sections/system-map.md:510` | - Backed by: REQ-185, REQ-222, REQ-223, REQ-224, REQ-225, NF | No change: the corpus gates read only the committed folder; the suite is never in quality:check (REQ-232) |
+| 101 | `PRD/sections/non-functional-requirements.md:302` | ### NFR-018 | Amend (NFR-018 block) |
+| 102 | `PRD/sections/non-functional-requirements.md:304` | - Description: Today prompt and retrieval quality is regress | Amend (NFR-018 block): description gains one sentence |
+| 103 | `PRD/sections/non-functional-requirements.md:308` | - The prompt half is a build-blocking gate: the offline prom | No change to this line; the new NFR-018 constraint after it puts the suite outside both halves' gating |
+| 104 | `PRD/sections/non-functional-requirements.md:309` | - The prompt half stays offline and makes no provider call a | No change: offline/online split unchanged |
+| 105 | `PRD/sections/non-functional-requirements.md:310` | - A case enters the corpus only with an approved correct ans | No change: suite cases never enter the corpus; the new constraint says so |
+| 106 | `PRD/sections/non-functional-requirements.md:314` | - REQ-185 (the rules test corpus this track's cases now serv | No change: dependency lines and measurement note (REQ-232 is added as its own dependency line) |
+| 107 | `PRD/sections/non-functional-requirements.md:315` | - REQ-186, REQ-187, REQ-188, REQ-189, REQ-190 (the answer-qu | No change: dependency lines and measurement note (REQ-232 is added as its own dependency line) |
+| 108 | `PRD/sections/non-functional-requirements.md:317` | - REQ-226, REQ-227, REQ-228, REQ-229, REQ-230 (experiment ru | No change: dependency line |
+| 109 | `PRD/sections/non-functional-requirements.md:321` | - Measured 2026-09-07 (build): the gold set grew from 6 to 1 | No change: dependency lines and measurement note (REQ-232 is added as its own dependency line) |
+| 110 | `apps/backend/src/prompt/preparation.ts:48` | * exactly this value; the answer-quality run (REQ-188) is th | No change: prompt code and its tests are untouched |
+| 111 | `apps/backend/src/prompt/preparation.test.ts:14` | * The six worked-solution gold cases (REQ-185), mirrored fro | No change: prompt code and its tests are untouched |
+| 112 | `apps/backend/src/eval/worked-solutions/replacement-effect-single-application.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
 | 113 | `apps/backend/src/eval/worked-solutions/restoration-angel-blink-resets-counters.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
 | 114 | `apps/backend/src/eval/worked-solutions/panharmonicon-controller-not-entering-permanent.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
 | 115 | `apps/backend/src/eval/worked-solutions/copy-effect-modification-becomes-copiable.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 116 | `apps/backend/src/eval/worked-solutions/necropotence-silence-borne-upon-a-wind-cleanup.case.json:35` | license: A derivation from Comprehensive Rules text this pro | No change: corpus licence note; still true, nothing external is committed |
-| 117 | `apps/backend/src/eval/worked-solutions/layers-timestamp-order.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 118 | `apps/backend/src/eval/worked-solutions/copy-does-not-copy-etb-choices.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 119 | `apps/backend/src/eval/worked-solutions/mana-ability-remains-mana-ability.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 120 | `apps/backend/src/eval/worked-solutions/token-created-by-name-uses-oracle-card.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 121 | `apps/backend/src/eval/worked-solutions/combat-damage-assignment-order-multiple-blockers.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 122 | `apps/backend/src/eval/worked-solutions/state-based-actions-mid-resolution.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 123 | `apps/backend/src/eval/worked-solutions/sensei-top-leaves-battlefield-ability-on-stack.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 124 | `apps/backend/src/eval/worked-solutions/replacement-effect-single-application.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 125 | `apps/backend/src/eval/worked-solutions/damage-does-not-destroy-sba-does.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 126 | `apps/backend/src/eval/worked-solutions/illegal-target-partial-resolution.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 127 | `apps/backend/src/eval/worked-solutions/trample-over-planeswalkers-assignment.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 128 | `apps/backend/src/eval/worked-solutions/regenerate-too-late-after-destroy-resolves.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 129 | `apps/backend/src/eval/rules-gate/stalenessReport.test.ts:3` | // whole corpus shares, by static import of the real .mjs mo | No change: backend tests of the committed corpus |
-| 130 | `apps/backend/src/eval/answer-quality/assertions.test.ts:10` | describe(Backend - Eval - Answer quality - assertions (REQ-1 | No change: judge, assertions and rubric are unchanged |
-| 131 | `apps/backend/src/eval/rules-gate/rulesGate.test.ts:7` | // (their sibling .d.mts declarations carry the types; REQ-1 | No change: backend tests of the committed corpus |
-| 132 | `apps/backend/src/eval/answer-quality/rubric.test.ts:20` | it(moved to a new revision when the judge's inputs changed ( | No change: judge, assertions and rubric are unchanged |
-| 133 | `apps/backend/src/eval/answer-quality/judge.test.ts:28` | describe(Backend - Eval - Answer quality - judge (REQ-186), | No change: judge, assertions and rubric are unchanged |
-| 134 | `apps/backend/src/eval/answer-quality/judge.test.ts:293` | describe(judge usage (REQ-188: judge cost is recorded), () = | No change: judge code and tests unchanged |
-| 135 | `apps/backend/src/eval/answer-quality/judge.test.ts:327` | describe(judge inputs (REQ-186: the judge is told what the p | No change: judge, assertions and rubric are unchanged |
-| 136 | `apps/backend/src/eval/answer-quality/judge.ts:1` | // Answer-quality judge (REQ-186 layers 2 and 2b). | No change: judge, assertions and rubric are unchanged |
-| 137 | `apps/backend/src/eval/answer-quality/judge.ts:23` | // (REQ-188) trustworthy. A single answer has nothing to be | No change: judge code and tests unchanged |
-| 138 | `apps/backend/src/eval/answer-quality/judge.ts:52` | * The judge call's own token use (REQ-188: judge usage is re | No change: judge code and tests unchanged |
-| 139 | `apps/backend/src/eval/answer-quality/judge.ts:80` | * (REQ-186) -- never OPENAI_MODEL, never an answer model - | No change: judge, assertions and rubric are unchanged |
-| 140 | `apps/backend/src/eval/answer-quality/judge.ts:89` | /** True when the configured judge model id also appears in | No change: judge, assertions and rubric are unchanged |
-| 141 | `apps/backend/src/eval/answer-quality/judge.ts:135` | * judge sees the same thing however the answer was produced | No change: judge, assertions and rubric are unchanged |
-| 142 | `apps/backend/src/eval/answer-quality/judge.ts:170` | * One call per answer (REQ-186 layer 2). Returns an explicit | No change: judge, assertions and rubric are unchanged |
-| 143 | `apps/backend/src/eval/answer-quality/judge.ts:206` | /** The same attached-excerpt, deciding-rule and game-state | No change: judge, assertions and rubric are unchanged |
-| 144 | `apps/backend/src/eval/answer-quality/judge.ts:238` | /** The evidence lines shared by the lone judge and the blin | No change: judge, assertions and rubric are unchanged |
-| 145 | `apps/backend/src/eval/answer-quality/judge.ts:303` | * The blind side-by-side rank (REQ-186 layer 2b): for one ca | No change: judge, assertions and rubric are unchanged |
-| 146 | `apps/backend/src/eval/worked-solutions/trample-must-assign-lethal-first.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 147 | `apps/backend/src/eval/worked-solutions/last-known-information-simultaneous-sba.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 148 | `apps/backend/src/eval/worked-solutions/README.md:1` | # Rules test corpus (NFR-018, REQ-185) | Amend at build: README gains a short pointer that the local suite exists, is never committed, and lives in REQ-232 |
-| 149 | `apps/backend/src/eval/worked-solutions/README.md:6` | harness (REQ-185) brought the corpus to 393 cases: the 18 fi | No change: describes the committed corpus |
-| 150 | `apps/backend/src/eval/worked-solutions/README.md:19` | approved by the owner's accept of REQ-185; every later case | No change: describes the committed corpus |
-| 151 | `apps/backend/src/eval/worked-solutions/README.md:129` | (REQ-185): loadGoldCases validates every file against form | No change: describes the committed corpus |
-| 152 | `apps/backend/src/eval/worked-solutions/README.md:228` | modules, and PRD/sections/functional-requirements.md REQ-1 | No change: the pointer is a new short section (row for README.md:1) |
-| 153 | `apps/backend/src/eval/worked-solutions/README.md:230` | ### Experiment runs, the paired report, the evidence trace, | No change: the pointer is a new short section (row for README.md:1) |
-| 154 | `apps/backend/src/eval/worked-solutions/README.md:236` | - **Experiment run** (REQ-226, REQ-227): npm run eval:answe | No change: the pointer is a new short section (row for README.md:1) |
-| 155 | `apps/backend/src/eval/worked-solutions/README.md:291` | - Loaded and validated by scripts/lib/gold-cases.mjs (REQ- | No change: describes the committed corpus |
-| 156 | `apps/backend/src/eval/answer-quality/assertions.ts:1` | // Answer-quality deterministic assertions (REQ-186 layer 1) | No change: judge, assertions and rubric are unchanged |
-| 157 | `apps/backend/src/eval/answer-quality/assertions.ts:63` | * The free made-up-rule-number check (REQ-186): cited rule i | No change: judge, assertions and rubric are unchanged |
-| 158 | `apps/backend/src/eval/worked-solutions/delayed-trigger-created-too-late.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
-| 159 | `apps/backend/src/eval/answer-quality/rubric.ts:12` | // artifact (REQ-186, REQ-189). Axes are added or changed on | No change: judge, assertions and rubric are unchanged |
-| 160 | `apps/backend/src/eval/answer-quality/rubric.ts:75` | * (REQ-186, REQ-189). | No change: judge, assertions and rubric are unchanged |
-| 161 | `apps/backend/src/eval/answer-quality/rubric.ts:78` | // 2026-10-07.1: the judge's inputs changed (REQ-186) -- it | No change: judge, assertions and rubric are unchanged |
-| 162 | `apps/backend/src/eval/answer-quality/rubric.ts:83` | /** Renders the rubric as the exact text sent to the judge ( | No change: judge, assertions and rubric are unchanged |
-| 163 | `scripts/rules-coverage.mjs:1` | // The rules test corpus coverage command (REQ-223). No prov | No change: coverage command counts the committed corpus only |
-| 164 | `scripts/build-answer-quality-manifests.test.mjs:169` | // evidence trace: a later corpus refresh must never turn th | No change: manifest-generator test |
-| 165 | `scripts/eval-worked-solutions.test.mjs:55` | test(loadCases reads every *.case.json file, sorted, and rej | No change: new suite tests are added beside it |
-| 166 | `scripts/lib/experiment-run.test.mjs:669` | // Slice C: the record fields and the judge's inputs in an e | No change: comment or test stays true; suite mode is added beside it |
-| 167 | `scripts/lib/experiment-run.test.mjs:739` | // Slice G alignment with the finalized proposal (REQ-226, R | No change: comment or test stays true; suite mode is added beside it |
-| 168 | `scripts/lib/prompt-fidelity.mjs:2` | // preparePromptInput (REQ-185, REQ-188): the worked-solut | No change: prompt-fidelity helpers are reused unchanged |
-| 169 | `scripts/lib/prompt-fidelity.mjs:36` | * The request a rules test case is asked as (REQ-185, A15) - | No change: prompt-fidelity helpers are reused unchanged |
-| 170 | `scripts/lib/prompt-fidelity.mjs:116` | * prompt a player gets (REQ-188). The caller learns whether | No change: prompt-fidelity helpers are reused unchanged |
-| 171 | `scripts/lib/rules-coverage.mjs:1` | // Mechanic coverage for the rules test corpus (REQ-223): wh | No change: coverage command counts the committed corpus only |
-| 172 | `scripts/lib/rules-coverage.mjs:15` | // one of its deciding rule ids sits under that mechanic's n | No change: coverage command counts the committed corpus only |
-| 173 | `apps/backend/src/eval/worked-solutions/academy-manufactor-esix-treasure.case.json:31` | license: A derivation from Comprehensive Rules text this pro | No change: corpus licence note; still true, nothing external is committed |
-| 174 | `scripts/lib/rules-coverage.test.mjs:199` | // A mechanic with no WotC ruling and no CR Example: line | No change: coverage command counts the committed corpus only |
-| 175 | `scripts/lib/gold-cases.d.mts:2` | // (REQ-185). Backend vitest tests import the real module at | Amend at build: declaration gains the loader's external-mode option |
-| 176 | `scripts/lib/gold-cases.mjs:1` | // Shared rules-test-case loader and validator, format versi | No change: loader header, first-six list, tags and snapshot code unchanged |
-| 177 | `scripts/lib/gold-cases.mjs:3` | // Every reader of the rules test corpus -- the retrieval ch | Amend at build: comment names the loader's external mode |
-| 178 | `scripts/lib/gold-cases.mjs:66` | * REQ-185 requires the corpus to hold at least these, each t | No change: loader header, first-six list, tags and snapshot code unchanged |
-| 179 | `scripts/lib/gold-cases.mjs:346` | * Tags are derived, never hand-written (REQ-185): mechanic: | No change: loader header, first-six list, tags and snapshot code unchanged |
-| 180 | `scripts/lib/gold-cases.mjs:418` | // Snapshot hashing and the one stale comparison (REQ-185, R | No change: loader header, first-six list, tags and snapshot code unchanged |
-| 181 | `scripts/lib/prompt-fidelity.test.mjs:16` | test(buildCaseRequest attaches every cards entry by oracle i | No change: prompt-fidelity helpers are reused unchanged |
-| 182 | `scripts/lib/prompt-fidelity.test.mjs:61` | // loadPromptResources (REQ-188): the evaluation loader matc | No change: prompt-fidelity helpers are reused unchanged |
-| 183 | `apps/backend/src/eval/answer-quality/artifact.ts:24` | /** Tier 3 is the owner's own bucket, counted apart from the | No change: the committed scores artifact never records a suite run |
-| 184 | `apps/backend/src/eval/answer-quality/artifact.ts:26` | /** How the latest run chose its cases: changed, all, t | No change: the committed scores artifact never records a suite run |
-| 185 | `apps/backend/src/eval/answer-quality/artifact.ts:37` | /** Answer-call token use and cost: the answer models' share | No change: the committed scores artifact never records a suite run |
-| 186 | `apps/backend/src/eval/answer-quality/artifact.ts:47` | /** Whether the evaluation prompt loader loaded the Commande | No change: the committed scores artifact never records a suite run |
-| 187 | `apps/backend/src/eval/answer-quality/artifact.ts:49` | /** The answer client's timeout and retry count: the SDK def | No change: the committed scores artifact never records a suite run |
-| 188 | `scripts/eval-answer-quality.mjs:1` | // Answer-quality run (REQ-188, REQ-190; NFR-018). | Amend at build: header comment names the --suite mode |
-| 189 | `scripts/eval-answer-quality.mjs:3` | // Asks the live provider the selected approved cases of the | Amend at build: comment says a --suite run grades the local suite's external cases |
-| 190 | `scripts/eval-answer-quality.mjs:4` | // (scripts/lib/gold-cases.mjs, REQ-185) and scores each ans | Amend at build: comment says a --suite run grades the local suite's external cases |
-| 191 | `scripts/eval-answer-quality.mjs:106` | /** The deployed model alone (scripts/aws-deploy.sh sets O | No change: REQ-188 citations in comments stay true |
-| 192 | `scripts/eval-answer-quality.mjs:120` | /** Published list rates, USD per million tokens (re-checked | No change: REQ-188 citations in comments stay true |
-| 193 | `scripts/eval-answer-quality.mjs:129` | // Judge candidates (REQ-186: stronger than every contestant | No change: comment or test stays true; suite mode is added beside it |
-| 194 | `scripts/eval-answer-quality.mjs:137` | * pricing (REQ-188, REQ-226). The owner re-checks before spe | No change: REQ-188 citations in comments stay true |
-| 195 | `scripts/eval-answer-quality.mjs:162` | // Output-token assumptions behind the printed dry-run estim | No change: REQ-188 citations in comments stay true |
-| 196 | `scripts/eval-answer-quality.mjs:175` | * the lineup (REQ-188): the answer-model lineup is a run opt | No change: REQ-188 citations in comments stay true |
-| 197 | `scripts/eval-answer-quality.mjs:191` | // Experiment-mode flags (REQ-226): none of them exists in a | No change: comment or test stays true; suite mode is added beside it |
-| 198 | `scripts/eval-answer-quality.mjs:277` | * Experiment mode (REQ-226) is on exactly when --run-id is | Amend at build: comment says --run-id with --suite is the suite run, not experiment mode |
-| 199 | `scripts/eval-answer-quality.mjs:336` | /** Judge model is its own explicit setting (REQ-186), defau | No change: comment or test stays true; suite mode is added beside it |
-| 200 | `scripts/eval-answer-quality.mjs:427` | * No timeout and no retry count, so the SDK defaults apply ( | No change: REQ-188 citations in comments stay true |
-| 201 | `scripts/eval-answer-quality.mjs:489` | /** A character-count cost estimate (REQ-188's M3 methodolog | No change: REQ-188 citations in comments stay true |
-| 202 | `scripts/eval-answer-quality.mjs:494` | // A single answer has nothing to be ranked against: a one-m | No change: comment or test stays true; suite mode is added beside it |
-| 203 | `scripts/eval-answer-quality.mjs:573` | /** The rate table an experiment run records in its identity | No change: comment or test stays true; suite mode is added beside it |
-| 204 | `scripts/eval-answer-quality.mjs:694` | * The live evaluation loop (REQ-188, REQ-190, REQ-186, REQ-1 | No change: REQ-188 citations in comments stay true |
-| 205 | `scripts/eval-answer-quality.mjs:741` | // Model and input only: no timeout, retry or reasoning-effo | No change: REQ-188 citations in comments stay true |
-| 206 | `scripts/eval-answer-quality.mjs:754` | // What the answer prompt actually carried, and the deciding | No change: comment or test stays true; suite mode is added beside it |
-| 207 | `scripts/eval-answer-quality.mjs:835` | // Worded not in the committed rule index, never made up: th | No change: comment or test stays true; suite mode is added beside it |
-| 208 | `scripts/eval-answer-quality.mjs:840` | // Ranking one answer against itself means nothing: a one-mo | No change: comment or test stays true; suite mode is added beside it |
-| 209 | `scripts/eval-answer-quality.mjs:846` | // The same attached-excerpt, deciding-rule and game-state i | No change: comment or test stays true; suite mode is added beside it |
-| 210 | `scripts/eval-answer-quality.mjs:983` | * The real dependencies of an experiment run (REQ-226): the | No change: comment or test stays true; suite mode is added beside it |
-| 211 | `scripts/eval-answer-quality.mjs:1074` | * Experiment mode (REQ-226): validates the manifest against | No change: comment or test stays true; suite mode is added beside it |
-| 212 | `scripts/eval-answer-quality.mjs:1250` | * model-access check (REQ-188): the dry run performs it when | No change: REQ-188 citations in comments stay true |
-| 213 | `scripts/eval-answer-quality.mjs:1286` | // An experiment run never reads or writes the committed sco | No change: comment or test stays true; suite mode is added beside it |
-| 214 | `scripts/answer-quality-no-gate.test.mjs:7` | // REGRESSION GUARD (REQ-188, NFR-018): the paid answer half | Amend at build: NEVER_IN_A_GATE (the list under this comment) gains the eval:rulesguru commands |
-| 215 | `scripts/answer-quality-no-gate.test.mjs:74` | // real corpus (REQ-229, NFR-018): a corpus refresh would tu | No change: manifest-generator and trace rule; a new sibling test guards the suite folder |
-| 216 | `scripts/eval-worked-solutions.mjs:1` | // Worked-solutions retrieval check (NFR-018). | Amend at build: header comment gains the --suite usage lines |
-| 217 | `scripts/eval-worked-solutions.mjs:7` | // (buildCaseRequest in scripts/lib/prompt-fidelity.mjs, REQ | No change: comments about the committed corpus stay true |
-| 218 | `scripts/eval-worked-solutions.mjs:57` | * the shared gold-case loader (REQ-185), so this retrieval c | No change: comments about the committed corpus stay true |
-| 219 | `scripts/eval-worked-solutions.mjs:80` | WORKED-SOLUTIONS RETRIEVAL CHECK (NFR-018), | No change: the suite report prints its own title |
-| 220 | `scripts/eval-answer-quality.test.mjs:422` | test(buildCaseRequest asks a case bare when it names no card | No change: existing tests stay; suite tests are added |
-| 221 | `scripts/eval-answer-quality.test.mjs:512` | test(REGRESSION GUARD: eval:answer-quality is never wired in | No change: existing tests stay; suite tests are added |
-| 222 | `scripts/eval-answer-quality.test.mjs:538` | // Case selection, per-case merge and the per-tier headline | No change: comment or test stays true; suite mode is added beside it |
-| 223 | `scripts/eval-answer-quality.test.mjs:1042` | // Experiment mode (REQ-226): flags, the manifest refusal, a | No change: comment or test stays true; suite mode is added beside it |
-| 224 | `scripts/eval-answer-quality.test.mjs:1320` | // Slice C (REQ-186 to REQ-189): grader repair, runtime pari | No change: comment or test stays true; suite mode is added beside it |
-| 225 | `scripts/eval-answer-quality.test.mjs:1343` | test(evaluation answer calls are built with the key alone an | No change: existing tests stay; suite tests are added |
-| 226 | `scripts/eval-answer-quality.test.mjs:1552` | test(the routine run's blind ranking is handed the lone judg | No change: comment or test stays true; suite mode is added beside it |
-| 227 | `scripts/lib/prompt-fidelity.d.mts:3` | // gate (REQ-185, REQ-188). Backend vitest tests import the | No change: prompt-fidelity helpers are reused unchanged |
-| 228 | `scripts/lib/prompt-fidelity.d.mts:19` | /** Present when combo enrichment is on (production's defaul | No change: prompt-fidelity helpers are reused unchanged |
-| 229 | `scripts/lib/experiment-run.mjs:1` | // Named experiment runs for the answer-quality instrument ( | No change: comment or test stays true; suite mode is added beside it |
-| 230 | `scripts/lib/experiment-run.mjs:67` | /** One record is keyed by case, model, excerpt cap, arm and | No change: comment or test stays true; suite mode is added beside it |
-| 231 | `scripts/lib/experiment-run.mjs:178` | * A run measures the checkout it executes from (REQ-226). It | No change: comment or test stays true; suite mode is added beside it |
-| 232 | `scripts/lib/experiment-run.mjs:356` | // The loop (REQ-226, REQ-227) | No change: comment or test stays true; suite mode is added beside it |
-| 233 | `scripts/lib/experiment-run.mjs:364` | * (preparePromptInput, REQ-185); any other arm comes from | No change: experiment runner comments stay true |
-| 234 | `scripts/lib/experiment-run.mjs:387` | // The effort the provider reports for a reasoning model; no | No change: experiment runner comments stay true |
-| 235 | `scripts/lib/experiment-run.mjs:632` | // Ranking one answer against itself means nothing: a one-mo | No change: comment or test stays true; suite mode is added beside it |
-| 236 | `scripts/lib/experiment-run.mjs:833` | * The blind side-by-side rank (REQ-186 layer 2b) for one cas | No change: comment or test stays true; suite mode is added beside it |
-| 237 | `scripts/lib/experiment-run.mjs:842` | // The same attached-excerpt, deciding-rule and game-state i | No change: comment or test stays true; suite mode is added beside it |
-| 238 | `scripts/lib/experiment-run.mjs:876` | // Built the same way for every model, cap and arm (scripts/ | No change: comment or test stays true; suite mode is added beside it |
-| 239 | `scripts/lib/experiment-run.mjs:912` | * A regrade run (REQ-226): makes no answer call. It takes ea | No change: comment or test stays true; suite mode is added beside it |
-| 240 | `scripts/lib/gold-cases.test.mjs:361` | // The migration of the 18 first-ship cases (REQ-185, A1) | No change: first-ship migration tests |
-| 241 | `scripts/lib/gold-cases.test.mjs:453` | test(each migrated case is approved by the owner's accept of | No change: first-ship migration tests |
-| 242 | `scripts/lib/gold-cases.test.mjs:461` | approved by the owner's accept of REQ-185 at the define gate | No change: first-ship migration tests |
-| 243 | `scripts/rules-staleness.mjs:1` | // The rules test corpus staleness report (REQ-225). No prov | No change: staleness and review commands read the committed corpus only |
-| 244 | `scripts/rules-review.mjs:1` | // The owner review commands for the rules test corpus (REQ- | No change: staleness and review commands read the committed corpus only |
-| 245 | `scripts/lib/answer-quality-run.mjs:2` | // on-demand answer-quality run (REQ-186 to REQ-190), kept a | No change: comment or test stays true; suite mode is added beside it |
-| 246 | `scripts/lib/answer-quality-run.mjs:93` | * REQ-188: which cases a run grades. Only approved, non-stal | No change: describes routine selection; suite selection lives in its own module |
-| 247 | `scripts/lib/judge-inputs.mjs:2` | // (REQ-186). One builder for the routine loop, the experime | No change: comment or test stays true; suite mode is added beside it |
-| 248 | `docs/eval/answer-quality-investigation/OFFLINE-FINDINGS.md:132` | token-created-by-name-uses-oracle-card 1 rulings approved, | No change: investigation docs, historical |
-| 249 | `docs/eval/answer-quality-investigation/RUNBOOK.md:16` | Judge model (**D0**) ______ Must be stronger than both GPT-4 | No change: investigation docs, historical |
-| 250 | `docs/eval/answer-quality-investigation/RUNBOOK.md:132` | Credentials load as for any live run (REQ-188). Run the **sa | No change: investigation docs, historical |
-| 251 | `docs/eval/answer-quality-investigation/RUNBOOK.md:189` | One run per input, a two-model lineup so the blind side-by-s | No change: investigation docs, historical |
+| 116 | `apps/backend/src/eval/worked-solutions/illegal-target-partial-resolution.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 117 | `apps/backend/src/eval/worked-solutions/layers-clone-copies-frogified-serra-angel.case.json:35` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 118 | `apps/backend/src/eval/worked-solutions/necropotence-silence-borne-upon-a-wind-cleanup.case.json:35` | license: A derivation from Comprehensive Rules text this pro | No change: corpus licence note; still true, nothing external is committed |
+| 119 | `apps/backend/src/eval/worked-solutions/layers-timestamp-order.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 120 | `apps/backend/src/eval/worked-solutions/copy-does-not-copy-etb-choices.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 121 | `apps/backend/src/eval/worked-solutions/triggers-apnap-blood-artists-at-one-life-in-depth.case.json:84` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 122 | `apps/backend/src/eval/worked-solutions/mana-ability-remains-mana-ability.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 123 | `apps/backend/src/eval/worked-solutions/token-created-by-name-uses-oracle-card.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 124 | `apps/backend/src/eval/worked-solutions/trample-must-assign-lethal-first.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 125 | `apps/backend/src/eval/worked-solutions/layers-clone-copies-frogified-serra-angel-in-depth.case.json:73` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 126 | `apps/backend/src/eval/worked-solutions/layers-humility-then-opalescence.case.json:35` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 127 | `apps/backend/src/eval/worked-solutions/combat-damage-assignment-order-multiple-blockers.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 128 | `apps/backend/src/eval/worked-solutions/layers-turn-to-frog-after-giant-growth-counter.case.json:35` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 129 | `apps/backend/src/eval/worked-solutions/replacement-kalitas-blood-artist-no-dies-trigger-in-depth.case.json:88` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 130 | `apps/backend/src/eval/worked-solutions/layers-humility-then-opalescence-in-depth.case.json:70` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 131 | `apps/backend/src/eval/worked-solutions/last-known-information-simultaneous-sba.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 132 | `apps/backend/src/eval/worked-solutions/README.md:1` | # Rules test corpus (NFR-018, REQ-185) | Amend at build: README gains a short pointer that the local suite exists, is never committed, and lives in REQ-232 |
+| 133 | `apps/backend/src/eval/worked-solutions/README.md:6` | harness (REQ-185) brought the corpus to 393 cases: the 18 fi | No change: describes the committed corpus |
+| 134 | `apps/backend/src/eval/worked-solutions/README.md:19` | approved by the owner's accept of REQ-185; every later case  | No change: describes the committed corpus |
+| 135 | `apps/backend/src/eval/worked-solutions/README.md:129` | (REQ-185): loadGoldCases validates every file against format | No change: describes the committed corpus |
+| 136 | `apps/backend/src/eval/worked-solutions/README.md:232` | modules, and PRD/sections/functional-requirements.md REQ-186 | No change: the pointer is a new short section (row for README.md:1) |
+| 137 | `apps/backend/src/eval/worked-solutions/README.md:234` | ### Experiment runs, the paired report, the evidence trace,  | No change: the pointer is a new short section (row for README.md:1) |
+| 138 | `apps/backend/src/eval/worked-solutions/README.md:240` | - **Experiment run** (REQ-226, REQ-227): npm run eval:answer | No change: the pointer is a new short section (row for README.md:1) |
+| 139 | `apps/backend/src/eval/worked-solutions/README.md:310` | - Loaded and validated by scripts/lib/gold-cases.mjs (REQ-18 | No change: describes the committed corpus |
+| 140 | `apps/backend/src/eval/worked-solutions/state-based-actions-mid-resolution.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 141 | `apps/backend/src/eval/worked-solutions/necropotence-silence-borne-upon-a-wind-cleanup-in-depth.case.json:74` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 142 | `apps/backend/src/eval/worked-solutions/delayed-trigger-created-too-late.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 143 | `apps/backend/src/eval/worked-solutions/sensei-top-leaves-battlefield-ability-on-stack.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 144 | `apps/backend/src/eval/worked-solutions/layers-turn-to-frog-after-giant-growth-counter-in-depth.case.json:82` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 145 | `apps/backend/src/eval/worked-solutions/layers-mycosynth-lattice-march-dependency-in-depth.case.json:80` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 146 | `apps/backend/src/eval/worked-solutions/trample-over-planeswalkers-assignment.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 147 | `apps/backend/src/eval/worked-solutions/academy-manufactor-esix-treasure-in-depth.case.json:70` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 148 | `apps/backend/src/eval/worked-solutions/layers-blood-moon-urborg-dependency-in-depth.case.json:61` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 149 | `apps/backend/src/eval/worked-solutions/replacement-kalitas-blood-artist-no-dies-trigger.case.json:39` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 150 | `apps/backend/src/eval/worked-solutions/damage-does-not-destroy-sba-does.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 151 | `apps/backend/src/eval/worked-solutions/regenerate-too-late-after-destroy-resolves.case.json:8` | note: approved by the owner's accept of REQ-185 at the defin | No change: records a first-ship approval; the suite adds no approval path |
+| 152 | `apps/backend/src/eval/worked-solutions/layers-mycosynth-lattice-march-dependency.case.json:31` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 153 | `apps/backend/src/eval/worked-solutions/layers-blood-moon-urborg-dependency.case.json:31` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 154 | `apps/backend/src/eval/worked-solutions/triggers-apnap-blood-artists-at-one-life.case.json:35` | license: A derivation from Comprehensive Rules text this pro | No change: licence note of a diagnostic corpus case #285 added; still true, nothing external is committed |
+| 155 | `apps/backend/src/eval/worked-solutions/academy-manufactor-esix-treasure.case.json:31` | license: A derivation from Comprehensive Rules text this pro | No change: corpus licence note; still true, nothing external is committed |
+| 156 | `apps/backend/src/eval/caseRequest.test.ts:2` | // The rules test corpus has one loader and one request buil | No change: the one request builder serves suite cases too |
+| 157 | `apps/backend/src/eval/caseRequest.test.ts:68` | describe(Backend - Eval - rules test case request (REQ-185), | No change: the one request builder serves suite cases too |
+| 158 | `apps/backend/src/eval/rules-gate/rulesGate.test.ts:7` | // (their sibling .d.mts declarations carry the types; REQ-1 | No change: backend tests of the committed corpus |
+| 159 | `apps/backend/src/eval/rules-gate/stalenessReport.test.ts:3` | // whole corpus shares, by static import of the real .mjs mo | No change: backend tests of the committed corpus |
+| 160 | `apps/backend/src/eval/answer-quality/assertions.test.ts:10` | describe(Backend - Eval - Answer quality - assertions (REQ-1 | No change: judge, assertions and rubric are unchanged |
+| 161 | `apps/backend/src/eval/answer-quality/judge.ts:1` | // Answer-quality judge (REQ-186 layers 2 and 2b). | No change: judge, assertions and rubric are unchanged |
+| 162 | `apps/backend/src/eval/answer-quality/judge.ts:23` | // (REQ-188) trustworthy. A single answer has nothing to be  | No change: judge code and tests unchanged |
+| 163 | `apps/backend/src/eval/answer-quality/judge.ts:52` | * The judge call's own token use (REQ-188: judge usage is re | No change: judge code and tests unchanged |
+| 164 | `apps/backend/src/eval/answer-quality/judge.ts:80` | * (REQ-186) -- never OPENAI_MODEL, never an answer model --  | No change: judge, assertions and rubric are unchanged |
+| 165 | `apps/backend/src/eval/answer-quality/judge.ts:89` | /** True when the configured judge model id also appears in  | No change: judge, assertions and rubric are unchanged |
+| 166 | `apps/backend/src/eval/answer-quality/judge.ts:135` | * judge sees the same thing however the answer was produced  | No change: judge, assertions and rubric are unchanged |
+| 167 | `apps/backend/src/eval/answer-quality/judge.ts:170` | * One call per answer (REQ-186 layer 2). Returns an explicit | No change: judge, assertions and rubric are unchanged |
+| 168 | `apps/backend/src/eval/answer-quality/judge.ts:206` | /** The same attached-excerpt, deciding-rule and game-state  | No change: judge, assertions and rubric are unchanged |
+| 169 | `apps/backend/src/eval/answer-quality/judge.ts:238` | /** The evidence lines shared by the lone judge and the blin | No change: judge, assertions and rubric are unchanged |
+| 170 | `apps/backend/src/eval/answer-quality/judge.ts:303` | * The blind side-by-side rank (REQ-186 layer 2b): for one ca | No change: judge, assertions and rubric are unchanged |
+| 171 | `apps/backend/src/eval/answer-quality/rubric.test.ts:20` | it(moved to a new revision when the judge's inputs changed ( | No change: judge, assertions and rubric are unchanged |
+| 172 | `apps/backend/src/eval/answer-quality/assertions.ts:1` | // Answer-quality deterministic assertions (REQ-186 layer 1) | No change: judge, assertions and rubric are unchanged |
+| 173 | `apps/backend/src/eval/answer-quality/assertions.ts:63` | * The free made-up-rule-number check (REQ-186): cited rule i | No change: judge, assertions and rubric are unchanged |
+| 174 | `apps/backend/src/eval/answer-quality/artifact.ts:24` | /** Tier 3 is the owner's own bucket, counted apart from the | No change: the committed scores artifact never records a suite run |
+| 175 | `apps/backend/src/eval/answer-quality/artifact.ts:26` | /** How the latest run chose its cases: changed, all, tag:<t | No change: the committed scores artifact never records a suite run |
+| 176 | `apps/backend/src/eval/answer-quality/artifact.ts:37` | /** Answer-call token use and cost: the answer models' share | No change: the committed scores artifact never records a suite run |
+| 177 | `apps/backend/src/eval/answer-quality/artifact.ts:47` | /** Whether the evaluation prompt loader loaded the Commande | No change: the committed scores artifact never records a suite run |
+| 178 | `apps/backend/src/eval/answer-quality/artifact.ts:49` | /** The answer client's timeout and retry count: the SDK def | No change: the committed scores artifact never records a suite run |
+| 179 | `apps/backend/src/eval/answer-quality/judge.test.ts:28` | describe(Backend - Eval - Answer quality - judge (REQ-186),  | No change: judge, assertions and rubric are unchanged |
+| 180 | `apps/backend/src/eval/answer-quality/judge.test.ts:307` | describe(judge usage (REQ-188: judge cost is recorded), () = | No change: judge code and tests unchanged |
+| 181 | `apps/backend/src/eval/answer-quality/judge.test.ts:341` | describe(judge inputs (REQ-186: the judge is told what the p | No change: judge, assertions and rubric are unchanged |
+| 182 | `apps/backend/src/eval/answer-quality/rubric.ts:12` | // artifact (REQ-186, REQ-189). Axes are added or changed on | No change: judge, assertions and rubric are unchanged |
+| 183 | `apps/backend/src/eval/answer-quality/rubric.ts:75` | * (REQ-186, REQ-189). | No change: judge, assertions and rubric are unchanged |
+| 184 | `apps/backend/src/eval/answer-quality/rubric.ts:78` | // 2026-10-07.1: the judge's inputs changed (REQ-186) -- it  | No change: judge, assertions and rubric are unchanged |
+| 185 | `apps/backend/src/eval/answer-quality/rubric.ts:86` | // --regrade-from (REQ-226). | No change: judge, assertions and rubric are unchanged; a suite run refuses --regrade-from |
+| 186 | `apps/backend/src/eval/answer-quality/rubric.ts:88` | /** Renders the rubric as the exact text sent to the judge ( | No change: judge, assertions and rubric are unchanged |
+| 187 | `scripts/rules-coverage.mjs:1` | // The rules test corpus coverage command (REQ-223). No prov | No change: coverage command counts the committed corpus only |
+| 188 | `scripts/rules-staleness.mjs:1` | // The rules test corpus staleness report (REQ-225). No prov | No change: staleness and review commands read the committed corpus only |
+| 189 | `scripts/rules-review.mjs:1` | // The owner review commands for the rules test corpus (REQ- | No change: staleness and review commands read the committed corpus only |
+| 190 | `scripts/build-answer-quality-manifests.test.mjs:330` | // evidence trace: a later corpus refresh must never turn th | No change: manifest-generator test |
+| 191 | `scripts/eval-answer-quality.mjs:1` | // Answer-quality run (REQ-188, REQ-190; NFR-018). | Amend at build: header comment names the --suite mode |
+| 192 | `scripts/eval-answer-quality.mjs:3` | // Asks the live provider the selected approved cases of the | Amend at build: comment says a --suite run grades the local suite's external cases |
+| 193 | `scripts/eval-answer-quality.mjs:4` | // (scripts/lib/gold-cases.mjs, REQ-185) and scores each ans | Amend at build: comment says a --suite run grades the local suite's external cases |
+| 194 | `scripts/eval-answer-quality.mjs:108` | /** The deployed model alone (scripts/aws-deploy.sh sets OPE | No change: REQ-188 citations in comments stay true |
+| 195 | `scripts/eval-answer-quality.mjs:122` | /** Published list rates, USD per million tokens (re-checked | No change: REQ-188 citations in comments stay true |
+| 196 | `scripts/eval-answer-quality.mjs:131` | // Judge candidates (REQ-186: stronger than every contestant | No change: comment or test stays true; suite mode is added beside it |
+| 197 | `scripts/eval-answer-quality.mjs:139` | * pricing (REQ-188, REQ-226). The owner re-checks before spe | No change: REQ-188 citations in comments stay true |
+| 198 | `scripts/eval-answer-quality.mjs:164` | // Output-token assumptions behind the printed dry-run estim | No change: REQ-188 citations in comments stay true |
+| 199 | `scripts/eval-answer-quality.mjs:177` | * the lineup (REQ-188): the answer-model lineup is a run opt | No change: REQ-188 citations in comments stay true |
+| 200 | `scripts/eval-answer-quality.mjs:193` | // Experiment-mode flags (REQ-226): none of them exists in a | No change: comment or test stays true; suite mode is added beside it |
+| 201 | `scripts/eval-answer-quality.mjs:279` | * Experiment mode (REQ-226) is on exactly when --run-id is n | Amend at build: comment says --run-id with --suite is the suite run, not experiment mode |
+| 202 | `scripts/eval-answer-quality.mjs:338` | /** Judge model is its own explicit setting (REQ-186), defau | No change: comment or test stays true; suite mode is added beside it |
+| 203 | `scripts/eval-answer-quality.mjs:429` | * No timeout and no retry count, so the SDK defaults apply ( | No change: REQ-188 citations in comments stay true |
+| 204 | `scripts/eval-answer-quality.mjs:491` | /** A character-count cost estimate (REQ-188's M3 methodolog | No change: REQ-188 citations in comments stay true |
+| 205 | `scripts/eval-answer-quality.mjs:496` | // A single answer has nothing to be ranked against: a one-m | No change: comment or test stays true; suite mode is added beside it |
+| 206 | `scripts/eval-answer-quality.mjs:575` | /** The rate table an experiment run records in its identity | No change: comment or test stays true; suite mode is added beside it |
+| 207 | `scripts/eval-answer-quality.mjs:696` | * The live evaluation loop (REQ-188, REQ-190, REQ-186, REQ-1 | No change: REQ-188 citations in comments stay true |
+| 208 | `scripts/eval-answer-quality.mjs:743` | // Model and input only: no timeout, retry or reasoning-effo | No change: REQ-188 citations in comments stay true |
+| 209 | `scripts/eval-answer-quality.mjs:756` | // What the answer prompt actually carried, and the deciding | No change: comment or test stays true; suite mode is added beside it |
+| 210 | `scripts/eval-answer-quality.mjs:837` | // Worded not in the committed rule index, never made up: th | No change: comment or test stays true; suite mode is added beside it |
+| 211 | `scripts/eval-answer-quality.mjs:842` | // Ranking one answer against itself means nothing: a one-mo | No change: comment or test stays true; suite mode is added beside it |
+| 212 | `scripts/eval-answer-quality.mjs:848` | // The same attached-excerpt, deciding-rule and game-state i | No change: comment or test stays true; suite mode is added beside it |
+| 213 | `scripts/eval-answer-quality.mjs:1015` | * The real dependencies of an experiment run (REQ-226): the  | No change: comment or test stays true; suite mode is added beside it |
+| 214 | `scripts/eval-answer-quality.mjs:1107` | * Experiment mode (REQ-226): validates the manifest against  | No change: comment or test stays true; suite mode is added beside it |
+| 215 | `scripts/eval-answer-quality.mjs:1288` | * model-access check (REQ-188): the dry run performs it when | No change: REQ-188 citations in comments stay true |
+| 216 | `scripts/eval-answer-quality.mjs:1325` | // An experiment run never reads or writes the committed sco | No change: comment or test stays true; suite mode is added beside it |
+| 217 | `scripts/answer-quality-no-gate.test.mjs:7` | // REGRESSION GUARD (REQ-188, NFR-018): the paid answer half | Amend at build: NEVER_IN_A_GATE (the list under this comment) gains the eval:rulesguru commands |
+| 218 | `scripts/answer-quality-no-gate.test.mjs:74` | // real corpus (REQ-229, NFR-018): a corpus refresh would tu | No change: manifest-generator and trace rule; a new sibling test guards the suite folder |
+| 219 | `scripts/eval-worked-solutions.test.mjs:55` | test(loadCases reads every *.case.json file, sorted, and rej | No change: new suite tests are added beside it |
+| 220 | `scripts/lib/experiment-run.test.mjs:671` | // Slice C: the record fields and the judge's inputs in an e | No change: comment or test stays true; suite mode is added beside it |
+| 221 | `scripts/lib/experiment-run.test.mjs:741` | // Slice G alignment with the finalized proposal (REQ-226, R | No change: comment or test stays true; suite mode is added beside it |
+| 222 | `scripts/lib/prompt-fidelity.mjs:2` | // preparePromptInput (REQ-185, REQ-188): the worked-solutio | No change: prompt-fidelity helpers are reused unchanged |
+| 223 | `scripts/lib/prompt-fidelity.mjs:36` | * The request a rules test case is asked as (REQ-185, A15) - | No change: prompt-fidelity helpers are reused unchanged |
+| 224 | `scripts/lib/prompt-fidelity.mjs:116` | * prompt a player gets (REQ-188). The caller learns whether  | No change: prompt-fidelity helpers are reused unchanged |
+| 225 | `scripts/lib/prompt-fidelity.d.mts:3` | // gate (REQ-185, REQ-188). Backend vitest tests import the  | No change: prompt-fidelity helpers are reused unchanged |
+| 226 | `scripts/lib/prompt-fidelity.d.mts:19` | /** Present when combo enrichment is on (production's defaul | No change: prompt-fidelity helpers are reused unchanged |
+| 227 | `scripts/lib/rules-coverage.mjs:1` | // Mechanic coverage for the rules test corpus (REQ-223): wh | No change: coverage command counts the committed corpus only |
+| 228 | `scripts/lib/rules-coverage.mjs:15` | // one of its deciding rule ids sits under that mechanic's n | No change: coverage command counts the committed corpus only |
+| 229 | `scripts/lib/answer-quality-run.mjs:2` | // on-demand answer-quality run (REQ-186 to REQ-190), kept a | No change: comment or test stays true; suite mode is added beside it |
+| 230 | `scripts/lib/answer-quality-run.mjs:93` | * REQ-188: which cases a run grades. Only approved, non-stal | No change: describes routine selection; suite selection lives in its own module |
+| 231 | `scripts/lib/rules-coverage.test.mjs:199` | // A mechanic with no WotC ruling and no CR Example: line is | No change: coverage command counts the committed corpus only |
+| 232 | `scripts/lib/experiment-run.mjs:1` | // Named experiment runs for the answer-quality instrument ( | No change: comment or test stays true; suite mode is added beside it |
+| 233 | `scripts/lib/experiment-run.mjs:67` | /** One record is keyed by case, model, excerpt cap, arm and | No change: comment or test stays true; suite mode is added beside it |
+| 234 | `scripts/lib/experiment-run.mjs:178` | * A run measures the checkout it executes from (REQ-226). It | No change: comment or test stays true; suite mode is added beside it |
+| 235 | `scripts/lib/experiment-run.mjs:356` | // The loop (REQ-226, REQ-227) | No change: comment or test stays true; suite mode is added beside it |
+| 236 | `scripts/lib/experiment-run.mjs:364` | * (preparePromptInput, REQ-185); any other arm comes from de | No change: experiment runner comments stay true |
+| 237 | `scripts/lib/experiment-run.mjs:387` | // The effort the provider reports for a reasoning model; no | No change: experiment runner comments stay true |
+| 238 | `scripts/lib/experiment-run.mjs:676` | // Ranking one answer against itself means nothing: a one-mo | No change: comment or test stays true; suite mode is added beside it |
+| 239 | `scripts/lib/experiment-run.mjs:877` | * The blind side-by-side rank (REQ-186 layer 2b) for one cas | No change: comment or test stays true; suite mode is added beside it |
+| 240 | `scripts/lib/experiment-run.mjs:886` | // The same attached-excerpt, deciding-rule and game-state i | No change: comment or test stays true; suite mode is added beside it |
+| 241 | `scripts/lib/experiment-run.mjs:920` | // Built the same way for every model, cap and arm (scripts/ | No change: comment or test stays true; suite mode is added beside it |
+| 242 | `scripts/lib/experiment-run.mjs:956` | * A regrade run (REQ-226): makes no answer call. It takes ea | No change: comment or test stays true; suite mode is added beside it |
+| 243 | `scripts/lib/gold-cases.d.mts:2` | // (REQ-185). Backend vitest tests import the real module at | Amend at build: declaration gains the loader's external-mode option |
+| 244 | `scripts/lib/prompt-fidelity.test.mjs:16` | test(buildCaseRequest attaches every cards entry by oracle i | No change: prompt-fidelity helpers are reused unchanged |
+| 245 | `scripts/lib/prompt-fidelity.test.mjs:61` | // loadPromptResources (REQ-188): the evaluation loader matc | No change: prompt-fidelity helpers are reused unchanged |
+| 246 | `scripts/lib/judge-inputs.mjs:2` | // (REQ-186). One builder for the routine loop, the experime | No change: comment or test stays true; suite mode is added beside it |
+| 247 | `scripts/lib/gold-cases.test.mjs:361` | // The migration of the 18 first-ship cases (REQ-185, A1) | No change: first-ship migration tests |
+| 248 | `scripts/lib/gold-cases.test.mjs:453` | test(each migrated case is approved by the owner's accept of | No change: first-ship migration tests |
+| 249 | `scripts/lib/gold-cases.test.mjs:461` | approved by the owner's accept of REQ-185 at the define gate | No change: first-ship migration tests |
+| 250 | `scripts/lib/gold-cases.mjs:1` | // Shared rules-test-case loader and validator, format versi | No change: loader header, first-six list, tags and snapshot code unchanged |
+| 251 | `scripts/lib/gold-cases.mjs:3` | // Every reader of the rules test corpus -- the retrieval ch | Amend at build: comment names the loader's external mode |
+| 252 | `scripts/lib/gold-cases.mjs:66` | * REQ-185 requires the corpus to hold at least these, each t | No change: loader header, first-six list, tags and snapshot code unchanged |
+| 253 | `scripts/lib/gold-cases.mjs:346` | * Tags are derived, never hand-written (REQ-185): mechanic:  | No change: loader header, first-six list, tags and snapshot code unchanged |
+| 254 | `scripts/lib/gold-cases.mjs:418` | // Snapshot hashing and the one stale comparison (REQ-185, R | No change: loader header, first-six list, tags and snapshot code unchanged |
+| 255 | `scripts/eval-worked-solutions.mjs:1` | // Worked-solutions retrieval check (NFR-018). | Amend at build: header comment gains the --suite usage lines |
+| 256 | `scripts/eval-worked-solutions.mjs:7` | // (buildCaseRequest in scripts/lib/prompt-fidelity.mjs, REQ | No change: comments about the committed corpus stay true |
+| 257 | `scripts/eval-worked-solutions.mjs:57` | * the shared gold-case loader (REQ-185), so this retrieval c | No change: comments about the committed corpus stay true |
+| 258 | `scripts/eval-worked-solutions.mjs:80` | WORKED-SOLUTIONS RETRIEVAL CHECK (NFR-018), | No change: the suite report prints its own title |
+| 259 | `scripts/eval-answer-quality.test.mjs:422` | test(buildCaseRequest asks a case bare when it names no card | No change: existing tests stay; suite tests are added |
+| 260 | `scripts/eval-answer-quality.test.mjs:512` | test(REGRESSION GUARD: eval:answer-quality is never wired in | No change: existing tests stay; suite tests are added |
+| 261 | `scripts/eval-answer-quality.test.mjs:538` | // Case selection, per-case merge and the per-tier headline  | No change: comment or test stays true; suite mode is added beside it |
+| 262 | `scripts/eval-answer-quality.test.mjs:1042` | // Experiment mode (REQ-226): flags, the manifest refusal, a | No change: comment or test stays true; suite mode is added beside it |
+| 263 | `scripts/eval-answer-quality.test.mjs:1320` | // Slice C (REQ-186 to REQ-189): grader repair, runtime pari | No change: comment or test stays true; suite mode is added beside it |
+| 264 | `scripts/eval-answer-quality.test.mjs:1343` | test(evaluation answer calls are built with the key alone an | No change: existing tests stay; suite tests are added |
+| 265 | `scripts/eval-answer-quality.test.mjs:1614` | test(the routine run's blind ranking is handed the lone judg | No change: comment or test stays true; suite mode is added beside it |
+| 266 | `docs/eval/answer-quality-investigation/OFFLINE-FINDINGS.md:132` | token-created-by-name-uses-oracle-card 1 rulings approved, 2 | No change: investigation docs, historical |
+| 267 | `docs/eval/answer-quality-investigation/RUNBOOK.md:16` | Judge model (**D0**) ______ Must be stronger than both GPT-4 | No change: investigation docs, historical |
+| 268 | `docs/eval/answer-quality-investigation/RUNBOOK.md:132` | Credentials load as for any live run (REQ-188). Run the **sa | No change: investigation docs, historical |
+| 269 | `docs/eval/answer-quality-investigation/RUNBOOK.md:189` | One run per input, a two-model lineup so the blind side-by-s | No change: investigation docs, historical |
 
 Lines the proposal also edits that the grep does not hit (they cite none of the
 patterns): `REQ-186` `Description` and its approved-only criterion,
