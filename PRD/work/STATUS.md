@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| resolution-recipe-eval | Eval-only arm R (layer and timing recipe) vs production on Luna, both flows; measurement only |
 
 ## owner-action
 
