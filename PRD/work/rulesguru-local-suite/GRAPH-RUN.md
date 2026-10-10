@@ -7,7 +7,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261010-193032/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-implement PRD/work/rulesguru-local-suite/`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 5 | define | opus | ok | `0 → 40` | attempt 2 (gate-qc loop 1): commit `62296b1e`; (1) system-map:501 removed line quoted in full, readability note dropped; (2) purge sentence reworded, package grep for permission wording clean (intake left verbatim); (3) `evidence/name-lookup-counts.mjs` + `evidence/name-lookup-counts.out.txt` cited; 19/19 diff lines exact; grep 251/251; 9 verdict slots blank; `STATUS.refined`; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs .gitignore` empty | 2026-10-10 |
 | 6 | gate-qc | sonnet | ok | `0 → 18` | PASS attempt 2, findings none — `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md`, commit `60955b1d`; findings 1–3 resolved; 19/19 diff lines exact; grep 251/251; 9 slots blank; no RulesGuru text; `git diff --stat dabad406 HEAD -- PRD/sections apps scripts docs .gitignore` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/284 | 2026-10-10 |
 | 7 | gate-review | sonnet | ok | `0 → 16` | build half run `graph-20261010-205704`: claim commit `5ca804dc` on `thejudge-auto/rulesguru-local-suite-work` cut from `origin/main` `c6dec2ce` (docs PR #284 merge; kickoff worktree removed clean); `graph-gate-review` commit `714b5354`: 9 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; worktree porcelain empty | 2026-10-10 |
+| 8 | gate-qc | sonnet | failed | `0 → 28` | FAIL build-half re-grade at `c6dec2ce` (code PR #285 merged after this spec was written) — `PRD/work/rulesguru-local-suite/QUALITY-CHECK.md`, commit `8476a3ef`, `STATUS.refining`, board row under refining; findings bookkeeping only: amendment-set grep 269 hits not 251 with shifted keys, 18 new no-change hits need rows, 3 rows with stale reasons, stale recipe-overlap prose (non-blocking); passed: 19/19 diff lines exact at `c6dec2ce`, added lines read correctly beside #285 wording, build-scope names present, 9/9 verdicts consistent, nothing outside the package changed, no suite content; README `## Preparation gate` FAIL written by the driver; loop 1 of 3 back to define | 2026-10-10 |
 
 ## Open gate
 
@@ -229,6 +230,34 @@ Privacy: this package concerns a local-only practice suite. Write no question or
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: PASS or FAIL, the complete findings list, the commit SHA, and the push result.
+
+### define (build-half refresh, gate-qc loop 1)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rulesguru-local-suite
+
+You are node 3 (`define`) of run `graph-20261010-205704`, re-entered after the build-half `gate-qc` FAIL (loop 1 of 3), on branch `thejudge-auto/rulesguru-local-suite-work`. Invoke the `thejudge-refinement` skill on `PRD/work/rulesguru-local-suite/` in its graph-controlled mode (no questions to the user, no approval pauses) and fix exactly the findings below in `DESIGN-BRIEF.md`. The base is now `c6dec2ce`, which includes code PR #285 (resolution-recipe-eval).
+
+The gate-qc findings, from `QUALITY-CHECK.md` (commit `8476a3ef`):
+
+> 1. The brief's line-level grep returns 269 hits at `c6dec2ce`, not 251; its file:line keys shifted because #285 added lines above them. Refresh the headline count and the rows.
+> 2. 18 new hits need rows, none needing an amendment: 16 license lines in new committed #285 case files, 1 REQ-187 line naming the rubric moving again with `--regrade-from` (REQ-226), 1 comment at `rubric.ts:86`.
+> 3. Three existing rows changed text and need updated reasons, all staying no-change: the REQ-185 Description line (row 12 says the recipe package rewrites it; #285 has now done so); the REQ-185 agent-approval constraint (now with the per-case define-gate path; a suite case is never approved by any path, which still covers it); the REQ-230 arm list (gains arm R; a suite run refuses every arm but A).
+> 4. Non-blocking: the brief's section on overlap with resolution-recipe-eval and its REQ-187 collision note still call the recipe change parked; it has merged. The conclusions hold.
+
+Do:
+1. Re-run the brief's own line-level grep at this base and rebuild `## Amendment set`: the new count with its amend / build / no-change split, refreshed file:line keys, a disposition row per hit, the 18 new rows, and the three updated reasons. Save the exact grep command and its raw hit list under `PRD/work/rulesguru-local-suite/evidence/` and cite it.
+2. Update the recipe-overlap prose in the brief to say #285 merged at `81739f35`, keeping its conclusions.
+3. Leave `GATE-QUESTIONS.md` untouched: its diffs, verdicts, reasons and prose are the owner's accepted record. Leave `intake/`, `PRD/sections/`, code, and the README `## Preparation gate` and `## Autonomous metadata` sections untouched.
+4. If refreshing the grep turns up a hit that would need an amendment rather than no-change, do not add one: end the node and report it, because a new product-truth change needs the owner.
+5. Restore `STATUS.refined` as the only marker (replacing `STATUS.refining`), set the README `status:` line, and move the `PRD/work/STATUS.md` board row under refined.
+
+Privacy: this package concerns a local-only practice suite. Write no question or answer text from that source into any file, make no network request to it, and add nothing about how use of it was agreed beyond the words used with permission, local only.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit explicit paths only (`git add <path>`, then `git commit`, then `git push`, each a short separate call; never `git add -A` or `git add .`). End every commit message with the line: Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. Spawn no subagents or forks; verify directly; no sleeping or polling. Stay well under 150 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: the new hit count and split, the evidence file paths, whether any hit needed an amendment, the marker and board state, the commit SHA, and the push result.
 
 ## Instruction ledger
 
