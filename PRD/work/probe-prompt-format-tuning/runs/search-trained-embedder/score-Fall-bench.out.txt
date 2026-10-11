@@ -1,0 +1,20 @@
+cases: suite 0, corpus 0, bench 156
+  [F-foldall] F-foldall: 156 questions scored
+
+== F-foldall (dtype q8; median single-query embed 3.7 ms; 19 s)
+F-foldall a α0.4        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 116/156 | necro Q - ID - | meaning r@10 0.0% r@100 0.0% | hybrid r@100 0.0% | miss median NaN
+F-foldall a α0.5        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 124/156 | necro Q - ID - | meaning r@10 0.0% r@100 0.0% | hybrid r@100 0.0% | miss median NaN
+F-foldall a α0.6        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 130/156 | necro Q - ID - | meaning r@10 0.0% r@100 0.0% | hybrid r@100 0.0% | miss median NaN
+F-foldall a α0.7        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 132/156 | necro Q - ID - | meaning r@10 0.0% r@100 0.0% | hybrid r@100 0.0% | miss median NaN
+F-foldall a α0.8        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 132/156 | necro Q - ID - | meaning r@10 0.0% r@100 0.0% | hybrid r@100 0.0% | miss median NaN
+F-foldall a α0.9        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 130/156 | necro Q - ID - | meaning r@10 0.0% r@100 0.0% | hybrid r@100 0.0% | miss median NaN
+F-foldall b α0.4        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 104/156 | necro Q - ID - | hybrid r@100 0.0% | miss median NaN
+F-foldall b α0.5        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 117/156 | necro Q - ID - | hybrid r@100 0.0% | miss median NaN
+F-foldall b α0.6        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 126/156 | necro Q - ID - | hybrid r@100 0.0% | miss median NaN
+F-foldall b α0.7        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 130/156 | necro Q - ID - | hybrid r@100 0.0% | miss median NaN
+F-foldall b α0.8        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 131/156 | necro Q - ID - | hybrid r@100 0.0% | miss median NaN
+F-foldall b α0.9        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 131/156 | necro Q - ID - | hybrid r@100 0.0% | miss median NaN
+
+==== SUMMARY (pipeline a = today's hybrid; b = S1+S5 + concept map + per-card search; "tuned" = weight picked on the tuning half) ====
+F-foldall a α0.6        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 130/156 | necro Q - ID - | meaning r@10 0.0% r@100 0.0% | hybrid r@100 0.0% | miss median NaN
+F-foldall b α0.6        | suite    0/0 | tun 0 chk 0 | every 0 (0/0) | hard25 0/0 | corpus 0/0 of 0 | bench top5 126/156 | necro Q - ID - | hybrid r@100 0.0% | miss median NaN

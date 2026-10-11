@@ -1,0 +1,2267 @@
+{
+ "reproducible": {
+  "freshCount": 2893,
+  "committedCount": 2893,
+  "diffCount": 0,
+  "firstDiffs": []
+ },
+ "crEffective": "September 25, 2026",
+ "lineKinds": {
+  "section": 147,
+  "rule": 1174,
+  "subrule": 1989,
+  "part": 9,
+  "example": 277,
+  "blank": 3328,
+  "other": 4
+ },
+ "otherLines": [
+  {
+   "i": 179,
+   "l": "Credits"
+  },
+  {
+   "i": 1060,
+   "l": "119.1d. In a two-player Brawl game, each player’s starting life total is 25. In a multiplayer Brawl game, each player’s starting life total is 30. See rule 903."
+  },
+  {
+   "i": 2724,
+   "l": "606.5 If the total cost to activate a loyalty ability contains multiple costs to add or remove loyalty counters, those costs are combined into a single cost to "
+  },
+  {
+   "i": 5560,
+   "l": "704.5aa If a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. See rule 702.179, “Start Your Eng"
+  }
+ ],
+ "oddIdLines": [
+  {
+   "i": 1060,
+   "l": "119.1d. In a two-player Brawl game, each player’s starting life total is 25. In a multiplayer Brawl game, each player’s starting life total is 30. See rule 903."
+  },
+  {
+   "i": 2724,
+   "l": "606.5 If the total cost to activate a loyalty ability contains multiple costs to add or remove loyalty counters, those costs are combined into a single cost to "
+  },
+  {
+   "i": 5560,
+   "l": "704.5aa If a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. See rule 702.179, “Start Your Eng"
+  }
+ ],
+ "partHeaders": [
+  {
+   "i": 181,
+   "l": "1. Game Concepts"
+  },
+  {
+   "i": 1277,
+   "l": "2. Parts of a Card"
+  },
+  {
+   "i": 1569,
+   "l": "3. Card Types"
+  },
+  {
+   "i": 1933,
+   "l": "4. Zones"
+  },
+  {
+   "i": 2111,
+   "l": "5. Turn Structure"
+  },
+  {
+   "i": 2450,
+   "l": "6. Spells, Abilities, and Effects"
+  },
+  {
+   "i": 3201,
+   "l": "7. Additional Rules"
+  },
+  {
+   "i": 6418,
+   "l": "8. Multiplayer Rules"
+  },
+  {
+   "i": 6822,
+   "l": "9. Casual Variants"
+  }
+ ],
+ "rawDuplicateIds": [],
+ "completeness": {
+  "rawSections": 147,
+  "rawNumberedRules": 1174,
+  "rawSubrules": 1989,
+  "rawTotal": 3310,
+  "indexEntries": 2893,
+  "indexDuplicateIds": 0,
+  "missingFromIndexByKind": {
+   "section": 147,
+   "rule": 272
+  },
+  "missingNonSectionIds": [
+   "205.2",
+   "205.3",
+   "205.4",
+   "303.7",
+   "700.15",
+   "701.2",
+   "701.3",
+   "701.4",
+   "701.5",
+   "701.6",
+   "701.7",
+   "701.8",
+   "701.9",
+   "701.10",
+   "701.11",
+   "701.12",
+   "701.13",
+   "701.14",
+   "701.15",
+   "701.16",
+   "701.17",
+   "701.18",
+   "701.19",
+   "701.20",
+   "701.21",
+   "701.22",
+   "701.23",
+   "701.24",
+   "701.25",
+   "701.26",
+   "701.27",
+   "701.28",
+   "701.29",
+   "701.30",
+   "701.31",
+   "701.32",
+   "701.33",
+   "701.34",
+   "701.35",
+   "701.36",
+   "701.37",
+   "701.38",
+   "701.39",
+   "701.40",
+   "701.41",
+   "701.42",
+   "701.43",
+   "701.44",
+   "701.45",
+   "701.46",
+   "701.47",
+   "701.48",
+   "701.49",
+   "701.50",
+   "701.51",
+   "701.52",
+   "701.53",
+   "701.54",
+   "701.55",
+   "701.56",
+   "701.57",
+   "701.58",
+   "701.59",
+   "701.60",
+   "701.61",
+   "701.62",
+   "701.63",
+   "701.64",
+   "701.65",
+   "701.66",
+   "701.67",
+   "701.68",
+   "701.69",
+   "701.70",
+   "701.71",
+   "702.2",
+   "702.3",
+   "702.4",
+   "702.5",
+   "702.6",
+   "702.7",
+   "702.8",
+   "702.9",
+   "702.10",
+   "702.11",
+   "702.12",
+   "702.13",
+   "702.14",
+   "702.15",
+   "702.16",
+   "702.17",
+   "702.18",
+   "702.19",
+   "702.20",
+   "702.21",
+   "702.22",
+   "702.23",
+   "702.24",
+   "702.25",
+   "702.26",
+   "702.27",
+   "702.28",
+   "702.29",
+   "702.30",
+   "702.31",
+   "702.32",
+   "702.33",
+   "702.34",
+   "702.35",
+   "702.36",
+   "702.37",
+   "702.38",
+   "702.39",
+   "702.40",
+   "702.41",
+   "702.42",
+   "702.43",
+   "702.44",
+   "702.45",
+   "702.46",
+   "702.47",
+   "702.48",
+   "702.49",
+   "702.50",
+   "702.51",
+   "702.52",
+   "702.53",
+   "702.54",
+   "702.55",
+   "702.56",
+   "702.57",
+   "702.58",
+   "702.59",
+   "702.60",
+   "702.61",
+   "702.62",
+   "702.63",
+   "702.64",
+   "702.65",
+   "702.66",
+   "702.67",
+   "702.68",
+   "702.69",
+   "702.70",
+   "702.71",
+   "702.72",
+   "702.73",
+   "702.74",
+   "702.75",
+   "702.76",
+   "702.77",
+   "702.78",
+   "702.79",
+   "702.80",
+   "702.81",
+   "702.82",
+   "702.83",
+   "702.84",
+   "702.85",
+   "702.86",
+   "702.87",
+   "702.88",
+   "702.89",
+   "702.90",
+   "702.91",
+   "702.92",
+   "702.93",
+   "702.94",
+   "702.95",
+   "702.96",
+   "702.97",
+   "702.98",
+   "702.99",
+   "702.100",
+   "702.101",
+   "702.102",
+   "702.103",
+   "702.104",
+   "702.105",
+   "702.106",
+   "702.107",
+   "702.108",
+   "702.109",
+   "702.110",
+   "702.111",
+   "702.112",
+   "702.113",
+   "702.114",
+   "702.115",
+   "702.116",
+   "702.117",
+   "702.118",
+   "702.119",
+   "702.120",
+   "702.121",
+   "702.122",
+   "702.123",
+   "702.124",
+   "702.125",
+   "702.126",
+   "702.127",
+   "702.128",
+   "702.129",
+   "702.130",
+   "702.131",
+   "702.132",
+   "702.133",
+   "702.134",
+   "702.135",
+   "702.136",
+   "702.137",
+   "702.138",
+   "702.139",
+   "702.140",
+   "702.141",
+   "702.142",
+   "702.143",
+   "702.144",
+   "702.145",
+   "702.146",
+   "702.147",
+   "702.148",
+   "702.149",
+   "702.150",
+   "702.151",
+   "702.152",
+   "702.153",
+   "702.154",
+   "702.155",
+   "702.156",
+   "702.157",
+   "702.158",
+   "702.159",
+   "702.160",
+   "702.161",
+   "702.162",
+   "702.164",
+   "702.165",
+   "702.166",
+   "702.167",
+   "702.168",
+   "702.169",
+   "702.170",
+   "702.171",
+   "702.172",
+   "702.173",
+   "702.174",
+   "702.175",
+   "702.176",
+   "702.177",
+   "702.178",
+   "702.180",
+   "702.181",
+   "702.182",
+   "702.183",
+   "702.184",
+   "702.185",
+   "702.186",
+   "702.187",
+   "702.188",
+   "702.189",
+   "702.190",
+   "702.191",
+   "702.192",
+   "702.193",
+   "702.194",
+   "702.195",
+   "901.15",
+   "903.12",
+   "903.13",
+   "904.12",
+   "904.13"
+  ],
+  "indexIdsNotInRaw": [
+   "119.1d",
+   "606.5"
+  ],
+  "orderMatchesSource": false
+ },
+ "droppedHeadings": [
+  {
+   "id": "205.2",
+   "line": "205.2. Card Types"
+  },
+  {
+   "id": "205.3",
+   "line": "205.3. Subtypes"
+  },
+  {
+   "id": "205.4",
+   "line": "205.4. Supertypes"
+  },
+  {
+   "id": "303.7",
+   "line": "303.7. Some Aura enchantments also have the subtype “Role.”"
+  },
+  {
+   "id": "700.15",
+   "line": "700.15. The term enter[s] is short for “enter[s] the battlefield.”"
+  },
+  {
+   "id": "701.2",
+   "line": "701.2. Activate"
+  },
+  {
+   "id": "701.3",
+   "line": "701.3. Attach"
+  },
+  {
+   "id": "701.4",
+   "line": "701.4. Behold"
+  },
+  {
+   "id": "701.5",
+   "line": "701.5. Cast"
+  },
+  {
+   "id": "701.6",
+   "line": "701.6. Counter"
+  },
+  {
+   "id": "701.7",
+   "line": "701.7. Create"
+  },
+  {
+   "id": "701.8",
+   "line": "701.8. Destroy"
+  },
+  {
+   "id": "701.9",
+   "line": "701.9. Discard"
+  },
+  {
+   "id": "701.10",
+   "line": "701.10. Double"
+  },
+  {
+   "id": "701.11",
+   "line": "701.11. Triple"
+  },
+  {
+   "id": "701.12",
+   "line": "701.12. Exchange"
+  },
+  {
+   "id": "701.13",
+   "line": "701.13. Exile"
+  },
+  {
+   "id": "701.14",
+   "line": "701.14. Fight"
+  },
+  {
+   "id": "701.15",
+   "line": "701.15. Goad"
+  },
+  {
+   "id": "701.16",
+   "line": "701.16. Investigate"
+  },
+  {
+   "id": "701.17",
+   "line": "701.17. Mill"
+  },
+  {
+   "id": "701.18",
+   "line": "701.18. Play"
+  },
+  {
+   "id": "701.19",
+   "line": "701.19. Regenerate"
+  },
+  {
+   "id": "701.20",
+   "line": "701.20. Reveal"
+  },
+  {
+   "id": "701.21",
+   "line": "701.21. Sacrifice"
+  },
+  {
+   "id": "701.22",
+   "line": "701.22. Scry"
+  },
+  {
+   "id": "701.23",
+   "line": "701.23. Search"
+  },
+  {
+   "id": "701.24",
+   "line": "701.24. Shuffle"
+  },
+  {
+   "id": "701.25",
+   "line": "701.25. Surveil"
+  },
+  {
+   "id": "701.26",
+   "line": "701.26. Tap and Untap"
+  },
+  {
+   "id": "701.27",
+   "line": "701.27. Transform"
+  },
+  {
+   "id": "701.28",
+   "line": "701.28. Convert"
+  },
+  {
+   "id": "701.29",
+   "line": "701.29. Fateseal"
+  },
+  {
+   "id": "701.30",
+   "line": "701.30. Clash"
+  },
+  {
+   "id": "701.31",
+   "line": "701.31. Planeswalk"
+  },
+  {
+   "id": "701.32",
+   "line": "701.32. Set in Motion"
+  },
+  {
+   "id": "701.33",
+   "line": "701.33. Abandon"
+  },
+  {
+   "id": "701.34",
+   "line": "701.34. Proliferate"
+  },
+  {
+   "id": "701.35",
+   "line": "701.35. Detain"
+  },
+  {
+   "id": "701.36",
+   "line": "701.36. Populate"
+  },
+  {
+   "id": "701.37",
+   "line": "701.37. Monstrosity"
+  },
+  {
+   "id": "701.38",
+   "line": "701.38. Vote"
+  },
+  {
+   "id": "701.39",
+   "line": "701.39. Bolster"
+  },
+  {
+   "id": "701.40",
+   "line": "701.40. Manifest"
+  },
+  {
+   "id": "701.41",
+   "line": "701.41. Support"
+  },
+  {
+   "id": "701.42",
+   "line": "701.42. Meld"
+  },
+  {
+   "id": "701.43",
+   "line": "701.43. Exert"
+  },
+  {
+   "id": "701.44",
+   "line": "701.44. Explore"
+  },
+  {
+   "id": "701.45",
+   "line": "701.45. Assemble"
+  },
+  {
+   "id": "701.46",
+   "line": "701.46. Adapt"
+  },
+  {
+   "id": "701.47",
+   "line": "701.47. Amass"
+  },
+  {
+   "id": "701.48",
+   "line": "701.48. Learn"
+  },
+  {
+   "id": "701.49",
+   "line": "701.49. Venture into the Dungeon"
+  },
+  {
+   "id": "701.50",
+   "line": "701.50. Connive"
+  },
+  {
+   "id": "701.51",
+   "line": "701.51. Open an Attraction"
+  },
+  {
+   "id": "701.52",
+   "line": "701.52. Roll to Visit Your Attractions"
+  },
+  {
+   "id": "701.53",
+   "line": "701.53. Incubate"
+  },
+  {
+   "id": "701.54",
+   "line": "701.54. The Ring Tempts You"
+  },
+  {
+   "id": "701.55",
+   "line": "701.55. Face a Villainous Choice"
+  },
+  {
+   "id": "701.56",
+   "line": "701.56. Time Travel"
+  },
+  {
+   "id": "701.57",
+   "line": "701.57. Discover"
+  },
+  {
+   "id": "701.58",
+   "line": "701.58. Cloak"
+  },
+  {
+   "id": "701.59",
+   "line": "701.59. Collect Evidence"
+  },
+  {
+   "id": "701.60",
+   "line": "701.60. Suspect"
+  },
+  {
+   "id": "701.61",
+   "line": "701.61. Forage"
+  },
+  {
+   "id": "701.62",
+   "line": "701.62. Manifest Dread"
+  },
+  {
+   "id": "701.63",
+   "line": "701.63. Endure"
+  },
+  {
+   "id": "701.64",
+   "line": "701.64. Harness"
+  },
+  {
+   "id": "701.65",
+   "line": "701.65. Airbend"
+  },
+  {
+   "id": "701.66",
+   "line": "701.66. Earthbend"
+  },
+  {
+   "id": "701.67",
+   "line": "701.67. Waterbend"
+  },
+  {
+   "id": "701.68",
+   "line": "701.68. Blight"
+  },
+  {
+   "id": "701.69",
+   "line": "701.69. Heal"
+  },
+  {
+   "id": "701.70",
+   "line": "701.70. Recruit"
+  },
+  {
+   "id": "701.71",
+   "line": "701.71. Empower Jace"
+  },
+  {
+   "id": "702.2",
+   "line": "702.2. Deathtouch"
+  },
+  {
+   "id": "702.3",
+   "line": "702.3. Defender"
+  },
+  {
+   "id": "702.4",
+   "line": "702.4. Double Strike"
+  },
+  {
+   "id": "702.5",
+   "line": "702.5. Enchant"
+  },
+  {
+   "id": "702.6",
+   "line": "702.6. Equip"
+  },
+  {
+   "id": "702.7",
+   "line": "702.7. First Strike"
+  },
+  {
+   "id": "702.8",
+   "line": "702.8. Flash"
+  },
+  {
+   "id": "702.9",
+   "line": "702.9. Flying"
+  },
+  {
+   "id": "702.10",
+   "line": "702.10. Haste"
+  },
+  {
+   "id": "702.11",
+   "line": "702.11. Hexproof"
+  },
+  {
+   "id": "702.12",
+   "line": "702.12. Indestructible"
+  },
+  {
+   "id": "702.13",
+   "line": "702.13. Intimidate"
+  },
+  {
+   "id": "702.14",
+   "line": "702.14. Landwalk"
+  },
+  {
+   "id": "702.15",
+   "line": "702.15. Lifelink"
+  },
+  {
+   "id": "702.16",
+   "line": "702.16. Protection"
+  },
+  {
+   "id": "702.17",
+   "line": "702.17. Reach"
+  },
+  {
+   "id": "702.18",
+   "line": "702.18. Shroud"
+  },
+  {
+   "id": "702.19",
+   "line": "702.19. Trample"
+  },
+  {
+   "id": "702.20",
+   "line": "702.20. Vigilance"
+  },
+  {
+   "id": "702.21",
+   "line": "702.21. Ward"
+  },
+  {
+   "id": "702.22",
+   "line": "702.22. Banding"
+  },
+  {
+   "id": "702.23",
+   "line": "702.23. Rampage"
+  },
+  {
+   "id": "702.24",
+   "line": "702.24. Cumulative Upkeep"
+  },
+  {
+   "id": "702.25",
+   "line": "702.25. Flanking"
+  },
+  {
+   "id": "702.26",
+   "line": "702.26. Phasing"
+  },
+  {
+   "id": "702.27",
+   "line": "702.27. Buyback"
+  },
+  {
+   "id": "702.28",
+   "line": "702.28. Shadow"
+  },
+  {
+   "id": "702.29",
+   "line": "702.29. Cycling"
+  },
+  {
+   "id": "702.30",
+   "line": "702.30. Echo"
+  },
+  {
+   "id": "702.31",
+   "line": "702.31. Horsemanship"
+  },
+  {
+   "id": "702.32",
+   "line": "702.32. Fading"
+  },
+  {
+   "id": "702.33",
+   "line": "702.33. Kicker"
+  },
+  {
+   "id": "702.34",
+   "line": "702.34. Flashback"
+  },
+  {
+   "id": "702.35",
+   "line": "702.35. Madness"
+  },
+  {
+   "id": "702.36",
+   "line": "702.36. Fear"
+  },
+  {
+   "id": "702.37",
+   "line": "702.37. Morph"
+  },
+  {
+   "id": "702.38",
+   "line": "702.38. Amplify"
+  },
+  {
+   "id": "702.39",
+   "line": "702.39. Provoke"
+  },
+  {
+   "id": "702.40",
+   "line": "702.40. Storm"
+  },
+  {
+   "id": "702.41",
+   "line": "702.41. Affinity"
+  },
+  {
+   "id": "702.42",
+   "line": "702.42. Entwine"
+  },
+  {
+   "id": "702.43",
+   "line": "702.43. Modular"
+  },
+  {
+   "id": "702.44",
+   "line": "702.44. Sunburst"
+  },
+  {
+   "id": "702.45",
+   "line": "702.45. Bushido"
+  },
+  {
+   "id": "702.46",
+   "line": "702.46. Soulshift"
+  },
+  {
+   "id": "702.47",
+   "line": "702.47. Splice"
+  },
+  {
+   "id": "702.48",
+   "line": "702.48. Offering"
+  },
+  {
+   "id": "702.49",
+   "line": "702.49. Ninjutsu"
+  },
+  {
+   "id": "702.50",
+   "line": "702.50. Epic"
+  },
+  {
+   "id": "702.51",
+   "line": "702.51. Convoke"
+  },
+  {
+   "id": "702.52",
+   "line": "702.52. Dredge"
+  },
+  {
+   "id": "702.53",
+   "line": "702.53. Transmute"
+  },
+  {
+   "id": "702.54",
+   "line": "702.54. Bloodthirst"
+  },
+  {
+   "id": "702.55",
+   "line": "702.55. Haunt"
+  },
+  {
+   "id": "702.56",
+   "line": "702.56. Replicate"
+  },
+  {
+   "id": "702.57",
+   "line": "702.57. Forecast"
+  },
+  {
+   "id": "702.58",
+   "line": "702.58. Graft"
+  },
+  {
+   "id": "702.59",
+   "line": "702.59. Recover"
+  },
+  {
+   "id": "702.60",
+   "line": "702.60. Ripple"
+  },
+  {
+   "id": "702.61",
+   "line": "702.61. Split Second"
+  },
+  {
+   "id": "702.62",
+   "line": "702.62. Suspend"
+  },
+  {
+   "id": "702.63",
+   "line": "702.63. Vanishing"
+  },
+  {
+   "id": "702.64",
+   "line": "702.64. Absorb"
+  },
+  {
+   "id": "702.65",
+   "line": "702.65. Aura Swap"
+  },
+  {
+   "id": "702.66",
+   "line": "702.66. Delve"
+  },
+  {
+   "id": "702.67",
+   "line": "702.67. Fortify"
+  },
+  {
+   "id": "702.68",
+   "line": "702.68. Frenzy"
+  },
+  {
+   "id": "702.69",
+   "line": "702.69. Gravestorm"
+  },
+  {
+   "id": "702.70",
+   "line": "702.70. Poisonous"
+  },
+  {
+   "id": "702.71",
+   "line": "702.71. Transfigure"
+  },
+  {
+   "id": "702.72",
+   "line": "702.72. Champion"
+  },
+  {
+   "id": "702.73",
+   "line": "702.73. Changeling"
+  },
+  {
+   "id": "702.74",
+   "line": "702.74. Evoke"
+  },
+  {
+   "id": "702.75",
+   "line": "702.75. Hideaway"
+  },
+  {
+   "id": "702.76",
+   "line": "702.76. Prowl"
+  },
+  {
+   "id": "702.77",
+   "line": "702.77. Reinforce"
+  },
+  {
+   "id": "702.78",
+   "line": "702.78. Conspire"
+  },
+  {
+   "id": "702.79",
+   "line": "702.79. Persist"
+  },
+  {
+   "id": "702.80",
+   "line": "702.80. Wither"
+  },
+  {
+   "id": "702.81",
+   "line": "702.81. Retrace"
+  },
+  {
+   "id": "702.82",
+   "line": "702.82. Devour"
+  },
+  {
+   "id": "702.83",
+   "line": "702.83. Exalted"
+  },
+  {
+   "id": "702.84",
+   "line": "702.84. Unearth"
+  },
+  {
+   "id": "702.85",
+   "line": "702.85. Cascade"
+  },
+  {
+   "id": "702.86",
+   "line": "702.86. Annihilator"
+  },
+  {
+   "id": "702.87",
+   "line": "702.87. Level Up"
+  },
+  {
+   "id": "702.88",
+   "line": "702.88. Rebound"
+  },
+  {
+   "id": "702.89",
+   "line": "702.89. Umbra Armor"
+  },
+  {
+   "id": "702.90",
+   "line": "702.90. Infect"
+  },
+  {
+   "id": "702.91",
+   "line": "702.91. Battle Cry"
+  },
+  {
+   "id": "702.92",
+   "line": "702.92. Living Weapon"
+  },
+  {
+   "id": "702.93",
+   "line": "702.93. Undying"
+  },
+  {
+   "id": "702.94",
+   "line": "702.94. Miracle"
+  },
+  {
+   "id": "702.95",
+   "line": "702.95. Soulbond"
+  },
+  {
+   "id": "702.96",
+   "line": "702.96. Overload"
+  },
+  {
+   "id": "702.97",
+   "line": "702.97. Scavenge"
+  },
+  {
+   "id": "702.98",
+   "line": "702.98. Unleash"
+  },
+  {
+   "id": "702.99",
+   "line": "702.99. Cipher"
+  },
+  {
+   "id": "702.100",
+   "line": "702.100. Evolve"
+  },
+  {
+   "id": "702.101",
+   "line": "702.101. Extort"
+  },
+  {
+   "id": "702.102",
+   "line": "702.102. Fuse"
+  },
+  {
+   "id": "702.103",
+   "line": "702.103. Bestow"
+  },
+  {
+   "id": "702.104",
+   "line": "702.104. Tribute"
+  },
+  {
+   "id": "702.105",
+   "line": "702.105. Dethrone"
+  },
+  {
+   "id": "702.106",
+   "line": "702.106. Hidden Agenda"
+  },
+  {
+   "id": "702.107",
+   "line": "702.107. Outlast"
+  },
+  {
+   "id": "702.108",
+   "line": "702.108. Prowess"
+  },
+  {
+   "id": "702.109",
+   "line": "702.109. Dash"
+  },
+  {
+   "id": "702.110",
+   "line": "702.110. Exploit"
+  },
+  {
+   "id": "702.111",
+   "line": "702.111. Menace"
+  },
+  {
+   "id": "702.112",
+   "line": "702.112. Renown"
+  },
+  {
+   "id": "702.113",
+   "line": "702.113. Awaken"
+  },
+  {
+   "id": "702.114",
+   "line": "702.114. Devoid"
+  },
+  {
+   "id": "702.115",
+   "line": "702.115. Ingest"
+  },
+  {
+   "id": "702.116",
+   "line": "702.116. Myriad"
+  },
+  {
+   "id": "702.117",
+   "line": "702.117. Surge"
+  },
+  {
+   "id": "702.118",
+   "line": "702.118. Skulk"
+  },
+  {
+   "id": "702.119",
+   "line": "702.119. Emerge"
+  },
+  {
+   "id": "702.120",
+   "line": "702.120. Escalate"
+  },
+  {
+   "id": "702.121",
+   "line": "702.121. Melee"
+  },
+  {
+   "id": "702.122",
+   "line": "702.122. Crew"
+  },
+  {
+   "id": "702.123",
+   "line": "702.123. Fabricate"
+  },
+  {
+   "id": "702.124",
+   "line": "702.124. Partner"
+  },
+  {
+   "id": "702.125",
+   "line": "702.125. Undaunted"
+  },
+  {
+   "id": "702.126",
+   "line": "702.126. Improvise"
+  },
+  {
+   "id": "702.127",
+   "line": "702.127. Aftermath"
+  },
+  {
+   "id": "702.128",
+   "line": "702.128. Embalm"
+  },
+  {
+   "id": "702.129",
+   "line": "702.129. Eternalize"
+  },
+  {
+   "id": "702.130",
+   "line": "702.130. Afflict"
+  },
+  {
+   "id": "702.131",
+   "line": "702.131. Ascend"
+  },
+  {
+   "id": "702.132",
+   "line": "702.132. Assist"
+  },
+  {
+   "id": "702.133",
+   "line": "702.133. Jump-Start"
+  },
+  {
+   "id": "702.134",
+   "line": "702.134. Mentor"
+  },
+  {
+   "id": "702.135",
+   "line": "702.135. Afterlife"
+  },
+  {
+   "id": "702.136",
+   "line": "702.136. Riot"
+  },
+  {
+   "id": "702.137",
+   "line": "702.137. Spectacle"
+  },
+  {
+   "id": "702.138",
+   "line": "702.138. Escape"
+  },
+  {
+   "id": "702.139",
+   "line": "702.139. Companion"
+  },
+  {
+   "id": "702.140",
+   "line": "702.140. Mutate"
+  },
+  {
+   "id": "702.141",
+   "line": "702.141. Encore"
+  },
+  {
+   "id": "702.142",
+   "line": "702.142. Boast"
+  },
+  {
+   "id": "702.143",
+   "line": "702.143. Foretell"
+  },
+  {
+   "id": "702.144",
+   "line": "702.144. Demonstrate"
+  },
+  {
+   "id": "702.145",
+   "line": "702.145. Daybound and Nightbound"
+  },
+  {
+   "id": "702.146",
+   "line": "702.146. Disturb"
+  },
+  {
+   "id": "702.147",
+   "line": "702.147. Decayed"
+  },
+  {
+   "id": "702.148",
+   "line": "702.148. Cleave"
+  },
+  {
+   "id": "702.149",
+   "line": "702.149. Training"
+  },
+  {
+   "id": "702.150",
+   "line": "702.150. Compleated"
+  },
+  {
+   "id": "702.151",
+   "line": "702.151. Reconfigure"
+  },
+  {
+   "id": "702.152",
+   "line": "702.152. Blitz"
+  },
+  {
+   "id": "702.153",
+   "line": "702.153. Casualty"
+  },
+  {
+   "id": "702.154",
+   "line": "702.154. Enlist"
+  },
+  {
+   "id": "702.155",
+   "line": "702.155. Read Ahead"
+  },
+  {
+   "id": "702.156",
+   "line": "702.156. Ravenous"
+  },
+  {
+   "id": "702.157",
+   "line": "702.157. Squad"
+  },
+  {
+   "id": "702.158",
+   "line": "702.158. Space Sculptor"
+  },
+  {
+   "id": "702.159",
+   "line": "702.159. Visit"
+  },
+  {
+   "id": "702.160",
+   "line": "702.160. Prototype"
+  },
+  {
+   "id": "702.161",
+   "line": "702.161. Living Metal"
+  },
+  {
+   "id": "702.162",
+   "line": "702.162. More Than Meets the Eye"
+  },
+  {
+   "id": "702.164",
+   "line": "702.164. Toxic"
+  },
+  {
+   "id": "702.165",
+   "line": "702.165. Backup"
+  },
+  {
+   "id": "702.166",
+   "line": "702.166. Bargain"
+  },
+  {
+   "id": "702.167",
+   "line": "702.167. Craft"
+  },
+  {
+   "id": "702.168",
+   "line": "702.168. Disguise"
+  },
+  {
+   "id": "702.169",
+   "line": "702.169. Solved"
+  },
+  {
+   "id": "702.170",
+   "line": "702.170. Plot"
+  },
+  {
+   "id": "702.171",
+   "line": "702.171. Saddle"
+  },
+  {
+   "id": "702.172",
+   "line": "702.172. Spree"
+  },
+  {
+   "id": "702.173",
+   "line": "702.173. Freerunning"
+  },
+  {
+   "id": "702.174",
+   "line": "702.174. Gift"
+  },
+  {
+   "id": "702.175",
+   "line": "702.175. Offspring"
+  },
+  {
+   "id": "702.176",
+   "line": "702.176. Impending"
+  },
+  {
+   "id": "702.177",
+   "line": "702.177. Exhaust"
+  },
+  {
+   "id": "702.178",
+   "line": "702.178. Max Speed"
+  },
+  {
+   "id": "702.180",
+   "line": "702.180. Harmonize"
+  },
+  {
+   "id": "702.181",
+   "line": "702.181. Mobilize"
+  },
+  {
+   "id": "702.182",
+   "line": "702.182. Job Select"
+  },
+  {
+   "id": "702.183",
+   "line": "702.183. Tiered"
+  },
+  {
+   "id": "702.184",
+   "line": "702.184. Station"
+  },
+  {
+   "id": "702.185",
+   "line": "702.185. Warp"
+  },
+  {
+   "id": "702.186",
+   "line": "702.186. ∞ (Infinity)"
+  },
+  {
+   "id": "702.187",
+   "line": "702.187. Mayhem"
+  },
+  {
+   "id": "702.188",
+   "line": "702.188. Web-slinging"
+  },
+  {
+   "id": "702.189",
+   "line": "702.189. Firebending"
+  },
+  {
+   "id": "702.190",
+   "line": "702.190. Sneak"
+  },
+  {
+   "id": "702.191",
+   "line": "702.191. Increment"
+  },
+  {
+   "id": "702.192",
+   "line": "702.192. Paradigm"
+  },
+  {
+   "id": "702.193",
+   "line": "702.193. Power-up"
+  },
+  {
+   "id": "702.194",
+   "line": "702.194. Teamwork"
+  },
+  {
+   "id": "702.195",
+   "line": "702.195. Storied"
+  },
+  {
+   "id": "901.15",
+   "line": "901.15. Single Planar Deck Option"
+  },
+  {
+   "id": "903.12",
+   "line": "903.12. Brawl Option"
+  },
+  {
+   "id": "903.13",
+   "line": "903.13. Commander Draft"
+  },
+  {
+   "id": "904.12",
+   "line": "904.12. Supervillain Rumble Option"
+  },
+  {
+   "id": "904.13",
+   "line": "904.13. Archenemy Commander Option"
+  }
+ ],
+ "idSequence": {
+  "lettersGroups": 571,
+  "issues": [
+   {
+    "parent": "119.1",
+    "letters": "abce"
+   }
+  ],
+  "longestLetterRuns": [
+   "704.5: 24 (a..z)",
+   "111.10: 22 (a..x)",
+   "205.3: 16 (a..r)",
+   "607.2: 15 (a..q)",
+   "703.4: 15 (a..q)"
+  ]
+ },
+ "textQuality": {
+  "partHeaderFused": [
+   {
+    "id": "123.9",
+    "tail": "other spells and abilities can identify.\n\n2. Parts of a Card"
+   },
+   {
+    "id": "213.1g",
+    "tail": "ists the trademark and copyright information.\n\n3. Card Types"
+   },
+   {
+    "id": "315.7",
+    "tail": "down conspiracy cards controlled by other players.\n\n4. Zones"
+   },
+   {
+    "id": "408.3",
+    "tail": "ards. See section 9, “Casual Variants.”\n \n\n5. Turn Structure"
+   },
+   {
+    "id": "514.3a",
+    "tail": "er cleanup step begins.\n \n\n6. Spells, Abilities, and Effects"
+   },
+   {
+    "id": "616.2",
+    "tail": "from their graveyard into their hand.\n \n\n7. Additional Rules"
+   },
+   {
+    "id": "733.2",
+    "tail": "any other action allowed by the rules.\n\n8. Multiplayer Rules"
+   },
+   {
+    "id": "811.5",
+    "tail": "late each other’s cards or permanents.\n \n\n9. Casual Variants"
+   }
+  ],
+  "exampleFusedEntries": 215,
+  "exampleLinesTotal": 277,
+  "maxExamplesInOne": 4,
+  "exampleShareOfAllChars": 0.115,
+  "multiParagraphNonExample": [
+   "704.5z"
+  ],
+  "emptyOrIdOnly": [],
+  "textNotStartingWithId": [],
+  "trailingWhitespaceLines": 0
+ },
+ "characters": {
+  "nonAsciiInIndex": [
+   "\"’\" U+2019 x2828",
+   "\"“\" U+201C x1935",
+   "\"”\" U+201D x1930",
+   "\"—\" U+2014 x87",
+   "\"–\" U+2013 x84",
+   "\"‘\" U+2018 x18",
+   "\"™\" U+2122 x15",
+   "\" \" U+00A0 x13",
+   "\"®\" U+00AE x6",
+   "\"á\" U+00E1 x3",
+   "\"−\" U+2212 x3",
+   "\"∞\" U+221E x3",
+   "\" \" U+2028 x2",
+   "\"â\" U+00E2 x2",
+   "\"ú\" U+00FA x1",
+   "\"û\" U+00FB x1"
+  ],
+  "mojibake": [],
+  "manaSymbolEntries": 108,
+  "curlyApostropheEntries": 1410,
+  "straightApostropheEntries": 0
+ },
+ "searchText": {
+  "mismatchWithFormula": 0
+ },
+ "tokenStats": {
+  "N": 2893,
+  "matchesIndex": true,
+  "vocabSize": 8636,
+  "wordTokensWithTrailingPeriod": 948,
+  "shareOfTokenOccurrencesWithTrailingPeriod": 0.07,
+  "dottedExamples": [
+   {
+    "t": "life.",
+    "df": 25,
+    "bareDf": 82
+   },
+   {
+    "t": "graveyard.",
+    "df": 59,
+    "bareDf": 92
+   },
+   {
+    "t": "battlefield.",
+    "df": 93,
+    "bareDf": 295
+   },
+   {
+    "t": "damage.",
+    "df": 32,
+    "bareDf": 176
+   },
+   {
+    "t": "turn.",
+    "df": 90,
+    "bareDf": 256
+   },
+   {
+    "t": "stack.",
+    "df": 144,
+    "bareDf": 199
+   },
+   {
+    "t": "priority.",
+    "df": 49,
+    "bareDf": 92
+   },
+   {
+    "t": "exile.",
+    "df": 10,
+    "bareDf": 90
+   },
+   {
+    "t": "trample.",
+    "df": 2,
+    "bareDf": 11
+   },
+   {
+    "t": "deathtouch.",
+    "df": 2,
+    "bareDf": 8
+   }
+  ],
+  "apostropheTokens": [
+   {
+    "w": "doesn’t",
+    "tokens": [
+     "doesn"
+    ]
+   },
+   {
+    "w": "can’t",
+    "tokens": []
+   },
+   {
+    "w": "player’s",
+    "tokens": [
+     "player"
+    ]
+   },
+   {
+    "w": "owner’s",
+    "tokens": [
+     "owner"
+    ]
+   },
+   {
+    "w": "isn’t",
+    "tokens": [
+     "isn"
+    ]
+   },
+   {
+    "w": "won’t",
+    "tokens": [
+     "won"
+    ]
+   },
+   {
+    "w": "it’s",
+    "tokens": []
+   }
+  ],
+  "numericRuleIdTokens": 4037,
+  "dfMismatches": 0
+ },
+ "sectionTitles": {
+  "distinct": 139,
+  "sharedAcrossSections": [
+   {
+    "title": "General",
+    "sections": [
+     "100",
+     "200",
+     "300",
+     "400",
+     "500",
+     "700",
+     "800",
+     "900"
+    ],
+    "pieces": 127
+   }
+  ],
+  "biggest": [
+   [
+    "Keyword Abilities",
+    579
+   ],
+   [
+    "Keyword Actions",
+    226
+   ],
+   [
+    "General",
+    127
+   ],
+   [
+    "Double-Faced Cards",
+    58
+   ],
+   [
+    "Numbers and Symbols",
+    49
+   ],
+   [
+    "Handling Triggered Abilities",
+    47
+   ],
+   [
+    "Commander",
+    47
+   ],
+   [
+    "Abilities",
+    41
+   ]
+  ]
+ },
+ "familyTitles": {
+  "headingOnlyFamilies": 272,
+  "children": 843,
+  "childrenNotNamingTheirFamily": 96,
+  "examples": [
+   "205.3d [Subtypes]: 205.3d An object can’t gain a subtype that doesn’t correspond to one of that object’s types.",
+   "205.3e [Subtypes]: 205.3e If an effect instructs a player to choose a subtype, that player must choose one, and only one, existing subtype, and the subtype mus",
+   "205.3p [Subtypes]: 205.3p One dungeon card (Undercity) has a subtype; this subtype is called a dungeon type. That dungeon type is Undercity.",
+   "205.3q [Subtypes]: 205.3q Battles have a unique subtype, called a battle type. That battle type is Siege.",
+   "205.4c [Supertypes]: 205.4c Any land with the supertype “basic” is a basic land. Any land that doesn’t have this supertype is a nonbasic land, even if it has a b",
+   "205.4d [Supertypes]: 205.4d Any permanent with the supertype “legendary” is subject to the state-based action for legendary permanents, also called the “legend r",
+   "205.4e [Supertypes]: 205.4e Any instant or sorcery spell with the supertype “legendary” is subject to a casting restriction. A player can’t cast a legendary inst",
+   "205.4f [Supertypes]: 205.4f Any permanent with the supertype “world” is subject to the state-based action for world permanents, also called the “world rule” (see",
+   "205.4g [Supertypes]: 205.4g Any permanent with the supertype “snow” is a snow permanent. Any permanent that doesn’t have this supertype is a nonsnow permanent, r",
+   "205.4h [Supertypes]: 205.4h Any scheme card with the supertype “ongoing” is exempt from the state-based action for schemes (see rule 704.6e).",
+   "303.7a [Some Aura enchantments also have the subtype “Role.”]: 303.7a If a permanent has more than one Role controlled by the same player attached to it, each of those Roles except the one with the most ",
+   "701.4b [Behold]: 701.4b The phrase “if a [quality] was beheld” refers to whether or not the object had that quality at the time the player took that action, ",
+   "701.8c [Destroy]: 701.8c A regeneration effect replaces a destruction event. See rule 701.19, “Regenerate.”",
+   "701.10a [Double]: 701.10a Doubling a creature’s power and/or toughness creates a continuous effect. This effect modifies that creature’s power and/or toughnes",
+   "701.11a [Triple]: 701.11a Tripling a creature’s power and/or toughness creates a continuous effect. This effect modifies that creature’s power and/or toughnes",
+   "701.22d [Scry]: 701.22d An ability that triggers whenever a player scries triggers after the process described in rule 701.22a is complete, even if some or ",
+   "701.26a [Tap and Untap]: 701.26a To tap a permanent, turn it sideways from an upright position. Only untapped permanents can be tapped.",
+   "701.26b [Tap and Untap]: 701.26b To untap a permanent, rotate it back to the upright position from a sideways position. Only tapped permanents can be untapped.",
+   "701.38b [Vote]: 701.38b The listed choices may be objects, words with no rules meaning that are each connected to a different effect, or other variables rel",
+   "701.40h [Manifest]: 701.40h See rule 708, “Face-Down Spells and Permanents,” for more information.",
+   "701.51c [Open an Attraction]: 701.51c An ability which triggers whenever a player opens an Attraction triggers when that player puts an Attraction card onto the battlefie",
+   "701.53b [Incubate]: 701.53b An Incubator token is a double-faced token. Its front face is a colorless Incubator artifact with “{2}: Transform this token.” Its b",
+   "701.54b [The Ring Tempts You]: 701.54b Ring-bearer is a designation a permanent can have. Being a Ring-bearer is not a copiable value.",
+   "701.54c [The Ring Tempts You]: 701.54c If a player doesn’t have an emblem named The Ring at the time the Ring tempts them, they get an emblem named The Ring before choosin",
+   "701.54e [The Ring Tempts You]: 701.54e Some abilities check to see if a creature “is your Ring-bearer.” For the purposes of those abilities, that condition is true if that"
+  ],
+  "sampleFamilies": [
+   [
+    "205.2",
+    "Card Types"
+   ],
+   [
+    "205.3",
+    "Subtypes"
+   ],
+   [
+    "205.4",
+    "Supertypes"
+   ],
+   [
+    "303.7",
+    "Some Aura enchantments also have the subtype “Role.”"
+   ],
+   [
+    "700.15",
+    "The term enter[s] is short for “enter[s] the battlefield.”"
+   ],
+   [
+    "701.2",
+    "Activate"
+   ],
+   [
+    "701.3",
+    "Attach"
+   ],
+   [
+    "701.4",
+    "Behold"
+   ],
+   [
+    "701.5",
+    "Cast"
+   ],
+   [
+    "701.6",
+    "Counter"
+   ]
+  ]
+ },
+ "parents": {
+  "entriesWithParentNotInSource": [],
+  "distinctParentIdsNotInIndex": 417,
+  "entriesWhoseDirectParentIsNotInIndex": 1746
+ },
+ "lengths": {
+  "chars": {
+   "min": {
+    "id": "702.163",
+    "chars": 22,
+    "words": 3,
+    "embChars": 41
+   },
+   "p10": 91,
+   "median": 222,
+   "p90": 526,
+   "p99": 1295,
+   "max": {
+    "id": "205.3m",
+    "chars": 2879,
+    "words": 356,
+    "embChars": 2890
+   }
+  },
+  "shortest": [
+   "702.163 (22): 702.163. For Mirrodin!",
+   "702.179 (28): 702.179. Start Your Engines!",
+   "120.2 (34): 120.2. Any object can deal damage.",
+   "702.10a (34): 702.10a Haste is a static ability.",
+   "702.17a (34): 702.17a Reach is a static ability.",
+   "702.36a (35): 702.36a Fear is an evasion ability.",
+   "702.90a (35): 702.90a Infect is a static ability.",
+   "702.3a (36): 702.3a Defender is a static ability.",
+   "702.9a (36): 702.9a Flying is an evasion ability.",
+   "314.3 (37): 314.3. Scheme cards have no subtypes.",
+   "702.11a (37): 702.11a Hexproof is a static ability.",
+   "702.15a (37): 702.15a Lifelink is a static ability."
+  ],
+  "longest": [
+   "205.3m 2879",
+   "613.6 2327",
+   "608.2b 2192",
+   "123.6c 2152",
+   "707.10 2060",
+   "120.4d 2035",
+   "800.4a 2016",
+   "707.3 1943",
+   "601.2c 1934",
+   "206.3c 1825",
+   "118.12 1645",
+   "707.2 1625",
+   "732.2a 1577",
+   "801.13b 1527",
+   "702.19b 1519"
+  ],
+  "over2000EmbeddingChars": [
+   {
+    "id": "120.4d",
+    "embChars": 2043,
+    "lostChars": 43
+   },
+   {
+    "id": "123.6c",
+    "embChars": 2162,
+    "lostChars": 162
+   },
+   {
+    "id": "205.3m",
+    "embChars": 2890,
+    "lostChars": 890
+   },
+   {
+    "id": "608.2b",
+    "embChars": 2224,
+    "lostChars": 224
+   },
+   {
+    "id": "613.6",
+    "embChars": 2362,
+    "lostChars": 362
+   },
+   {
+    "id": "707.10",
+    "embChars": 2077,
+    "lostChars": 77
+   },
+   {
+    "id": "800.4a",
+    "embChars": 2025,
+    "lostChars": 25
+   }
+  ]
+ },
+ "embeddings": {
+  "model": "Xenova/all-MiniLM-L6-v2",
+  "dims": 384,
+  "encoding": "int8-base64",
+  "generatedAt": "2026-10-07T03:17:04.194Z",
+  "count": 2893,
+  "indexCount": 2893,
+  "sameOrder": true,
+  "sameSet": true,
+  "hashMatchesCurrentIndex": true,
+  "decodedBytes": 1110912,
+  "expectedBytes": 1110912,
+  "identicalVectorPairs": []
+ },
+ "topics": {
+  "manifestCount": 24,
+  "artifactCount": 24,
+  "manifestVsArtifactIdsEqual": true,
+  "manifestVsArtifactRuleNumbersEqual": true,
+  "totalCitedRules": 74,
+  "issues": [
+   {
+    "topic": "abilities-delayed-triggers",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "603.7 -> 8 uncited: 603.7a,603.7b,603.7c,603.7d,603.7e,603.7f,603.7g,603.7h",
+     "603.10 -> 7 uncited: 603.10a,603.10b,603.10c,603.10d,603.10e,603.10f,603.10g"
+    ]
+   },
+   {
+    "topic": "abilities-delayed-triggers",
+    "issue": "cites 603.10 which ends with ':' but omits its list",
+    "detail": [
+     "603.10a",
+     "603.10b",
+     "603.10c",
+     "603.10d",
+     "603.10e",
+     "603.10f",
+     "603.10g"
+    ]
+   },
+   {
+    "topic": "abilities-trigger-basics",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "603.1 -> 2 uncited: 603.1a,603.1b",
+     "603.2 -> 8 uncited: 603.2a,603.2b,603.2c,603.2d,603.2e,603.2f,603.2g,603.2h",
+     "603.3 -> 4 uncited: 603.3a,603.3b,603.3c,603.3d"
+    ]
+   },
+   {
+    "topic": "combat-damage-assignment",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "510.1 -> 5 uncited: 510.1a,510.1b,510.1c,510.1d,510.1e"
+    ]
+   },
+   {
+    "topic": "combat-damage-assignment",
+    "issue": "cites 510.1 which ends with ':' but omits its list",
+    "detail": [
+     "510.1a",
+     "510.1b",
+     "510.1c",
+     "510.1d",
+     "510.1e"
+    ]
+   },
+   {
+    "topic": "combat-declare-attackers",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "508.1 -> 12 uncited: 508.1a,508.1b,508.1c,508.1d,508.1e,508.1f,508.1g,508.1h…"
+    ]
+   },
+   {
+    "topic": "combat-declare-blockers",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "509.1 -> 9 uncited: 509.1a,509.1b,509.1c,509.1d,509.1e,509.1f,509.1g,509.1h…"
+    ]
+   },
+   {
+    "topic": "combat-phase-structure",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "506.3 -> 7 uncited: 506.3a,506.3b,506.3c,506.3d,506.3e,506.3f,506.3g"
+    ]
+   },
+   {
+    "topic": "copying-spells-abilities",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "707.10 -> 7 uncited: 707.10a,707.10b,707.10c,707.10d,707.10e,707.10f,707.10g"
+    ]
+   },
+   {
+    "topic": "damage-basics",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "120.1 -> 1 uncited: 120.1a",
+     "120.3 -> 8 uncited: 120.3a,120.3b,120.3c,120.3d,120.3e,120.3f,120.3g,120.3h"
+    ]
+   },
+   {
+    "topic": "effects-source-impossible",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "609.7 -> 3 uncited: 609.7a,609.7b,609.7c"
+    ]
+   },
+   {
+    "topic": "layers-power-toughness",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "613.4 -> 1 uncited: 613.4d"
+    ]
+   },
+   {
+    "topic": "layers-timestamps-dependencies",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "613.7 -> 13 uncited: 613.7a,613.7b,613.7c,613.7d,613.7e,613.7f,613.7g,613.7h…"
+    ]
+   },
+   {
+    "topic": "replacement-effects-basics",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "614.1 -> 5 uncited: 614.1a,614.1b,614.1c,614.1d,614.1e"
+    ]
+   },
+   {
+    "topic": "replacement-effects-interaction",
+    "issue": "excerpt differs from current CR"
+   },
+   {
+    "topic": "replacement-effects-interaction",
+    "issue": "excerpt differs from index text",
+    "detail": [
+     "616.2"
+    ]
+   },
+   {
+    "topic": "replacement-effects-interaction",
+    "issue": "part header fused into excerpt"
+   },
+   {
+    "topic": "stack-and-priority",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "117.1 -> 4 uncited: 117.1a,117.1b,117.1c,117.1d",
+     "117.3 -> 4 uncited: 117.3a,117.3b,117.3c,117.3d"
+    ]
+   },
+   {
+    "topic": "stack-and-priority",
+    "issue": "cites 117.3 which ends with ':' but omits its list",
+    "detail": [
+     "117.3a",
+     "117.3b",
+     "117.3c",
+     "117.3d"
+    ]
+   },
+   {
+    "topic": "targets-basics",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "115.1 -> 5 uncited: 115.1a,115.1b,115.1c,115.1d,115.1e",
+     "115.10 -> 2 uncited: 115.10a,115.10b"
+    ]
+   },
+   {
+    "topic": "zones-basics",
+    "issue": "cites a parent but not its sub-rules",
+    "detail": [
+     "400.7 -> 12 uncited: 400.7a,400.7b,400.7c,400.7d,400.7e,400.7f,400.7g,400.7h…"
+    ]
+   }
+  ],
+  "extractSectionNumberDemo": {
+   "514": "514. Cleanup Step\n \n6. Spells, Abilities, and Effects",
+   "613": "613. Interaction of Continuous Effects"
+  }
+ },
+ "crossRefs": {
+  "piecesWithAnyRuleRef": 874,
+  "piecesSayingSeeRule": 753,
+  "piecesCitingAWholePart": 7,
+  "refsTotal": 1089,
+  "refsToBareSection": 408,
+  "refsToFamilyHeading": 82,
+  "refsToIdsNotInSource": 0,
+  "missingTargets": [],
+  "top30Targets": [
+   "601.2b x50",
+   "704 x49 (section heading, not a piece)",
+   "601.2f x47",
+   "601 x15 (section heading, not a piece)",
+   "509 x15 (section heading, not a piece)",
+   "901 x13 (section heading, not a piece)",
+   "117 x13 (section heading, not a piece)",
+   "101.4 x13",
+   "603 x11 (section heading, not a piece)",
+   "613 x11 (section heading, not a piece)",
+   "604.3 x11",
+   "904 x10 (section heading, not a piece)",
+   "601.2c x10",
+   "116 x10 (section heading, not a piece)",
+   "605 x9 (section heading, not a piece)",
+   "400.7 x9",
+   "708 x9 (section heading, not a piece)",
+   "733 x9 (section heading, not a piece)",
+   "712 x9 (section heading, not a piece)",
+   "607 x9 (section heading, not a piece)",
+   "801 x8 (section heading, not a piece)",
+   "903 x7 (section heading, not a piece)",
+   "714 x7 (section heading, not a piece)",
+   "700.2 x7",
+   "120.3 x7",
+   "614 x7 (section heading, not a piece)",
+   "508 x7 (section heading, not a piece)",
+   "802 x7 (section heading, not a piece)",
+   "603.7d x6",
+   "707 x6 (section heading, not a piece)"
+  ],
+  "pointerOnlyPieces": {
+   "count": 90,
+   "examples": [
+    "101.2a Adding abilities to objects and removing abilities from objects don’t fall under this rule. (See rule 113.10.)",
+    "103.2c In a Commander game, each player puts their commander from their deck face up into the command zone. See rule 903.6.",
+    "103.8a In a two-player game, the player who plays first skips the draw step (see rule 504, “Draw Step”) of their first turn.",
+    "104.2d In an Emperor game, a team wins the game if its emperor wins the game. (See rule 809.5.)",
+    "104.3i In an Emperor game, a team loses the game if its emperor loses the game. (See rule 809.5.)",
+    "104.3k In a tournament, a player may lose the game as a result of a penalty given by a judge. See rule 100.6.",
+    "104.4h In the Emperor variant, the game is a draw for a team if the game is a draw for its emperor. (See rule 809.5.)",
+    "104.4i In a tournament, all players in the game may agree to an intentional draw. See rule 100.6.",
+    "106.2. Mana is represented by mana symbols (see rule 107.4). Mana symbols also represent mana costs (see rule 202).",
+    "108.6. For more information about cards, see section 2, “Parts of a Card.”",
+    "109.4a The controller of a mana ability is determined as though it were on the stack. See rule 605, “Mana Abilities.”",
+    "109.4c An emblem is controlled by the player who puts it into the command zone. See rule 114, “Emblems.”"
+   ]
+  }
+ },
+ "contextLoss": {
+  "anaphoric opener (This/That/These/Those/It/They/Such/Each such/In that case/If so/If it…)": {
+   "count": 17,
+   "examples": [
+    "100.1. These Magic rules apply to any Magic game with two or more players, including two-player games and multiplayer games.",
+    "307.5a Similarly, if an effect checks to see if a spell was cast “any time a sorcery couldn’t have been cast,” it’s checking only whether the spell’s ",
+    "604.7. Unlike spells and other kinds of abilities, static abilities can’t use an object’s last known information for purposes of determining how their",
+    "702.170c In addition to the plot special action, some spells and abilities cause a card in exile to become plotted.",
+    "704.4. Unlike triggered abilities, state-based actions pay no attention to what happens during the resolution of a spell or ability. Example: A player",
+    "706.1a Such an effect may refer to an “N-sided die,” “N-sided dice,” or one or more “dN,” where N is a positive integer. In those cases, the die must "
+   ]
+  },
+  "temporal pointer (At this point / At that time / After that / Once …)": {
+   "count": 15,
+   "examples": [
+    "514.3a At this point, the game checks to see if any state-based actions would be performed and/or any triggered abilities are waiting to be put onto t",
+    "703.4a Immediately after the untap step begins, all phased-in permanents with phasing that the active player controls phase out, and all phased-out pe",
+    "703.4b Immediately after the phasing action has been completed during the untap step, if the game has either the day or night designation, it checks t",
+    "703.4c Immediately after the game checks to see if its day or night designation should change during the untap step or, if the game doesn’t have a day",
+    "703.4d Immediately after the draw step begins, the active player draws a card. See rule 504.1.",
+    "703.4f Immediately after a player’s precombat main phase begins, that player puts a lore counter on each Saga enchantment they control with one or mor"
+   ]
+  },
+  "refers to 'this rule'/'the previous rule'/'the above'": {
+   "count": 65,
+   "examples": [
+    "101.2a Adding abilities to objects and removing abilities from objects don’t fall under this rule. (See rule 113.10.)",
+    "101.4. If multiple players would make choices and/or take actions at the same time, the active player (the player whose turn it is) makes any choices ",
+    "108.3b Some spells and abilities allow a player to take cards they own from outside the game and bring them into the game. (See rule 400.11b.) If a ca",
+    "109.4. Only objects on the stack or on the battlefield have a controller. Objects that are neither on the stack nor on the battlefield aren’t controll",
+    "113.3a Spell abilities are abilities that are followed as instructions while an instant or sorcery spell is resolving. Any text on an instant or sorce",
+    "115.3. The same target can’t be chosen multiple times for any one instance of the word “target” on a spell or ability. If the spell or ability uses th"
+   ]
+  },
+  "ends with ':' (introduces a list that is in other pieces)": {
+   "count": 16,
+   "examples": [
+    "109.4. Only objects on the stack or on the battlefield have a controller. Objects that are neither on the stack nor on the battlefield aren’t controll",
+    "113.1. An ability can be one of three things:",
+    "113.3. There are four general categories of abilities:",
+    "113.6. Abilities of an instant or sorcery spell usually function only while that object is on the stack. Abilities of all other objects usually functi",
+    "116.2. There are twelve special actions:",
+    "117.3. Which player has priority is determined by the following rules:"
+   ]
+  },
+  "'the following' (exception/rules/steps) without the list": {
+   "count": 34,
+   "examples": [
+    "117.3. Which player has priority is determined by the following rules:",
+    "120.3. Damage may have one or more of the following results, depending on whether the recipient of the damage is a player or permanent, the characteri",
+    "205.4c Any land with the supertype “basic” is a basic land. Any land that doesn’t have this supertype is a nonbasic land, even if it has a basic land ",
+    "400.7. An object that moves from one zone to another becomes a new object with no memory of, or relation to, its previous existence. This rule has the",
+    "510.1. First, the active player announces how each attacking creature assigns its combat damage, then the defending player announces how each blocking",
+    "514.2. Second, the following actions happen simultaneously: all damage marked on permanents (including phased-out permanents) is removed and all “unti"
+   ]
+  },
+  "sequence step (First, / Second, / Third, / Finally, / Then,)": {
+   "count": 24,
+   "examples": [
+    "120.4a First, if an effect that’s causing damage to be dealt states that excess damage that would be dealt to a permanent is dealt to another permanen",
+    "120.4b Second, damage is dealt, as modified by replacement and prevention effects that interact with damage. (See rule 614, “Replacement Effects,” and",
+    "120.4c Third, damage that’s been dealt is processed into its results, as modified by replacement effects that interact with those results (such as lif",
+    "120.4d Finally, the damage event occurs. Example: A player who controls Boon Reflection, an enchantment that says “If you would gain life, you gain tw",
+    "502.1. First, all phased-in permanents with phasing that the active player controls phase out, and all phased-out permanents that the active player co",
+    "502.2. Second, if it’s day and the previous turn’s active player didn’t cast any spells during that turn, it becomes night. If it’s night and the prev"
+   ]
+  },
+  "'this ability/this keyword/the ability' in a sub-rule": {
+   "count": 132,
+   "examples": [
+    "103.5b If an effect allows a player to perform an action “any time [that player] could mulligan,” the player may perform that action at a time they wo",
+    "103.6a If a card allows a player to begin the game with that card on the battlefield, the player taking this action puts that card onto the battlefiel",
+    "103.6b If a card allows a player to reveal it from their opening hand, the player taking this action does so. The card remains revealed until the firs",
+    "107.3a If a spell or activated ability has a mana cost, alternative cost, additional cost, and/or activation cost with an {X}, [-X], or X in it, and t",
+    "107.3j If an object gains an ability, the value of X within that ability is the value defined by that ability, or 0 if that ability doesn’t define a v",
+    "107.3k If an object’s activated ability has an {X}, [-X], or X in its activation cost, the value of X for that ability is independent of any other val"
+   ]
+  },
+  "list item whose parent ends with ':' (parent holds the lead-in)": {
+   "count": 114,
+   "parents": [
+    "109.4",
+    "113.1",
+    "113.3",
+    "113.6",
+    "116.2",
+    "117.3",
+    "510.1",
+    "514.3",
+    "603.10",
+    "605.3",
+    "605.4",
+    "613.1",
+    "703.4",
+    "704.5",
+    "704.6",
+    "727.1"
+   ]
+  },
+  "unionCount": 370
+ },
+ "glossary": {
+  "inIndex": false,
+  "entries": 741,
+  "obsoleteTermEntries": 21,
+  "obsoleteExamples": [
+   "Caster (Obsolete): An obsolete term that referred to the player who cast a spell. In general, cards that were printed with the term “caster",
+   "Casting Cost (Obsolete): An obsolete term for mana cost. Cards printed with this text have received errata in the Oracle card reference.",
+   "Continuous Artifact (Obsolete): An obsolete term that appeared on the type line of artifacts without activated abilities. Cards printed with this text h",
+   "Converted Mana Cost (Obsolete): An obsolete term for mana value. Cards printed with this term have received errata in the Oracle card reference.",
+   "Global Enchantment (Obsolete): An obsolete term for a non-Aura enchantment. Cards printed with this text have received errata in the Oracle card refere",
+   "In Play (Obsolete): An obsolete term for the battlefield. Cards that were printed with text that contain the phrases “in play,” “from play,”",
+   "Interrupt (Obsolete): An obsolete card type. All cards printed with this card type are now instants. All abilities that, as printed, said a pl",
+   "Islandhome (Obsolete): An obsolete keyword ability that meant “This creature can’t attack unless defending player controls an Island” and “When",
+   "Legend (Obsolete): An obsolete creature type. Cards printed with this subtype have been given errata in the Oracle card reference so they h",
+   "Local Enchantment (Obsolete): An obsolete term for an Aura. Cards printed with this text have received errata in the Oracle card reference.",
+   "Mana Source (Obsolete): An obsolete card type. All cards printed with this card type are now instants. All abilities that, as printed, said a pl",
+   "Mono Artifact (Obsolete): An obsolete term that appeared on the type line of artifacts with activated abilities that caused the artifact to become",
+   "Permanently (Obsolete): An obsolete term used to indicate that a continuous effect has no duration and thus lasts until the end of the game. Car",
+   "Placed: (Obsolete) Some spells and abilities previously referred to a counter being “placed” on a permanent. These cards have re",
+   "Play: 1. To play a land is to put a land onto the battlefield as a special action. See rule 116, “Special Actions,” and rule 3"
+  ],
+  "entriesWithNoRulePointer": 65,
+  "noPointerExamples": [
+   "APNAP Order: See Active Player, Nonactive Player Order.",
+   "Assemble: Assemble is a keyword action in the Unstable set that puts Contraptions onto the battlefield. Cards and mechanics from t",
+   "Basic Landcycling: See Typecycling.",
+   "Bury (Obsolete): A term that meant “put [a permanent] into its owner’s graveyard.” In general, cards that were printed with the term “bur",
+   "Card Pool: In a Limited format, the cards a player may use, in addition to basic land cards, to build their deck.",
+   "Casualty: A keyword ability that allows you to sacrifice a creature to create a copy of a spell. See 702.153, “Casualty.”",
+   "Counts As (Obsolete): Some older cards were printed with text stating that the card “counts as” something. Cards printed with this text have r",
+   "Deal: See Damage.",
+   "Doctor’s Companion: A partner ability that allows a player to play with two legendary creature cards as their commander if one of them has D",
+   "Draft: 1. A Limited format in which players choose cards one at a time from booster packs, then construct a deck solely from th",
+   "During (Obsolete): Some older cards used the phrase “during [phase], [action].” These abilities were called “phase abilities.” In general, ",
+   "Earthbend: A keyword action that causes a land to become a 0/0 creature with haste in addition to its other types and puts a number",
+   "Energy Symbol: The energy symbol {E} represents one energy counter. To pay {E}, a player removes one energy counter from themselves.",
+   "Enter: In rules text, to enter the battlefield. See “Enters the Battlefield.”",
+   "Forestcycling: See Typecycling."
+  ]
+ }
+}

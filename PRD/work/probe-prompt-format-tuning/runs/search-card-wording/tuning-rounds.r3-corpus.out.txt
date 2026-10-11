@@ -1,0 +1,22 @@
+Set corpus: 415 questions
+  200/415
+  400/415
+
+Fidelity: today-base top 10 differs from production on 0 of 415; skipped 0.
+Cards with at least one concept match: 438 of 478
+Most frequent concept entries: "triggered ability trigger event" 190, "cleanup step until end of turn effects end" 92, "counters placed" 80, "enters battlefield triggered ability" 75, "+1/+1 counters -1/-1 counters state-based action" 70, "legend rule" 65, "token create" 56, "draw card" 53, "copy copiable values copying objects" 51, "power toughness layer 7c continuous effect" 49, "ability-adding effects layer" 43, "replacement effect enters battlefield" 39
+
+variant | all cites / every-rule (Δ vs T base) | Δ vs F base (all) | rule chars/q (Δ) | ms/q (Δ)
+T base                                           |  351 (+0) / 305 (+0) | -31 / -31 | 5444 (0) | 14 (0.0)
+T 6 concept x2+embed + per-card reserve 2 gate<=50 |  368 (+17) / 317 (+12) | -14 / -19 | 6268 (824) | 30 (15.3)
+T 6 concept x2+embed + per-card reserve 2 gate<=100 |  369 (+18) / 319 (+14) | -13 / -17 | 6285 (840) | 29 (14.9)
+T 6 concept x2+embed + per-card reserve 2 gate<=200 |  372 (+21) / 322 (+17) | -10 / -14 | 6275 (831) | 30 (15.3)
+T 6 per-card reserve 2 gate<=100                 |  371 (+20) / 323 (+18) | -11 / -13 | 5654 (210) | 29 (15.3)
+T 6 concept x2+embed + per-card reserve 2 gate<=100 + turn step |  369 (+18) / 319 (+14) | -13 / -17 | 6288 (844) | 30 (15.4)
+F base                                           |  382 (+31) / 336 (+31) | +0 / +0 | 4822 (-623) | 14 (-0.4)
+F 6 concept x2+embed + per-card reserve 2 gate<=50 |  388 (+37) / 336 (+31) | +6 / +0 | 5584 (140) | 30 (15.5)
+F 6 concept x2+embed + per-card reserve 2 gate<=100 |  387 (+36) / 336 (+31) | +5 / +0 | 5621 (177) | 30 (15.4)
+F 6 concept x2+embed + per-card reserve 2 gate<=200 |  388 (+37) / 337 (+32) | +6 / +1 | 5649 (204) | 30 (15.5)
+F 6 per-card reserve 2 gate<=100                 |  387 (+36) / 339 (+34) | +5 / +3 | 5016 (-429) | 30 (15.7)
+F 6 concept x2+embed + per-card reserve 2 gate<=100 + turn step |  387 (+36) / 336 (+31) | +5 / +0 | 5629 (185) | 30 (15.5)
+(deciding citations total: 494; questions with deciding rules: 415)

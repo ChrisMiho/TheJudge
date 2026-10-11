@@ -1,0 +1,29 @@
+Set suite (half: tuning): 602 questions
+  200/602
+  400/602
+  600/602
+
+Fidelity: today-base top 10 differs from production on 0 of 601; skipped 1.
+Cards with at least one concept match: 1239 of 1502
+Most frequent concept entries: "triggered ability trigger event" 339, "cleanup step until end of turn effects end" 181, "legend rule" 181, "enters battlefield triggered ability" 152, "tap symbol activated ability summoning sickness" 150, "counters placed" 137, "draw card" 127, "mana ability mana pool" 123, "replacement effect instead" 122, "ability-adding effects layer" 118, "replacement effect enters battlefield" 112, "power toughness layer 7c continuous effect" 112
+
+variant | tuning cites/every | check cites/every | all cites / every-rule (Δ vs T base) | Δ vs F base (all) | rule chars/q (Δ) | ms/q (Δ)
+T base                                           |  250 (+0) /  84 (+0) |    0 (+0) /   0 (+0) |  250 (+0) /  84 (+0) | -25 / -5 | 7400 (0) | 14 (0.0)
+T 5 concept x2+embed + oracle embed              |  283 (+33) /  87 (+3) |    0 (+0) /   0 (+0) |  283 (+33) /  87 (+3) | +8 / -2 | 9319 (1919) | 14 (0.1)
+T 5 concept x2 + oracle embed                    |  279 (+29) /  85 (+1) |    0 (+0) /   0 (+0) |  279 (+29) /  85 (+1) | +4 / -4 | 8755 (1356) | 14 (0.1)
+T 5 concept x2+embed + oracle lex x0.25+embed    |  283 (+33) /  87 (+3) |    0 (+0) /   0 (+0) |  283 (+33) /  87 (+3) | +8 / -2 | 9530 (2131) | 14 (0.1)
+T 5 concept x2+embed + per-card reserve 2        |  295 (+45) /  94 (+10) |    0 (+0) /   0 (+0) |  295 (+45) /  94 (+10) | +20 / +5 | 8081 (681) | 42 (27.7)
+T 5 oracle embed + per-card reserve 2            |  288 (+38) /  89 (+5) |    0 (+0) /   0 (+0) |  288 (+38) /  89 (+5) | +13 / +0 | 7820 (421) | 41 (27.2)
+T 5 concept x2+embed + oracle embed + per-card reserve 2 |  298 (+48) /  91 (+7) |    0 (+0) /   0 (+0) |  298 (+48) /  91 (+7) | +23 / +2 | 8693 (1293) | 42 (27.7)
+T 5 concept x2+embed + oracle embed + turn step  |  283 (+33) /  87 (+3) |    0 (+0) /   0 (+0) |  283 (+33) /  87 (+3) | +8 / -2 | 9319 (1919) | 14 (-0.2)
+T 5 concept x2+embed + turn step                 |  265 (+15) /  90 (+6) |    0 (+0) /   0 (+0) |  265 (+15) /  90 (+6) | -10 / +1 | 8396 (996) | 14 (-0.3)
+F base                                           |  275 (+25) /  89 (+5) |    0 (+0) /   0 (+0) |  275 (+25) /  89 (+5) | +0 / +0 | 6843 (-557) | 14 (-0.2)
+F 5 concept x2+embed + oracle embed              |  306 (+56) /  98 (+14) |    0 (+0) /   0 (+0) |  306 (+56) /  98 (+14) | +31 / +9 | 8607 (1208) | 14 (-0.0)
+F 5 concept x2 + oracle embed                    |  309 (+59) / 100 (+16) |    0 (+0) /   0 (+0) |  309 (+59) / 100 (+16) | +34 / +11 | 8108 (708) | 14 (0.1)
+F 5 concept x2+embed + oracle lex x0.25+embed    |  308 (+58) /  98 (+14) |    0 (+0) /   0 (+0) |  308 (+58) /  98 (+14) | +33 / +9 | 8793 (1393) | 14 (-0.0)
+F 5 concept x2+embed + per-card reserve 2        |  315 (+65) / 104 (+20) |    0 (+0) /   0 (+0) |  315 (+65) / 104 (+20) | +40 / +15 | 7523 (124) | 42 (27.6)
+F 5 oracle embed + per-card reserve 2            |  309 (+59) / 100 (+16) |    0 (+0) /   0 (+0) |  309 (+59) / 100 (+16) | +34 / +11 | 7343 (-57) | 42 (27.6)
+F 5 concept x2+embed + oracle embed + per-card reserve 2 |  317 (+67) / 101 (+17) |    0 (+0) /   0 (+0) |  317 (+67) / 101 (+17) | +42 / +12 | 8143 (743) | 42 (27.6)
+F 5 concept x2+embed + oracle embed + turn step  |  306 (+56) /  98 (+14) |    0 (+0) /   0 (+0) |  306 (+56) /  98 (+14) | +31 / +9 | 8607 (1208) | 14 (-0.2)
+F 5 concept x2+embed + turn step                 |  301 (+51) / 101 (+17) |    0 (+0) /   0 (+0) |  301 (+51) / 101 (+17) | +26 / +12 | 7757 (357) | 14 (-0.1)
+(deciding citations total: 1259; questions with deciding rules: 601; tuning 601 q / 1259 cites, check 0 q / 0 cites)

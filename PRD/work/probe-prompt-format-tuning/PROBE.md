@@ -78,3 +78,20 @@ stdout; per-question detail to the worktree's gitignored
   and see whether wrong breakdowns line up with wrong rulings.
 - **Pushback test stays:** a scripted "that's wrong, check again" after the
   first answer; score fixed / held / flipped (flipped must be zero).
+
+## Session 4 (2026-10-11): free audit before any more paid tests
+
+Owner's direction: no more paid testing until rule search and prompt building
+are clean. Use free, local work to find and sort out every search and prompt
+issue, including rules of very different lengths and rules that lose their
+context, and explain why Quick Lookup and In-Depth differ on Necropotence.
+
+| Step | Cost | Result |
+| --- | --- | --- |
+| What a rule excerpt looks like to Luna | $0 | `FINDINGS-chunk-context.md`: no title or parent in the prompt, id printed twice, 753 "see rule X" with X missing, 127 pieces titled "General" |
+| Three parallel audits: search engine, rule data, prompt building + Quick vs In-Depth | $0 | `FINDINGS-audit.md`: Necropotence Quick Lookup gap is prompt order + no step summary (fact present, out of order); search fixes together 19% → 23%; card keywords unweighted (S1) is the one real search bug; 4 parser bugs (514.3a stray title, 700.15/303.7 missing, 704.5aa merged) |
+| Three free search tests: card wording, stronger local embedders, local reranker | $0 | Card wording wins: check half 252 → 293 deciding citations over S1+S5 (`FINDINGS-search-card-wording.md`). Stronger embedders +≤13, 4–14× bigger: keep MiniLM; labelled pieces (path + parent lead-in) put 514.3a in Necropotence's top 10 (`FINDINGS-search-embedder.md`). Reranker +18 at 279 MB / ~3 s: don't build now (`FINDINGS-search-reranker.md`). Model caches 3.8 GB in `.worktrees/probe-pft/output/models-probe/` (git-ignored) |
+| Proper word scoring (BM25) + every search win stacked | $0 | BM25 +~20 on check; full stack 223 → 316 of 1,210 on check (every-rule 75 → 91), corpus 351/305 → 390/339, bench 120 → 111; 514.3a in Necropotence top 10 both versions. Recipe in `FINDINGS-search-bm25-stack.md` |
+| Magic-trained search model, 5-fold cross-validated | $0 | Biggest lever: same size and speed; check half 223 → 400 on today's search, 293 → 437 with card wording; every-rule 190 → 270; hard 25 8 → 17; Necropotence's 3 deciding rules in top 10 both versions. Gain is mostly on often-cited rules (`FINDINGS-search-trained-embedder.md`) |
+| BM25 full stack + trained model combined | $0 | Check half 452 (today 223). BM25 redundant once trained (449 without it); concept map still +20; per-card +11; no-practice model 348. Final recipe in `FINDINGS-search-trained-embedder.md` |
+| Build brief: prompt fixes + search recipe + trained model (owner approved all recommendations, full-arm model) | $0 | `GRAPH-BRIEF-search-and-prompt.md`. Model stays out of git (public repo) and ships from the private S3 artifacts bucket |

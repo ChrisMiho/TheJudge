@@ -1,0 +1,26 @@
+cases: suite 1181, corpus 415, bench 0
+  [F] F-fold2: 300 questions scored
+  [F] F-fold0: 335 questions scored
+  [F] F-fold1: 329 questions scored
+  [F] F-fold4: 313 questions scored
+  [F] F-fold3: 319 questions scored
+
+== F (dtype fp32; median single-query embed 2.6 ms; 119 s)
+F      a α0.4        | suite  639/2469 | tun 330 chk 309 | every 204 (102/102) | hard25 13/59 | corpus 374/319 of 494 | bench top5 0/0 | necro Q 1/12/10 ID 1/11/6 | meaning r@10 31.6% r@100 62.5% | hybrid r@100 57.1% | miss median 136
+F      a α0.5        | suite  726/2469 | tun 362 chk 364 | every 232 (116/116) | hard25 15/59 | corpus 390/335 of 494 | bench top5 0/0 | necro Q 1/11/10 ID 1/11/5 | meaning r@10 31.6% r@100 62.5% | hybrid r@100 61.7% | miss median 120
+F      a α0.6        | suite  784/2469 | tun 380 chk 404 | every 254 (124/130) | hard25 17/59 | corpus 404/347 of 494 | bench top5 0/0 | necro Q 1/11/8 ID 1/9/4 | meaning r@10 31.6% r@100 62.5% | hybrid r@100 64.4% | miss median 109
+F      a α0.7        | suite  810/2469 | tun 388 chk 422 | every 264 (127/137) | hard25 17/59 | corpus 411/355 of 494 | bench top5 0/0 | necro Q 1/8/5 ID 2/7/3 | meaning r@10 31.6% r@100 62.5% | hybrid r@100 64.4% | miss median 110
+F      a α0.8        | suite  817/2469 | tun 398 chk 419 | every 259 (129/130) | hard25 16/59 | corpus 408/351 of 494 | bench top5 0/0 | necro Q 2/6/5 ID 2/6/3 | meaning r@10 31.6% r@100 62.5% | hybrid r@100 64.2% | miss median 115
+F      a α0.9        | suite  798/2469 | tun 387 chk 411 | every 252 (128/124) | hard25 15/59 | corpus 398/341 of 494 | bench top5 0/0 | necro Q 2/6/4 ID 4/5/2 | meaning r@10 31.6% r@100 62.5% | hybrid r@100 63.5% | miss median 116
+F      b α0.4        | suite  735/2469 | tun 366 chk 369 | every 225 (111/114) | hard25 15/59 | corpus 407/352 of 494 | bench top5 0/0 | necro Q 1/13/8 ID 1/8/2 | hybrid r@100 65.7% | miss median 96
+F      b α0.5        | suite  787/2469 | tun 383 chk 404 | every 255 (122/133) | hard25 15/59 | corpus 416/356 of 494 | bench top5 0/0 | necro Q 1/12/6 ID 2/6/1 | hybrid r@100 68.5% | miss median 86
+F      b α0.6        | suite  840/2469 | tun 403 chk 437 | every 273 (132/141) | hard25 17/59 | corpus 418/358 of 494 | bench top5 0/0 | necro Q 1/11/4 ID 3/5/1 | hybrid r@100 70.0% | miss median 82
+F      b α0.7        | suite  858/2469 | tun 422 chk 436 | every 274 (135/139) | hard25 17/59 | corpus 423/362 of 494 | bench top5 0/0 | necro Q 2/7/3 ID 5/3/2 | hybrid r@100 69.9% | miss median 83
+F      b α0.8        | suite  841/2469 | tun 407 chk 434 | every 262 (129/133) | hard25 17/59 | corpus 419/358 of 494 | bench top5 0/0 | necro Q 2/5/3 ID 6/3/2 | hybrid r@100 69.5% | miss median 84
+F      b α0.9        | suite  802/2469 | tun 391 chk 411 | every 243 (122/121) | hard25 17/59 | corpus 404/347 of 494 | bench top5 0/0 | necro Q 4/5/2 ID 7/4/2 | hybrid r@100 68.2% | miss median 86
+
+==== SUMMARY (pipeline a = today's hybrid; b = S1+S5 + concept map + per-card search; "tuned" = weight picked on the tuning half) ====
+F      a α0.6        | suite  784/2469 | tun 380 chk 404 | every 254 (124/130) | hard25 17/59 | corpus 404/347 of 494 | bench top5 0/0 | necro Q 1/11/8 ID 1/9/4 | meaning r@10 31.6% r@100 62.5% | hybrid r@100 64.4% | miss median 109
+F      a α0.8 tuned  | suite  817/2469 | tun 398 chk 419 | every 259 (129/130) | hard25 16/59 | corpus 408/351 of 494 | bench top5 0/0 | necro Q 2/6/5 ID 2/6/3 | meaning r@10 31.6% r@100 62.5% | hybrid r@100 64.2% | miss median 115
+F      b α0.6        | suite  840/2469 | tun 403 chk 437 | every 273 (132/141) | hard25 17/59 | corpus 418/358 of 494 | bench top5 0/0 | necro Q 1/11/4 ID 3/5/1 | hybrid r@100 70.0% | miss median 82
+F      b α0.7 tuned  | suite  858/2469 | tun 422 chk 436 | every 274 (135/139) | hard25 17/59 | corpus 423/362 of 494 | bench top5 0/0 | necro Q 2/7/3 ID 5/3/2 | hybrid r@100 69.9% | miss median 83
