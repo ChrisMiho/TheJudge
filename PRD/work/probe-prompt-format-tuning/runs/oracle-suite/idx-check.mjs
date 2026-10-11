@@ -1,0 +1,12 @@
+import { pathToFileURL } from "node:url";
+const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
+const imp = (rel) => import(pathToFileURL(`${REPO}/${rel}`).href);
+const evalMod = await imp("scripts/eval-answer-quality.mjs");
+const fid = await imp("scripts/lib/prompt-fidelity.mjs");
+const env = evalMod.resolveRunEnv({ processEnv: process.env, confirmed: true });
+const r = await fid.loadPromptResources({ env });
+const idx = r.gameRulesRuleIndex;
+const c = new Map(); for (const e of idx) c.set(e.ruleId, (c.get(e.ruleId) ?? 0) + 1);
+const dups = [...c].filter(([, n]) => n > 1);
+console.log("entries", idx.length, "dup ids", dups.length, dups.slice(0, 10));
+for (const e of idx.filter((e) => e.ruleId === "205.3k")) console.log(JSON.stringify(Object.keys(e)), e.text.length, e.text.slice(0, 60));
