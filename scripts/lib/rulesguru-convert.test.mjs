@@ -113,7 +113,14 @@ test("each exclusion reason is produced, and the case file is still written with
   const counts = await convertSuite({ suiteDir: dir, cardNames, sources: makeSources() });
   assert.equal(counts.converted, 6);
   assert.equal(counts.selectable, 1);
-  assert.deepEqual(counts.excluded, { "unresolved-card": 1, "ambiguous-card": 1, "no-cited-rule": 1, "unknown-rule": 1, "duplicate-question": 1 });
+  assert.deepEqual(counts.excluded, {
+    "unresolved-card": 1,
+    "ambiguous-card": 1,
+    "no-cited-rule": 1,
+    "unknown-rule": 1,
+    "duplicate-question": 1,
+    "duplicate-answer": 0
+  });
   assert.equal(casesOf(dir).length, 6);
   assert.equal(readCase(dir, 1).suite.excluded, null);
   assert.equal(readCase(dir, 2).suite.excluded, "unresolved-card");
@@ -126,6 +133,26 @@ test("each exclusion reason is produced, and the case file is still written with
   const report = readFileSync(join(dir, "convert-report.txt"), "utf8");
   assert.match(report, /selectable: 1/);
   assert.match(report, /2 unresolved-card/);
+});
+
+test("a later question with the same cards and the same answer is excluded as a duplicate answer, and the suite still loads", async () => {
+  const sharedAnswer = "Invented shared answer. Invented second sentence.";
+  const dir = suiteWith([
+    raw(10, { answerSimple: sharedAnswer }),
+    raw(11, { answerSimple: sharedAnswer }),
+    raw(12, { answerSimple: sharedAnswer, includedCards: [{ name: "Night Owl" }] }),
+    raw(13, { answerSimple: sharedAnswer, citedRules: {} })
+  ]);
+  const counts = await convertSuite({ suiteDir: dir, cardNames, sources: makeSources() });
+  // 10 is kept; 11 repeats its cards and answer; 12 differs by card; 13 is already excluded for another reason.
+  assert.equal(readCase(dir, 10).suite.excluded, null);
+  assert.equal(readCase(dir, 11).suite.excluded, "duplicate-answer");
+  assert.equal(readCase(dir, 12).suite.excluded, null);
+  assert.equal(readCase(dir, 13).suite.excluded, "no-cited-rule");
+  assert.equal(counts.selectable, 2);
+  assert.equal(counts.excluded["duplicate-answer"], 1);
+  assert.equal((await loadGoldCases(join(dir, "cases"), { external: true })).length, 4);
+  assert.match(readFileSync(join(dir, "convert-report.txt"), "utf8"), /11 duplicate-answer/);
 });
 
 test("two converts of the same inputs give identical bytes, and the snapshot comes from the injected sources", async () => {
