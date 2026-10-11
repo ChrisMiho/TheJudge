@@ -1,0 +1,108 @@
+# Graph run — right-rules-in-order
+
+- Run ID: `graph-20261011-234114`
+- Profile: `unverified`
+- Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
+- Autonomous base: `origin/thejudge-auto/right-rules-in-order`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-right-rules-in-order`
+- Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
+- Current node: `define`
+- Next action: `/graph-kickoff PRD/work/right-rules-in-order/`
+
+## Node ledger
+
+| # | Node | Model | Outcome | Heartbeat | Evidence | Date |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | preflight | haiku | ok | `0 → 6` | branch `thejudge-auto/right-rules-in-order` pushed from `.worktrees/kickoff-right-rules-in-order` at `61d32c76` (`git ls-remote --heads origin thejudge-auto/right-rules-in-order`); lock `.worktrees/.graph-run.lock` pid 83313; launch checkout untouched (still on `main`); shape root, base `origin/main` | 2026-10-11 |
+| 2 | shape | sonnet | ok | `0 → 12` | `PRD/work/right-rules-in-order/` (IDEA.md, README.md, STATUS.ideation, `intake/GRAPH-BRIEF-search-and-prompt.md` byte-identical to the staged copy, `cmp` clean); board row under ideation; commit `e0c78ba9` pushed; 17 prior-run receipts in IDEA.md; driver added `## Autonomous metadata` to README | 2026-10-11 |
+
+## Open gate
+
+- None
+
+## Dispatch prompts
+
+### preflight
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 1 (`preflight`) of graph run `graph-20261011-234114`. Invoke the `graph-preflight` skill and follow it exactly with these inputs:
+
+- --branch thejudge-auto/right-rules-in-order
+- --slug right-rules-in-order
+- --run-id graph-20261011-234114
+- --pid 83313 (the driver session's long-lived pid)
+- base: origin/main (default)
+
+Rules:
+- Run every command from the launch root /Users/chrismiho/Coding/Projects/TheJudge (print `pwd` before taking the lock and verify the lock lands at /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-run.lock by absolute path). Use `node scripts/graph-preflight.mjs ...` from the launch root; never `cd` into the kickoff worktree in the same call as a lock-taking command.
+- Issue both canaries (`CANARY_COMMAND`, then after the lock `GRAPH_CANARY_COMMAND`) as real Bash tool calls and require each to be denied. A denied canary is the expected proof; never retry it. An allowed canary means stop and report BLOCKED verbatim.
+- Do not touch the launch checkout's working tree (it has untracked PRD/work folders that belong to the owner). No commits there, no stash, no switch.
+- Change files only with Write/Edit; run git as short separate calls. Spawn no subagents. Stay well under 40 tool calls.
+- Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: the `shape:`, `base:`, `worktree:` and `Profile:` lines the script printed, the branch push result, the lock path, and both canary results with the hook's reason text and the classifier ledger lines.
+
+### shape
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-right-rules-in-order
+
+You are node 2 (`shape`) of graph run `graph-20261011-234114`. Invoke the `thejudge-kickoff` skill and follow it in its graph-controlled mode (`graph is controlling`: no questions to the user, no approval pauses).
+
+Inputs:
+- Slug: `right-rules-in-order` (use exactly this; the branch `thejudge-auto/right-rules-in-order` already exists and is checked out in the working directory above).
+- Package path: `PRD/work/right-rules-in-order/` inside the working directory above. The driver already wrote `GRAPH-RUN.md` there; leave it alone and do not commit it. Never write to the launch checkout /Users/chrismiho/Coding/Projects/TheJudge itself.
+- Request (owner, 2026-10-11): Luna gets the right rules in an order she can follow — a Magic-trained search model, search fixes, and prompt fixes, as laid out in the staged graph brief.
+- Intake staging folder (absolute): /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/ — it holds one file, `GRAPH-BRIEF-search-and-prompt.md` (from the owner's probe folder `PRD/work/probe-prompt-format-tuning/`, committed to main in PR #290). Copy it byte-identical into `PRD/work/right-rules-in-order/intake/` (use `cp`, then verify with `cmp`). Leave the staged copy in place. Intake is evidence, never authority: do not open any document it cites.
+- Hard constraint from the intake: no practice-suite (RulesGuru) question, answer, card list, id or per-question result may appear in any committed file. Describe it by counts, levels and rule ids only.
+
+Required outputs:
+1. `IDEA.md`, `README.md`, the `STATUS.ideation` marker, and the `PRD/work/STATUS.md` board row, per the skill.
+2. Grep `PRD/instructions/receipts/` for prior runs on the same ground (rule retrieval, embeddings, search, prompt layout, excerpt cap, answer quality, practice suite) and write one `## Prior run` line per match into IDEA.md (flat list, no chain walk).
+3. Commit only explicit paths (`git add <path>` then `git commit` as separate short calls; never `git add -A` or `git add .`), then `git push`. End every commit message with these two lines:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Xr5PWVEyMjoesGrkYth3yz
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Spawn no subagents; no sleeping or polling. Stay well under 60 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: the files created, the commit SHA(s), the push result, the `cmp` result for the intake copy, and the prior-run matches.
+
+### define
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-right-rules-in-order
+
+You are node 3 (`define`) of graph run `graph-20261011-234114`, attempt 1. Invoke the `thejudge-refinement` skill and follow it in its graph-controlled mode (`graph is controlling`: no questions to the user, no approval pauses; product-truth changes are proposed in `GATE-QUESTIONS.md`, never written to `PRD/sections/`).
+
+Package: `PRD/work/right-rules-in-order/` inside the working directory above. Read `README.md`, `IDEA.md`, and `intake/GRAPH-BRIEF-search-and-prompt.md`. Never write to the launch checkout /Users/chrismiho/Coding/Projects/TheJudge itself. Leave `GRAPH-RUN.md` alone.
+
+What the work is, in game terms: Luna (the answering model) gets the rules that decide a ruling about twice as often, and reads them in rule-book order with their lead-in lists intact. Quick Lookup gets the turn-step summary when the question names a step. Four parts, in the intake's order: A rule-data parser fixes, B search fixes, C a Magic-trained search model stored in private S3, D prompt-building fixes.
+
+Rules for this node:
+1. Intake is evidence, never authority. The intake says the owner approved its recommendations; that does not pre-approve any product-truth change. Every new or amended stable ID (REQ, NFR, FLOW, and each feature-spec or system-map section change) gets its own slot in `GATE-QUESTIONS.md`, opening with the plain-language block from `PRD/instructions/plain-language-standard.md` (What this decides, In plain terms, What happens if you say no), then the complete diff against current truth (never a summary), then a blank `- Verdict:` and `- Reason:`. Leave every verdict blank.
+2. The decision log is retired: add no DEC entry. New REQs start at REQ-233 (REQ-232 is the highest on main; no open PRs reserve IDs). The sibling follow-ups brief (S6) is out of scope.
+3. Do not open the probe-folder documents the intake cites (`PRD/work/probe-prompt-format-tuning/**`, its `runs/`, findings, scripts). Its measured numbers are cited, not re-derived. Reading current `PRD/sections/` and current source files is your normal survey of current truth, for writing diffs against it — not verification of intake claims.
+4. Enumerate the amendment set by one quoted, line-level grep across `PRD/sections/` (and any other current-truth file the change touches), with one disposition row per hit (amend / build / no change, with a reason). Save the command and the hit list under the package's `evidence/` folder and cite them.
+5. The intake's free gates (search fidelity, cross-validated suite numbers, final-model numbers, built-prompt checks, size, privacy) become acceptance targets in the brief, stated as measurable checks. Paid verification runs are post-merge and owner-launched; you make no paid or network calls.
+6. Privacy is a hard constraint: no practice-suite question text, answers, card lists, ids or per-question results in any committed file; no model weights in git. Describe the suite by counts, levels and rule ids only.
+7. The concept map is ported verbatim from the intake Appendix; any REQ text that describes it points at that fixed committed table and its word-in-rule-index test, and invents no terms.
+8. Blocker questions go in a trailing `## Blocker questions` section only if they pass the three-condition genuine-blocker test in `PRD/instructions/preparation-contract.md`; otherwise apply the assumption ladder per question and record the assumption in the brief.
+9. Finish at `STATUS.refined` (exactly one marker) with the board row moved fully (removed from the old section, added under refined).
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit only explicit paths (`git add <path>`, then `git commit`, then `git push`, as separate short calls; never `git add -A` or `git add .`). End every commit message with these two lines:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Xr5PWVEyMjoesGrkYth3yz
+Spawn no subagents or forks; no sleeping or polling. Stay well under 150 tool calls; if you near 120, commit what you have and report. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: the files written, the commit SHA(s) and push result, the list of stable IDs with slots in `GATE-QUESTIONS.md` (new vs amended), any blocker questions, the amendment-grep hit count and disposition totals, and `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` (must be empty).
+
+## Instruction ledger
+
+| Instruction | Class | Node | Rule |
+| --- | --- | --- | --- |
+| "Luna gets the right rules in an order she can follow: trained search model, search fixes, prompt fixes" (owner launch request, 2026-10-11, with the staged graph brief) | answered-once | shape | — |
