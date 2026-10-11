@@ -1,0 +1,145 @@
+Set necro: 3 questions
+Committed token stats vs recomputed: 0 mismatching tokens; N 2893 vs index 2893
+
+=== necropotence-silence-borne-upon-a-wind-cleanup (lookup) ===
+Query text embedded: "I control Necropotence and have more than seven cards in hand at my cleanup step. An opponent cast Silence during that turn's main phase. Can I cast Borne Upon a Wind in the cleanup step, after discarding to hand size? Necropotence Enchantment Borne Upon a Wind Instant Silence Instant"  [66 word pieces]
+Word-match tokens (* = card signal, K = keyword ×6): control necropotence more than seven hand cleanup step. opponent cast silence during turn main phase. borne upon wind step after discarding size enchantment* instant*
+Rule ids found in query: none; turn step in game state: n/a (not in query)
+Curated topics: abilities-trigger-basics, stack-and-priority, targets-basics, zones-basics → rules excluded from search: 603.1, 603.2, 603.3, 117.1, 117.3, 117.4, 117.7, 405.1, 405.2, 115.1, 115.2, 115.10, 400.1, 400.2, 400.7
+Max raw cosine 0.547; max raw word score 95.9
+Top 10 (production order, verified):
+   1. 703.4n   blended 0.828 = 0.6×cos 0.713 (raw 0.390, cos rank 4) + 0.4×word 1.000 (raw 95.9, word rank 1); 60 pieces; words: more(7.1) than(7.2) seven(15.8) hand(10.5) cleanup(15.6) turn(7.3) step(8.1) after(8.7) size(15.6)
+   2. 514.3    blended 0.766 = 0.6×cos 1.000 (raw 0.547, cos rank 1) + 0.4×word 0.415 (raw 39.8, word rank 43); 45 pieces; words: cleanup(15.6) cast(7.2) during(8.9) step(8.1)
+   3. 514.1    blended 0.675 = 0.6×cos 0.518 (raw 0.283, cos rank 71) + 0.4×word 0.909 (raw 87.2, word rank 2); 58 pieces; words: more(7.1) than(7.2) seven(15.8) hand(10.5) cleanup(15.6) turn(7.3) step(8.1) size(15.6)
+   4. 724.1f   blended 0.662 = 0.6×cos 0.695 (raw 0.380, cos rank 5) + 0.4×word 0.613 (raw 58.8, word rank 7); 110 pieces; words: cleanup(15.6) step.(11.7) cast(7.2) during(8.9) turn(7.3) step(8.1)
+   5. 703.4p   blended 0.618 = 0.6×cos 0.692 (raw 0.378, cos rank 6) + 0.4×word 0.507 (raw 48.6, word rank 18); 64 pieces; words: cleanup(15.6) during(8.9) turn(7.3) step(8.1) after(8.7)
+   6. 117.3a   blended 0.616 = 0.6×cos 0.607 (raw 0.332, cos rank 23) + 0.4×word 0.629 (raw 60.3, word rank 6); 99 pieces; words: cleanup(15.6) step.(11.7) during(8.9) turn(7.3) step(8.1) after(8.7)
+   7. 303.1    blended 0.593 = 0.6×cos 0.645 (raw 0.353, cos rank 14) + 0.4×word 0.516 (raw 49.5, word rank 15); 63 pieces; words: hand(10.5) cast(7.2) during(8.9) turn(7.3) main(11.4) enchantment*(4.2)
+   8. 506.8f   blended 0.578 = 0.6×cos 0.626 (raw 0.342, cos rank 17) + 0.4×word 0.506 (raw 48.5, word rank 19); 62 pieces; words: cast(7.2) during(8.9) phase.(15.6) step(8.1) after(8.7)
+   9. 902.5b   blended 0.570 = 0.6×cos 0.394 (raw 0.215, cos rank 336) + 0.4×word 0.833 (raw 79.9, word rank 3); 85 pieces; words: more(7.1) than(7.2) seven(15.8) hand(10.5) cleanup(15.6) step(8.1) size(15.6)
+  10. 724.1d   blended 0.552 = 0.6×cos 0.562 (raw 0.307, cos rank 40) + 0.4×word 0.538 (raw 51.6, word rank 11); 79 pieces; words: cleanup(15.6) step.(11.7) during(8.9) turn(7.3) step(8.1)
+Watched rules:
+  rank    3  514.1    blended 0.675 = 0.6×cos 0.518 (raw 0.283, cos rank 71) + 0.4×word 0.909 (raw 87.2, word rank 2); 58 pieces; words: more(7.1) than(7.2) seven(15.8) hand(10.5) cleanup(15.6) turn(7.3) step(8.1) size(15.6)
+  rank   30  514.2    blended 0.474 = 0.6×cos 0.575 (raw 0.314, cos rank 34) + 0.4×word 0.323 (raw 31.0, word rank 90); 62 pieces; words: cleanup(15.6) turn(7.3) step(8.1)
+  rank   14  514.3a   blended 0.522 = 0.6×cos 0.655 (raw 0.358, cos rank 11) + 0.4×word 0.322 (raw 30.9, word rank 91); 119 pieces; words: cleanup(15.6) cast(7.2) step(8.1)
+  rank    2  514.3    blended 0.766 = 0.6×cos 1.000 (raw 0.547, cos rank 1) + 0.4×word 0.415 (raw 39.8, word rank 43); 45 pieces; words: cleanup(15.6) cast(7.2) during(8.9) step(8.1)
+  rank    —  514.3b not scored
+  rank  177  500.5b   blended 0.323 = 0.6×cos 0.487 (raw 0.266, cos rank 105) + 0.4×word 0.076 (raw 7.3, word rank 836); 30 pieces; words: turn(7.3)
+  rank  164  500.11   blended 0.327 = 0.6×cos 0.438 (raw 0.240, cos rank 188) + 0.4×word 0.161 (raw 15.4, word rank 374); 52 pieces; words: turn(7.3) step(8.1)
+  rank  371  614.10   blended 0.272 = 0.6×cos 0.346 (raw 0.189, cos rank 570) + 0.4×word 0.161 (raw 15.4, word rank 382); 82 pieces; words: turn(7.3) step(8.1)
+  117.3    in a curated topic (always in prompt)
+  rank    6  117.3a   blended 0.616 = 0.6×cos 0.607 (raw 0.332, cos rank 23) + 0.4×word 0.629 (raw 60.3, word rank 6); 99 pieces; words: cleanup(15.6) step.(11.7) during(8.9) turn(7.3) step(8.1) after(8.7)
+  603.3    in a curated topic (always in prompt)
+  rank  997  603.3b   blended 0.191 = 0.6×cos 0.197 (raw 0.107, cos rank 1570) + 0.4×word 0.183 (raw 17.5, word rank 279); 165 pieces; words: control(8.7) during(8.9)
+  rank 1391  608.2h   blended 0.154 = 0.6×cos 0.256 (raw 0.140, cos rank 1141) + 0.4×word 0.000 (raw 0.0, word rank 1888); 165 pieces; words: 
+  rank  389  611.2a   blended 0.267 = 0.6×cos 0.395 (raw 0.216, cos rank 329) + 0.4×word 0.076 (raw 7.3, word rank 839); 59 pieces; words: turn(7.3)
+  rank  114  601.3    blended 0.353 = 0.6×cos 0.539 (raw 0.295, cos rank 53) + 0.4×word 0.075 (raw 7.2, word rank 945); 42 pieces; words: cast(7.2)
+  [A strip sentence dots] deciding ranks: 514.1→3, 514.2→35, 514.3a→18; top10: 703.4n 514.3 514.1 303.1 703.4p 724.1f 117.3a 306.1 902.5b 117.1a
+  [B dots + light stemming] deciding ranks: 514.1→3, 514.2→25, 514.3a→19; top10: 703.4n 514.3 514.1 703.4p 724.1f 303.1 902.5b 117.3a 306.1 116.2e
+  [C card keywords weighted as keywords (REQ-180)] deciding ranks: 514.1→3, 514.2→30, 514.3a→14; top10: 703.4n 514.3 514.1 724.1f 703.4p 117.3a 303.1 506.8f 902.5b 724.1d
+  [D card-name words out of word match] deciding ranks: 514.1→3, 514.2→30, 514.3a→14; top10: 703.4n 514.3 514.1 724.1f 703.4p 117.3a 303.1 506.8f 902.5b 724.1d
+  [E true min-max blend] deciding ranks: 514.1→3, 514.2→31, 514.3a→18; top10: 703.4n 514.3 514.1 724.1f 117.3a 703.4p 902.5b 303.1 506.8f 724.1d
+  [F long rules embedded at 256 pieces] deciding ranks: 514.1→3, 514.2→30, 514.3a→14; top10: 703.4n 514.3 514.1 724.1f 703.4p 117.3a 303.1 506.8f 902.5b 724.1d
+  [G query vector = question only] deciding ranks: 514.1→3, 514.2→15, 514.3a→9; top10: 703.4n 514.3 514.1 724.1f 703.4p 117.3a 902.5b 724.1d 514.3a 506.8f
+  [H In-Depth: turn step added to query] deciding ranks: 514.1→3, 514.2→30, 514.3a→14; top10: 703.4n 514.3 514.1 724.1f 703.4p 117.3a 303.1 506.8f 902.5b 724.1d
+  [A+B+C+D+E (all tokenizer/blend fixes)] deciding ranks: 514.1→3, 514.2→25, 514.3a→22; top10: 703.4n 514.3 514.1 703.4p 724.1f 902.5b 303.1 117.3a 306.1 704.4
+
+=== necropotence-silence-borne-upon-a-wind-cleanup-in-depth (game) ===
+Query text embedded: "It's my cleanup step with nine cards in hand, and Player 2 cast Silence earlier this turn. After I discard down to seven, can I cast Borne Upon a Wind from my hand? Necropotence Enchantment Borne Upon a Wind Instant Silence Instant"  [56 word pieces]
+Word-match tokens (* = card signal, K = keyword ×6): cleanup step nine hand player cast silence earlier turn. after discard down seven borne upon wind necropotence* enchantment* instant*
+Rule ids found in query: none; turn step in game state: cleanup (not in query)
+Curated topics: abilities-delayed-triggers, abilities-trigger-basics, abilities-zone-change-triggers, layers-order, layers-power-toughness, layers-timestamps-dependencies, replacement-effects-basics, replacement-etb-effects, stack-and-priority, targets-basics, zones-basics → rules excluded from search: 603.7, 603.10, 603.1, 603.2, 603.3, 603.6c, 613.1, 613.1a, 613.1b, 613.1c, 613.1d, 613.1e, 613.1f, 613.1g, 613.4, 613.4a, 613.4b, 613.4c, 613.7, 613.8a, 614.1, 614.5, 614.6, 614.12a, 614.12b, 614.12c, 117.1, 117.3, 117.4, 117.7, 405.1, 405.2, 115.1, 115.2, 115.10, 400.1, 400.2, 400.7
+Max raw cosine 0.510; max raw word score 77.7
+Top 10 (production order, verified):
+   1. 703.4n   blended 0.788 = 0.6×cos 0.658 (raw 0.335, cos rank 40) + 0.4×word 0.982 (raw 76.4, word rank 2); 60 pieces; words: cleanup(15.6) step(8.1) hand(10.5) player(3.0) after(8.7) discard(14.6) seven(15.8)
+   2. 514.3    blended 0.774 = 0.6×cos 1.000 (raw 0.510, cos rank 1) + 0.4×word 0.436 (raw 33.9, word rank 13); 45 pieces; words: cleanup(15.6) step(8.1) player(3.0) cast(7.2)
+   3. 514.1    blended 0.663 = 0.6×cos 0.526 (raw 0.268, cos rank 170) + 0.4×word 0.870 (raw 67.7, word rank 3); 58 pieces; words: cleanup(15.6) step(8.1) hand(10.5) player(3.0) discard(14.6) seven(15.8)
+   4. 116.2e   blended 0.637 = 0.6×cos 0.849 (raw 0.433, cos rank 3) + 0.4×word 0.319 (raw 24.8, word rank 44); 56 pieces; words: player(3.0) cast(7.2) discard(14.6)
+   5. 402.2    blended 0.630 = 0.6×cos 0.384 (raw 0.196, cos rank 746) + 0.4×word 1.000 (raw 77.7, word rank 1); 56 pieces; words: cleanup(15.6) step(8.1) hand(10.5) player(3.0) discard(14.6) down(10.1) seven(15.8)
+   6. 116.2f   blended 0.630 = 0.6×cos 0.872 (raw 0.445, cos rank 2) + 0.4×word 0.266 (raw 20.7, word rank 82); 71 pieces; words: hand(10.5) player(3.0) cast(7.2)
+   7. 701.9a   blended 0.614 = 0.6×cos 0.783 (raw 0.399, cos rank 5) + 0.4×word 0.362 (raw 28.1, word rank 32); 32 pieces; words: hand(10.5) player(3.0) discard(14.6)
+   8. 703.4p   blended 0.614 = 0.6×cos 0.719 (raw 0.367, cos rank 19) + 0.4×word 0.456 (raw 35.4, word rank 9); 64 pieces; words: cleanup(15.6) step(8.1) player(3.0) after(8.7)
+   9. 601.2    blended 0.607 = 0.6×cos 0.765 (raw 0.390, cos rank 9) + 0.4×word 0.371 (raw 28.8, word rank 30); 178 pieces; words: step(8.1) hand(10.5) player(3.0) cast(7.2)
+  10. 303.1    blended 0.590 = 0.6×cos 0.769 (raw 0.392, cos rank 7) + 0.4×word 0.320 (raw 24.9, word rank 42); 63 pieces; words: hand(10.5) player(3.0) cast(7.2) enchantment*(4.2)
+Watched rules:
+  rank    3  514.1    blended 0.663 = 0.6×cos 0.526 (raw 0.268, cos rank 170) + 0.4×word 0.870 (raw 67.7, word rank 3); 58 pieces; words: cleanup(15.6) step(8.1) hand(10.5) player(3.0) discard(14.6) seven(15.8)
+  rank   49  514.2    blended 0.462 = 0.6×cos 0.566 (raw 0.289, cos rank 107) + 0.4×word 0.305 (raw 23.7, word rank 57); 62 pieces; words: cleanup(15.6) step(8.1)
+  rank   17  514.3a   blended 0.542 = 0.6×cos 0.613 (raw 0.313, cos rank 66) + 0.4×word 0.436 (raw 33.9, word rank 14); 119 pieces; words: cleanup(15.6) step(8.1) player(3.0) cast(7.2)
+  rank    2  514.3    blended 0.774 = 0.6×cos 1.000 (raw 0.510, cos rank 1) + 0.4×word 0.436 (raw 33.9, word rank 13); 45 pieces; words: cleanup(15.6) step(8.1) player(3.0) cast(7.2)
+  rank    —  514.3b not scored
+  rank  549  500.5b   blended 0.280 = 0.6×cos 0.466 (raw 0.238, cos rank 325) + 0.4×word 0.000 (raw 0.0, word rank 1918); 30 pieces; words: 
+  rank  196  500.11   blended 0.351 = 0.6×cos 0.516 (raw 0.263, cos rank 193) + 0.4×word 0.105 (raw 8.1, word rank 613); 52 pieces; words: step(8.1)
+  rank  241  614.10   blended 0.339 = 0.6×cos 0.469 (raw 0.239, cos rank 311) + 0.4×word 0.143 (raw 11.1, word rank 381); 82 pieces; words: step(8.1) player(3.0)
+  117.3    in a curated topic (always in prompt)
+  rank   15  117.3a   blended 0.545 = 0.6×cos 0.605 (raw 0.309, cos rank 71) + 0.4×word 0.456 (raw 35.4, word rank 8); 99 pieces; words: cleanup(15.6) step(8.1) player(3.0) after(8.7)
+  603.3    in a curated topic (always in prompt)
+  rank 1672  603.3b   blended 0.160 = 0.6×cos 0.241 (raw 0.123, cos rank 1674) + 0.4×word 0.038 (raw 3.0, word rank 1049); 165 pieces; words: player(3.0)
+  rank 1395  608.2h   blended 0.187 = 0.6×cos 0.312 (raw 0.159, cos rank 1181) + 0.4×word 0.000 (raw 0.0, word rank 1997); 165 pieces; words: 
+  rank  840  611.2a   blended 0.243 = 0.6×cos 0.405 (raw 0.206, cos rank 604) + 0.4×word 0.000 (raw 0.0, word rank 2016); 59 pieces; words: 
+  rank   44  601.3    blended 0.466 = 0.6×cos 0.689 (raw 0.351, cos rank 26) + 0.4×word 0.131 (raw 10.2, word rank 464); 42 pieces; words: player(3.0) cast(7.2)
+  [A strip sentence dots] deciding ranks: 514.1→3, 514.2→38, 514.3a→22; top10: 703.4n 514.3 514.1 116.2e 703.4p 116.2f 303.1 503.2 701.9a 402.2
+  [B dots + light stemming] deciding ranks: 514.1→4, 514.2→41, 514.3a→23; top10: 703.4n 514.3 703.4p 514.1 116.2e 116.2f 503.2 303.1 402.2 702.143a
+  [C card keywords weighted as keywords (REQ-180)] deciding ranks: 514.1→3, 514.2→49, 514.3a→17; top10: 703.4n 514.3 514.1 116.2e 402.2 116.2f 701.9a 703.4p 601.2 303.1
+  [D card-name words out of word match] deciding ranks: 514.1→3, 514.2→49, 514.3a→17; top10: 703.4n 514.3 514.1 116.2e 402.2 116.2f 701.9a 703.4p 601.2 303.1
+  [E true min-max blend] deciding ranks: 514.1→3, 514.2→45, 514.3a→18; top10: 703.4n 514.3 514.1 402.2 116.2e 116.2f 703.4p 701.9a 601.2 303.1
+  [F long rules embedded at 256 pieces] deciding ranks: 514.1→3, 514.2→49, 514.3a→17; top10: 703.4n 514.3 514.1 116.2e 402.2 116.2f 701.9a 703.4p 601.2 303.1
+  [G query vector = question only] deciding ranks: 514.1→2, 514.2→43, 514.3a→26; top10: 703.4n 514.1 514.3 402.2 703.4p 116.2f 116.2e 701.9a 601.2 503.2
+  [H In-Depth: turn step added to query] deciding ranks: 514.1→3, 514.2→20, 514.3a→8; top10: 514.3 703.4n 514.1 703.4p 724.1f 402.2 116.2e 514.3a 503.2 701.9a
+  [A+B+C+D+E (all tokenizer/blend fixes)] deciding ranks: 514.1→4, 514.2→38, 514.3a→22; top10: 703.4n 514.3 703.4p 514.1 402.2 116.2e 702.143a 503.2 116.2f 303.1
+
+=== necro-follow-up-step-2 (corpus variant; production sees only this turn's text) (lookup) ===
+Query text embedded: "What if someone cast silence during the main phase of that turn? Necropotence Enchantment Borne Upon a Wind Instant Silence Instant"  [29 word pieces]
+Word-match tokens (* = card signal, K = keyword ×6): someone cast silence during main phase turn necropotence* enchantment* borne* upon* wind* instant*
+Rule ids found in query: none; turn step in game state: n/a (not in query)
+Curated topics: abilities-trigger-basics, stack-and-priority, targets-basics, zones-basics → rules excluded from search: 603.1, 603.2, 603.3, 117.1, 117.3, 117.4, 117.7, 405.1, 405.2, 115.1, 115.2, 115.10, 400.1, 400.2, 400.7
+Max raw cosine 0.443; max raw word score 48.3
+Top 10 (production order, verified):
+   1. 117.1a   blended 0.903 = 0.6×cos 0.941 (raw 0.417, cos rank 6) + 0.4×word 0.846 (raw 40.9, word rank 9); 47 pieces; words: cast(7.2) during(8.9) main(11.4) phase(9.4) instant*(4.0)
+   2. 303.1    blended 0.895 = 0.6×cos 0.825 (raw 0.365, cos rank 27) + 0.4×word 1.000 (raw 48.3, word rank 1); 63 pieces; words: cast(7.2) during(8.9) main(11.4) phase(9.4) turn(7.3) enchantment*(4.2)
+   3. 506.8c   blended 0.797 = 0.6×cos 0.877 (raw 0.388, cos rank 14) + 0.4×word 0.677 (raw 32.7, word rank 22); 69 pieces; words: cast(7.2) during(8.9) phase(9.4) turn(7.3)
+   4. 307.5    blended 0.772 = 0.6×cos 0.677 (raw 0.300, cos rank 168) + 0.4×word 0.913 (raw 44.1, word rank 6); 134 pieces; words: cast(7.2) during(8.9) main(11.4) phase(9.4) turn(7.3)
+   5. 307.5a   blended 0.753 = 0.6×cos 0.746 (raw 0.330, cos rank 78) + 0.4×word 0.763 (raw 36.9, word rank 21); 73 pieces; words: cast(7.2) during(8.9) main(11.4) phase(9.4)
+   6. 505.6a   blended 0.740 = 0.6×cos 0.788 (raw 0.349, cos rank 47) + 0.4×word 0.666 (raw 32.2, word rank 24); 48 pieces; words: cast(7.2) main(11.4) phase(9.4) enchantment*(4.2)
+   7. 514.3    blended 0.714 = 0.6×cos 0.968 (raw 0.429, cos rank 3) + 0.4×word 0.332 (raw 16.1, word rank 128); 45 pieces; words: cast(7.2) during(8.9)
+   8. 506.8d   blended 0.710 = 0.6×cos 0.854 (raw 0.378, cos rank 20) + 0.4×word 0.493 (raw 23.8, word rank 54); 83 pieces; words: cast(7.2) phase(9.4) turn(7.3)
+   9. 506.8f   blended 0.706 = 0.6×cos 0.827 (raw 0.366, cos rank 26) + 0.4×word 0.526 (raw 25.4, word rank 50); 62 pieces; words: cast(7.2) during(8.9) phase(9.4)
+  10. 307.1    blended 0.704 = 0.6×cos 0.565 (raw 0.250, cos rank 441) + 0.4×word 0.913 (raw 44.1, word rank 5); 62 pieces; words: cast(7.2) during(8.9) main(11.4) phase(9.4) turn(7.3)
+Watched rules:
+  rank 1911  514.1    blended 0.151 = 0.6×cos 0.152 (raw 0.067, cos rank 2219) + 0.4×word 0.151 (raw 7.3, word rank 333); 58 pieces; words: turn(7.3)
+  rank  335  514.2    blended 0.402 = 0.6×cos 0.570 (raw 0.252, cos rank 427) + 0.4×word 0.151 (raw 7.3, word rank 334); 62 pieces; words: turn(7.3)
+  rank  290  514.3a   blended 0.415 = 0.6×cos 0.593 (raw 0.263, cos rank 363) + 0.4×word 0.149 (raw 7.2, word rank 490); 119 pieces; words: cast(7.2)
+  rank    7  514.3    blended 0.714 = 0.6×cos 0.968 (raw 0.429, cos rank 3) + 0.4×word 0.332 (raw 16.1, word rank 128); 45 pieces; words: cast(7.2) during(8.9)
+  rank    —  514.3b not scored
+  rank  130  500.5b   blended 0.495 = 0.6×cos 0.725 (raw 0.321, cos rank 99) + 0.4×word 0.151 (raw 7.3, word rank 323); 30 pieces; words: turn(7.3)
+  rank   28  500.11   blended 0.624 = 0.6×cos 0.810 (raw 0.359, cos rank 37) + 0.4×word 0.345 (raw 16.7, word rank 89); 52 pieces; words: phase(9.4) turn(7.3)
+  rank   39  614.10   blended 0.601 = 0.6×cos 0.771 (raw 0.342, cos rank 62) + 0.4×word 0.345 (raw 16.7, word rank 91); 82 pieces; words: phase(9.4) turn(7.3)
+  117.3    in a curated topic (always in prompt)
+  rank   61  117.3a   blended 0.559 = 0.6×cos 0.580 (raw 0.257, cos rank 393) + 0.4×word 0.528 (raw 25.5, word rank 44); 99 pieces; words: during(8.9) phase(9.4) turn(7.3)
+  603.3    in a curated topic (always in prompt)
+  rank 1120  603.3b   blended 0.267 = 0.6×cos 0.322 (raw 0.143, cos rank 1535) + 0.4×word 0.183 (raw 8.9, word rank 248); 165 pieces; words: during(8.9)
+  rank  817  608.2h   blended 0.304 = 0.6×cos 0.507 (raw 0.225, cos rank 652) + 0.4×word 0.000 (raw 0.0, word rank 1558); 165 pieces; words: 
+  rank  182  611.2a   blended 0.463 = 0.6×cos 0.671 (raw 0.297, cos rank 178) + 0.4×word 0.151 (raw 7.3, word rank 337); 59 pieces; words: turn(7.3)
+  rank  175  601.3    blended 0.469 = 0.6×cos 0.682 (raw 0.302, cos rank 158) + 0.4×word 0.149 (raw 7.2, word rank 497); 42 pieces; words: cast(7.2)
+  [A strip sentence dots] deciding ranks: 514.1→1933, 514.2→357, 514.3a→297; top10: 117.1a 303.1 506.8c 307.5 307.5a 505.6a 514.3 506.8f 506.8d 307.1
+  [B dots + light stemming] deciding ranks: 514.1→1971, 514.2→194, 514.3a→335; top10: 117.1a 303.1 506.8c 307.5 307.5a 505.6a 514.3 506.8f 307.1 506.8d
+  [C card keywords weighted as keywords (REQ-180)] deciding ranks: 514.1→1911, 514.2→335, 514.3a→290; top10: 117.1a 303.1 506.8c 307.5 307.5a 505.6a 514.3 506.8d 506.8f 307.1
+  [D card-name words out of word match] deciding ranks: 514.1→1911, 514.2→335, 514.3a→290; top10: 117.1a 303.1 506.8c 307.5 307.5a 505.6a 514.3 506.8d 506.8f 307.1
+  [E true min-max blend] deciding ranks: 514.1→1832, 514.2→322, 514.3a→273; top10: 303.1 117.1a 506.8c 307.5 307.5a 505.6a 307.1 702.170d 302.1 506.8f
+  [F long rules embedded at 256 pieces] deciding ranks: 514.1→1908, 514.2→332, 514.3a→288; top10: 117.1a 303.1 506.8c 307.5 307.5a 505.6a 514.3 506.8d 506.8f 307.1
+  [G query vector = question only] deciding ranks: 514.1→1130, 514.2→158, 514.3a→261; top10: 506.8c 724.1d 117.1a 800.4j 506.8d 614.10b 500.1 505.6a 505.1a 307.5a
+  [H In-Depth: turn step added to query] deciding ranks: 514.1→1911, 514.2→335, 514.3a→290; top10: 117.1a 303.1 506.8c 307.5 307.5a 505.6a 514.3 506.8d 506.8f 307.1
+  [A+B+C+D+E (all tokenizer/blend fixes)] deciding ranks: 514.1→1903, 514.2→174, 514.3a→327; top10: 117.1a 303.1 307.5 506.8c 307.5a 505.6a 307.1 702.170d 302.1 116.2m
+
+Fidelity: re-implemented production top 10 differs on 0 of 3 questions. Skipped (production rejects): 0.
+
+-- Variants: deciding-rule citations in prompt / questions with every deciding rule / median rank of missing / mean selected-rule length (pieces) / most frequent excerpts
+  production                                   2 / 0 / 49 / 70 / 514.3 100%, 303.1 100%, 703.4n 67%, 514.1 67%
+  A strip sentence dots                        2 / 0 / 38 / 65 / 514.3 100%, 303.1 100%, 703.4n 67%, 514.1 67%
+  B dots + light stemming                      2 / 0 / 41 / 69 / 514.3 100%, 303.1 100%, 703.4n 67%, 514.1 67%
+  C card keywords weighted as keywords (REQ-180) 2 / 0 / 49 / 70 / 514.3 100%, 303.1 100%, 703.4n 67%, 514.1 67%
+  D card-name words out of word match          2 / 0 / 49 / 70 / 514.3 100%, 303.1 100%, 703.4n 67%, 514.1 67%
+  E true min-max blend                         2 / 0 / 45 / 71 / 303.1 100%, 703.4n 67%, 514.3 67%, 514.1 67%
+  F long rules embedded at 256 pieces          2 / 0 / 49 / 70 / 514.3 100%, 303.1 100%, 703.4n 67%, 514.1 67%
+  G query vector = question only               3 / 0 / 158 / 71 / 703.4n 67%, 514.3 67%, 514.1 67%, 703.4p 67%
+  H In-Depth: turn step added to query         3 / 0 / 290 / 69 / 514.3 100%, 703.4n 67%, 514.1 67%, 724.1f 67%
+  A+B+C+D+E (all tokenizer/blend fixes)        2 / 0 / 38 / 74 / 303.1 100%, 703.4n 67%, 514.3 67%, 514.1 67%

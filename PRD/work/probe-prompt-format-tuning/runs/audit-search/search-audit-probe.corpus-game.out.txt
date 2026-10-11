@@ -1,0 +1,52 @@
+Set corpus-game: 9 questions
+Committed token stats vs recomputed: 0 mismatching tokens; N 2893 vs index 2893
+
+Fidelity: re-implemented production top 10 differs on 0 of 9 questions. Skipped (production rejects): 0.
+
+-- Tokenizer
+Question tokens: 129; ending in a sentence dot: 8 (6%)
+Question tokens matching no rule at all: 21 (16%) — of those, dead only because of a trailing dot: 0; dead only because of inflection: 1
+Questions losing at least one word to a trailing dot: 0 (0%)
+Index: distinct dot-ended word tokens 948; rules containing at least one: 2809 of 2893
+
+-- Boosts
+Questions whose query holds a rule-id-like number: 0 (0%); ids 0, not preceded by "rule/CR": 0, matching an index rule or parent: 0
+Cross-reference boost armed (question cites an id): 0. Boosted rules in top 10: 0, of which deciding: 0
+
+-- Keywords
+Questions where the keyword ×6 fires: 4 (44%); keyword tokens from question 3, from cards 3
+Card keyword entries: 7; not in the 20-word vocabulary (so no keyword weight): 3 (43%); distinct such keywords 3; most common: Treasure×1, Food×1, Enchant×1
+
+-- What fills the word-match score of selected rules
+Median share from card-name words: 0.00; selected rules where card-name words give ≥50%: 0 of 88
+Median share from common words (in >5% of rules): 0.10
+
+-- Blend scales (medians per question)
+max raw cosine 0.449; 10th-best cosine ÷ max 0.836; median rule cosine ÷ max 0.270
+share of rules with word score 0: 0.444; 10th-best word score ÷ max 0.572
+selected top 10, mean points from meaning 0.469 vs word match 0.215
+spread across the blended top 100: meaning 0.405 vs word match 0.400 (points of the 0–1 blend)
+exact ties at the 10/11 boundary: 0
+
+-- Query length in word pieces: median 56, max 82; over 128: 0; over 256: 0
+
+-- Rule length (word pieces as embedded) vs selection
+bucket   | rules | share of index | share of top-10 slots | meaning-alone top-10 slots | deciding citations | deciding reached
+≤32      |   412 | 14.2% | 5.6% | 14.4% | 4 | 2 (50%)
+33-64    |  1280 | 44.2% | 30.0% | 37.8% | 14 | 11 (79%)
+65-128   |   927 | 32.0% | 26.7% | 27.8% | 6 | 3 (50%)
+129-256  |   224 | 7.7% | 24.4% | 13.3% | 4 | 1 (25%)
+>256     |    50 | 1.7% | 13.3% | 6.7% | 2 | 0 (0%)
+(per-rule rate: slots per rule per question = share of slots ÷ share of index)
+
+-- Variants: deciding-rule citations in prompt / questions with every deciding rule / median rank of missing / mean selected-rule length (pieces) / most frequent excerpts
+  production                                   17 / 2 / 555 / 131 / 722.3c 22%, 505.6b 22%, 801.7a 22%, 508.3e 22%
+  A strip sentence dots                        17 / 2 / 575 / 139 / 722.3c 22%, 801.7a 22%, 508.3e 22%, 603.12 22%
+  B dots + light stemming                      17 / 2 / 379 / 135 / 722.3c 22%, 113.12 22%, 608.2i 22%, 801.7a 22%
+  C card keywords weighted as keywords (REQ-180) 17 / 2 / 555 / 123 / 505.6b 22%, 801.7a 22%, 508.3e 22%, 603.12 22%
+  D card-name words out of word match          17 / 2 / 555 / 131 / 722.3c 22%, 505.6b 22%, 801.7a 22%, 508.3e 22%
+  E true min-max blend                         17 / 2 / 590 / 137 / 722.3c 22%, 505.6b 22%, 801.7a 22%, 508.3e 22%
+  F long rules embedded at 256 pieces          17 / 2 / 557 / 126 / 722.3c 22%, 505.6b 22%, 801.7a 22%, 508.3e 22%
+  G query vector = question only               18 / 2 / 463 / 133 / 722.3c 22%, 505.6b 22%, 801.7a 22%, 603.12 22%
+  H In-Depth: turn step added to query         18 / 2 / 605 / 123 / 722.3c 22%, 505.6b 22%, 305.1 22%, 801.7a 22%
+  A+B+C+D+E (all tokenizer/blend fixes)        17 / 2 / 430 / 131 / 113.12 22%, 608.2i 22%, 801.7a 22%, 603.12 22%

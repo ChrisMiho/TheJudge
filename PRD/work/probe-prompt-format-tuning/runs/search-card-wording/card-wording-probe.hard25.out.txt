@@ -1,0 +1,34 @@
+Set hard25: 25 questions
+
+Fidelity: today-base top 10 differs from production on 0 of 25; skipped 0.
+Cards with at least one concept match: 59 of 75
+Most frequent concept entries: "triggered ability trigger event" 12, "legend rule" 9, "cleanup step until end of turn effects end" 8, "replacement effect enters battlefield" 7, "continuous effect duration static ability" 7, "counters placed" 7, "enters battlefield triggered ability" 6, "tap symbol activated ability summoning sickness" 6, "power toughness layer 7c continuous effect" 6, "draw card" 5, "mana ability mana pool" 5, "replacement effect" 5
+
+variant | all cites / every-rule (Δ vs T base) | Δ vs F base (all) | rule chars/q (Δ) | ms/q (Δ)
+T base                                           |    5 (+0) /   3 (+0) | -1 / +0 | 8280 (0) | 29 (0.0)
+T H turn step (In-Depth)                         |    5 (+0) /   3 (+0) | -1 / +0 | 8280 (0) | 28 (-0.7)
+T 1 concept lex x2                               |    6 (+1) /   3 (+0) | +0 / +0 | 8830 (550) | 29 (0.9)
+T 1 concept lex x2 + embed                       |    8 (+3) /   3 (+0) | +2 / +0 | 8976 (696) | 29 (0.2)
+T 2 per-card oracle, reserve 2                   |    6 (+1) /   3 (+0) | +0 / +0 | 7985 (-295) | 61 (32.1)
+T 3 oracle lex x0.25                             |    6 (+1) /   3 (+0) | +0 / +0 | 8507 (227) | 29 (0.6)
+T 3 oracle embed only                            |    8 (+3) /   3 (+0) | +2 / +0 | 9042 (762) | 29 (0.7)
+T 3 pre-REQ-178 (oracle lex x1 + kw + embed)     |    8 (+3) /   3 (+0) | +2 / +0 | 10273 (1993) | 29 (0.9)
+T 5 concept x2+embed + per-card reserve 2        |   11 (+6) /   3 (+0) | +5 / +0 | 8568 (288) | 60 (31.4)
+T 5 concept x2+embed + turn step                 |    8 (+3) /   3 (+0) | +2 / +0 | 8976 (696) | 28 (-0.7)
+T 6 concept x2+embed + per-card reserve 2 gate<=100 |    9 (+4) /   3 (+0) | +3 / +0 | 9177 (897) | 61 (32.4)
+T 6 per-card reserve 2 gate<=100                 |    6 (+1) /   3 (+0) | +0 / +0 | 8461 (181) | 60 (31.8)
+T 6 concept x2+embed + per-card reserve 2 gate<=100 + turn step |    9 (+4) /   3 (+0) | +3 / +0 | 9177 (897) | 60 (31.7)
+F base                                           |    6 (+1) /   3 (+0) | +0 / +0 | 7892 (-387) | 28 (-0.2)
+F H turn step (In-Depth)                         |    6 (+1) /   3 (+0) | +0 / +0 | 7892 (-387) | 28 (-0.1)
+F 1 concept lex x2                               |    6 (+1) /   3 (+0) | +0 / +0 | 8586 (306) | 29 (0.3)
+F 1 concept lex x2 + embed                       |    7 (+2) /   3 (+0) | +1 / +0 | 8651 (371) | 29 (0.6)
+F 2 per-card oracle, reserve 2                   |    7 (+2) /   3 (+0) | +1 / +0 | 7820 (-460) | 61 (32.2)
+F 3 oracle lex x0.25                             |    6 (+1) /   3 (+0) | +0 / +0 | 8319 (39) | 28 (-0.4)
+F 3 oracle embed only                            |    7 (+2) /   3 (+0) | +1 / +0 | 8566 (287) | 28 (-0.8)
+F 3 pre-REQ-178 (oracle lex x1 + kw + embed)     |    8 (+3) /   3 (+0) | +2 / +0 | 9990 (1710) | 29 (0.0)
+F 5 concept x2+embed + per-card reserve 2        |    8 (+3) /   3 (+0) | +2 / +0 | 8215 (-65) | 62 (33.0)
+F 5 concept x2+embed + turn step                 |    7 (+2) /   3 (+0) | +1 / +0 | 8651 (371) | 28 (-0.6)
+F 6 concept x2+embed + per-card reserve 2 gate<=100 |    6 (+1) /   3 (+0) | +0 / +0 | 8505 (225) | 60 (31.8)
+F 6 per-card reserve 2 gate<=100                 |    7 (+2) /   3 (+0) | +1 / +0 | 8130 (-150) | 60 (31.3)
+F 6 concept x2+embed + per-card reserve 2 gate<=100 + turn step |    6 (+1) /   3 (+0) | +0 / +0 | 8505 (225) | 60 (31.3)
+(deciding citations total: 59; questions with deciding rules: 25)

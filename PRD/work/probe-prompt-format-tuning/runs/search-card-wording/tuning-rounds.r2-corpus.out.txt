@@ -1,0 +1,28 @@
+Set corpus: 415 questions
+  200/415
+  400/415
+
+Fidelity: today-base top 10 differs from production on 0 of 415; skipped 0.
+Cards with at least one concept match: 438 of 478
+Most frequent concept entries: "triggered ability trigger event" 190, "cleanup step until end of turn effects end" 92, "counters placed" 80, "enters battlefield triggered ability" 75, "+1/+1 counters -1/-1 counters state-based action" 70, "legend rule" 65, "token create" 56, "draw card" 53, "copy copiable values copying objects" 51, "power toughness layer 7c continuous effect" 49, "ability-adding effects layer" 43, "replacement effect enters battlefield" 39
+
+variant | all cites / every-rule (Δ vs T base) | Δ vs F base (all) | rule chars/q (Δ) | ms/q (Δ)
+T base                                           |  351 (+0) / 305 (+0) | -31 / -31 | 5444 (0) | 15 (0.0)
+T 5 concept x2+embed + oracle embed              |  352 (+1) / 306 (+1) | -30 / -30 | 6530 (1086) | 15 (0.0)
+T 5 concept x2 + oracle embed                    |  360 (+9) / 314 (+9) | -22 / -22 | 6239 (795) | 14 (-0.2)
+T 5 concept x2+embed + oracle lex x0.25+embed    |  352 (+1) / 306 (+1) | -30 / -30 | 6658 (1213) | 14 (-0.1)
+T 5 concept x2+embed + per-card reserve 2        |  372 (+21) / 324 (+19) | -10 / -12 | 6230 (786) | 30 (15.8)
+T 5 oracle embed + per-card reserve 2            |  375 (+24) / 329 (+24) | -7 / -7 | 5849 (405) | 30 (15.6)
+T 5 concept x2+embed + oracle embed + per-card reserve 2 |  365 (+14) / 320 (+15) | -17 / -16 | 6526 (1082) | 31 (16.4)
+T 5 concept x2+embed + oracle embed + turn step  |  353 (+2) / 306 (+1) | -29 / -30 | 6531 (1087) | 14 (-0.4)
+T 5 concept x2+embed + turn step                 |  352 (+1) / 303 (-2) | -30 / -33 | 6117 (673) | 14 (-0.3)
+F base                                           |  382 (+31) / 336 (+31) | +0 / +0 | 4822 (-623) | 14 (-0.3)
+F 5 concept x2+embed + oracle embed              |  383 (+32) / 333 (+28) | +1 / -3 | 5721 (277) | 15 (-0.0)
+F 5 concept x2 + oracle embed                    |  386 (+35) / 337 (+32) | +4 / +1 | 5368 (-76) | 14 (-0.1)
+F 5 concept x2+embed + oracle lex x0.25+embed    |  383 (+32) / 333 (+28) | +1 / -3 | 5810 (366) | 14 (-0.2)
+F 5 concept x2+embed + per-card reserve 2        |  388 (+37) / 338 (+33) | +6 / +2 | 5638 (193) | 31 (16.8)
+F 5 oracle embed + per-card reserve 2            |  385 (+34) / 338 (+33) | +3 / +2 | 5310 (-135) | 31 (16.7)
+F 5 concept x2+embed + oracle embed + per-card reserve 2 |  387 (+36) / 337 (+32) | +5 / +1 | 5866 (421) | 31 (16.5)
+F 5 concept x2+embed + oracle embed + turn step  |  383 (+32) / 333 (+28) | +1 / -3 | 5726 (281) | 15 (0.0)
+F 5 concept x2+embed + turn step                 |  388 (+37) / 336 (+31) | +6 / +0 | 5400 (-45) | 14 (-0.3)
+(deciding citations total: 494; questions with deciding rules: 415)

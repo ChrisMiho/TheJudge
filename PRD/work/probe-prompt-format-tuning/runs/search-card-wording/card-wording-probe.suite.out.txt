@@ -1,0 +1,39 @@
+Set suite (half: all): 1184 questions
+  200/1184
+  400/1184
+  600/1184
+  800/1184
+  1000/1184
+
+Fidelity: today-base top 10 differs from production on 0 of 1181; skipped 3.
+Cards with at least one concept match: 2438 of 2954
+Most frequent concept entries: "triggered ability trigger event" 667, "cleanup step until end of turn effects end" 376, "legend rule" 368, "tap symbol activated ability summoning sickness" 326, "enters battlefield triggered ability" 291, "counters placed" 259, "mana ability mana pool" 253, "draw card" 251, "replacement effect instead" 235, "power toughness layer 7c continuous effect" 227, "ability-adding effects layer" 221, "token create" 211
+
+variant | tuning cites/every | check cites/every | all cites / every-rule (Δ vs T base) | Δ vs F base (all) | rule chars/q (Δ) | ms/q (Δ)
+T base                                           |  250 (+0) /  84 (+0) |  223 (+0) /  75 (+0) |  473 (+0) / 159 (+0) | -54 / -8 | 7472 (0) | 10 (0.0)
+T H turn step (In-Depth)                         |  250 (+0) /  84 (+0) |  223 (+0) /  75 (+0) |  473 (+0) / 159 (+0) | -54 / -8 | 7472 (0) | 10 (-0.1)
+T 1 concept lex x2                               |  250 (+0) /  83 (-1) |  252 (+29) /  84 (+9) |  502 (+29) / 167 (+8) | -25 / +0 | 8247 (775) | 10 (-0.1)
+T 1 concept lex x2 + embed                       |  265 (+15) /  90 (+6) |  246 (+23) /  78 (+3) |  511 (+38) / 168 (+9) | -16 / +1 | 8452 (979) | 10 (0.1)
+T 2 per-card oracle, reserve 2                   |  269 (+19) /  86 (+2) |  256 (+33) /  81 (+6) |  525 (+52) / 167 (+8) | -2 / +0 | 7363 (-109) | 30 (19.6)
+T 3 oracle lex x0.25                             |  258 (+8) /  90 (+6) |  231 (+8) /  76 (+1) |  489 (+16) / 166 (+7) | -38 / -1 | 7823 (351) | 10 (-0.1)
+T 3 oracle embed only                            |  279 (+29) /  89 (+5) |  242 (+19) /  74 (-1) |  521 (+48) / 163 (+4) | -6 / -4 | 8085 (613) | 10 (0.1)
+T 3 pre-REQ-178 (oracle lex x1 + kw + embed)     |  284 (+34) /  94 (+10) |  240 (+17) /  72 (-3) |  524 (+51) / 166 (+7) | -3 / -1 | 9163 (1691) | 10 (0.1)
+T 5 concept x2+embed + per-card reserve 2        |  295 (+45) /  94 (+10) |  282 (+59) /  84 (+9) |  577 (+104) / 178 (+19) | +50 / +11 | 8103 (631) | 30 (19.7)
+T 5 concept x2+embed + turn step                 |  265 (+15) /  90 (+6) |  246 (+23) /  78 (+3) |  511 (+38) / 168 (+9) | -16 / +1 | 8452 (979) | 10 (-0.0)
+T 6 concept x2+embed + per-card reserve 2 gate<=100 |  291 (+41) /  90 (+6) |  267 (+44) /  79 (+4) |  558 (+85) / 169 (+10) | +31 / +2 | 8481 (1009) | 30 (19.5)
+T 6 per-card reserve 2 gate<=100                 |  271 (+21) /  86 (+2) |  252 (+29) /  79 (+4) |  523 (+50) / 165 (+6) | -4 / -2 | 7606 (134) | 30 (19.6)
+T 6 concept x2+embed + per-card reserve 2 gate<=100 + turn step |  291 (+41) /  90 (+6) |  267 (+44) /  79 (+4) |  558 (+85) / 169 (+10) | +31 / +2 | 8481 (1009) | 30 (19.6)
+F base                                           |  275 (+25) /  89 (+5) |  252 (+29) /  78 (+3) |  527 (+54) / 167 (+8) | +0 / +0 | 6899 (-573) | 10 (-0.1)
+F H turn step (In-Depth)                         |  275 (+25) /  89 (+5) |  252 (+29) /  78 (+3) |  527 (+54) / 167 (+8) | +0 / +0 | 6899 (-573) | 10 (-0.2)
+F 1 concept lex x2                               |  281 (+31) /  95 (+11) |  270 (+47) /  81 (+6) |  551 (+78) / 176 (+17) | +24 / +9 | 7623 (151) | 10 (-0.2)
+F 1 concept lex x2 + embed                       |  301 (+51) / 101 (+17) |  273 (+50) /  81 (+6) |  574 (+101) / 182 (+23) | +47 / +15 | 7850 (378) | 10 (-0.1)
+F 2 per-card oracle, reserve 2                   |  298 (+48) /  97 (+13) |  273 (+50) /  78 (+3) |  571 (+98) / 175 (+16) | +44 / +8 | 6867 (-606) | 30 (19.6)
+F 3 oracle lex x0.25                             |  275 (+25) /  91 (+7) |  257 (+34) /  80 (+5) |  532 (+59) / 171 (+12) | +5 / +4 | 7249 (-223) | 10 (-0.1)
+F 3 oracle embed only                            |  298 (+48) /  98 (+14) |  266 (+43) /  79 (+4) |  564 (+91) / 177 (+18) | +37 / +10 | 7509 (37) | 10 (-0.1)
+F 3 pre-REQ-178 (oracle lex x1 + kw + embed)     |  296 (+46) /  96 (+12) |  256 (+33) /  72 (-3) |  552 (+79) / 168 (+9) | +25 / +1 | 8581 (1109) | 10 (-0.1)
+F 5 concept x2+embed + per-card reserve 2        |  315 (+65) / 104 (+20) |  293 (+70) /  86 (+11) |  608 (+135) / 190 (+31) | +81 / +23 | 7587 (115) | 30 (19.7)
+F 5 concept x2+embed + turn step                 |  301 (+51) / 101 (+17) |  273 (+50) /  81 (+6) |  574 (+101) / 182 (+23) | +47 / +15 | 7850 (378) | 10 (-0.1)
+F 6 concept x2+embed + per-card reserve 2 gate<=100 |  313 (+63) / 101 (+17) |  289 (+66) /  83 (+8) |  602 (+129) / 184 (+25) | +75 / +17 | 7885 (413) | 30 (19.6)
+F 6 per-card reserve 2 gate<=100                 |  292 (+42) /  94 (+10) |  267 (+44) /  77 (+2) |  559 (+86) / 171 (+12) | +32 / +4 | 7057 (-415) | 30 (19.5)
+F 6 concept x2+embed + per-card reserve 2 gate<=100 + turn step |  313 (+63) / 101 (+17) |  289 (+66) /  83 (+8) |  602 (+129) / 184 (+25) | +75 / +17 | 7885 (413) | 30 (19.6)
+(deciding citations total: 2469; questions with deciding rules: 1181; tuning 601 q / 1259 cites, check 580 q / 1210 cites)

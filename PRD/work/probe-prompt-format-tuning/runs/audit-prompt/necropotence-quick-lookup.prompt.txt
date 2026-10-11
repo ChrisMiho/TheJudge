@@ -1,0 +1,130 @@
+SYSTEM ROLE PREAMBLE
+You are TheJudge assistant for Magic: The Gathering stack-resolution support.
+Use only the provided context to explain likely interactions and resolution order.
+Treat ordered stack semantics as authoritative: stack[0] is the bottom spell and the last entry is the top spell.
+State assumptions when context is incomplete.
+Do not claim hidden state, private-zone information, or unseen effects.
+Do not present output as an official tournament ruling.
+
+INSTRUCTIONS
+- Explain reasoning clearly and concisely.
+- State uncertainty when context is incomplete.
+- Do not invent hidden state, targets, or board conditions.
+- For verbatim fidelity, quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections; present genuinely relevant excerpts verbatim with an explanation; never invent rule numbers or text.
+- Treat common Magic-adjacent phrasing (combo, infinite combo, aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet, and similar community terms — see the phrasing glossary) as in-domain and answer it normally; reserve not found in the rules corpus for input that is genuinely not about Magic — ask the user to check spelling or rephrase toward a Magic term; never answer the off-domain question directly.
+
+MTG REFERENCE
+Magic: The Gathering turns proceed in this order: beginning phase (untap, upkeep, draw), pre-combat main phase, combat phase, post-combat main phase, ending phase (end step, cleanup). The stack is a zone where spells and abilities wait to resolve; items resolve top to bottom.
+
+This app records turn phase as one of: untap, upkeep, draw, main_1, combat, main_2, end_step, cleanup. Combat is a single combined phase; the active combat sub-step (if provided) appears in the phase guidance section below.
+
+Zones (app model):
+- stack — Spells and abilities pending resolution; ordered bottom (first) to top (last).
+- battlefield — Permanents in play.
+- hand — Hidden cards a player may cast or activate.
+- graveyard — Used cards and destroyed permanents.
+- exile — Cards removed from the game.
+- library — Deck; top matters for draw and search effects.
+- command — Command zone (commanders, some other cards).
+
+Only zones with cards appear in the user payload. A separate scope note lists empty or omitted zones.
+
+Continuous effects use a layer system (rule 613); state-based actions are not part of it and are checked separately whenever a player would receive priority (rule 704). When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially; use layers as shared vocabulary when explaining interactions.
+
+GAME RULES (reference)
+Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
+
+Triggered Ability Basics
+603.1. Triggered abilities have a trigger condition and an effect. They are written as “[When/Whenever/At] [trigger condition or event], [effect]. [Instructions (if any).]”
+603.2. Whenever a game event or game state matches a triggered ability’s trigger event, that ability automatically triggers. The ability doesn’t do anything at this point.
+603.3. Once an ability has triggered, its controller puts it on the stack as an object that’s not a card the next time a player would receive priority. See rule 117, “Timing and Priority.” The ability becomes the topmost object on the stack. It has the text of the ability that created it, and no other characteristics. It remains on the stack until it’s countered, it resolves, a rule causes it to be removed from the stack, or an effect moves it elsewhere.
+
+Stack and Priority
+117.1. Unless a spell or ability is instructing a player to take an action, which player can take actions at any given time is determined by a system of priority. The player with priority may cast spells, activate abilities, and take special actions.
+117.3. Which player has priority is determined by the following rules:
+117.4. If all players pass in succession (that is, if all players pass without taking any actions in between passing), the spell or ability on top of the stack resolves or, if the stack is empty, the phase or step ends.
+117.7. If a player with priority casts a spell or activates an activated ability while another spell or ability is already on the stack, the new spell or ability has been cast or activated “in response to” the earlier spell or ability. The new spell or ability will resolve first. See rule 608, “Resolving Spells and Abilities.”
+405.1. When a spell is cast, the physical card is put on the stack (see rule 601.2a). When an ability is activated or triggers, it goes on top of the stack without any card associated with it (see rules 602.2a and 603.3).
+405.2. The stack keeps track of the order that spells and/or abilities were added to it. Each time an object is put on the stack, it’s put on top of all objects already there.
+
+Targets
+115.1. Some spells and abilities require their controller to choose one or more targets for them. The targets are object(s) and/or player(s) the spell or ability will affect. These targets are declared as part of the process of putting the spell or ability on the stack. The targets can’t be changed except by another spell or ability that explicitly says it can do so.
+115.2. Only permanents are legal targets for spells and abilities, unless a spell or ability (a) specifies that it can target an object in another zone or a player, or (b) targets an object that can’t exist on the battlefield, such as a spell or ability. See also rule 115.4.
+115.10. Spells and abilities can affect objects and players they don’t target. In general, those objects and players aren’t chosen until the spell or ability resolves. See rule 608, “Resolving Spells and Abilities.”
+
+Zones and Zone Changes
+400.1. A zone is a place where objects can be during a game. There are normally seven zones: library, hand, battlefield, graveyard, stack, exile, and command. Some older cards also use the ante zone. Each player has their own library, hand, and graveyard. The other zones are shared by all players.
+400.2. Public zones are zones in which all players can see the cards’ faces, except for those cards that some rule or effect specifically allow to be face down. Graveyard, battlefield, stack, exile, ante, and command are public zones. Hidden zones are zones in which not all players can be expected to see the cards’ faces. Library and hand are hidden zones, even if all the cards in one such zone happen to be revealed.
+400.7. An object that moves from one zone to another becomes a new object with no memory of, or relation to, its previous existence. This rule has the following exceptions.
+
+ADDITIONAL RELEVANT RULE EXCERPTS
+Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
+
+703.4n. 703.4n Immediately after the cleanup step begins, if the active player’s hand contains more cards than their maximum hand size (normally seven), they discard enough cards to reduce their hand size to that number. See rule 514.1.
+
+514.3. 514.3. Normally, no player receives priority during the cleanup step, so no spells can be cast and no abilities can be activated. However, this rule is subject to the following exception:
+
+514.1. 514.1. First, if the active player’s hand contains more cards than their maximum hand size (normally seven), they discard enough cards to reduce their hand size to that number. This turn-based action doesn’t use the stack.
+
+724.1f. 724.1f No player gets priority during this process, so triggered abilities are not put onto the stack. If any triggered abilities have triggered since this process began, those abilities are put onto the stack during the cleanup step, then the active player gets priority and players can cast spells and activate abilities. Then there will be another cleanup step before the turn finally ends. If no triggered abilities have triggered during this process, no player gets priority during the cleanup step. See rule 514, “Cleanup Step.”
+
+703.4p. 703.4p Immediately after the active player has discarded cards (if necessary) during the cleanup step, all damage is removed from permanents and all “until end of turn” and “this turn” effects end. These actions happen simultaneously. See rule 514.2.
+
+117.3a. 117.3a The active player receives priority at the beginning of most steps and phases, after any turn-based actions (such as drawing a card during the draw step; see rule 703) have been dealt with and abilities that trigger at the beginning of that phase or step have been put on the stack. No player receives priority during the untap step. Players usually don’t get priority during the cleanup step (see rule 514.3).
+
+303.1. 303.1. A player who has priority may cast an enchantment card from their hand during a main phase of their turn when the stack is empty. Casting an enchantment as a spell uses the stack. (See rule 601, “Casting Spells.”)
+
+506.8f. 506.8f If a spell states that it may be cast “only during combat after blockers are declared,” but the declare blockers step is skipped that combat phase (see rule 508.8), then the spell may not be cast during that combat phase.
+
+902.5b. 902.5b A player’s maximum hand size is seven, as modified by the hand modifier of their vanguard card.
+Example: The hand modifier of a player’s vanguard card is -1. That player’s maximum hand size is six. If that player has more than six cards in their hand as their cleanup step begins, they will discard all but six of them.
+
+724.1d. 724.1d The current phase and/or step ends. If this happens during combat, remove all creatures and planeswalkers from combat. The game skips straight to the cleanup step; skip any phases or steps between this phase or step and the cleanup step. If an effect ends the turn during the cleanup step, a new cleanup step begins.
+
+CARD (looked up)
+name: Necropotence
+manaCost: {B}{B}{B}
+manaValue: 3
+typeLine: Enchantment
+colors: B
+supertypes: (none)
+subtypes: (none)
+oracleText: Skip your draw step. Whenever you discard a card, exile that card from your graveyard. Pay 1 life: Exile the top card of your library face down. Put that card into your hand at the beginning of your next end step.
+
+name: Borne Upon a Wind
+manaCost: {1}{U}
+manaValue: 2
+typeLine: Instant
+colors: U
+supertypes: (none)
+subtypes: (none)
+oracleText: You may cast spells this turn as though they had flash. Draw a card.
+
+name: Silence
+manaCost: {W}
+manaValue: 1
+typeLine: Instant
+colors: W
+supertypes: (none)
+subtypes: (none)
+oracleText: Your opponents can't cast spells this turn.
+
+OFFICIAL RULINGS (WotC reference)
+Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.
+
+Necropotence
+- 2023-09-01: You can't look at the cards exiled by the last ability while they're face down.
+- 2017-11-17: If a discarded card isn't put into your graveyard (due to an effect such as that of Obstinate Baloth) or leaves your graveyard (perhaps because another effect returned it to your hand), it won't be exiled.
+- 2017-11-17: If you discard a card with madness and wish to cast it, Necropotence's ability won't exile that card. If you don't wish to cast it, you choose whether it ends up exiled or in your graveyard.
+- 2017-11-17: Necropotence's last ability creates a delayed triggered ability that will put the exiled card into your hand. That ability still triggers even if Necropotence is removed from the battlefield before your end step.
+
+Borne Upon a Wind
+- 2023-06-16: This applies only to casting spells. It does not, for example, change when you can activate abilities that can be activated "only as a sorcery."
+
+Silence
+- 2021-03-19: A player who can't cast a spell can't suspend a card.
+- 2021-03-19: Silence won't affect spells that your opponents cast before you cast Silence, including any spells that are still on the stack. Silence also won't stop your opponents from casting spells after you cast Silence but before Silence resolves.
+- 2021-03-19: The only thing Silence stops is casting spells. Your opponents can still activate abilities, including abilities of cards in their hands (like cycling). Their triggered abilities work as normal, they can still play lands, and so on.
+
+QUESTION
+I control Necropotence and have more than seven cards in hand at my cleanup step. An opponent cast Silence during that turn's main phase. Can I cast Borne Upon a Wind in the cleanup step, after discarding to hand size?

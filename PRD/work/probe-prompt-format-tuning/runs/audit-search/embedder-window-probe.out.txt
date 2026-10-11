@@ -1,0 +1,31 @@
+tokenizer model_max_length=512
+prefix 100 word pieces: cosine(prefix, prefix+junk) = 0.966286
+prefix 126 word pieces: cosine(prefix, prefix+junk) = 0.905297
+prefix 200 word pieces: cosine(prefix, prefix+junk) = 0.969600
+prefix 254 word pieces: cosine(prefix, prefix+junk) = 0.983715
+prefix 300 word pieces: cosine(prefix, prefix+junk) = 0.985053
+prefix 400 word pieces: cosine(prefix, prefix+junk) = 0.996693
+prefix 510 word pieces: cosine(prefix, prefix+junk) = 0.997507
+prefix 600 word pieces: cosine(prefix, prefix+junk) = 1.000000
+Index entries: 2893
+  longer than 128 word pieces (incl. [CLS]/[SEP]): 274
+  longer than 256 word pieces (incl. [CLS]/[SEP]): 50
+  longer than 384 word pieces (incl. [CLS]/[SEP]): 14
+  longer than 512 word pieces (incl. [CLS]/[SEP]): 2
+  cut by the 2,000-char slice before embedding: 7
+  longest: 205.3m(667), 206.3c(529), 707.3(502), 613.6(484), 123.6c(479), 120.4d(475), 206.3b(475), 707.10(462), 608.2b(448), 800.4a(448), 118.12(415), 601.2c(410)
+  median word pieces: 58
+  800.4a: 448 word pieces
+  608.2f: 317 word pieces
+  712.13a: 290 word pieces
+  712.21c: 296 word pieces
+  120.4d: 475 word pieces
+  707.10: 462 word pieces
+  514.1: 58 word pieces
+  514.2: 62 word pieces
+  514.3: 45 word pieces
+  514.3a: 119 word pieces
+  500.5b: 30 word pieces
+  500.11: 52 word pieces
+  614.10: 82 word pieces
+Stored vs fresh single-text embedding over 54 rules: mean cosine 0.99809, min 0.99642

@@ -1,0 +1,91 @@
+Necropotence ranks shown as 514.3a/514.2/514.1 per case, in this order: necropotence-silence-borne-upon-a-wind-cleanup-in-depth=game, necropotence-silence-borne-upon-a-wind-cleanup=lookup
+| config | suite tuning cit (of 1259) | suite check cit (of 1210) | every-rule (tun/chk) | hard 25 | corpus cit / every | Necro ranks | long-rule slot share | ceiling in top N (tun/chk) |
+|---|---|---|---|---|---|---|---|---|
+| today (hybrid top 10) | 250 | 223 | 159 (84/75) | 5 | 351 / 305 | 17/49/3 · 14/30/3 | 26% | 473/460 |
+| Xenova_bge-reranker-base fp32 plain/full N=30 rerank only | 259 | – | 82 (82/0) | – | – / 0 | – | 21% | 348/– |
+| Xenova_bge-reranker-base fp32 plain/full N=30 blend lin w=0.7 (tuned) | 274 | – | 91 (91/0) | – | – / 0 | – | 24% | 348/– |
+| Xenova_bge-reranker-base fp32 plain/full N=30 blend rrf w=0.6 (tuned) | 269 | – | 90 (90/0) | – | – / 0 | – | 24% | 348/– |
+| Xenova_bge-reranker-base q8 label/full N=30 rerank only | 254 | – | 81 (81/0) | – | – / 0 | – | 26% | 348/– |
+| Xenova_bge-reranker-base q8 label/full N=30 blend lin w=0.5 (tuned) | 267 | – | 93 (93/0) | – | – / 0 | – | 27% | 348/– |
+| Xenova_bge-reranker-base q8 label/full N=30 blend rrf w=0.6 (tuned) | 265 | – | 89 (89/0) | – | – / 0 | – | 27% | 348/– |
+| Xenova_bge-reranker-base q8 plain/full N=30 rerank only | 256 | 242 | 159 (83/76) | 6 | 335 / 289 | 7/49/2 · 11/15/2 | 22% | 348/320 |
+| Xenova_bge-reranker-base q8 plain/full N=30 blend lin w=0.6 (tuned) | 273 | 241 | 171 (91/80) | 5 | 360 / 314 | 12/49/2 · 11/19/2 | 25% | 348/320 |
+| Xenova_bge-reranker-base q8 plain/full N=30 blend rrf w=0.5 (tuned) | 270 | 235 | 169 (91/78) | 6 | 360 / 315 | 11/49/2 · 13/23/2 | 25% | 348/320 |
+| Xenova_bge-reranker-base q8 plain/full N=50 rerank only | 246 | – | 73 (73/0) | – | – / 0 | – | 19% | 383/– |
+| Xenova_bge-reranker-base q8 plain/full N=50 blend lin w=0.5 (tuned) | 269 | – | 90 (90/0) | – | – / 0 | – | 24% | 383/– |
+| Xenova_bge-reranker-base q8 plain/full N=50 blend rrf w=0.4 (tuned) | 270 | – | 91 (91/0) | – | – / 0 | – | 25% | 383/– |
+| Xenova_bge-reranker-base q8 plain/question N=30 rerank only | 246 | – | 80 (80/0) | – | – / 0 | – | 18% | 348/– |
+| Xenova_bge-reranker-base q8 plain/question N=30 blend lin w=0.5 (tuned) | 268 | – | 95 (95/0) | – | – / 0 | – | 22% | 348/– |
+| Xenova_bge-reranker-base q8 plain/question N=30 blend rrf w=0.6 (tuned) | 263 | – | 90 (90/0) | – | – / 0 | – | 21% | 348/– |
+| Xenova_ms-marco-MiniLM-L-12-v2 q8 plain/full N=30 rerank only | 200 | – | 57 (57/0) | – | – / 0 | – | 8% | 348/– |
+| Xenova_ms-marco-MiniLM-L-12-v2 q8 plain/full N=30 blend lin w=0.4 (tuned) | 254 | – | 83 (83/0) | – | – / 0 | – | 19% | 348/– |
+| Xenova_ms-marco-MiniLM-L-12-v2 q8 plain/full N=30 blend rrf w=0.1 (tuned) | 248 | – | 83 (83/0) | – | – / 0 | – | 25% | 348/– |
+| Xenova_ms-marco-MiniLM-L-12-v2 q8 plain/full N=50 rerank only | 180 | – | 48 (48/0) | – | – / 0 | – | 6% | 383/– |
+| Xenova_ms-marco-MiniLM-L-12-v2 q8 plain/full N=50 blend lin w=0.3 (tuned) | 257 | – | 85 (85/0) | – | – / 0 | – | 21% | 383/– |
+| Xenova_ms-marco-MiniLM-L-12-v2 q8 plain/full N=50 blend rrf w=0.2 (tuned) | 249 | – | 85 (85/0) | – | – / 0 | – | 23% | 383/– |
+| Xenova_ms-marco-MiniLM-L-12-v2 q8 plain/full N=100 rerank only | 152 | – | 38 (38/0) | – | – / 0 | – | 5% | 473/– |
+| Xenova_ms-marco-MiniLM-L-12-v2 q8 plain/full N=100 blend lin w=0.4 (tuned) | 258 | – | 87 (87/0) | – | – / 0 | – | 18% | 473/– |
+| Xenova_ms-marco-MiniLM-L-12-v2 q8 plain/full N=100 blend rrf w=0.2 (tuned) | 248 | – | 83 (83/0) | – | – / 0 | – | 22% | 473/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 label/full N=30 rerank only | 242 | – | 74 (74/0) | – | – / 0 | – | 19% | 348/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 label/full N=30 blend lin w=0.7 (tuned) | 255 | – | 85 (85/0) | – | – / 0 | – | 21% | 348/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 label/full N=30 blend rrf w=0.5 (tuned) | 254 | – | 82 (82/0) | – | – / 0 | – | 23% | 348/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 label/full N=50 rerank only | 226 | – | 65 (65/0) | – | – / 0 | – | 17% | 383/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 label/full N=50 blend lin w=0.4 (tuned) | 258 | – | 86 (86/0) | – | – / 0 | – | 24% | 383/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 label/full N=50 blend rrf w=0.6 (tuned) | 255 | – | 84 (84/0) | – | – / 0 | – | 21% | 383/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 label/full N=100 rerank only | 220 | – | 62 (62/0) | – | – / 0 | – | 15% | 473/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 label/full N=100 blend lin w=0.5 (tuned) | 257 | – | 82 (82/0) | – | – / 0 | – | 22% | 473/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 label/full N=100 blend rrf w=0.5 (tuned) | 256 | – | 84 (84/0) | – | – / 0 | – | 20% | 473/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/full N=30 rerank only | 240 | 210 | 136 (72/64) | 5 | 335 / 287 | 8/49/1 · 8/10/1 | 15% | 348/320 |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/full N=30 blend lin w=0.6 (tuned) | 255 | 228 | 149 (81/68) | 5 | 352 / 303 | 8/49/3 · 9/12/2 | 19% | 348/320 |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/full N=30 blend rrf w=0.5 (tuned) | 254 | 236 | 157 (82/75) | 4 | 352 / 304 | 13/49/2 · 10/22/2 | 20% | 348/320 |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/full N=50 rerank only | 224 | – | 59 (59/0) | – | – / 0 | – | 13% | 383/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/full N=50 blend lin w=0.5 (tuned) | 257 | – | 82 (82/0) | – | – / 0 | – | 20% | 383/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/full N=50 blend rrf w=0.5 (tuned) | 256 | – | 82 (82/0) | – | – / 0 | – | 18% | 383/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/full N=100 rerank only | 212 | – | 56 (56/0) | – | – / 0 | – | 10% | 473/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/full N=100 blend lin w=0.4 (tuned) | 257 | – | 83 (83/0) | – | – / 0 | – | 21% | 473/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/full N=100 blend rrf w=0.3 (tuned) | 258 | – | 84 (84/0) | – | – / 0 | – | 21% | 473/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/question N=30 rerank only | 240 | – | 70 (70/0) | – | – / 0 | – | 17% | 348/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/question N=30 blend lin w=0.4 (tuned) | 256 | – | 85 (85/0) | – | – / 0 | – | 23% | 348/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/question N=30 blend rrf w=0.5 (tuned) | 256 | – | 84 (84/0) | – | – / 0 | – | 21% | 348/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/question N=50 rerank only | 218 | – | 59 (59/0) | – | – / 0 | – | 15% | 383/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/question N=50 blend lin w=0.4 (tuned) | 256 | – | 83 (83/0) | – | – / 0 | – | 22% | 383/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/question N=50 blend rrf w=0.4 (tuned) | 256 | – | 84 (84/0) | – | – / 0 | – | 21% | 383/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/question N=100 rerank only | 197 | – | 54 (54/0) | – | – / 0 | – | 13% | 473/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/question N=100 blend lin w=0.3 (tuned) | 258 | – | 84 (84/0) | – | – / 0 | – | 23% | 473/– |
+| Xenova_ms-marco-MiniLM-L-6-v2 q8 plain/question N=100 blend rrf w=0.3 (tuned) | 257 | – | 85 (85/0) | – | – / 0 | – | 22% | 473/– |
+| jinaai_jina-reranker-v1-tiny-en q8 plain/full N=30 rerank only | 190 | – | 55 (55/0) | – | – / 0 | – | 5% | 348/– |
+| jinaai_jina-reranker-v1-tiny-en q8 plain/full N=30 blend lin w=0.3 (tuned) | 248 | – | 85 (85/0) | – | – / 0 | – | 20% | 348/– |
+| jinaai_jina-reranker-v1-tiny-en q8 plain/full N=30 blend rrf w=0.3 (tuned) | 250 | – | 84 (84/0) | – | – / 0 | – | 21% | 348/– |
+| jinaai_jina-reranker-v1-tiny-en q8 plain/full N=50 rerank only | 178 | – | 51 (51/0) | – | – / 0 | – | 3% | 383/– |
+| jinaai_jina-reranker-v1-tiny-en q8 plain/full N=50 blend lin w=0.3 (tuned) | 248 | – | 85 (85/0) | – | – / 0 | – | 20% | 383/– |
+| jinaai_jina-reranker-v1-tiny-en q8 plain/full N=50 blend rrf w=0.2 (tuned) | 248 | – | 85 (85/0) | – | – / 0 | – | 22% | 383/– |
+| jinaai_jina-reranker-v1-tiny-en q8 plain/full N=100 rerank only | 155 | – | 40 (40/0) | – | – / 0 | – | 2% | 473/– |
+| jinaai_jina-reranker-v1-tiny-en q8 plain/full N=100 blend lin w=0.3 (tuned) | 249 | – | 85 (85/0) | – | – / 0 | – | 19% | 473/– |
+| jinaai_jina-reranker-v1-tiny-en q8 plain/full N=100 blend rrf w=0.2 (tuned) | 246 | – | 82 (82/0) | – | – / 0 | – | 21% | 473/– |
+| jinaai_jina-reranker-v1-turbo-en q8 plain/full N=30 rerank only | 239 | 228 | 142 (77/65) | 6 | 304 / 257 | 13/49/2 · 20/21/3 | 5% | 348/320 |
+| jinaai_jina-reranker-v1-turbo-en q8 plain/full N=30 blend lin w=0.6 (tuned) | 257 | 254 | 169 (88/81) | 5 | 342 / 294 | 14/49/4 · 18/23/2 | 12% | 348/320 |
+| jinaai_jina-reranker-v1-turbo-en q8 plain/full N=30 blend rrf w=0.5 (tuned) | 253 | 245 | 162 (85/77) | 4 | 345 / 297 | 14/49/2 · 16/27/2 | 13% | 348/320 |
+| jinaai_jina-reranker-v1-turbo-en q8 plain/full N=50 rerank only | 215 | 218 | 131 (69/62) | 5 | 288 / 246 | 19/18/2 · 25/26/3 | 2% | 383/359 |
+| jinaai_jina-reranker-v1-turbo-en q8 plain/full N=50 blend lin w=0.6 (tuned) | 260 | 252 | 168 (89/79) | 5 | 344 / 296 | 17/23/4 · 18/28/2 | 10% | 383/359 |
+| jinaai_jina-reranker-v1-turbo-en q8 plain/full N=50 blend rrf w=0.4 (tuned) | 256 | 245 | 165 (87/78) | 4 | 347 / 299 | 15/36/2 · 16/29/2 | 15% | 383/359 |
+| jinaai_jina-reranker-v1-turbo-en q8 plain/full N=100 rerank only | 193 | – | 61 (61/0) | – | – / 0 | – | 1% | 473/– |
+| jinaai_jina-reranker-v1-turbo-en q8 plain/full N=100 blend lin w=0.3 (tuned) | 258 | – | 88 (88/0) | – | – / 0 | – | 19% | 473/– |
+| jinaai_jina-reranker-v1-turbo-en q8 plain/full N=100 blend rrf w=0.3 (tuned) | 258 | – | 86 (86/0) | – | – / 0 | – | 16% | 473/– |
+| mixedbread-ai_mxbai-rerank-base-v1 q8 plain/full N=30 rerank only | 236 | – | 75 (75/0) | – | – / 0 | – | 20% | 348/– |
+| mixedbread-ai_mxbai-rerank-base-v1 q8 plain/full N=30 blend lin w=0.5 (tuned) | 261 | – | 90 (90/0) | – | – / 0 | – | 25% | 348/– |
+| mixedbread-ai_mxbai-rerank-base-v1 q8 plain/full N=30 blend rrf w=0.4 (tuned) | 260 | – | 90 (90/0) | – | – / 0 | – | 26% | 348/– |
+| mixedbread-ai_mxbai-rerank-xsmall-v1 q8 plain/full N=30 rerank only | 208 | – | 57 (57/0) | – | – / 0 | – | 20% | 348/– |
+| mixedbread-ai_mxbai-rerank-xsmall-v1 q8 plain/full N=30 blend lin w=0.2 (tuned) | 257 | – | 90 (90/0) | – | – / 0 | – | 25% | 348/– |
+| mixedbread-ai_mxbai-rerank-xsmall-v1 q8 plain/full N=30 blend rrf w=0.3 (tuned) | 254 | – | 88 (88/0) | – | – / 0 | – | 25% | 348/– |
+| mixedbread-ai_mxbai-rerank-xsmall-v1 q8 plain/full N=50 rerank only | 189 | – | 53 (53/0) | – | – / 0 | – | 19% | 383/– |
+| mixedbread-ai_mxbai-rerank-xsmall-v1 q8 plain/full N=50 blend lin w=0.2 (tuned) | 256 | – | 89 (89/0) | – | – / 0 | – | 25% | 383/– |
+| mixedbread-ai_mxbai-rerank-xsmall-v1 q8 plain/full N=50 blend rrf w=0.2 (tuned) | 254 | – | 88 (88/0) | – | – / 0 | – | 25% | 383/– |
+| mixedbread-ai_mxbai-rerank-xsmall-v1 q8 plain/full N=100 rerank only | 173 | – | 48 (48/0) | – | – / 0 | – | 18% | 473/– |
+| mixedbread-ai_mxbai-rerank-xsmall-v1 q8 plain/full N=100 blend lin w=0.2 (tuned) | 255 | – | 87 (87/0) | – | – / 0 | – | 25% | 473/– |
+| mixedbread-ai_mxbai-rerank-xsmall-v1 q8 plain/full N=100 blend rrf w=0.2 (tuned) | 254 | – | 89 (89/0) | – | – / 0 | – | 25% | 473/– |
+| onnx-community_bge-reranker-v2-m3-ONNX q8 plain/full N=30 rerank only | 253 | – | 83 (83/0) | – | – / 0 | – | 11% | 348/– |
+| onnx-community_bge-reranker-v2-m3-ONNX q8 plain/full N=30 blend lin w=0.5 (tuned) | 268 | – | 93 (93/0) | – | – / 0 | – | 18% | 348/– |
+| onnx-community_bge-reranker-v2-m3-ONNX q8 plain/full N=30 blend rrf w=0.7 (tuned) | 265 | – | 87 (87/0) | – | – / 0 | – | 13% | 348/– |
+ceiling N=30: tuning 348, check 320, hard 12, corpus 397
+ceiling N=50: tuning 383, check 359, hard 14, corpus 413
+ceiling N=100: tuning 473, check 460, hard 21, corpus 431

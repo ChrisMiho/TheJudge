@@ -1,0 +1,52 @@
+Xenova/ms-marco-MiniLM-L-6-v2 q8: size 23 MB, load 161 ms, max length 512
+rules longer than the limit alone: 2; cut with a median query (42 tokens): 7 (120.4d 123.6c 205.3m 206.3b 206.3c 613.6 707.3)
+  N=30: median 761 ms per question (threads 4)
+  N=50: median 1192 ms per question (threads 4)
+  N=100: median 2321 ms per question (threads 4)
+Xenova/ms-marco-MiniLM-L-12-v2 q8: size 34 MB, load 139 ms, max length 512
+rules longer than the limit alone: 2; cut with a median query (42 tokens): 7 (120.4d 123.6c 205.3m 206.3b 206.3c 613.6 707.3)
+  N=30: median 1535 ms per question (threads 4)
+  N=50: median 2199 ms per question (threads 4)
+  N=100: median 4278 ms per question (threads 4)
+jinaai/jina-reranker-v1-tiny-en q8: size 33 MB, load 146 ms, max length 512
+rules longer than the limit alone: 2; cut with a median query (42 tokens): 5 (205.3m 206.3b 206.3c 613.6 707.3)
+  N=30: median 591 ms per question (threads 4)
+  N=50: median 885 ms per question (threads 4)
+  N=100: median 1694 ms per question (threads 4)
+jinaai/jina-reranker-v1-turbo-en q8: size 38 MB, load 177 ms, max length 512
+rules longer than the limit alone: 2; cut with a median query (42 tokens): 5 (205.3m 206.3b 206.3c 613.6 707.3)
+  N=30: median 936 ms per question (threads 4)
+  N=50: median 1278 ms per question (threads 4)
+  N=100: median 2383 ms per question (threads 4)
+mixedbread-ai/mxbai-rerank-xsmall-v1 q8: size 87 MB, load 523 ms, max length 512
+rules longer than the limit alone: 1; cut with a median query (39 tokens): 4 (205.3m 206.3c 613.6 707.3)
+  N=30: median 2486 ms per question (threads 4)
+  N=50: median 2756 ms per question (threads 4)
+  N=100: median 5332 ms per question (threads 4)
+mixedbread-ai/mxbai-rerank-base-v1 q8: size 244 MB, load 472 ms, max length 512
+rules longer than the limit alone: 1; cut with a median query (39 tokens): 4 (205.3m 206.3c 613.6 707.3)
+  N=30: median 4239 ms per question (threads 4)
+  N=50: median 4843 ms per question (threads 4)
+  N=100: median 9217 ms per question (threads 4)
+Xenova/bge-reranker-base q8: size 279 MB, load 477 ms, max length 512
+rules longer than the limit alone: 7; cut with a median query (48 tokens): 10 (120.4d 123.6c 205.3m 206.3b 206.3c 608.2b 613.6 707.3 707.10 800.4a)
+  N=30: median 2227 ms per question (threads 4)
+  N=50: median 3349 ms per question (threads 4)
+  N=100: median 6388 ms per question (threads 4)
+onnx-community/bge-reranker-v2-m3-ONNX q8: size 571 MB, load 696 ms, max length 1024
+rules longer than the limit alone: 0; cut with a median query (48 tokens): 0 ()
+  N=30: median 6679 ms per question (threads 4)
+  N=50: median 9848 ms per question (threads 4)
+  N=100: median 18567 ms per question (threads 4)
+Xenova/ms-marco-MiniLM-L-6-v2 q8: size 23 MB, load 70 ms, max length 512
+  N=30: median 738 ms per question (threads 2)
+  N=50: median 1025 ms per question (threads 2)
+  N=100: median 1763 ms per question (threads 2)
+jinaai/jina-reranker-v1-turbo-en q8: size 38 MB, load 98 ms, max length 512
+  N=30: median 796 ms per question (threads 2)
+  N=50: median 1124 ms per question (threads 2)
+  N=100: median 2157 ms per question (threads 2)
+Xenova/bge-reranker-base q8: size 279 MB, load 404 ms, max length 512
+  N=30: median 3318 ms per question (threads 2)
+  N=50: median 4884 ms per question (threads 2)
+  N=100: median 9375 ms per question (threads 2)
