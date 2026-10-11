@@ -22,7 +22,27 @@ import { mapCitedRules, ruleIdsOf } from "./rulesguru-rules.mjs";
 export const SUITE_NAME = "rulesguru";
 export const SUITE_PUBLISHER = "RulesGuru";
 export const SUITE_LICENSE = "used with permission, local only";
-export const EXCLUSION_REASONS = ["unresolved-card", "ambiguous-card", "no-cited-rule", "unknown-rule", "duplicate-question"];
+export const EXCLUSION_REASONS = [
+  "unresolved-card",
+  "ambiguous-card",
+  "no-cited-rule",
+  "unknown-rule",
+  "duplicate-question",
+  "duplicate-answer"
+];
+
+/**
+ * The shared loader's answer-source key (`scripts/lib/gold-cases.mjs`): the
+ * sorted card oracle ids plus the answer text. Two selectable cases with the
+ * same key make the loader refuse the whole suite, so the later one is excluded.
+ */
+function answerKeyOf(caseEntry) {
+  const cardKey = caseEntry.cards
+    .map((card) => card.oracleId)
+    .sort()
+    .join(",");
+  return `${cardKey}|${caseEntry.expected.answer}`;
+}
 
 function normalizeQuestion(text) {
   return String(text).replace(/\s+/g, " ").trim().toLowerCase();
@@ -153,6 +173,7 @@ export async function convertSuite({ suiteDir, cardNames, sources }) {
   await mkdir(casesDir, { recursive: true });
 
   const seenQuestions = new Map();
+  const seenAnswers = new Set();
   const counts = { raw: fileNames.length, converted: 0, selectable: 0, excluded: Object.fromEntries(EXCLUSION_REASONS.map((reason) => [reason, 0])) };
   const excludedList = [];
   for (const fileName of fileNames) {
@@ -162,6 +183,11 @@ export async function convertSuite({ suiteDir, cardNames, sources }) {
     if (duplicateOf === null) seenQuestions.set(key, question.id);
 
     const caseEntry = buildCase(question, { cardNames, indexIds, snapshotSources: sources, duplicateOf });
+    if (caseEntry.suite.excluded === null) {
+      const answerKey = answerKeyOf(caseEntry);
+      if (seenAnswers.has(answerKey)) caseEntry.suite.excluded = "duplicate-answer";
+      else seenAnswers.add(answerKey);
+    }
     await writeWhole(join(casesDir, `${caseEntry.id}.case.json`), `${JSON.stringify(caseEntry, null, 2)}\n`);
     counts.converted += 1;
     if (caseEntry.suite.excluded) {
