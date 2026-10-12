@@ -8,6 +8,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order. Code PR #293 open; review fixes applied (type-setting concept-map entry, single re-baseline, cutoff exemption); awaiting re-review and the owner's model upload. |
 
 ## active
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order. Code PR #293 open; review parked: two layers questions lost rule 613.1d; owner decides one concept-map entry for type-setting card wording. |
 
 ## deferred
 

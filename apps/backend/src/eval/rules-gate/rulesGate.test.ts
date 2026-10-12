@@ -266,10 +266,10 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
         expect(baseline.cases["academy-manufactor-esix-treasure"].inTopic).toEqual(["614.1a", "616.1", "616.1e", "616.1f"]);
         const withTopic = Object.values(baseline.cases).filter((entry) => (entry.inTopic?.length ?? 0) > 0);
         // 11 before the resolution-recipe-eval hard cases; the 16 new cases add seven In-Depth twins whose rules a curated
-        // topic carries (18); REQ-242 (topics chosen by wording, not zone presence) leaves two of the layer twins without
-        // the layers-order topic (16).
-        expect(withTopic.length).toBe(16);
-        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(376);
+        // topic carries (18); REQ-242 (topics chosen by wording, not zone presence) keeps the layers-order topic for the
+        // two layer twins through the type-setting concept-map entry (REQ-234), so the count stays 18.
+        expect(withTopic.length).toBe(18);
+        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(377);
       });
     });
 

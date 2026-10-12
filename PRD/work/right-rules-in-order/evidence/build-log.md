@@ -144,6 +144,15 @@ The owner accepted REQ-190 (up to fifteen excerpts, 0.6 relevance cutoff) and RE
 - Tree check: `git diff --name-only origin/main HEAD` outside `PRD/work/right-rules-in-order/` and `PRD/work/STATUS.md` touches only `apps/`, `scripts/`, `docs/aws/model-upload.md`, `PRD/sections/` and `.gitignore`; nothing needed lives under `PRD/work/`.
 - 2026-10-12 — Confirmed for the whole build (attempts 1 and 2): no S3 upload, no AWS bootstrap, no deploy, no paid model call, no `npm run data:refresh`, no network write ran. Free local work only: the trained model and the cross-validation ran on this machine; the Scryfall bulk file was read from the launch checkout through a git-ignored symlink (removed) to rebuild the card-detail artifact offline.
 
+### Attempt 3 (2026-10-12): review loop 1, owner-approved fixes
+
+- Concept-map entry (REQ-234, owner reviewed 2026-10-12): `TYPE_SETTING` in `apps/backend/src/gameRulesConceptMap.ts` maps type-setting wording to `type-changing effects layer continuous effect`; match and no-match tests in `gameRulesConceptMap.test.ts`; map now 78 + 5 entries, 163 distinct words unchanged. Both `layers-blood-moon-urborg-dependency-in-depth` and `layers-mycosynth-lattice-march-dependency-in-depth` carry 613.1d again.
+- I-1: `KNOWN_REQ_242_LOSSES` deleted; `npx vitest run src/prompt/builtPromptChecks.test.ts` passes with all 20 before-set 613.x / 510.x rules reaching the prompt and no exception list.
+- I-2: `baseline.json` restored from origin/main, 17 frozen query vectors re-embedded (`npm run eval:build-rules-gate-vectors`, the layers cases' query text changed), then re-baselined once (the first run, made before the vectors were re-frozen, was discarded by restoring the file). Deciding rules reaching the prompt 351 → 472 over 415 cases, 124 gained, 3 lost: `commander-devoid-color-identity` 903.4, `copies-shattering-spree-replicate-countered` 707.10, `exchange-arcanum-wings` 701.12a. `rulesGate.test.ts` counts updated (cases with a topic-carried rule 18, cases with every rule reaching 377). REQ-236 and REQ-242 text corrected; no PRD text says a loss was accepted.
+- M-1: the 0.6 cutoff exempts only a rule whose id the combined query cites exactly (`gameRulesRetrieval.ts` `selectSupplemental`); test "a cited rule survives while a child of a cited parent below the floor is dropped" in `gameRulesSearchFixes.test.ts`.
+- M-2: REQ-190 says the main ranking fills up to thirteen slots.
+- Re-measured (shipped defaults), attempt 2 in brackets: `--cv` check 530 (520), tuning 526 (511), every-rule check 175 (169), hard 25 24 (24), corpus 442 / 374 (435 / 372), bench@5 131 (131); `--final` corpus 472 of 494 and 394 of 415 (469 / 393), bench@5 130 (130), Necropotence 514.1/514.2/514.3a ranks 1/4/5 Quick and 1/4/3 In-Depth (same); recall@5 0.9231 clean / 0.9167 polluted; 14 of 14 labelled checks; privacy scan 0 matches; `npm run quality:check` exit 0. The `--cv` rise comes from the new concept-map entry (type-setting wording now adds a layers term to the search query); no figure fell. `scoredAt` in `semantic-results.json` restored.
+
 ### PR body (as opened)
 
 #### What this is

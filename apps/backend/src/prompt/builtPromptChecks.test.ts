@@ -203,23 +203,14 @@ describe("REQ-242 the layer and combat-damage rules that reached the prompt befo
   // The cases whose deciding 613.x / 510.x rule reached the prompt under origin/main's code, recorded from main's
   // committed rules-gate baseline (search excerpts or a curated topic) as reach-613-510-before.json.
   const before = JSON.parse(readFileSync(resolve(dataDir, "../src/eval/rules-gate/reach-613-510-before.json"), "utf8")) as Record<string, string[]>;
-  // The two losses REQ-242 causes (see its notes): the zone trigger that used to bring the layers-order topic is gone, and
-  // neither the question nor the cards' concept terms use a layer word. Listing them keeps the loss visible and the check exact.
-  const KNOWN_REQ_242_LOSSES: Record<string, string[]> = {
-    "layers-blood-moon-urborg-dependency-in-depth": ["613.1d"],
-    "layers-mycosynth-lattice-march-dependency-in-depth": ["613.1d"]
-  };
-
-  it("still reaches the prompt, except the two recorded REQ-242 losses, which are exactly still lost", () => {
+  it("still reaches the prompt, with no exceptions", () => {
     const failures: string[] = [];
     for (const [id, ruleIds] of Object.entries(before)) {
       const prompt = built.find((candidate) => candidate.id === id && candidate.natural);
       expect(prompt, `${id} is a corpus case`).toBeDefined();
       for (const ruleId of ruleIds) {
-        const expectedLost = KNOWN_REQ_242_LOSSES[id]?.includes(ruleId) ?? false;
         const present = printed(prompt!.promptText, ruleId);
-        if (expectedLost && present) failures.push(`${id}: ${ruleId} is back; remove it from the known losses`);
-        if (!expectedLost && !present) failures.push(`${id}: ${ruleId} reached the prompt before and no longer does`);
+        if (!present) failures.push(`${id}: ${ruleId} reached the prompt before and no longer does`);
       }
     }
     expect(failures).toEqual([]);

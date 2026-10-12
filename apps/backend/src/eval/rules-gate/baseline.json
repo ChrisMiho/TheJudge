@@ -809,12 +809,13 @@
       "miss": []
     },
     "layers-blood-moon-urborg-dependency": {
-      "hit": ["613.8a", "613.8b", "305.7"],
-      "miss": ["613.1d"]
+      "hit": ["613.1d", "613.8a", "613.8b", "305.7"],
+      "miss": []
     },
     "layers-blood-moon-urborg-dependency-in-depth": {
-      "hit": ["613.8a", "613.8b", "305.7"],
-      "miss": ["613.1d"]
+      "hit": ["305.7"],
+      "miss": ["613.1d", "613.8a", "613.8b"],
+      "inTopic": ["613.1d", "613.8a", "613.8b"]
     },
     "layers-clone-copies-frogified-serra-angel": {
       "hit": ["707.2", "613.1a"],
@@ -838,25 +839,26 @@
       "miss": []
     },
     "layers-humility-then-opalescence": {
-      "hit": ["613.1f", "613.4b", "613.6"],
-      "miss": ["613.1d", "613.7"]
+      "hit": ["613.1d", "613.1f", "613.4b", "613.6"],
+      "miss": ["613.7"]
     },
     "layers-humility-then-opalescence-in-depth": {
-      "hit": ["613.6", "613.7"],
-      "miss": ["613.1d", "613.1f", "613.4b"],
-      "inTopic": ["613.1d", "613.1f", "613.4b"]
+      "hit": ["613.6"],
+      "miss": ["613.1d", "613.1f", "613.4b", "613.7"],
+      "inTopic": ["613.1d", "613.1f", "613.4b", "613.7"]
     },
     "layers-independent-effects-use-timestamp": {
       "hit": ["613.9"],
       "miss": []
     },
     "layers-mycosynth-lattice-march-dependency": {
-      "hit": ["613.8a", "613.8b"],
-      "miss": ["613.1d", "704.5f"]
+      "hit": ["613.1d", "613.8a", "613.8b"],
+      "miss": ["704.5f"]
     },
     "layers-mycosynth-lattice-march-dependency-in-depth": {
-      "hit": ["613.8a", "613.8b"],
-      "miss": ["613.1d", "704.5f"]
+      "hit": [],
+      "miss": ["613.1d", "613.8a", "613.8b", "704.5f"],
+      "inTopic": ["613.1d", "613.8a", "613.8b"]
     },
     "layers-noncreature-artifacts-become-creatures": {
       "hit": ["613.6"],

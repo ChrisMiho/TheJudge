@@ -9,12 +9,12 @@ const dataDir = resolve(dirname(fileURLToPath(import.meta.url)), "../data");
 const ruleIndex = JSON.parse(readFileSync(resolve(dataDir, "gameRulesRuleIndex.json"), "utf8")) as GameRulesRuleIndexEntry[];
 
 describe("REQ-234 concept map", () => {
-  it("holds 77 oracle-text entries and 5 type-line entries", () => {
-    expect(CONCEPT_MAP).toHaveLength(77);
+  it("holds 78 oracle-text entries and 5 type-line entries", () => {
+    expect(CONCEPT_MAP).toHaveLength(78);
     expect(TYPE_MAP).toHaveLength(5);
   });
 
-  it("uses only words the committed rule index contains (163 distinct words over 82 entries)", () => {
+  it("uses only words the committed rule index contains (163 distinct words over 83 entries)", () => {
     const ruleText = ruleIndex.map((entry) => entry.text).join(" ").toLowerCase().replace(/[‘’]/g, "'");
     const words = new Set([...CONCEPT_MAP, ...TYPE_MAP].flatMap(([, terms]) => terms.split(/\s+/)));
     expect(words.size).toBe(163);
@@ -61,6 +61,33 @@ describe("REQ-234 concept map", () => {
     ]);
     expect(terms.filter((term) => term === "draw card")).toHaveLength(1);
     expect(terms[0]).toBe("triggered ability trigger event");
+  });
+
+  describe("type-setting wording (owner-reviewed 2026-10-12)", () => {
+    const LAYER = "type-changing effects layer continuous effect";
+    it.each([
+      "Each land is a Swamp in addition to its other land types.",
+      "All permanents are artifacts in addition to their other types.",
+      "Nonbasic lands are Mountains.",
+      "Enchanted permanent is an artifact creature with base power and toughness 4/4.",
+      "All permanents are artifacts.",
+      "Each creature is a land in addition to its other types.",
+      "Flying. As long as you control a Forest, ~ is a creature."
+    ])("maps %s to the type-changing layer", (oracleText) => {
+      expect(conceptTermsForCard({ oracleText })).toContain(LAYER);
+    });
+
+    it.each([
+      "Destroy target creature.",
+      "Sacrifice ~ if it is a creature.",
+      "Exile target permanent that is a creature.",
+      "When it is a creature, draw a card.",
+      "Draw a card for each creature that is a Zombie.",
+      "~'s power is equal to the number of creatures you control.",
+      "Whenever a creature you control dies, if it is a token, create a Treasure."
+    ])("does not map conditional or targeting wording: %s", (oracleText) => {
+      expect(conceptTermsForCard({ oracleText })).not.toContain(LAYER);
+    });
   });
 
   it("returns nothing for a card without wording", () => {

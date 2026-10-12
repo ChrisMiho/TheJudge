@@ -452,6 +452,26 @@ describe("REQ-190 relevance cutoff", () => {
     expect(result.selected.map((rule) => rule.ruleId)).toContain("111.1");
   });
 
+  it("a cited rule survives while a child of a cited parent below the floor is dropped", () => {
+    const children = ["111.1a", "111.1b"];
+    const childIndex = [
+      ...index,
+      ...children.map((id) => ({ ...entry(id, `${id} word`), parentRuleIds: ["111.1", "111"] }))
+    ];
+    const childEmbeddings = {
+      model: "m",
+      dims: 2,
+      ruleIds: [...ids, ...children],
+      vectors: [...degrees.map(angles), angles(80), angles(85)]
+    };
+    const childResources = resourcesWith({ ruleEmbeddings: childEmbeddings, tokenStats: { N: 100, df: new Map([["word", 90]]) } });
+    const result = retrieveRulesForQueryWithDebug([], ["111.1"], childIndex, new Set(), 15, childResources, angles(0.5), "q", []);
+    const selected = result.selected.map((rule) => rule.ruleId);
+    expect(selected).toContain("111.1");
+    expect(selected).not.toContain("111.1a");
+    expect(selected).not.toContain("111.1b");
+  });
+
   it("the lexical-only fallback keeps a plain top-N with no cutoff", () => {
     const result = retrieveRulesForQueryWithDebug([{ token: "word", source: "question", isKeyword: false }], [], index, new Set(), 12, resources, null, "q", []);
     expect(result.debug.usedSemantic).toBe(false);

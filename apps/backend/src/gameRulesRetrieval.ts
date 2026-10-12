@@ -426,8 +426,8 @@ export const PER_CARD_RESERVED_SLOTS = 2;
 /**
  * REQ-190: on the semantic path a main-ranking candidate whose blended score (before rule-id and
  * cross-reference boosts) is below this share of the top main candidate's is dropped, so weak
- * matches stop padding the list. A rule the question cites by number (a boosted candidate) always
- * stays. The lexical-only fallback keeps a plain top-N with no cutoff.
+ * matches stop padding the list. Only a rule whose id the question cites by number exactly
+ * stays regardless; children of a cited parent and cross-referencing rules face the cutoff. The lexical-only fallback keeps a plain top-N with no cutoff.
  */
 export const SUPPLEMENTAL_RELEVANCE_CUTOFF = 0.6;
 
@@ -1274,8 +1274,8 @@ export function keywordRuleSetsForCards(cards: readonly RetrievalCard[], index: 
 
 /**
  * REQ-190 / REQ-235: the System 3 selection. On the semantic path, main-ranking candidates below
- * `SUPPLEMENTAL_RELEVANCE_CUTOFF` x the top unboosted blend are dropped (a boosted candidate, one the
- * question cites by number, stays); the per-card slots and the fill run as before over what is left;
+ * `SUPPLEMENTAL_RELEVANCE_CUTOFF` x the top unboosted blend are dropped (only a rule the
+ * question cites by number exactly stays); the per-card slots and the fill run as before over what is left;
  * then each keyword set is added whole beside the result, skipping pieces already chosen or excluded,
  * under `KEYWORD_SET_CHAR_BUDGET` (a set that would overflow is skipped whole, and the added pieces do
  * not count against `max`).
@@ -1300,10 +1300,9 @@ function selectSupplemental(
     let top = 0;
     for (const candidate of scored) top = Math.max(top, candidate.score - boostOf(candidate));
     const floor = SUPPLEMENTAL_RELEVANCE_CUTOFF * top;
-    main = scored.filter((candidate) => {
-      const boost = boostOf(candidate);
-      return boost > 0 || candidate.score - boost >= floor;
-    });
+    // Only a rule whose id the question cites by number exactly is exempt; children of a cited parent and
+    // cross-referencing rules face the floor like any other candidate (judged without their boost).
+    main = scored.filter((candidate) => queryRuleIdSet.has(candidate.entry.ruleId) || candidate.score - boostOf(candidate) >= floor);
   }
 
   const picked = selectWithPerCardSlots(main, max, cardVectors, index, excludeRuleIds, ruleVectorById);
