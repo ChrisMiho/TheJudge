@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 101` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (11 slots, all verdicts blank: new REQ-246, REQ-247; amended REQ-022, REQ-024, REQ-027, REQ-074, REQ-178, REQ-226, REQ-228, REQ-238, REQ-242; no blocker), `evidence/amendment-grep.md` (268 hits = 13 amend / 13 build / 242 no change), `evidence/offline-measurement.md` (62-case diagnostic manifest at `0461969f`: carried excerpts 62/62, In-Depth curated topics 9/9, lookup step guidance 53/53; today 6 of 9 In-Depth follow-ups change topics); `STATUS.refined` only marker, board row under `## refined`; driver `git diff --stat HEAD -- PRD/sections apps scripts` empty. Deviation: node wrote the first README/board/grep drafts with short python scripts and renamed markers with `mv` (no denial) | 2026-10-12 |
 | 4 | gate-qc | sonnet | ok | `0 → 19` | PASS, attempt 1 of 3: every old and context line of the 11 diffs matches `PRD/sections/functional-requirements.md` at its stated line (scripted exact match, 0 misses); 13 amend rows map to slots; three plain-language lines and blank verdicts in each slot; REQ-246/REQ-247 free on main; numeric targets trace to `evidence/offline-measurement.md`; code references true; no practice-suite data. One non-blocking nit (evidence line cited `askAiRequest.ts:227`, true line 228) fixed by the driver. `README.md` `## Preparation gate` written PASS | 2026-10-12 |
 | 5 | gate-review | sonnet | ok | `0 → 18` | build half run `graph-20261012-152231`: claim commit `1a3ea9a9` on `thejudge-auto/follow-ups-keep-their-rules-work` cut from `origin/main` `67678d05` (docs PR #296 merge; kickoff worktree removed clean); lock taken from the launch root, graph canary `nohup true` denied; `graph-gate-review` commit `997fc929`: 11 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-12 |
+| 6 | gate-qc | sonnet | ok | `0 → 14` | PASS, build-half attempt 1 of 3, re-graded after gate resolution at `origin/main` `67678d05`: all 24 old/context diff lines match `PRD/sections/functional-requirements.md` verbatim at their stated lines; REQ-246/REQ-247 free (REQ-245 last, line 6455); brief code references true (`useAskAiSubmitOrchestration.ts`, `askAiRequest.ts:231-246`, `routes/askAi.ts:106-110`, `gameRulesTopicSelection.ts:142`, `preparation.ts`); brief consistent with 11 accepts, REQ-246 follow-up item out of build scope; `STATUS.refined` only marker; porcelain empty. Non-blocking: `DESIGN-BRIEF.md` line 6 still says the eleven slots are to be decided. `README.md` `## Preparation gate` stands PASS, findings none | 2026-10-12 |
 
 ## Open gate
 
@@ -197,6 +198,25 @@ Rules:
 - Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
 
 Report back: PASS or FAIL, the complete issue list on FAIL, and `git status --porcelain` of the working directory.
+
+### plan
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules
+
+You are node 5 (`plan`) of graph run `graph-20261012-152231`, attempt 1, on branch `thejudge-auto/follow-ups-keep-their-rules-work`. Run the `thejudge-map-out` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules/.claude/skills/thejudge-map-out/SKILL.md` and its `reference.md` in full) on `PRD/work/follow-ups-keep-their-rules/` in the working directory above, in orchestrated mode.
+
+Inputs: `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (11 accepted slots), `evidence/`, and `## Gate verdicts` in `GRAPH-RUN.md`. The README `## Preparation gate` records `Quality-check: PASS`; verify it there before writing anything. The REQ-246 follow-up item recorded in `## Gate verdicts` is out of this build's scope; do not slice it.
+
+Write `GAMEPLAN.md`, the lettered `slice-<letter>.md` docs, and one `slice-<letter>.criteria.json` beside each slice doc (every criterion `false`, each with an evidence block, per the map-out reference). Each slice that changes behavior names the `PRD/sections/` truth it applies by intent from the accepted slots, together with its code. The build node runs `thejudge-implement-all` in this same worktree on this same branch, so plan no second worktree and no contributor branch. No slice may require a paid or live model call to pass its criteria; offline tests and dry runs only. Set `STATUS.active` (exactly one marker), update the README status line, and move the board row in `PRD/work/STATUS.md` fully from refined to active.
+
+Rules:
+- Use the Write and Edit tools for every file change. Do not commit or push; the driver commits between nodes. Do not touch `GRAPH-RUN.md`, `PRD/sections/`, code, or any `thejudge-*` skill.
+- Spawn no subagents or forks, do not sleep or poll, and stay under 120 tool calls. No paid or network calls.
+- Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
+
+Report back: the slice list with one plain line each, the files you wrote, the final STATUS marker, and `git status --porcelain` of the working directory.
 
 ## Instruction ledger
 
