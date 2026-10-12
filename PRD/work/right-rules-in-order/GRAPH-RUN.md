@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/right-rules-in-order`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-right-rules-in-order`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/right-rules-in-order/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 6` | branch `thejudge-auto/right-rules-in-order` pushed from `.worktrees/kickoff-right-rules-in-order` at `61d32c76` (`git ls-remote --heads origin thejudge-auto/right-rules-in-order`); lock `.worktrees/.graph-run.lock` pid 83313; launch checkout untouched (still on `main`); shape root, base `origin/main` | 2026-10-11 |
 | 2 | shape | sonnet | ok | `0 → 12` | `PRD/work/right-rules-in-order/` (IDEA.md, README.md, STATUS.ideation, `intake/GRAPH-BRIEF-search-and-prompt.md` byte-identical to the staged copy, `cmp` clean); board row under ideation; commit `e0c78ba9` pushed; 17 prior-run receipts in IDEA.md; driver added `## Autonomous metadata` to README | 2026-10-11 |
+| 3 | define | opus | ok | `0 → 95` | `PRD/work/right-rules-in-order/DESIGN-BRIEF.md` (363 lines, 12 acceptance targets, 23 assumptions), `PRD/work/right-rules-in-order/GATE-QUESTIONS.md` (39 slots, 39 blank verdicts: new REQ-233–245; amended REQ-022, 024, 030, 074, 167, 176, 178, 179, 180, 181, 182, 183, 184, 190, 220, 232, NFR-017, FLOW-011, FLOW-023; 7 section docs), `evidence/amendment-grep.md` (100 hits = 70 amend / 5 build / 25 no change); no blocker questions; `STATUS.refined` only marker, board row under refined; commit `09467219` pushed; node-reported diff check 206 removed + 138 context lines exact; `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` empty; no paid or network calls | 2026-10-11 |
 
 ## Open gate
 
@@ -100,6 +101,35 @@ Claude-Session: https://claude.ai/code/session_01Xr5PWVEyMjoesGrkYth3yz
 Spawn no subagents or forks; no sleeping or polling. Stay well under 150 tool calls; if you near 120, commit what you have and report. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: the files written, the commit SHA(s) and push result, the list of stable IDs with slots in `GATE-QUESTIONS.md` (new vs amended), any blocker questions, the amendment-grep hit count and disposition totals, and `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` (must be empty).
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-right-rules-in-order
+
+You are node 4 (`gate-qc`) of graph run `graph-20261011-234114`, attempt 1. Invoke the `thejudge-quality-check` skill and follow it in its graph-controlled mode (`graph is controlling`: no questions to the user, no approval pauses). Produce a PASS or FAIL report only — never a GAMEPLAN or slice docs.
+
+Package: `PRD/work/right-rules-in-order/` inside the working directory above. Checked artifact: `DESIGN-BRIEF.md`, with `GATE-QUESTIONS.md` (39 slots, every verdict intentionally blank — blank verdicts are expected at this stage and are not a finding), `evidence/amendment-grep.md`, and `intake/GRAPH-BRIEF-search-and-prompt.md`. Never write to the launch checkout /Users/chrismiho/Coding/Projects/TheJudge itself. Leave `GRAPH-RUN.md` and `README.md` alone — the driver writes the README `## Preparation gate` section.
+
+Checks to include alongside the skill's own:
+1. Every removed and context line in every `GATE-QUESTIONS.md` diff matches current `PRD/sections/` word for word. Verify with one script over all diffs, not by hand.
+2. Each slot opens with the plain-language block (What this decides, In plain terms, What happens if you say no) and carries a complete diff, not a summary.
+3. The amendment grep re-runs to the same hit count, and every hit has a disposition.
+4. The brief's acceptance targets are measurable, and its numeric budgets are internally consistent with each other and with the intake's gates (for example, prompt-size targets against any per-prompt character budget the brief sets).
+5. New IDs REQ-233 to REQ-245 are unused on main; no DEC entry is added.
+6. Privacy: no practice-suite question text, answers, card lists, ids or per-question results in any package file; no model weights.
+7. `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` is empty.
+Do not open the probe-folder documents the intake cites (`PRD/work/probe-prompt-format-tuning/**`); make no paid or network calls.
+
+Write the report to `PRD/work/right-rules-in-order/QUALITY-CHECK.md`. On PASS leave `STATUS.refined`; on FAIL set `STATUS.refining` (exactly one marker) and move the board row fully. Quote any finding precisely with file and line.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit only explicit paths (`git add <path>`, then `git commit`, then `git push`, as separate short calls; never `git add -A` or `git add .`). End every commit message with these two lines:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Xr5PWVEyMjoesGrkYth3yz
+Verify directly. Spawn no subagents or forks; no sleeping or polling. Stay well under 60 tool calls — aim for 40; if you near 45, write the verdict with what you have and report. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: PASS or FAIL, the complete finding list, the commit SHA and push result, and the marker left in place.
 
 ## Instruction ledger
 
