@@ -6,7 +6,7 @@
 //
 // Usage: node scripts/privacy-scan.mjs [--suite <dir>]
 // Exit status 1 when any match is found, 2 when the suite folder cannot be read.
-import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { readdirSync, readFileSync, existsSync, realpathSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -123,6 +123,6 @@ async function main() {
   if (matches > 0) process.exitCode = 1;
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
   await main();
 }

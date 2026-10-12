@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runtimeEmbeddingModelId } from "./embeddingModel.js";
 import type { GameRulesTopic } from "./gameRules.js";
 import { conceptTermsForCards } from "./gameRulesConceptMap.js";
 import { tokenizeSearchText } from "./gameRulesStemmer.js";
@@ -341,6 +342,12 @@ export type ScoringResources = {
   ruleEmbeddings: GameRulesRuleEmbeddings | null;
   /** REQ-233: the rule book's glossary, for obsolete-term query translation. Absent means none. */
   glossary?: GameRulesGlossaryEntry[];
+  /**
+   * REQ-237: the id of the model that embeds queries in this process. When set, rule vectors built by
+   * a different model disable the semantic path with one error-level diagnostic naming both ids.
+   * Left unset (as in tests with hand-made vectors), no model check runs.
+   */
+  runtimeModelId?: string;
 };
 
 let defaultResources: ScoringResources | null = null;
@@ -352,7 +359,8 @@ export function getDefaultScoringResources(): ScoringResources {
     tokenStats: loadGameRulesTokenStats(resolve(dataDir, "gameRulesTokenStats.json")),
     keywordVocabulary: loadGameRulesKeywordVocabulary(resolve(dataDir, "gameRulesKeywordVocabulary.json")),
     ruleEmbeddings: loadGameRulesRuleEmbeddings(resolve(dataDir, "gameRulesRuleEmbeddings.json")),
-    glossary: loadGameRulesGlossary(resolve(dataDir, "gameRulesGlossary.json"))
+    glossary: loadGameRulesGlossary(resolve(dataDir, "gameRulesGlossary.json")),
+    runtimeModelId: runtimeEmbeddingModelId()
   };
   return defaultResources;
 }
@@ -995,9 +1003,19 @@ function scoreIndex(
       `Query embedding has ${queryVector.length} dimensions but the committed rule vectors have ${embeddings.dims} (model ${embeddings.model}); the semantic path is disabled and System 3 falls back to lexical retrieval.`
     );
   }
+  // REQ-237: rule vectors built by another model than the running one are never ranked against.
+  const modelMatches =
+    embeddings === null || resources.runtimeModelId === undefined || embeddings.model === resources.runtimeModelId;
+  if (queryVector !== null && embeddings !== null && !modelMatches) {
+    errorOnce(
+      `rule-vector-model-mismatch:${embeddings.model}:${resources.runtimeModelId}`,
+      `The committed rule vectors were built by embedding model "${embeddings.model}" but this process runs "${resources.runtimeModelId}"; the semantic path is disabled and System 3 falls back to lexical retrieval (REQ-237).`
+    );
+  }
   const useSemantic =
     queryVector !== null &&
     embeddings !== null &&
+    modelMatches &&
     queryVector.length === embeddings.dims &&
     embeddingsMatchRuleIndex(embeddings, index);
   const embeddingByRuleId = useSemantic

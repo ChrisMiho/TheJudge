@@ -34,6 +34,14 @@ openai_max_retries="1"
 lambda_timeout_seconds="40"
 openai_api_key_ssm_param="/thejudge/openai-api-key"
 
+# REQ-237: the trained search model lives in the private artifact bucket under
+# models/<model-id>/ (the owner uploads it once, before the code change merges).
+# package-lambda.sh fetches it from here and refuses to package without a verified model.
+embedding_model_id="$(node -e 'try{process.stdout.write(require(process.argv[1]).modelId)}catch{}' "$repo_root/apps/backend/data/embeddingModel.manifest.json")"
+if [[ -n "$embedding_model_id" ]]; then
+  export EMBEDDING_MODEL_SOURCE="s3://$artifact_bucket_name/models/$embedding_model_id"
+fi
+
 artifact_path="$(bash "$repo_root/scripts/package-lambda.sh")"
 
 # Stage in S3 first, then point Lambda at the object instead of uploading the

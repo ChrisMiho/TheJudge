@@ -125,6 +125,13 @@ aws iam put-role-policy \
 lambda_role_arn="arn:aws:iam::$account_id:role/$lambda_role_name"
 
 npm run build
+# REQ-237: package-lambda.sh fetches the private trained search model from the artifact bucket
+# (models/<model-id>/, uploaded by the owner beforehand) and refuses to package without it. The deploy
+# role already reads the whole artifact bucket (s3:GetObject on its objects), models/ included.
+embedding_model_id="$(node -e 'try{process.stdout.write(require(process.argv[1]).modelId)}catch{}' "$repo_root/apps/backend/data/embeddingModel.manifest.json")"
+if [[ -n "$embedding_model_id" ]]; then
+  export EMBEDDING_MODEL_SOURCE="s3://$artifact_bucket_name/models/$embedding_model_id"
+fi
 artifact_path="$(bash "$repo_root/scripts/package-lambda.sh")"
 
 # Stage the package in S3, then point Lambda at the object instead of uploading

@@ -9,18 +9,27 @@
 // (which populates the cache directory as a side effect of loading the
 // model) and computes nothing, writes nothing else.
 //
+// REQ-237: this downloads the STOCK model from Hugging Face. Once a trained model's manifest is
+// committed (`apps/backend/data/embeddingModel.manifest.json`) the running model is private and is
+// fetched from S3 and hash-verified by `scripts/fetch-embedding-model.mjs` instead; this script then
+// refuses, naming that command.
+//
 //   node scripts/warm-embedding-model-cache.mjs
 
-import { LOCAL_MODEL_CACHE_DIR, LOCAL_MODEL_ID } from "../apps/backend/src/providers/localEmbeddingProvider.ts";
+import { LOCAL_MODEL_CACHE_DIR, LOCAL_MODEL_ID, createLocalExtractor } from "../apps/backend/src/providers/localEmbeddingProvider.ts";
+import { loadEmbeddingModelManifest } from "../apps/backend/src/embeddingModel.ts";
 
 async function main() {
-  const { env, pipeline } = await import("@huggingface/transformers");
+  if (loadEmbeddingModelManifest()) {
+    throw new Error(
+      `The running embedding model (${LOCAL_MODEL_ID}) is stored privately, not on Hugging Face. ` +
+        "Fetch and verify it with: node scripts/fetch-embedding-model.mjs --source <s3://bucket/models/<id> | local folder> (REQ-237)."
+    );
+  }
   // Build/deploy-time only: allowed to fetch the model into the local cache
   // once, same as build-rule-embeddings.mjs. If it's already cached, this is
   // a fast local read with no network call.
-  env.allowRemoteModels = true;
-  env.cacheDir = LOCAL_MODEL_CACHE_DIR;
-  await pipeline("feature-extraction", LOCAL_MODEL_ID, { dtype: "q8" });
+  await createLocalExtractor({ allowRemoteModels: true });
   console.log(`Warmed local embedding model cache: ${LOCAL_MODEL_CACHE_DIR}`);
 }
 

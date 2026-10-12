@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { assertVectorsMatchRuntimeModel } from "../embeddingModel.js";
 import { loadGameRulesTopics, type GameRulesTopic } from "../gameRules.js";
 import { loadGameRulesRuleIndex, type GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { CardDetailEntry } from "../cardDetail.js";
@@ -275,7 +276,9 @@ describe("Backend - Ask AI", () => {
     );
     const frozen = JSON.parse(
       readFileSync(path.join(currentDir, "preparation.crossReferenceQueryEmbedding.json"), "utf8")
-    ) as { question: string; vector: number[] };
+    ) as { model: string; question: string; vector: number[] };
+    // REQ-237: a frozen vector made by another model than the running one is refused.
+    assertVectorsMatchRuntimeModel("The cross-reference regression test's frozen query embedding", frozen.model);
 
     // `usedSemantic` rides through `enrichmentDebug.supplemental` at runtime
     // (preparation.ts passes the debug object through by reference) but isn't

@@ -19,6 +19,7 @@ import { preparePromptInput, resolveGameComboCandidates } from "../prompt/prepar
 import type { AskAiRequest, GameAskAiRequest } from "../types/index.js";
 import type { ComboVariant } from "../commanderSpellbook/catalog.js";
 import { cardDetailIndexFromRequest } from "./fixtureCardDetail.js";
+import { assertVectorsMatchRuntimeModel } from "../embeddingModel.js";
 import { resolveFrozenCardEmbeddings } from "./frozenCardVectors.js";
 import {
   buildChecklistReport,
@@ -58,9 +59,13 @@ const fixtureRulings = new Map([
 // would compute for that fixture's retrieval query text.
 const ruleEmbeddingsPath = path.resolve(currentDir, "../../data/gameRulesRuleEmbeddings.json");
 type FrozenQueryEmbedding = { question: string; vector: number[] };
-const frozenQueryEmbeddings: Record<string, FrozenQueryEmbedding> = JSON.parse(
-  readFileSync(path.join(fixtureDir, "frozen-query-embeddings.json"), "utf8")
-);
+const frozenQueryEmbeddingsFile = JSON.parse(readFileSync(path.join(fixtureDir, "frozen-query-embeddings.json"), "utf8")) as {
+  model: string;
+  vectors: Record<string, FrozenQueryEmbedding>;
+};
+// REQ-237: the harness refuses (throws) when the frozen vectors were made by another model than the running one.
+assertVectorsMatchRuntimeModel("The labelled fixtures' frozen query embeddings", frozenQueryEmbeddingsFile.model);
+const frozenQueryEmbeddings = frozenQueryEmbeddingsFile.vectors;
 
 // Eval-only combo corpus: independent of the production artifact so an
 // owner-approved corpus refresh can never churn a prompt golden.

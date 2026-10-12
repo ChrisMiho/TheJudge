@@ -11,6 +11,7 @@ import {
   loadPromptResources,
   type PromptResources
 } from "../../../../../scripts/lib/prompt-fidelity.mjs";
+import { runtimeEmbeddingModelId } from "../../embeddingModel.js";
 import { preparePromptInput } from "../../prompt/preparation.js";
 import { askAiRequestSchema } from "../../validation/askAiRequest.js";
 import { BASELINE_PATH, loadBaseline } from "./baseline.js";
@@ -430,7 +431,10 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
     });
 
     it("stores a SHA-256 of the query text beside every committed vector (the re-freeze hash)", () => {
-      const committed = JSON.parse(readFileSync(FROZEN_VECTORS_PATH, "utf8")) as FrozenVectorFile;
+      const file = JSON.parse(readFileSync(FROZEN_VECTORS_PATH, "utf8")) as { model: string; vectors: FrozenVectorFile };
+      // REQ-237: the file records the embedding model that made its vectors.
+      expect(file.model).toBe(runtimeEmbeddingModelId());
+      const committed = file.vectors;
       expect(Object.keys(committed).length).toBeGreaterThanOrEqual(18);
       for (const [id, entry] of Object.entries(committed)) {
         expect(entry.queryTextHash, id).toMatch(/^[0-9a-f]{64}$/);

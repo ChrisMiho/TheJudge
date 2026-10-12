@@ -1,6 +1,6 @@
 # Slice C — Trained-model tooling, manifest, fetch, identity
 
-## Status: planned
+## Status: done
 
 ## Goal
 

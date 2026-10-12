@@ -21,6 +21,7 @@ import {
   buildCompactCardSignal,
   buildQueryTokensFromParts,
   buildRetrievalQuery,
+  loadGameRulesRuleEmbeddings,
   loadGameRulesRuleIndex,
   retrieveRulesForQuery,
   type GameRulesRuleIndexEntry,
@@ -29,11 +30,13 @@ import {
   type RetrievalCard
 } from "../gameRulesRetrieval.js";
 import { loadCardDetailIndex, type CardDetailEntry } from "../cardDetail.js";
+import { assertVectorsMatchRuntimeModel, runtimeEmbeddingModelId } from "../embeddingModel.js";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 
 export const BENCHMARK_PATH = resolve(currentDir, "benchmark/rag-retrieval-benchmark.json");
 export const RULE_INDEX_PATH = resolve(currentDir, "../../data/gameRulesRuleIndex.json");
+export const RULE_EMBEDDINGS_PATH = resolve(currentDir, "../../data/gameRulesRuleEmbeddings.json");
 export const CARD_DETAIL_PATH = resolve(currentDir, "../../data/cardDetailByOracleId.json.br");
 /**
  * REQ-178/REQ-180 (review loop 1, B4/D5/E9): `cardDetailByOracleId.json.br` is
@@ -287,10 +290,16 @@ export async function scoreBenchmarkSemantic(
   corpus: BenchmarkCorpus,
   ruleIndex: GameRulesRuleIndexEntry[],
   pollution: Pollution,
-  embed: (text: string) => Promise<number[] | null>
+  embed: (text: string) => Promise<number[] | null>,
+  { runningModelId = runtimeEmbeddingModelId() }: { runningModelId?: string } = {}
 ): Promise<BenchmarkScoreResult> {
   const cleanRanks: number[] = [];
   const pollutedRanks: number[] = [];
+
+  // REQ-237: refuse outright when the committed rule vectors were built by another model than the
+  // one that embeds the queries; a mixed ranking would be reported under a semantic label.
+  const committedVectors = loadGameRulesRuleEmbeddings(RULE_EMBEDDINGS_PATH);
+  if (committedVectors) assertVectorsMatchRuntimeModel("The committed rule vectors", committedVectors.model, runningModelId);
 
   for (const item of corpus.items) {
     const clean = buildRetrievalQuery({ questionText: item.question, cards: [] });

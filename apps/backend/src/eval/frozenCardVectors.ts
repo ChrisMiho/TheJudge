@@ -16,6 +16,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { CardDetailEntry } from "../cardDetail.js";
+import { assertVectorsMatchRuntimeModel } from "../embeddingModel.js";
 import { buildPerCardSearchTexts } from "../prompt/preparation.js";
 import type { AskAiRequest } from "../types/index.js";
 import { decodeVector } from "./vectorEncoding.js";
@@ -27,16 +28,32 @@ export const FROZEN_CARD_VECTORS_PATH = resolve(currentDir, "frozen-card-vectors
 /** `perCardTextKey(text)` (a SHA-256 of the card's search text) -> base64 float32 vector. */
 export type FrozenCardVectorFile = Record<string, string>;
 
+/** On disk: the vectors plus the id of the embedding model that made them (REQ-237). */
+export type FrozenCardVectorsOnDisk = { model: string; vectors: FrozenCardVectorFile };
+
+/** Reads the committed store as it is on disk; null when absent. Builders use this to reuse vectors the running model made. */
+export function readFrozenCardVectorsOnDisk(path = FROZEN_CARD_VECTORS_PATH): FrozenCardVectorsOnDisk | null {
+  try {
+    return JSON.parse(readFileSync(path, "utf8")) as FrozenCardVectorsOnDisk;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
+}
+
 let cachedStore: FrozenCardVectorFile | null = null;
 
-/** Reads the committed store; a missing file is an empty store, so cards without a vector are reported, not hidden. */
+/**
+ * Reads the committed store; a missing file is an empty store, so cards without a vector are reported,
+ * not hidden. REQ-237: refuses (throws) when the file was built by a model other than the running one.
+ */
 export function loadFrozenCardVectors(path = FROZEN_CARD_VECTORS_PATH): FrozenCardVectorFile {
   if (path === FROZEN_CARD_VECTORS_PATH && cachedStore) return cachedStore;
+  const file = readFrozenCardVectorsOnDisk(path);
   let store: FrozenCardVectorFile = {};
-  try {
-    store = JSON.parse(readFileSync(path, "utf8")) as FrozenCardVectorFile;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+  if (file) {
+    assertVectorsMatchRuntimeModel("The frozen per-card vectors", file.model);
+    store = file.vectors;
   }
   if (path === FROZEN_CARD_VECTORS_PATH) cachedStore = store;
   return store;

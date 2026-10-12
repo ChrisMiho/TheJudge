@@ -4291,11 +4291,12 @@
 - Priority: high
 - Description: System 3 supplemental rule retrieval ranks Comprehensive Rules excerpts by semantic similarity between the player's question and the rule corpus, not by lexical word overlap alone. A committed offline artifact holds one embedding vector per rule; at request time the query is embedded and cosine-ranked against those vectors to fill System 3's ten-excerpt slot. The query embedder is selected by an explicit provider flag that mirrors the existing `ASK_AI_PROVIDER` boundary.
 - Acceptance Criteria:
-  - a committed offline artifact in `apps/backend/data/` holds one embedding vector per entry in `gameRulesRuleIndex.json`, built by an offline step alongside `build-game-rules.mjs` and rebuilt only on a Comprehensive Rules refresh
+  - a committed offline artifact in `apps/backend/data/` holds one embedding vector per entry in `gameRulesRuleIndex.json`, built by an offline step alongside `build-game-rules.mjs` and rebuilt on a Comprehensive Rules refresh and whenever the search model is retrained (REQ-236); it records the model id and manifest hash that built it (REQ-237)
   - a new `EMBEDDING_PROVIDER` flag selects the query embedder with values `mock` | `local` | `openai`; the default when unset is `mock`, and it never auto-switches on `NODE_ENV` or deploy target, mirroring `ASK_AI_PROVIDER`
   - `EMBEDDING_PROVIDER=mock` performs no embedding and makes no external call; System 3 uses lexical retrieval only, so a checkout with no model access and no network behaves exactly as before
   - `EMBEDDING_PROVIDER=local` embeds the query in-process with the bundled model and cosine-ranks it against the committed rule vectors
-  - `EMBEDDING_PROVIDER=openai` is seam-selectable for live mode only and is never the default
+  - `EMBEDDING_PROVIDER=openai` is seam-selectable for live mode only and is never the default; a query vector whose length differs from the committed rule vectors' (OpenAI's 1,536 against 384) is never silently replaced by lexical-only ranking under a semantic label: it disables the semantic path with one error-level diagnostic naming both dimensions, and the eval harnesses and benchmark fail on it
+  - a committed vector file built by a model other than the running one is caught at load (REQ-237): one error-level diagnostic naming both model ids, the lexical fallback above, never a mixed ranking
   - the async route handler embeds the query and passes the resulting vector (or null) into prompt preparation as an option, so `preparePromptInput` stays synchronous
   - the exact-rule-id and parent-rule-id boost is merged with the semantic ranking, so a question citing a rule number by name (for example "rule 613.9") still pulls that rule even when semantic similarity misses it — measured on the benchmark, gold rule 613.9 ranks 1st lexically and 5th semantically
   - on any embedding failure — model load, inference error, missing artifact, provider error — System 3 falls back to lexical retrieval, still returns up to 10 excerpts, and emits one diagnostic warning
@@ -4309,7 +4310,7 @@
   - the raw model download and any oversized full-precision vector blob are gitignored and never committed; only the trimmed committed vectors ship
   - NFR-002's typical-answer target (about 4 seconds) holds; an in-process query embedding adds about 2 milliseconds
   - semantic retrieval scope is the Comprehensive Rules corpus only; cards, WotC rulings, and Commander Spellbook combos remain exact-id keyed lookups and are never embedded or semantically searched under this requirement
-  - the shipped semantic provider is a small embedding model bundled in the answer process and run in-process (`all-MiniLM-L6-v2`, 384 dimensions, quantised), not a hosted service and not a per-request external call; System 3's no-per-request-external-call posture is preserved by this choice rather than reversed, and only `EMBEDDING_PROVIDER=openai` would add such a call, which is never the default. A dedicated always-on inference host is out of scope
+  - the shipped semantic provider is a small embedding model bundled in the answer process and run in-process — `all-MiniLM-L6-v2` fine-tuned on Magic rules questions (REQ-236), 384 dimensions, quantised, stored privately and packaged at deploy (REQ-237) — not a hosted service and not a per-request external call; System 3's no-per-request-external-call posture is preserved by this choice rather than reversed, and only `EMBEDDING_PROVIDER=openai` would add such a call, which is never the default. A dedicated always-on inference host is out of scope
   - no vector database and no new storage service: the rule vectors are loaded in-process alongside the rule index and cosine-searched directly. A hosted vector store would only be justified if semantic search later spanned cards, rulings, and combos (over 150,000 vectors), which the corpus-scope constraint above excludes
   - lexical retrieval is retained and never removed: it is the retrieval path under `EMBEDDING_PROVIDER=mock` (the default, which must run with no model access — canonical mock-first rule, `integrations-and-data.md` Tech Stack), under an `openai` provider failure, and under any embedding failure, it supplies the exact-rule-id and parent-rule-id boost merged into ranking — so those settings are never worse than System 3's prior lexical-only behaviour. Under `local`, semantic-only ranking measured 2026-09-05 on the 156-pair benchmark was better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) and worse on short lookup-mode questions where the query is a card name, type line, and one keyword (three of eight labelled fixtures lost an expected rule from the top five, scoring 9 of 12 checks against lexical's 12 of 12). REQ-182 replaces that either/or switch with a blended score that keeps both, and is what makes `local` safe as a deployed default (REQ-184)
 - Dependencies:
@@ -4326,6 +4327,8 @@
   - the parked mechanic-definition corpus idea reuses this machinery but is a different feature — a new corpus and a new prompt section — and is not built here
   - no hybrid lexical-plus-semantic fusion score was measured for this requirement; it merges the exact-rule-id boost with semantic ranking rather than claiming a measured fusion result. REQ-182 measured one afterwards and ships it
   - the embedding-text shaping described in early drafts of this requirement was measured, not assumed, and dropped when it measurably hurt recall; `scripts/build-rule-embeddings.mjs` records the comparison
+  - amended by `right-rules-in-order`: the shipped model became the Magic-trained MiniLM (REQ-236), exported as per-channel, reduced-range int8 to match the stock model's layout (a per-tensor export lost 23 citations at intake, cited); the embedding text `sectionTitle: text` is unchanged — labelled rule text inside the vectors measured −17 check-half citations at intake, so labels go in the prompt (REQ-239), not the vectors
+  - until a trained model's manifest is committed (REQ-237) the running model is the stock `Xenova/all-MiniLM-L6-v2` and the committed vector files record that id; `LOCAL_MODEL_ID` is the manifest's model id once one exists
 
 ### REQ-182
 - Title: Hybrid lexical-plus-semantic scoring for System 3
@@ -4375,7 +4378,7 @@
 - Constraints:
   - no new dependency, no new external service, and no runtime fetch: the vectors stay committed, loaded in-process, and cosine-searched with no vector database (REQ-181)
   - the combo corpus is not trimmed: `MIN_VARIANT_POPULARITY` stays at 0 and remains the emergency valve NFR-017 describes, not a routine lever, because trimming it removes combos players see in answers (REQ-093)
-  - the local embedding model is not moved to S3 or fetched at cold start; that would add a runtime external integration and relieves the non-data reserve rather than the constrained data budget
+  - the local embedding model is never fetched at cold start or per request. Because the Magic-trained model (REQ-236) cannot be committed to the public repository, it is stored in the project's private S3 bucket and fetched only when the deploy package is built (REQ-237), which adds no runtime external integration; this relieves neither budget — the model stays in the non-data reserve at about the same size
 - Dependencies:
   - NFR-017 (the deploy package budget this relieves)
   - REQ-181 (the embeddings artifact whose format this changes)
@@ -4394,7 +4397,7 @@
 - Acceptance Criteria:
   - `EMBEDDING_PROVIDER` unset still resolves to `mock`; it never auto-switches on `NODE_ENV` or deploy target (REQ-181, unchanged)
   - the deployed Lambda's environment sets `EMBEDDING_PROVIDER=local` explicitly, and the deploy configuration records it where the equivalent `ASK_AI_PROVIDER` setting is recorded
-  - the deploy fails, rather than silently degrading, when the packaged model cache is absent: the packaging script already refuses without `apps/backend/data/models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx`, and that refusal is asserted
+  - the deploy fails, rather than silently degrading, when the packaged model cache is absent or unverified: the packaging script fills `apps/backend/data/models/<model-id>/` from the private S3 bucket (REQ-237), refuses without `apps/backend/data/models/<model-id>/onnx/model_quantized.onnx` whose files all match the committed manifest's hashes, and refuses when the committed rule embeddings name a different model; each refusal is asserted
   - the deploy fails, rather than silently degrading, when the package lacks the `onnxruntime-node` native binding for the function's architecture: `thejudge-api` runs linux/arm64 (`scripts/aws-bootstrap.sh --architectures arm64`), `scripts/package-lambda.sh` keeps exactly that binding through `scripts/lib/prune-onnxruntime-platforms.mjs`, and the pruner refuses (exit 1, before deleting anything) when `linux/arm64/onnxruntime_binding.node` is absent; `scripts/lib/prune-onnxruntime-platforms.test.mjs` proves both the kept platform and the refusal
   - the same holds for the second native module the local embedder needs: `@huggingface/transformers` imports `sharp` at module load, and `sharp` resolves its build from the optional packages `@img/sharp-linux-arm64` and `@img/sharp-libvips-linux-arm64`, which npm installs only for the platform *running the install* unless told otherwise — so `scripts/package-lambda.sh` runs `npm ci --os=linux --cpu=arm64 --libc=glibc` (the function's platform, not the deploy runner's linux/x64 or a laptop's darwin/arm64), and `scripts/lib/assert-sharp-platform-binding.mjs` refuses (exit 1) when the resulting `node_modules` lacks that build; `scripts/lib/assert-sharp-platform-binding.test.mjs` proves the refusal and the script's install flags
   - a local `npm run dev` with no warmed model cache and no network still answers, using lexical retrieval, with the single diagnostic warning REQ-181 requires
@@ -6114,7 +6117,7 @@
 ### REQ-232
 - Title: Local practice suite: import, convert and run, never committed
 - Priority: medium
-- Description: Beside the committed rules test corpus (REQ-185), the owner can keep a local-only practice suite of judge-style rules questions from an outside question site, and run the free retrieval check and the paid answer-quality run over it, split by the suite's level, complexity and tags. Three committed commands import the questions politely and freeze each one as fetched, convert them into local cases in the format version 2 shape, and purge them; the two existing run commands gain a `--suite practice` selection with filters. Every piece of suite data (questions, answers, card rolls, converted cases, run output and per-question results) stays in one gitignored folder on the owner's machine and is never committed. Suite answers are community-written: they are never ground truth, never approved, and never a reference answer for the corpus, and a suite result is reported as agreement with the suite's own answer, apart from the official corpus and never in its headline (REQ-187). The suite is never a build gate, because CI cannot see it.
+- Description: Beside the committed rules test corpus (REQ-185), the owner can keep a local-only practice suite of judge-style rules questions from an outside question site, and run the free retrieval check and the paid answer-quality run over it, split by the suite's level, complexity and tags. Three committed commands import the questions politely and freeze each one as fetched, convert them into local cases in the format version 2 shape, and purge them; the two existing run commands gain a `--suite practice` selection with filters. Every piece of suite data (questions, answers, card rolls, converted cases, run output and per-question results) stays in one gitignored folder on the owner's machine and is never committed. Suite answers are community-written: they are never ground truth, never approved, and never a reference answer for the corpus, and a suite result is reported as agreement with the suite's own answer, apart from the official corpus and never in its headline (REQ-187). The suite is never a build gate, because CI cannot see it. It may train the shipped search model (REQ-236): the model's weights are stored only in the project's private bucket and never committed (REQ-237), and the suite, the training pairs and every per-question result stay in the gitignored folder.
 - Acceptance Criteria:
   - **one gitignored folder**: every file a suite command writes lives under the suite folder `output/practice-suite/` (one constant), ignored by its own `.gitignore` line committed in the same change as the import command, so the folder is ignored before the first import. Every suite command refuses to write, naming the fix, unless `git check-ignore` reports the suite folder ignored; a test asserts that `git check-ignore` matches a path inside the suite folder and that `git ls-files` lists nothing under it
   - **import**: `npm run eval:practice-suite:import` pages the suite's question API (`GET <address>?json=<settings>`, the address read from the `PRACTICE_SUITE_API_URL` environment variable and never committed) in id order with `previousId` starting at 1 (the API rejects 0), with every level, every complexity, legality `all`, no tag filter, and a `from` value naming TheJudge. Requests are sequential, and each starts no sooner than 3 seconds after the previous one finished (the server asks for at least 2). A batch starts at 50 questions; a batch the API answers as malformed is retried at half the size, down to 1; a one-question request that still fails steps `previousId` past one id and records the skip; after five successful batches in a row the size doubles back toward 50
@@ -6134,7 +6137,8 @@
 - Constraints:
   - nothing derived from a specific suite question is committed: no question, answer, card roll, converted case, test fixture, per-question result, coverage count, receipt, ledger, PR body or PRD text. Committed text about the suite gives counts and field names only, and never names the suite's source
   - suite answers are never ground truth and never a corpus reference answer (REQ-185); a suite result never enters the official headline (REQ-187), the committed scores or coverage files (REQ-189), or the offline gate's baseline (REQ-222)
-  - nothing from the suite enters a player's prompt; no runtime dependency, route, schema, provider or frontend change; no new npm dependency (the import uses Node's built-in `fetch`)
+  - nothing from the suite enters a player's prompt; the one runtime effect is the search model it helps train (REQ-236), whose weights ship from private storage only (REQ-237); no route, schema, provider or frontend change; no new npm dependency (the import uses Node's built-in `fetch`)
+  - the trained model's suite scores are a one-time acceptance measurement taken locally at build, reported as counts, never a standing gate in `npm test`, `npm run quality:check` or CI
   - the import is the only command that contacts the suite's question site; the owner runs it, never an agent, and it never re-imports unless asked; the owner launches any paid suite run, as for every live run (REQ-188)
 - Dependencies:
   - REQ-185 (the case format, and the corpus the suite stays apart from)
@@ -6222,3 +6226,65 @@
   - REQ-222 (the offline gate that needs frozen per-card vectors)
 - Notes:
   - measured at intake (cited): the recipe without per-card search scored 441 check-half citations against 449 and bench@5 127 against 125; one extra embedding costs about 4.5 ms per card on a Mac; the post-deploy live timing records the Lambda figure
+
+### REQ-236
+- Title: System 3 uses a Magic-trained search model, retrained by the owner
+- Priority: high
+- Description: The embedding model System 3 ranks rules with is `all-MiniLM-L6-v2` fine-tuned on Magic rules questions — the committed rules test corpus (REQ-185), the Comprehensive Rules' own worked examples, and the owner's local practice suite (REQ-232) — so it learns which rules decide which situations. It keeps the base model's size, 384 dimensions and speed. A committed pipeline trains it, scores it by cross-validation and exports it; the owner runs it locally, and retrains whenever its inputs change.
+- Acceptance Criteria:
+  - a committed training pipeline under `scripts/` — an export step in Node (`scripts/export-rule-search-training.mjs`) and a trainer in Python 3.12 run through `uv` with `python -I` (`scripts/train-rule-search-model.py`, dependencies pinned in `scripts/rule-search-model.requirements.txt`) — reads the practice suite from a folder given by a flag (default the git-ignored `output/practice-suite/`), the committed corpus and the committed rule index, and writes training pairs, checkpoints and the model only under git-ignored folders
+  - every training pair's query side is built by the shipped production query builder (REQ-178 as amended, REQ-233, REQ-234, and the In-Depth turn step); the rule side is the production embedding text `${sectionTitle}: ${text}` sliced to 2,000 characters (REQ-181); training runs only after the rule-data and search changes have landed
+  - each `Example:` passage in the rule book is paired with its rule (277 pairs over 215 rules at intake), with the example stripped from that rule's text for that pair
+  - each pair carries one hard negative drawn from the current search's top 40, with the deciding rule's whole family removed
+  - recipe: base `sentence-transformers/all-MiniLM-L6-v2`; sentence-transformers, cached MultipleNegativesRankingLoss; batch 32 (mini-batch 16) with no-duplicates batching; learning rate 5e-5; 4 epochs; 10% warmup; max length 512; seed 13
+  - export: ONNX opset 14, then dynamic int8 quantisation, per-channel, reduced range; laid out the way transformers.js loads it (`onnx/model_quantized.onnx` plus tokenizer and config); about 23.0 MB
+  - a cross-validation mode trains 5 fold models — grouped so both versions of a corpus case, and practice questions sharing a card set, stay in one fold — scores every question with a model that never trained on it, and prints counts only; the shipped model trains on 100% of the data
+  - a committed scorer reports, counts only: deciding-rule citations in the top ten and questions with every deciding rule there, for the tuning and check halves of the fixed `pft-split-1` split, the hard 25 (level 3 / Corner Case), the corpus, and bench@5 (the 156-question benchmark with three unrelated cards attached, top-five hits)
+  - fidelity, before any search change: the scorer reproduces production's current top ten — 473 suite citations (tuning plus check), 159 suite every-rule questions, 5 hard-25, 351 corpus citations, 305 corpus every-rule cases
+  - acceptance, measured once at build, locally: cross-validated check half ≥ 430, tuning half ≥ 410, every-rule check ≥ 140, hard 25 ≥ 15; the 100% model scores corpus ≥ 410 citations and ≥ 355 every-rule cases, bench@5 ≥ 118, and puts 514.1, 514.2 and 514.3a in the top ten for `necropotence-silence-borne-upon-a-wind-cleanup` in both versions and in the built prompt
+  - retraining is an owner-run local step, required when the Comprehensive Rules, the committed corpus or the practice suite changes, and with every Comprehensive Rules-moving data refresh (`integrations-and-data.md`, Game Rules Data Strategy)
+- Constraints:
+  - no practice-suite question, answer, card list, id or per-question result in any committed file — committed text gives counts, levels and rule ids only (REQ-232)
+  - no model weights, checkpoints or training pairs in git; the repository is public
+  - never in `npm test`, `npm run quality:check` or CI; the acceptance above is a one-time local measurement, not a standing gate (REQ-232)
+  - the Python toolchain is dev-only and owner-run; nothing in it becomes a runtime or CI dependency
+  - suite answers are never ground truth (REQ-185): training uses each suite question's cited rules, never its answer as a reference
+- Dependencies:
+  - REQ-185 (the committed corpus)
+  - REQ-232 (the local practice suite, amended to allow this use)
+  - REQ-233, REQ-234, REQ-235 (the shipped query builder training must use)
+  - REQ-237 (where the model is stored and how it is checked)
+  - REQ-181 (the embedding text and provider seam)
+  - REQ-222 (the offline gate re-baselined here)
+- Notes:
+  - measured at intake (probe session 4, 2026-10-11, cited, not re-derived), check half / tuning half citations: today 223 / 250; the full recipe 449 / 433; trained without practice questions 348 / 351; hybrid recall@100 37.8% → about 70%; when a deciding rule still misses the top ten its median rank improves from about 450 to about 86
+  - caveats accepted at intake: 88% of suite citations are rules the model saw in training (found 422 → 713); never-seen rules go 51 → 73; on the 1,139 questions with no training question closer than cosine 0.7, 465 → 748, so the gain is not near-duplicate leakage; the practice questions provide almost all of the suite gain, the corpus cases and rule-book examples almost all of the corpus gain
+  - tested and rejected at intake: BM25 word scoring (ties the recipe on the check half, worse elsewhere), stronger off-the-shelf embedders (at most +13 check-half at 4–14× the size), a local reranker (+18 at 279 MB and about 3 s per question), labelled rule text inside the vectors (−17)
+  - about 7–8 minutes to train the 100% model on an Apple GPU
+
+### REQ-237
+- Title: The trained search model is stored privately, fetched at packaging, and identity-checked at every load
+- Priority: high
+- Description: The trained model (REQ-236) never enters the public repository. It is stored in the project's private, public-access-blocked S3 bucket; a small committed manifest names it and records a hash for every file; a fetch script fills the local model cache from S3 and verifies the hashes; packaging refuses without a verified model; and every committed vector file records the model that built it, so a mismatch with the running model is caught loudly instead of ranking with the wrong vectors.
+- Acceptance Criteria:
+  - the owner uploads the 100% model folder to `thejudge-lambda-artifacts-<account>` (the bucket `scripts/aws-bootstrap.sh` creates, public access blocked) under `models/<model-id>/`
+  - a committed manifest (`apps/backend/data/embeddingModel.manifest.json`) records `<model-id>`, the base model, and a sha256 and byte size for every file in the folder
+  - a committed fetch script (`scripts/fetch-embedding-model.mjs`) downloads `models/<model-id>/` into the git-ignored `apps/backend/data/models/<model-id>/`, verifies every file against the manifest, and exits non-zero on any missing or mismatched file; it replaces the Hugging Face download in `scripts/warm-embedding-model-cache.mjs` for this model
+  - `LOCAL_MODEL_ID` in `apps/backend/src/providers/localEmbeddingProvider.ts` is the manifest's model id, loaded from the local cache only, never downloaded at runtime
+  - every committed vector file is rebuilt with the trained model and records its model id and the manifest's hash: `apps/backend/data/gameRulesRuleEmbeddings.json`, `apps/backend/src/eval/fixtures/frozen-query-embeddings.json`, `apps/backend/src/prompt/preparation.crossReferenceQueryEmbedding.json`, `apps/backend/src/eval/rules-gate/frozen-query-vectors.json`, and the frozen per-card vectors (REQ-235)
+  - identity check at load: a vector file whose recorded model id differs from the running model's disables the semantic path with one error-level diagnostic naming both ids — REQ-181's lexical fallback, never a mixed ranking; the eval harnesses, the retrieval benchmark and the rules gate refuse to run on a mismatch; `scripts/package-lambda.sh` refuses (exit 1) when the packaged model's id or file hashes do not match the manifest, or the committed rule embeddings name a different model
+  - the deploy role can read `models/*` in the bucket; if it cannot, `scripts/aws-bootstrap.sh` grants `s3:GetObject` on that prefix (the owner runs bootstrap locally with profile `thejudge-admin`; CI cannot provision)
+  - CI quality checks need no AWS access and no model: the unset `EMBEDDING_PROVIDER` stays `mock`, and tests that need vectors read the committed frozen ones
+  - the model is fetched only when the deploy package is built and when the owner trains or rebuilds vectors locally — never at Lambda cold start, never per request
+- Constraints:
+  - no model weights in git
+  - no runtime external call; the model ships inside the deploy package as today
+  - the model sits in NFR-017's non-data reserve at about the same size as today (about 23 MB)
+- Dependencies:
+  - REQ-236 (the model)
+  - REQ-181 (the embedder seam and lexical fallback)
+  - REQ-183 (amended: the model may now live in S3)
+  - REQ-184 (the packaging refusal this repoints)
+  - NFR-017 (the package budget)
+- Notes:
+  - storage design per the `right-rules-in-order` intake (C.5, C.6), cited

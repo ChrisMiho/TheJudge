@@ -79,6 +79,11 @@ output/rules-review/
 output/practice-suite/
 # Rule-search scoring: per-question results and the hard-25 id list (local only, never committed)
 output/rule-search-eval/
+# Magic search model (REQ-236, REQ-237): training pairs, checkpoints, exported models, the staged S3 upload
+# folder, the Python environment and the base-model copy. The repository is public: no weights, ever.
+output/rule-search-model/
+*.onnx
+*.safetensors
 
 # Card-scan fingerprint build logs / pid (transient; the bin ships under public/data/)
 output/cardhash-build/

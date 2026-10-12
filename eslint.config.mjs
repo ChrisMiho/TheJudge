@@ -14,6 +14,8 @@ export default tseslint.config(
       "**/coverage/**",
       ".worktrees/**",
       "**/.claude/worktrees/**",
+      // Git-ignored local output (the model-training Python environment, scoring results): never product code.
+      "output/**",
       // Product docs plus probe/work-package scratch tooling, never product
       // code; prettier already ignores it (.prettierignore).
       "PRD/**",

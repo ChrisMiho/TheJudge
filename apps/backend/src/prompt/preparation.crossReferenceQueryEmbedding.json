@@ -1,5 +1,6 @@
 {
   "description": "Frozen query embedding for the cross-reference-boost regression test in preparation.test.ts (review loop 1, Critical A1) -- committed offline, no live embedding call at test time. Computed 2026-09-05 from the exact question+card-signal text buildRetrievalQueryText builds for this fixture.",
+  "model": "Xenova/all-MiniLM-L6-v2",
   "question": "My opponent's creature has 2 damage on it. Does rule 704.5g cause it to die before my spell resolves?",
   "vector": [
     0.01091731246560812, 0.04665884003043175, 0.10242578387260437, 0.080174021422863, -0.04351809620857239,

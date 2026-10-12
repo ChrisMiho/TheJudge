@@ -25,6 +25,7 @@ import { fileURLToPath } from "node:url";
 import type { CardDetailEntry } from "../../cardDetail.js";
 import { buildRetrievalQueryText } from "../../prompt/preparation.js";
 import type { AskAiRequest } from "../../types/index.js";
+import { assertVectorsMatchRuntimeModel } from "../../embeddingModel.js";
 import { loadFrozenCardVectors, resolveFrozenCardEmbeddings, type FrozenCardVectorFile } from "../frozenCardVectors.js";
 import { decodeVector, encodeVector } from "../vectorEncoding.js";
 
@@ -42,6 +43,9 @@ export type FrozenVectorEntry = {
 
 export type FrozenVectorFile = Record<string, FrozenVectorEntry>;
 
+/** On disk: the vectors plus the id of the embedding model that made them (REQ-237). */
+export type FrozenVectorsOnDisk = { model: string; vectors: FrozenVectorFile };
+
 export function hashQueryText(queryText: string): string {
   return createHash("sha256").update(queryText, "utf8").digest("hex");
 }
@@ -53,14 +57,26 @@ export function buildCaseQueryText(request: AskAiRequest, cardDetailIndex: Map<s
 
 export { decodeVector, encodeVector };
 
-/** Reads the committed vector file; a missing file is an empty set, so a fresh corpus fails loudly per case. */
-export function loadFrozenVectors(path = FROZEN_VECTORS_PATH): FrozenVectorFile {
+/** Reads the committed vector file as it is on disk; null when absent. Builders use this to reuse vectors the running model made. */
+export function readFrozenVectorsOnDisk(path = FROZEN_VECTORS_PATH): FrozenVectorsOnDisk | null {
   try {
-    return JSON.parse(readFileSync(path, "utf8")) as FrozenVectorFile;
+    return JSON.parse(readFileSync(path, "utf8")) as FrozenVectorsOnDisk;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return {};
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw error;
   }
+}
+
+/**
+ * Reads the committed vector file for the gate; a missing file is an empty set, so a fresh corpus
+ * fails loudly per case. REQ-237: the file records the model that made its vectors, and the gate
+ * refuses (throws) when that is not the running model.
+ */
+export function loadFrozenVectors(path = FROZEN_VECTORS_PATH): FrozenVectorFile {
+  const file = readFrozenVectorsOnDisk(path);
+  if (!file) return {};
+  assertVectorsMatchRuntimeModel("The rules gate's frozen query vectors", file.model);
+  return file.vectors;
 }
 
 export type ReFreezeCheck =
