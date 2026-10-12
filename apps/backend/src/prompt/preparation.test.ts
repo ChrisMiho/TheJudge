@@ -6,9 +6,15 @@ import { assertVectorsMatchRuntimeModel } from "../embeddingModel.js";
 import { loadGameRulesTopics, type GameRulesTopic } from "../gameRules.js";
 import { loadGameRulesRuleIndex, type GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { CardDetailEntry } from "../cardDetail.js";
-import type { LookupAskAiRequest } from "../types/index.js";
+import type { GameAskAiRequest, LookupAskAiRequest } from "../types/index.js";
 import { ALWAYS_ON_TOPIC_IDS } from "../gameRulesTopicSelection.js";
-import { DEFAULT_SUPPLEMENTAL_RULE_CAP, preparePromptInput } from "./preparation.js";
+import {
+  DEFAULT_SUPPLEMENTAL_RULE_CAP,
+  buildPerCardSearchTexts,
+  buildRetrievalQueryText,
+  preparePromptInput
+} from "./preparation.js";
+import { createAskAiRequest } from "../test-utils/requestBuilders.js";
 import type { CardDetailIndex } from "./context.js";
 
 /**
@@ -458,5 +464,147 @@ describe("Backend - Ask AI", () => {
       expect(fifteenIds.slice(tenIds.length)).toEqual(runnerUpIds.slice(0, fifteenIds.length - tenIds.length));
       expect(fifteenIds.length).toBeGreaterThan(tenIds.length);
     });
+  });
+});
+
+// REQ-246: a follow-up keeps the rules its conversation's opening question found.
+describe("preparePromptInput - a follow-up keeps its opening question's rules (REQ-246)", () => {
+  const realTopics: GameRulesTopic[] = loadGameRulesTopics(path.resolve(currentDir, "../../data/gameRulesByTopic.json"));
+  const realRuleIndex: GameRulesRuleIndexEntry[] = loadGameRulesRuleIndex(path.resolve(currentDir, "../../data/gameRulesRuleIndex.json"));
+  const PUSHBACK = "I don't think that's right. Can you check it again?";
+  const baseOptions = { gameRulesTopics: realTopics, gameRulesRuleIndex: realRuleIndex, queryEmbedding: null };
+
+  /** The three rules sections as they print: PHASE GUIDANCE, GAME RULES (reference), ADDITIONAL RELEVANT RULE EXCERPTS. */
+  function rulesSections(promptText: string): string[] {
+    const next = [
+      "\nGENERAL GAME CONTEXT\n",
+      "\nPHASE GUIDANCE\n",
+      "\nGAME RULES (reference)\n",
+      "\nADDITIONAL RELEVANT RULE EXCERPTS\n",
+      "\nCARD (looked up)\n",
+      "\nZONE:",
+      "\nSCOPE\n",
+      "\nCONVERSATION HISTORY\n",
+      "\nQUESTION\n"
+    ];
+    return ["PHASE GUIDANCE", "GAME RULES (reference)", "ADDITIONAL RELEVANT RULE EXCERPTS"].map((heading) => {
+      const start = promptText.indexOf(`\n${heading}\n`);
+      if (start < 0) return "";
+      const ends = next.map((marker) => promptText.indexOf(marker, start + 1)).filter((at) => at > start);
+      return promptText.slice(start, Math.min(...ends));
+    });
+  }
+
+  function asFollowUp<T extends LookupAskAiRequest | GameAskAiRequest>(opening: T, question = PUSHBACK): T {
+    return {
+      ...opening,
+      question,
+      conversationHistory: [
+        { role: "user", content: opening.question },
+        { role: "assistant", content: "Placeholder answer used only to make the request a follow-up." }
+      ]
+    };
+  }
+
+  const ruleIdsOf = (prepared: ReturnType<typeof preparePromptInput>) =>
+    prepared.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId) ?? [];
+  const topicIdsOf = (prepared: ReturnType<typeof preparePromptInput>) => prepared.enrichmentDebug?.curatedGameRules.topicIds ?? [];
+
+  // Opening questions: one names a turn step only in words; one carries words that trigger an In-Depth topic.
+  const lookupOpening: LookupAskAiRequest = {
+    mode: "lookup",
+    question: "What happens in the cleanup step if a creature with deathtouch has damage marked on it?"
+  };
+  const inDepthOpening: GameAskAiRequest = createAskAiRequest({ question: "How does copying a spell work while it is on the stack?" });
+
+  it.each([true, false])("Quick Lookup (debug %s): the follow-up's three rules sections are byte-identical to its opening request's", (debug) => {
+    const opening = preparePromptInput(lookupOpening, { ...baseOptions, collectEnrichmentDebug: debug });
+    const followUp = preparePromptInput(asFollowUp(lookupOpening), { ...baseOptions, collectEnrichmentDebug: debug });
+
+    const [phase, gameRules, excerpts] = rulesSections(opening.promptText);
+    expect(phase).toContain("Cleanup step:");
+    expect(gameRules).not.toBe("");
+    expect(excerpts).not.toBe("");
+    expect(rulesSections(followUp.promptText)).toEqual([phase, gameRules, excerpts]);
+    // The follow-up text is still the QUESTION, and the history still prints.
+    expect(followUp.promptText.endsWith(`QUESTION\n${PUSHBACK}`)).toBe(true);
+    expect(followUp.promptText).toContain("CONVERSATION HISTORY");
+  });
+
+  it.each([true, false])("In-Depth (debug %s): the follow-up's three rules sections are byte-identical to its opening request's", (debug) => {
+    const opening = preparePromptInput(inDepthOpening, { ...baseOptions, collectEnrichmentDebug: debug });
+    const followUp = preparePromptInput(asFollowUp(inDepthOpening), { ...baseOptions, collectEnrichmentDebug: debug });
+
+    const sections = rulesSections(opening.promptText);
+    expect(sections.every((section) => section !== "")).toBe(true);
+    expect(rulesSections(followUp.promptText)).toEqual(sections);
+    expect(followUp.promptText.endsWith(`QUESTION\n${PUSHBACK}`)).toBe(true);
+  });
+
+  it("In-Depth: an opening question whose words trigger a curated topic keeps it on the follow-up, which the follow-up's own words would not", () => {
+    const opening = preparePromptInput(inDepthOpening, { ...baseOptions, collectEnrichmentDebug: true });
+    const followUp = preparePromptInput(asFollowUp(inDepthOpening), { ...baseOptions, collectEnrichmentDebug: true });
+    const pushbackAlone = preparePromptInput(createAskAiRequest({ question: PUSHBACK }), { ...baseOptions, collectEnrichmentDebug: true });
+
+    expect(topicIdsOf(opening)).toContain("copying-spells-abilities");
+    expect(topicIdsOf(pushbackAlone)).not.toContain("copying-spells-abilities");
+    expect(topicIdsOf(followUp)).toEqual(topicIdsOf(opening));
+    expect(ruleIdsOf(followUp)).toEqual(ruleIdsOf(opening));
+  });
+
+  it("Quick Lookup: an opening question that names a step in words keeps its step guidance, which the follow-up's own words would not", () => {
+    const pushbackAlone = preparePromptInput({ mode: "lookup", question: PUSHBACK }, { ...baseOptions, collectEnrichmentDebug: true });
+    const followUp = preparePromptInput(asFollowUp(lookupOpening), { ...baseOptions, collectEnrichmentDebug: true });
+
+    expect(pushbackAlone.promptText).not.toContain("PHASE GUIDANCE");
+    expect(followUp.promptText).toContain("Cleanup step:");
+  });
+
+  it("the follow-up's own words never feed rule selection or merge with the opening question's: a rule only the follow-up's words reach stays out", () => {
+    const withWords = asFollowUp(lookupOpening, "What about lifelink and the untap step and double strike?");
+    const opening = preparePromptInput(lookupOpening, { ...baseOptions, collectEnrichmentDebug: true });
+    const followUp = preparePromptInput(withWords, { ...baseOptions, collectEnrichmentDebug: true });
+
+    expect(ruleIdsOf(followUp)).toEqual(ruleIdsOf(opening));
+    expect(rulesSections(followUp.promptText)).toEqual(rulesSections(opening.promptText));
+    expect(followUp.promptText).not.toContain("Untap step:");
+    expect(followUp.promptText.endsWith("QUESTION\nWhat about lifelink and the untap step and double strike?")).toBe(true);
+  });
+
+  it("a conversation's later turns are not the opening question: the first history turn decides, whatever the follow-up depth", () => {
+    const threeTurns: LookupAskAiRequest = {
+      ...lookupOpening,
+      question: "And then?",
+      conversationHistory: [
+        { role: "user", content: lookupOpening.question },
+        { role: "assistant", content: "First answer." },
+        { role: "user", content: "What about the untap step?" },
+        { role: "assistant", content: "Second answer." }
+      ]
+    };
+    const opening = preparePromptInput(lookupOpening, { ...baseOptions, collectEnrichmentDebug: true });
+    const deep = preparePromptInput(threeTurns, { ...baseOptions, collectEnrichmentDebug: true });
+    expect(rulesSections(deep.promptText)).toEqual(rulesSections(opening.promptText));
+  });
+
+  it("a request without conversationHistory is prepared exactly as before: the rules come from its own question", () => {
+    const plain = preparePromptInput(lookupOpening, { ...baseOptions, collectEnrichmentDebug: true });
+    const plainGame = preparePromptInput(inDepthOpening, { ...baseOptions, collectEnrichmentDebug: true });
+    expect(plain.promptText).toContain("Cleanup step:");
+    expect(topicIdsOf(plainGame)).toContain("copying-spells-abilities");
+    expect(plain.promptText).not.toContain("CONVERSATION HISTORY");
+  });
+
+  it("buildRetrievalQueryText and buildPerCardSearchTexts return the opening request's values for a follow-up, in both modes", () => {
+    const lookupWithCard: LookupAskAiRequest = {
+      ...lookupOpening,
+      cards: [{ cardId: "b685757b-521e-4353-a233-97052359723d", name: "Questing Beast" }] as LookupAskAiRequest["cards"]
+    };
+    for (const opening of [lookupWithCard, inDepthOpening]) {
+      const followUp = asFollowUp(opening);
+      expect(buildRetrievalQueryText(followUp)).toBe(buildRetrievalQueryText(opening));
+      expect(buildRetrievalQueryText(followUp)).not.toContain("check it again");
+      expect(buildPerCardSearchTexts(followUp)).toEqual(buildPerCardSearchTexts(opening));
+    }
   });
 });

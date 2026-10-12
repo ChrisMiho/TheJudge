@@ -145,8 +145,11 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   when the box was blank) as a right-aligned bubble, then the assistant's
   answer; the question also rides in `conversationHistory`. Follow-ups are
   text-only and send `{ mode: "lookup", question, cards: frozen (the full
-  attached set, when any were attached), conversationHistory }`. (REQ-025,
-  REQ-075, REQ-167, FLOW-011, FLOW-023)
+  attached set, when any were attached), conversationHistory }`. The
+  backend answers a follow-up with the opening question's rules: step
+  guidance, curated topics and searched excerpts come from the first history
+  turn, while the follow-up text stays the question. (REQ-025,
+  REQ-075, REQ-167, REQ-246, FLOW-011, FLOW-023)
 - Built: when one or more cards were attached, every one of them is frozen for
   the conversation and shown behind a compact adaptive context trigger — a
   bottom sheet below 768px or a right-side drawer at 768px+; the trigger label

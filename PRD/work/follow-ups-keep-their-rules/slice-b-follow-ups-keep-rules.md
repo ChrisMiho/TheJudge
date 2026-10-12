@@ -1,6 +1,6 @@
 # Slice B — follow-ups keep the opening question's rules
 
-## Status: planned
+## Status: done
 
 ## Goal
 

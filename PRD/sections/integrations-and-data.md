@@ -350,6 +350,7 @@ When `conversationHistory` is present, backend prompt assembly inserts a `CONVER
 - history chars are capped at `MAX_CONVERSATION_HISTORY_CHARS` (`EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` per DEC-042 amendment; revisit after latency/cost sampling); oldest turns truncated first
 - an `INSTRUCTIONS` line is added when history is present: treat follow-ups as refinements or clarifications against the frozen game state and prior answers
 - history contribution is included in `getPromptDiagnostics`
+- a follow-up's rules sections (`PHASE GUIDANCE`, `GAME RULES (reference)` and `ADDITIONAL RELEVANT RULE EXCERPTS`) are chosen from the conversation's opening question, the first history turn as sent, not from the follow-up text, which stays the `QUESTION` section; the backend re-runs rule selection on that turn and stores nothing (REQ-246)
 
 The backend should include:
 - final user question

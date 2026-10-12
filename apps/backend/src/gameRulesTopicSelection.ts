@@ -130,16 +130,21 @@ function collectCombatTopicIds(context: PromptContext): string[] {
  * @param allTopics Full topic list loaded at startup; output is filtered to ids
  *                  present here. Unknown selected ids are ignored, and missing
  *                  manifest ids are no-ops.
+ * @param ruleQuestion The question whose words trigger topics (REQ-242). A request-driven caller passes
+ *                  the one rule-selection question (`ruleSelectionQuestion`, REQ-246), the conversation's
+ *                  opening question on a follow-up; a caller holding only a context (the offline
+ *                  reports) has no history, so the context's own question stands in.
  * @returns Selected topics, deduplicated and sorted by `id` ascending.
  */
 export function selectGameRulesTopics(
   context: PromptContext,
-  allTopics: GameRulesTopic[]
+  allTopics: GameRulesTopic[],
+  ruleQuestion: string = context.finalQuestion
 ): GameRulesTopic[] {
   const selectedIds = new Set<string>(ALWAYS_ON_TOPIC_IDS);
 
   // REQ-242: no zone-presence triggers; the cards' wording and the question choose these topics.
-  for (const id of selectTriggeredTopicIds(context.finalQuestion, collectContextCards(context))) selectedIds.add(id);
+  for (const id of selectTriggeredTopicIds(ruleQuestion, collectContextCards(context))) selectedIds.add(id);
 
   if (context.gameContext.turnPhase === "combat") {
     for (const id of collectCombatTopicIds(context)) selectedIds.add(id);

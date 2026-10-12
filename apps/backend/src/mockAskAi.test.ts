@@ -3,6 +3,8 @@ import { buildMockAnswer } from "./mockAskAi.js";
 import { buildPromptText } from "./prompt/promptAssembly.js";
 import { getPromptDiagnostics } from "./prompt/promptDiagnostics.js";
 import type { EnrichmentDebug } from "./prompt/enrichmentDebug.js";
+import { preparePromptInput } from "./prompt/preparation.js";
+import { createAskAiRequest } from "./test-utils/requestBuilders.js";
 import type { PromptContext } from "./types/index.js";
 
 describe("Backend - Ask AI", () => {
@@ -211,5 +213,44 @@ describe("Backend - Ask AI", () => {
       expect(result.enrichmentDebug).toBe(enrichmentDebug);
       expect(result.enrichmentDebug?.supplemental.selected[0]?.score).toBeTypeOf("number");
     });
+  });
+});
+
+describe("Backend - Ask AI - the mock answer for a follow-up (REQ-246, REQ-027)", () => {
+  it("prints the assembled prompt carrying the opening question's rules, and the follow-up text as the question", () => {
+    const opening = createAskAiRequest({ question: "How does copying a spell work while it is on the stack?" });
+    const followUp = {
+      ...opening,
+      question: "I don't think that's right. Can you check it again?",
+      conversationHistory: [
+        { role: "user" as const, content: opening.question },
+        { role: "assistant" as const, content: "A first answer." }
+      ]
+    };
+    const ruleIndex = [
+      {
+        ruleId: "707.10",
+        sectionTitle: "Copying Spells",
+        text: "707.10. To copy a spell, activated ability, or triggered ability means to put a copy of it onto the stack.",
+        searchText: "707.10 copy copying spell activated triggered ability stack",
+        parentRuleIds: ["707"]
+      },
+      {
+        ruleId: "100.1",
+        sectionTitle: "Check Again",
+        text: "100.1. These Magic rules apply to any Magic game.",
+        searchText: "100.1 check again magic game",
+        parentRuleIds: ["100"]
+      }
+    ];
+    const options = { gameRulesRuleIndex: ruleIndex, collectEnrichmentDebug: true };
+    const openingAnswer = buildMockAnswer(preparePromptInput(opening, options)).answer;
+    const followUpAnswer = buildMockAnswer(preparePromptInput(followUp, options)).answer;
+
+    const rulesBlock = (answer: string) => answer.slice(answer.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS"), answer.indexOf("\nSCOPE\n"));
+    expect(rulesBlock(openingAnswer)).toContain("707.10");
+    expect(rulesBlock(followUpAnswer)).toBe(rulesBlock(openingAnswer));
+    expect(followUpAnswer).toContain("FULL PROMPT (SENT TO PROVIDER)");
+    expect(followUpAnswer.endsWith("QUESTION\nI don't think that's right. Can you check it again?")).toBe(true);
   });
 });

@@ -79,7 +79,9 @@ slot when that field exists, `PHASE GUIDANCE`, `ZONE: STACK (BOTTOM TO TOP)`, an
 populated non-stack zones, each card followed by its official rulings when it has any.
 It adds curated rules and supplemental excerpts, then the `SCOPE` sentence listing zones with no cards or not
 included. If this is a follow-up turn, `CONVERSATION HISTORY` appears before the final
-`QUESTION`.
+`QUESTION`, which carries the follow-up text; the rules sections (`PHASE GUIDANCE`,
+`GAME RULES (reference)` and `ADDITIONAL RELEVANT RULE EXCERPTS`) are the opening
+question's, chosen from the first history turn (REQ-246).
 
 ## Invariants / gotchas
 

@@ -1281,3 +1281,18 @@ describe("Backend - Game Rules", () => {
     });
   });
 });
+
+describe("Backend - Game Rules - the retrieval question on a follow-up (REQ-246)", () => {
+  it("builds the query from the passed rule-selection question and from the context's own question by default", () => {
+    const context = makeContext({ finalQuestion: "I don't think that's right. Can you check it again?" });
+    const own = retrievalInputFromPromptContext(context);
+    const opening = retrievalInputFromPromptContext(context, "How does cascade work?");
+
+    expect(own.questionText).toBe("I don't think that's right. Can you check it again?");
+    expect(opening.questionText).toBe("How does cascade work?");
+    expect(opening.cards).toEqual(own.cards);
+    expect(opening.turnStep).toBe(own.turnStep);
+    expect(buildRetrievalQuery(opening).queryText).toContain("cascade");
+    expect(buildRetrievalQuery(opening).queryText).not.toContain("check it again");
+  });
+});

@@ -1,6 +1,9 @@
 // Offline, counts-only measurement of what a follow-up's prompt keeps from its opening question,
 // on the committed diagnostic manifest, through this checkout's unmodified preparePromptInput.
 // No network, no model, no provider. Writes nothing; prints counts only (no case text, no ids).
+// Since slice B (REQ-246) a follow-up keeps its opening question's rules, so the "...Today" keys below, which
+// were measured on the pre-change code at refinement (see offline-measurement.md), now report the shipped
+// behavior; the `afterChange` block is the acceptance reading: follow-up equals opening in every case.
 // Usage (from the repo root; see offline-measurement.md for why the resolve hook is needed):
 //   node --no-warnings --import ./PRD/work/follow-ups-keep-their-rules/evidence/register.mjs \
 //     ./PRD/work/follow-ups-keep-their-rules/evidence/measure-follow-up.mjs "$PWD"
@@ -81,8 +84,20 @@ const s = {
   cases: 0, lookup: 0, inDepth: 0, fresh: 0, notFresh: 0, semanticTurn1: 0, repeatIdentical: 0,
   historyIgnored: 0, queryTextChanged: 0, hybridTurn1: [], lexTurn1: [], lexTurn2: [], lexShared: [],
   searchTurn1: [], searchShared: [], inDepthTopicsChanged: 0, inDepthTopicsLost: 0, inDepthSystem3OnlyDiffers: 0,
-  phaseTurn1: 0, phaseLost: 0
+  phaseTurn1: 0, phaseLost: 0,
+  afterSystem3Same: 0, afterTopicsSame: 0, afterPhaseSame: 0, afterRulesSectionsSame: 0, afterQuerySame: 0
 };
+
+// The three rules sections as they print (PHASE GUIDANCE, GAME RULES (reference), ADDITIONAL RELEVANT RULE EXCERPTS).
+const NEXT_HEADINGS = ["\nGENERAL GAME CONTEXT\n", "\nPHASE GUIDANCE\n", "\nGAME RULES (reference)\n", "\nADDITIONAL RELEVANT RULE EXCERPTS\n", "\nCARD (looked up)\n", "\nZONE:", "\nSCOPE\n", "\nCONVERSATION HISTORY\n", "\nQUESTION\n"];
+function rulesSections(promptText) {
+  return ["PHASE GUIDANCE", "GAME RULES (reference)", "ADDITIONAL RELEVANT RULE EXCERPTS"].map((heading) => {
+    const start = promptText.indexOf(`\n${heading}\n`);
+    if (start < 0) return "";
+    const ends = NEXT_HEADINGS.map((marker) => promptText.indexOf(marker, start + 1)).filter((at) => at > start);
+    return promptText.slice(start, Math.min(...ends));
+  });
+}
 
 for (const entry of manifest.cases) {
   const c = byId.get(entry.id);
@@ -97,6 +112,7 @@ for (const entry of manifest.cases) {
   const request2 = { ...request1, question: PUSHBACK, conversationHistory: history };
   const idx = { cardDetailIndex: resources.cardDetailIndex };
   if (buildRetrievalQueryText(request1, idx) !== buildRetrievalQueryText(request2, idx)) s.queryTextChanged++;
+  else s.afterQuerySame++;
 
   // Hybrid (production ranking) for the opening question, from the committed frozen vectors.
   const frozen = checkReFreeze(c.id, request1, resources.cardDetailIndex, queryVectors, cardVectors);
@@ -106,6 +122,13 @@ for (const entry of manifest.cases) {
     const p1 = prep(request1, opts);
     if (p1.enrichmentDebug?.supplemental?.usedSemantic) s.semanticTurn1++;
     s.hybridTurn1.push(ids(p1).length);
+    // After the change: the follow-up through the shipped preparePromptInput, with the vector the route would
+    // embed (the opening query's), selects the opening question's rules, topics, step guidance and sections.
+    const p2 = prep(request2, opts);
+    if (sameList(ids(p1), ids(p2))) s.afterSystem3Same++;
+    if (request1.mode === "game" && sameList(topics(p1), topics(p2))) s.afterTopicsSame++;
+    if (request1.mode !== "game" && rulesSections(p1.promptText)[0] === rulesSections(p2.promptText)[0]) s.afterPhaseSame++;
+    if (sameList(rulesSections(p1.promptText), rulesSections(p2.promptText))) s.afterRulesSectionsSame++;
     if (sameList(ids(p1), ids(prep(request1, opts)))) s.repeatIdentical++;
     // Carry-forward premise: the opening question re-run with the history attached selects exactly turn 1's rules.
     if (sameList(ids(p1), ids(prep(request1WithHistory, opts)))) s.historyIgnored++;
@@ -155,5 +178,12 @@ console.log(JSON.stringify({
   inDepthCuratedTopicsChangedOnFollowUpToday: `${s.inDepthTopicsChanged}/${s.inDepth}`,
   inDepthCuratedTopicsLostOnFollowUpToday: s.inDepthTopicsLost,
   inDepthSystem3CarriedWithoutSystem2DiffersFromTurn1: `${s.inDepthSystem3OnlyDiffers}/${s.inDepth}`,
-  lookupPhaseGuidance: { presentTurn1: s.phaseTurn1, lostOnFollowUpToday: s.phaseLost }
+  lookupPhaseGuidance: { presentTurn1: s.phaseTurn1, lostOnFollowUpToday: s.phaseLost },
+  afterChange: {
+    system3SelectionEqualsOpening: `${s.afterSystem3Same}/${s.fresh}`,
+    inDepthCuratedTopicsEqualOpening: `${s.afterTopicsSame}/${s.inDepth}`,
+    lookupPhaseGuidanceEqualsOpening: `${s.afterPhaseSame}/${s.lookup}`,
+    threeRulesSectionsByteIdentical: `${s.afterRulesSectionsSame}/${s.fresh}`,
+    retrievalQueryTextEqualsOpening: `${s.afterQuerySame}/${s.cases}`
+  }
 }, null, 2));
