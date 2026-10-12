@@ -2,11 +2,11 @@
 
 - Run ID: `graph-20261011-190751` (build half; spec-forming half `graph-20261011-234114`)
 - Profile: `unverified`
-- Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
+- Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`; build half: graph canary `denied — graph tier armed (nohup true)` after `--take-lock` at the launch root (lock `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-run.lock`, run `graph-20261011-190751`)
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
-- Current node: `owner-action`
+- Current node: `gate-review`
 - Next action: `/graph-implement PRD/work/right-rules-in-order/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
 
 ## Node ledger
@@ -26,7 +26,22 @@
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/291
 - Answered 2026-10-11: all 39 slots `accept` (see `## Instruction ledger`). Remaining step: merge the docs PR.
 - Refreshed 2026-10-11 at the owner's request: the practice suite's source name is removed from this package, to match rename PR https://github.com/ChrisMiho/TheJudge/pull/292, which merges first. The REQ-232 diff's removed line is now the renamed current text, with the added sentence unchanged. The REQ-232 plain-language block drops its confirm sentence, which was answered yes. The folder paths read `output/practice-suite/`. The intake is re-copied byte-identical from the renamed probe file. One parenthetical in the shape dispatch prompt is removed. Check: 39 diff blocks, 344 removed/context lines, 0 mismatches against #292's `PRD/sections/`.
-- Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` picks it up, or run `/graph-implement PRD/work/right-rules-in-order/`.
+- RESOLVED 2026-10-11: gate-review applied 39 verdicts (39 accept, 0 edit, 0 reject); status restored to `refined`.
+- Resume (historical): answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` picks it up, or run `/graph-implement PRD/work/right-rules-in-order/`.
+
+## Gate verdicts
+
+All 39 slots answered `accept` by the owner on 2026-10-11 (13 new: REQ-233 to REQ-245; 26 amendments: REQ-022, 024, 030, 074, 167, 176, 178, 179, 180, 181, 182, 183, 184, 190, 220, 232, NFR-017, FLOW-011, FLOW-023, and the 7 section docs system-map/game-rules-retrieval.md, system-map/prompt-layout-spec.md, system-map/prompt-assembly.md, quick-lookup/README.md, in-depth/README.md, integrations-and-data.md, system-map.md).
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| every ID above (39) | accept | — |
+
+Counts: 39 accept, 0 edit, 0 reject. Blocker questions: none.
+
+### Brief reconciliation
+
+none
 
 ## Dispatch prompts
 
@@ -137,6 +152,22 @@ Claude-Session: https://claude.ai/code/session_01Xr5PWVEyMjoesGrkYth3yz
 Verify directly. Spawn no subagents or forks; no sleeping or polling. Stay well under 60 tool calls — aim for 40; if you near 45, write the verdict with what you have and report. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: PASS or FAIL, the complete finding list, the commit SHA and push result, and the marker left in place.
+
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order
+
+You are the gate-resolution node (`gate-review`) of build-half graph run `graph-20261011-190751` for package `PRD/work/right-rules-in-order/`. Invoke the `graph-gate-review` skill and follow it exactly.
+
+- Work only inside the working directory above. Copy the `Working directory:` line unchanged into any prompt you write. Spawn no subagents.
+- Branch: `thejudge-auto/right-rules-in-order-work` (already checked out in that worktree, cut from `origin/main` at `9776e936`, claim commit `67f75ba8`). The docs PR #291 is merged; the owner answered all 39 slots in `GATE-QUESTIONS.md` before merging.
+- Apply each verdict inside `GATE-QUESTIONS.md` only (never `PRD/sections/`). Reconcile `DESIGN-BRIEF.md` and the README intake pointer to every `edit` or `reject`; `intake/` stays verbatim. Include a `### Brief reconciliation` list in your report (write `none` if no verdict needs one).
+- Record the verdicts under `## Gate verdicts` in `GRAPH-RUN.md`, mark `## Open gate` resolved, restore `STATUS.refined` as the only marker, and move the `PRD/work/STATUS.md` board row to refined (remove from the old section and add to the new one).
+- Change files with the Write and Edit tools. Run git as short separate calls from inside the working directory: `git add <explicit paths>`, then `git commit`, then `git push origin thejudge-auto/right-rules-in-order-work`. Never `git add -A` or `.`; never force-push.
+- Do not edit the `## Node ledger` table or `## Dispatch prompts`; the driver owns them.
+- Report: verdict counts, the brief reconciliation list, the commit sha, `git status --porcelain` (must be empty), and `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` (must be empty).
 
 ## Instruction ledger
 
