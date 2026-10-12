@@ -24,6 +24,7 @@
 
 ## Open gate
 
+- RESOLVED 2026-10-12: accept (owner, in session). Both out-of-bounds actions accepted as harmless; the build stands. The guardrail gap is fixed on main by PR https://github.com/ChrisMiho/TheJudge/pull/298 (merge `5277fd18`): the hook now denies `git stash pop/drop/clear` and, during `build`, any absolute write outside `.worktrees/implement-<slug>/`. Resume: restore `STATUS.ship-ready` and enter at `review` (node 7).
 - Gate: `build` (node 6) parked on its return-side write-scope check, 2026-10-12.
 - Question: accept the build's two out-of-bounds actions as harmless and continue to review? (1) one temp file written under `/tmp` and deleted at once; (2) one bare `git stash` + `git stash pop` of its own changes. Driver recommendation: accept both. The repository and the launch checkout are unchanged and the stash stack's prior entries are intact. Record the guardrail gap as follow-up: the boundary hook has no stash rule, so the contract's claim that the hook enforces the whole boundary list does not hold for stash pop/drop.
 - Evidence: node ledger row 8; `git stash list` (top entry `0fc368ea`, the older `green-mobile-branch-declutter-work` WIP); PR https://github.com/ChrisMiho/TheJudge/pull/297.
@@ -246,3 +247,4 @@ Report back: per slice, the commits and what each criterion's evidence showed; e
 | --- | --- | --- | --- |
 | "merged it, start the follow-ups build" (owner, in session 2026-10-12; mechanics: launch the queued follow-ups kickoff from `PRD/work/probe-prompt-format-tuning/GRAPH-BRIEF.md`) | answered-once | preflight | — |
 | "fill in the answers with your recommendation" (owner, in session 2026-10-12, after the PR #296 summary; covers exactly the 11 slots of this `GATE-QUESTIONS.md`; the driver filled 11 accept verdicts, REQ-246 accepted as proposed with a recorded follow-up item for new-topic follow-ups) | answered-once | gate-qc | — |
+| "merged, accept, and then i will run in a new session" (owner, in session 2026-10-12; resolves the `build` park in `## Open gate`: accept the `/tmp` write and the stash pop; PR #298 merged) | answered-once | build | — |
