@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [follow-ups-keep-their-rules](follow-ups-keep-their-rules/) | Follow-ups reuse the opening question's rule excerpts; answer-quality eval gains a pushback follow-up mode |
 
 ## owner-action
 
