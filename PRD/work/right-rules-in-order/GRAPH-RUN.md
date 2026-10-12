@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/right-rules-in-order/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 24` | PASS attempt 1, findings none — `PRD/work/right-rules-in-order/QUALITY-CHECK.md`, commit `abb4ed8b` pushed; 344 removed/context diff lines exact over 39 slots; amendment grep re-run 100 hits = 100 rows; REQ-233–245 unused on `origin/main`; privacy scan 0 matches; `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action` (marker and board row moved, commit `c65cb5bf`); docs PR https://github.com/ChrisMiho/TheJudge/pull/291 | 2026-10-11 |
 | 5 | gate-review | sonnet | ok | `0 → 12` | build half run `graph-20261011-190751`: claim commit `67f75ba8` on `thejudge-auto/right-rules-in-order-work` cut from `origin/main` `9776e936` (docs PR #291 merge; kickoff worktree removed clean); `graph-gate-review` commit `6ec5730b`: 39 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; worktree porcelain empty | 2026-10-11 |
 | 6 | gate-qc | sonnet | ok | `0 → 26` | PASS build-half re-grade attempt 1, findings none — `PRD/work/right-rules-in-order/QUALITY-CHECK.md`, commit `ef9d5398`; 341 non-blank removed/context diff lines exact over 39 slots at `9776e936`; amendment grep re-run 100 hits = 100 rows, no drift; 39/39 accept consistent with the brief; REQ-233–245 unused; privacy scan 0 matches, source name in 0 files, no tracked weights; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; `STATUS.refined`; README `## Preparation gate` PASS (unchanged, re-confirmed by the driver) | 2026-10-11 |
+| 7 | plan | sonnet | ok | `0 → 29` | commit `be68396d` — `GAMEPLAN.md` + 7 slices with criteria files (A fidelity and rule data 9, manual A9; B search 11, manual B9; C model tooling 10, manual C10; D train and validate 11, manual D1/D9; E prompt rules section 9, manual E8; F prompt structure 9, manual F8; G checks and ship 10, manual G6/G8/G10), 69 criteria all `false` (driver recount); Preparation gate PASS verified first; stop conditions written into A (fidelity, rule book absent), B and D (benchmark floors, labelled checks, CV and final-model floors, hard-25), G; no deliverable inside `PRD/work/` (driver grep of GAMEPLAN and slices); `STATUS.active` only marker; board row under active; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; worktree porcelain empty | 2026-10-11 |
 
 ## Open gate
 
@@ -225,6 +226,34 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 Leave the `## Node ledger`, `## Dispatch prompts` and `## Preparation gate` alone. Set `STATUS.active` as the only marker and move the `PRD/work/STATUS.md` board row fully (remove from refined, add to active). Verify directly. Spawn no subagents or forks; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: the slice list (letter, title, criteria count, any manual criteria), where each deliverable lands, the commit SHA and push result, `git status --porcelain` (must be empty), and `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` (must be empty).
+
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order
+
+You are node 6 (`build`) of build-half graph run `graph-20261011-190751`, attempt 1. Invoke the `thejudge-implement-all` skill and follow it in its graph-controlled mode (`graph is controlling`: no questions to the user, no approval pauses). Package: `PRD/work/right-rules-in-order/` inside the working directory above. Shared branch: `thejudge-auto/right-rules-in-order-work` — work in this worktree in place; create no second worktree and no contributor branch. Implement slices A to G of `GAMEPLAN.md` in order, each against its slice doc and `slice-<letter>.criteria.json`.
+
+What the player gets (keep this in view): the rules that decide a ruling reach Luna about twice as often, in rule-book order, grouped and labelled, lead-ins with their lists, and Quick Lookup gets the step summary when a question names a step.
+
+Rules for this build:
+- Apply each accepted `GATE-QUESTIONS.md` diff to `PRD/sections/` by intent against current truth, in the slice that implements it, together with the code. Never blind-replay. No `DEC-###`.
+- Stop conditions park the build — report them and stop, never work around them: target 1 fidelity mismatch (slice A, before any edit); rule book absent; target 6 benchmark floors (0.8526 clean, 0.8333 polluted) or the 12 labelled checks missed; the cross-validation or final-model floors in slice D missed; the hard-25 not reproducible. Do not tune the recipe beyond the recorded probe recipe to chase a floor.
+- Privacy is hard: no practice-suite question, answer, card list, id or per-question result in any committed file; no model weights tracked. Pairs, checkpoints, the model folder, hard-25 ids and per-question results only under git-ignored folders.
+- Nothing outward-facing: no S3 upload, no AWS bootstrap or deploy, no paid model calls, no `npm run data:refresh`, no network writes. Read local inputs (rule book, practice suite, stock embedder, probe base-model caches) from the launch checkout paths in `GAMEPLAN.md`, read-only; never write to /Users/chrismiho/Coding/Projects/TheJudge outside this worktree.
+- Every path you write must lie inside `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order/`. The package folder is inside this worktree; update slice statuses, criteria, the marker and the board row here, never in the launch checkout.
+- Criteria are self-reported in this half (the hook reads criteria from the launch checkout and logs no evidence), so for each criterion you set `true`, run the real check and keep its command and result in the slice evidence; review re-verifies independently.
+- Long commands (training, cross-validation): run each in a foreground Bash call with a long timeout, splitting folds across calls if needed; if one must run longer, use the Bash tool run_in_background parameter and wait for its completion — never `nohup`, never a trailing `&`.
+- Rebuilt vector and result files: `npm run benchmark:rag-retrieval` rewrites `scoredAt` in tracked results; commit those only when the values are the intended new baseline. Prettier governs only JSON/YAML here; never run it on `.ts`/`.mjs`.
+- Open the code PR `thejudge-auto/right-rules-in-order-work` into `main` with `gh pr create --base main` once all slices are done (or a draft earlier, per the skill). Title: `[THEJUDGE-AUTO][READY] Right rules in order (right-rules-in-order)`. The body opens per `PRD/instructions/plain-language-standard.md`, carries the line `<!-- thejudge-auto:v1:registered:right-rules-in-order -->`, the owner's before-merge model upload commands (profile `thejudge-admin`, `models/<model-id>/`, the `scripts/aws-bootstrap.sh` note), the rules-gate lost-hit list, and the after-merge steps from the brief. Never merge or close a PR.
+- When every slice is done and every criterion `true`, set `STATUS.ship-ready` as the only marker and move the board row fully.
+
+Mechanics: change files with the Write and Edit tools; no heredocs or `sed -i` inside chained Bash. Run git as short, separate calls from inside the worktree: `git add <explicit paths>`, then `git commit`, then `git push origin thejudge-auto/right-rules-in-order-work`. Never `git add -A` or `.`, never force-push, never `git -C`. End every commit message with this line:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Leave the `GRAPH-RUN.md` `## Node ledger` and `## Dispatch prompts` alone. If you dispatch helper subagents, copy the Working directory line above unchanged into each prompt; prefer doing the work yourself.
+
+Report back: per slice the commit SHA and criteria count true; the PR URL; `npm run quality:check` result; the slice-D numbers (CV check, tuning, every-rule, hard 25; final corpus citations and every-rule cases, bench@5, Necropotence, benchmark recall@5 clean and polluted, labelled checks, rules-gate net change); the model id and folder size; every deviation from a slice doc; every file path you wrote (for the write-scope check); and the final `git status --porcelain`.
 
 ## Instruction ledger
 
