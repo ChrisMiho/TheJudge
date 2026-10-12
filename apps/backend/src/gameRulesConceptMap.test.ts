@@ -71,8 +71,7 @@ describe("REQ-234 concept map", () => {
       "Nonbasic lands are Mountains.",
       "Enchanted permanent is an artifact creature with base power and toughness 4/4.",
       "All permanents are artifacts.",
-      "Each creature is a land in addition to its other types.",
-      "Flying. As long as you control a Forest, ~ is a creature."
+      "Each creature is a land in addition to its other types."
     ])("maps %s to the type-changing layer", (oracleText) => {
       expect(conceptTermsForCard({ oracleText })).toContain(LAYER);
     });
@@ -84,7 +83,11 @@ describe("REQ-234 concept map", () => {
       "When it is a creature, draw a card.",
       "Draw a card for each creature that is a Zombie.",
       "~'s power is equal to the number of creatures you control.",
-      "Whenever a creature you control dies, if it is a token, create a Treasure."
+      "Whenever a creature you control dies, if it is a token, create a Treasure.",
+      "Flying. As long as you control a Forest, ~ is a creature.",
+      "As long as it's your turn, enchanted permanent is an artifact.",
+      "Create a Treasure token. (It's an artifact with \"{T}, Sacrifice this artifact: Add one mana of any color.\")",
+      "Create a Clue token. (It is an artifact with \"{2}, Sacrifice this artifact: Draw a card.\")"
     ])("does not map conditional or targeting wording: %s", (oracleText) => {
       expect(conceptTermsForCard({ oracleText })).not.toContain(LAYER);
     });

@@ -13,12 +13,12 @@ export type ConceptEntry = readonly [pattern: RegExp, terms: string];
 const EVERGREEN = "(?:flying|first strike|double strike|deathtouch|haste|hexproof|indestructible|lifelink|menace|reach|trample|vigilance|defender|shroud|protection|ward|flash)";
 // Type-setting templating (owner-reviewed 2026-10-12): "in addition to its other types", or a subject followed by
 // is/are and a card type, subtype or basic land type ("Nonbasic lands are Mountains", "is an artifact creature").
-// The subject may not carry conditional or targeting wording (if, that, target, when, unless, where, equal).
+// The subject may not carry conditional or targeting wording (if, that, target, when, unless, where, equal), "as long as", or text in parentheses (reminder text).
 const TYPE_WORDS = "(?:artifacts?|creatures?|enchantments?|lands?|planeswalkers?|battles?|instants?|sorcery|sorceries|kindred|tribal|plains|islands?|swamps?|mountains?|forests?|auras?|equipment|vehicles?|sagas?|treasures?|clues?|foods?)";
 const TYPE_SETTING = new RegExp(
-  `in addition to (?:its|their|his or her) other (?:land )?types|(?:^|[.,\\n]\\s*)(?:(?!\\b(?:if|that|target|when|whenever|unless|where|equal)\\b)[^.\\n,;])*?\\b(?:is|are) (?:an? )?(?:[a-z-]+ ){0,2}${TYPE_WORDS}\\b`
+  `in addition to (?:its|their|his or her) other (?:land )?types|(?:^|[.,\\n]\\s*)(?<!\\bas long as [^.\\n]*)(?<!\\([^)]*)(?:(?!\\b(?:if|that|target|when|whenever|unless|where|equal)\\b|as long as)[^.\\n,;()])*?\\b(?:is|are) (?:an? )?(?:[a-z-]+ ){0,2}${TYPE_WORDS}\\b`
 );
-export const CONCEPT_MAP:readonly ConceptEntry[] = [
+export const CONCEPT_MAP: readonly ConceptEntry[] = [
   [/at the beginning of [^.]*?upkeep/, "upkeep step triggered ability"],
   [/at the beginning of [^.]*?draw step/, "draw step triggered ability"],
   [/at the beginning of [^.]*?(?:end step|end of turn)/, "end step triggered ability"],

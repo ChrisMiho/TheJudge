@@ -6186,7 +6186,7 @@
 - Priority: high
 - Description: System 3 reads each card's oracle text and type line through a fixed, committed concept map — general phrase-to-concept rules, one per common card templating — and adds the resulting rule-book concept terms to the search: to the word query at twice the weight of the card signal, and to the text that is embedded. The card's raw oracle text still never enters the main query or its embedding (REQ-178).
 - Acceptance Criteria:
-  - the map is one committed module (`apps/backend/src/gameRulesConceptMap.ts`) holding `CONCEPT_MAP` (78 oracle-text entries) and `TYPE_MAP` (5 type-line entries), ported verbatim — every pattern and every term — from the `right-rules-in-order` intake appendix; after this ships, that module is the only copy
+  - the map is one committed module (`apps/backend/src/gameRulesConceptMap.ts`) holding `CONCEPT_MAP` (78 oracle-text entries) and `TYPE_MAP` (5 type-line entries), of which 77 were ported verbatim — every pattern and every term — from the `right-rules-in-order` intake appendix and the 78th is the owner-reviewed type-setting entry of 2026-10-12; after this ships, that module is the only copy
   - input: each card's oracle text lower-cased, curly apostrophes turned into `'`, and the card's own name (each face of a `//` name) replaced by `~`; `TYPE_MAP` runs on the lower-cased type line; every matching entry adds its terms; the request's terms are de-duplicated
   - word-query weights: question ×3, card signal ×1, concept term ×2; a keyword token is additionally ×6 on top of its source weight, as today
   - the concept terms are appended to the embedded query text (`buildRetrievalQueryText`) in both modes, through the one shared query builder
@@ -6194,7 +6194,7 @@
   - no model call ever produces search terms at request time
   - concept terms also feed turn-step detection (REQ-238) and In-Depth curated-topic choice (REQ-242)
 - Constraints:
-  - entries stay general — one per common templating, never per test case; no added, reworded or AI-generated terms; any change to the map is a separate, owner-reviewed edit; the 78th entry (type-setting wording: `in addition to its other types`, or a subject followed by is/are and a card type, subtype or basic land type, mapped to `type-changing effects layer continuous effect`, never conditional or targeting wording such as `if it is a creature`, `target creature`, `that is a creature`) was reviewed by the owner on 2026-10-12
+  - entries stay general — one per common templating, never per test case; no added, reworded or AI-generated terms; any change to the map is a separate, owner-reviewed edit; the 78th entry (type-setting wording: `in addition to its other types`, or a subject followed by is/are and a card type, subtype or basic land type, mapped to `type-changing effects layer continuous effect`, never conditional or targeting wording such as `if it is a creature`, `target creature`, `that is a creature`, `as long as you control a Forest, ~ is a creature`, or reminder text in parentheses) was reviewed by the owner on 2026-10-12
   - raw oracle text never enters the main query or its embedding (REQ-178)
   - backend-only; no request, response, schema or frontend change
 - Dependencies:
