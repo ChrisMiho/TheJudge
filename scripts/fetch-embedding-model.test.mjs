@@ -93,6 +93,17 @@ test("refuses rule vectors built by a different model than the manifest names", 
   assert.deepEqual(verifyRuleVectorsModel(manifest, join(work, "embeddings.json")), []);
 });
 
+test("--skip-vector-check places a freshly trained model before the rule vectors are rebuilt with it", () => {
+  const { source, manifestPath, work, dest, manifest } = setup();
+  const embeddings = join(work, "old-vectors.json");
+  writeFileSync(embeddings, JSON.stringify({ model: "Xenova/all-MiniLM-L6-v2" }));
+  const refused = run(["--source", source, "--dest", dest, "--manifest", manifestPath, "--embeddings", embeddings]);
+  assert.equal(refused.status, 1);
+  const placed = run(["--source", source, "--dest", dest, "--manifest", manifestPath, "--embeddings", embeddings, "--skip-vector-check"]);
+  assert.equal(placed.status, 0, placed.stderr);
+  assert.match(placed.stdout, new RegExp(`${manifest.modelId} verified`));
+});
+
 test("--verify fails when nothing was fetched yet", () => {
   const { manifestPath, embeddingsPath, dest } = setup();
   const result = run(["--verify", "--dest", dest, "--manifest", manifestPath, "--embeddings", embeddingsPath]);

@@ -26,7 +26,8 @@ const queries = readFileSync(join(DATA, "examples.jsonl"), "utf8")
 async function load(kind, dtype) {
   if (kind === "stock") {
     hf.env.cacheDir = join(repoRoot, "apps/backend/data/models");
-    hf.env.allowLocalModels = false;
+    hf.env.allowLocalModels = true;
+    hf.env.localModelPath = join(repoRoot, "output/rule-search-model/none/");
     return hf.pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2", { dtype: "q8" });
   }
   hf.env.allowLocalModels = true;

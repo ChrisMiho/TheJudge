@@ -1,6 +1,6 @@
 # Slice D — First training, cross-validation, vectors, gates
 
-## Status: planned
+## Status: blocked
 
 ## Goal
 

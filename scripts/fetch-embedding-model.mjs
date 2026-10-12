@@ -8,6 +8,8 @@
 //   node scripts/fetch-embedding-model.mjs --verify                                   # verify only, fetch nothing
 //
 // Options: --manifest <path> (default apps/backend/data/embeddingModel.manifest.json),
+//          --skip-vector-check (owner's retraining flow only: place a freshly trained model before the rule
+//                              vectors are rebuilt with it; packaging never passes this),
 //          --dest <folder>   (default apps/backend/data/models; the model lands in <dest>/<model-id>/),
 //          --embeddings <path> (default apps/backend/data/gameRulesRuleEmbeddings.json).
 //
@@ -120,6 +122,7 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const token = argv[i];
     if (token === "--verify") options.verify = true;
+    else if (token === "--skip-vector-check") options.skipVectorCheck = true;
     else if (["--source", "--dest", "--manifest", "--embeddings"].includes(token)) options[token.slice(2)] = argv[++i];
     else throw new Error(`Unknown argument: ${token}`);
   }
@@ -135,7 +138,7 @@ async function main() {
     throw new Error("Pass --source <s3://bucket/models/<model-id> | folder>, or --verify to check what is already there.");
   }
   const problems = options.verify ? verifyModelDirectory(manifest, modelDir) : fetchModel({ manifest, source: options.source, destRoot });
-  problems.push(...verifyRuleVectorsModel(manifest, resolve(options.embeddings ?? DEFAULT_EMBEDDINGS_PATH)));
+  if (!options.skipVectorCheck) problems.push(...verifyRuleVectorsModel(manifest, resolve(options.embeddings ?? DEFAULT_EMBEDDINGS_PATH)));
   if (problems.length > 0) {
     console.error(`Embedding model ${manifest.modelId} is NOT verified:`);
     for (const problem of problems) console.error(`  - ${problem}`);
