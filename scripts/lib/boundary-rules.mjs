@@ -1238,8 +1238,251 @@ export const RULES = Object.freeze([
       context.backgrounded
         ? "Launching a command in the background with `&` is denied while a graph run holds the lock: the run cannot own a process it never waits for."
         : null
+  },
+  // The rules below mirror `.claude/graph-profile.json`'s deny list, which loads
+  // only in a session launched with `--settings`. Until 2026-10-12 the hook had
+  // none of them, so a build node's bare `git stash pop` ran unopposed in a
+  // session without the profile. `graph-boundary-hook.test.mjs` now fails when a
+  // profile deny has no hook equivalent.
+  {
+    id: "stash-discard",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const { subcommand, args } of gitCalls(context)) {
+        if (subcommand === "stash" && STASH_DISCARD_ACTIONS.has(args[0])) {
+          return `\`git stash ${args[0]}\` is denied while a graph run holds the lock: the stash stack is shared by every worktree and session, so a pop or drop can take another session's work. Set work aside with a WIP commit instead.`
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "history-discard",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const { subcommand, args } of gitCalls(context)) {
+        if (subcommand === "reset" && args.includes("--hard")) {
+          return "`git reset --hard` is denied while a graph run holds the lock: it discards work without a trace the owner can unwind."
+        }
+        if (subcommand === "clean") {
+          return "`git clean` is denied while a graph run holds the lock: it deletes untracked files without a trace the owner can unwind."
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "wildcard-stage",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const { subcommand, args } of gitCalls(context)) {
+        if (subcommand !== "add") continue
+        const wildcard = args.find(
+          (argument) => WILDCARD_STAGE_ARGUMENTS.has(argument) || /^-[a-zA-Z]*A[a-zA-Z]*$/.test(argument)
+        )
+        if (wildcard !== undefined) {
+          return `\`git add ${wildcard}\` is denied while a graph run holds the lock: a run stages explicit paths only, because a wildcard is what committed the 2026-08-17 leak.`
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "merge-side-discard",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const { subcommand, args } of gitCalls(context)) {
+        if (subcommand !== "merge" && subcommand !== "pull") continue
+        const discarding = sideDiscardingArgument(subcommand, args)
+        if (discarding !== null) {
+          return `\`git ${subcommand} ${discarding}\` is denied while a graph run holds the lock: it discards one side of the integration. Merge normally and resolve conflicts, or park.`
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "pr-merge-or-close",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const segment of context.segments) {
+        if (segment.command !== "gh") continue
+        const [area, action] = segment.argv.slice(1).filter((token) => !token.startsWith("-"))
+        if ((area === "pr" && (action === "merge" || action === "close")) || (area === "repo" && action === "delete")) {
+          return `\`gh ${area} ${action}\` is denied while a graph run holds the lock: the merge is the owner's, and a run never closes or deletes what it cannot reopen.`
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "recursive-remove",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const segment of context.segments) {
+        if (segment.command === "rm" && isRecursive(segment)) {
+          return "A recursive `rm` is denied while a graph run holds the lock. Remove tracked files with `git rm`, or explicit files by name."
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "force-branch-delete",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const { subcommand, args } of gitCalls(context)) {
+        if (subcommand === "branch" && isForcedBranchDelete(args)) {
+          return "Force-deleting a branch is denied while a graph run holds the lock: `git branch -d` refuses an unmerged branch, which is the protection `-D` removes."
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "data-refresh",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const segment of context.segments) {
+        const [command, ...rest] = segment.argv
+        const name = (command ?? "").split("/").pop()
+        const npmRefresh =
+          name === "npm" && (rest[0] === "run" || rest[0] === "run-script") && rest[1] === "data:refresh"
+        const scriptRefresh =
+          SCRIPT_RUNNERS.has(name) && rest.some((token) => /(^|\/)refresh-scryfall-data\.mjs$/.test(token))
+        if (npmRefresh || scriptRefresh) {
+          return "A data refresh is denied while a graph run holds the lock: it reaches the Scryfall network and rewrites the corpus, which only the owner starts."
+        }
+      }
+      return null
+    }
+  },
+  {
+    id: "worktree-outside-root",
+    tier: "graph",
+    evaluate: (context) => {
+      for (const { subcommand, args } of gitCalls(context)) {
+        if (subcommand !== "worktree" || args[0] !== "add") continue
+        const target = worktreeAddPath(args.slice(1))
+        if (target === null) continue
+        if (!isInside(resolveAgainst(target, context.root), path.join(context.root, ".worktrees"))) {
+          return `\`git worktree add ${target}\` is denied while a graph run holds the lock: a run creates worktrees under the repo-local \`.worktrees/\` root only.`
+        }
+      }
+      return null
+    }
+  },
+  {
+    // REQ-193 denied up front. `classifyBuildWrites` in
+    // `scripts/graph-ledger-check.mjs` detects the same thing after the node
+    // returns, from the node's own report; on 2026-10-12 a build node wrote a
+    // scratch file under `/tmp` and the run could only park afterwards. Only
+    // absolute paths are judged: a relative path resolves against a working
+    // directory the hook cannot see, and the return-side porcelain check still
+    // covers it.
+    id: "build-write-outside-worktree",
+    tier: "graph",
+    evaluate: (context) => {
+      if (context.runState?.node !== EVIDENCE_EARNING_NODE) return null
+      if (typeof context.lockSlug !== "string" || context.lockSlug === "") return null
+      const worktree = path.join(context.root, ".worktrees", `implement-${context.lockSlug}`)
+      for (const candidate of writtenPaths(context)) {
+        const text = String(candidate).replace(/^["']|["']$/g, "")
+        if (text.startsWith("&") || text.startsWith("/dev/")) continue
+        if (!text.startsWith("~") && !path.isAbsolute(text)) continue
+        if (text.startsWith("~") || !isInside(path.resolve(text), worktree)) {
+          return `The build node writes only inside \`.worktrees/implement-${context.lockSlug}/\` (REQ-193); \`${text}\` is outside it. Put scratch files in that worktree's gitignored \`.tmp/\`.`
+        }
+      }
+      return null
+    }
   }
 ])
+
+const STASH_DISCARD_ACTIONS = new Set(["pop", "drop", "clear"])
+
+const WILDCARD_STAGE_ARGUMENTS = new Set(["--all", ".", "./", ":/"])
+
+const SCRIPT_RUNNERS = new Set(["node", "tsx", "npx", "bun"])
+
+const SIDE_DISCARDING_STRATEGIES = new Set(["ours"])
+
+const SIDE_DISCARDING_OPTIONS = new Set(["ours", "theirs"])
+
+/** Every git call in the command, global options stripped. */
+function gitCalls(context) {
+  return context.segments.filter((segment) => segment.command === "git").map((segment) => gitSubcommand(segment.argv))
+}
+
+/** The merge or pull argument that discards one side, or null. */
+function sideDiscardingArgument(subcommand, args) {
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]
+    const next = args[index + 1]
+    if (argument === "--allow-unrelated-histories") return argument
+    if (subcommand === "pull" && (argument === "--force" || argument === "-f")) return argument
+    if ((argument === "-s" || argument === "--strategy") && SIDE_DISCARDING_STRATEGIES.has(next)) {
+      return `${argument} ${next}`
+    }
+    if ((argument === "-X" || argument === "--strategy-option") && SIDE_DISCARDING_OPTIONS.has(next)) {
+      return `${argument} ${next}`
+    }
+    const joined = /^(?:-s|--strategy=)(.+)$/.exec(argument)
+    if (joined && SIDE_DISCARDING_STRATEGIES.has(joined[1])) return argument
+    const joinedOption = /^(?:-X|--strategy-option=)(.+)$/.exec(argument)
+    if (joinedOption && SIDE_DISCARDING_OPTIONS.has(joinedOption[1])) return argument
+  }
+  return null
+}
+
+function isRecursive(segment) {
+  return segment.argv
+    .slice(1)
+    .some((flag) => flag === "--recursive" || (/^-[a-zA-Z]+$/.test(flag) && /[rR]/.test(flag)))
+}
+
+function isForcedBranchDelete(args) {
+  let deleting = false
+  let force = false
+  for (const flag of args.filter((argument) => argument.startsWith("-"))) {
+    if (flag === "--delete") deleting = true
+    else if (flag === "--force") force = true
+    else if (/^-[a-zA-Z]+$/.test(flag)) {
+      if (flag.includes("D")) return true
+      if (flag.includes("d")) deleting = true
+      if (flag.includes("f")) force = true
+    }
+  }
+  return deleting && force
+}
+
+/** Options of `git worktree add` that take a value, so the path is not mistaken for one. */
+const WORKTREE_ADD_FLAGS_WITH_VALUE = new Set(["-b", "-B", "--reason"])
+
+function worktreeAddPath(args) {
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]
+    if (WORKTREE_ADD_FLAGS_WITH_VALUE.has(argument)) {
+      index += 1
+      continue
+    }
+    if (argument.startsWith("-")) continue
+    return argument.replace(/^["']|["']$/g, "")
+  }
+  return null
+}
+
+/** A command-line path made absolute: relative paths are taken from the repository root. */
+function resolveAgainst(target, root) {
+  if (target.startsWith("~")) return target
+  return path.resolve(root, target)
+}
+
+function isInside(candidate, directory) {
+  if (candidate.startsWith("~")) return false
+  const relative = path.relative(directory, candidate)
+  return relative !== "" && relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)
+}
 
 function isRecursiveForce(segment) {
   let recursive = false
@@ -1317,6 +1560,8 @@ export function callContext({
   flippedCriteria = [],
   observedEvidence = null,
   lockRunId = null,
+  // The package slug the live lock names, which locates the build worktree.
+  lockSlug = null,
   release = null,
   priorDenials = null,
   // The repository root the hook resolved (`projectRoot()`), so an absolute
@@ -1342,6 +1587,7 @@ export function callContext({
     flippedCriteria,
     observedEvidence,
     lockRunId,
+    lockSlug,
     release,
     priorDenials
   }

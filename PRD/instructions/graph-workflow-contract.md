@@ -701,8 +701,23 @@ access, force-push in every flag and refspec form, remote branch deletion,
 `main` / `master` pushes, `rm -rf`, `sudo`, `pkill`, `killall`. The graph tier
 fires only while a run holds `.worktrees/.graph-run.lock`: protected-path writes,
 writes to the hook's own records, removal of the lock or the stop sentinel,
-`nohup`, a background `&`, the per-node tool-call cap, and a criterion flipped to
-`true` without observed evidence.
+`nohup`, a background `&`, the per-node tool-call cap, a criterion flipped to
+`true` without observed evidence, and the rest of `## Boundaries` — `git stash
+pop` / `drop` / `clear`, `git reset --hard`, `git clean`, wildcard staging,
+side-discarding merge and pull options, `gh pr merge` / `close` and `gh repo
+delete`, a recursive `rm`, a forced branch delete, a data refresh, and a
+worktree outside `.worktrees/`. While the `build` node runs, the graph tier also
+denies a write to any absolute path outside `.worktrees/implement-<slug>/`
+(REQ-193), so a stray write is refused up front rather than found by the
+return-side check afterwards.
+
+**The hook is a superset of the profile.** Until 2026-10-12 a dozen of the
+profile's denies had no hook rule, so a build node's bare `git stash pop` ran
+unopposed in a session launched without the profile. `scripts/graph-boundary-hook.test.mjs`
+now renders every profile deny entry as a representative call and fails when the
+hook allows it; the few entries the hook deliberately does not mirror are listed
+in that test, each with its reason. A run is therefore not blocked for a missing
+profile: the profile adds nothing the hook does not already enforce.
 
 **It never fails closed.** An internal error prints a diagnostic and exits 0. A
 hook that denied on its own bugs would brick every session in this repository. A
@@ -716,7 +731,11 @@ Each of these is a limit, recorded once, not a claim.
 1. **Literal matching.** The hook matches path literals and normalized argv. A
    path or command assembled at runtime — through a variable, a heredoc, or an
    interpreter the hook allowed — evades it. The normalizer models a shell; it is
-   not one.
+   not one. The build node's out-of-worktree rule judges absolute paths only: a
+   relative path resolves against a working directory the hook cannot see (a
+   `cd` earlier in the same command moves it), so a relative write is left to
+   the return-side porcelain and write-scope checks. A script that writes to a
+   temp directory through `fs` is not a tool call and is not seen at all.
 2. **`graph-ledger-check.mjs` is a self-report.** It reads `## Dispatch prompts`
    and `## Instruction ledger`, both written by the driver. A driver that
    pre-authorizes and then paraphrases its own prompt passes it clean. It is a
@@ -877,8 +896,9 @@ The list above is the reason each deny entry exists.
 ### Protected paths — three layers, each with a stated reach
 
 Protected set: `.secrets/**`, `CLAUDE.md`, `.claude/graph-profile.json`,
-`.claude/settings*.json`, and `thejudge-*/**` in both skill trees
-(`.claude/skills/` and `.agents/skills/`).
+`.claude/settings*.json`, `scripts/graph-boundary-hook.mjs`, and `thejudge-*/**`
+and `codehealth/**` in both skill trees (`.claude/skills/` and
+`.agents/skills/`).
 
 No single mechanism covers every way a path can be written, so each writing
 mechanism states its own reach. Nothing here claims more than it enforces.

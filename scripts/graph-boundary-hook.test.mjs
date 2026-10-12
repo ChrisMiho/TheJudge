@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { mkdtempSync } from "node:fs"
+import { mkdtempSync, readFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import path from "node:path"
 import { Readable } from "node:stream"
@@ -1142,4 +1142,259 @@ test("writing the call counter is still denied", () => {
     tool("Write", { file_path: ".worktrees/.graph-node-calls.json", content: "x" }, io).rule,
     "run-record-write"
   )
+})
+
+// ---------------------------------------------------------------------------
+// Profile parity — the hook covers every boundary the permission profile does.
+//
+// 2026-10-12: a build node ran a bare `git stash` then `git stash pop` and
+// wrote a scratch file under `/tmp`. Neither was denied. `git stash pop` was
+// denied only in `.claude/graph-profile.json`, which loads only in a session
+// launched with `--settings`, and the hook had no stash rule at all — so the
+// contract's "the boundary hook enforces this list" was untrue for a dozen
+// profile entries. The hook is the enforcer and the profile the second layer;
+// that is only safe while the hook is a superset of the profile.
+// ---------------------------------------------------------------------------
+
+const PROFILE_PARITY_GRAPH_TIER = [
+  ["a stash pop", "git stash pop", "stash-discard"],
+  ["a stash pop by index", "git stash pop stash@{1}", "stash-discard"],
+  ["a stash drop", "git stash drop stash@{0}", "stash-discard"],
+  ["a stash clear", "git stash clear", "stash-discard"],
+  ["a stash pop behind git -C", "git -C .worktrees/x stash pop", "stash-discard"],
+  ["a hard reset", "git reset --hard origin/main", "history-discard"],
+  ["a git clean", "git clean -fd", "history-discard"],
+  ["staging everything, -A", "git add -A", "wildcard-stage"],
+  ["staging everything, -A with a path", "git add -A PRD/", "wildcard-stage"],
+  ["staging everything, --all", "git add --all", "wildcard-stage"],
+  ["staging everything, dot", "git add .", "wildcard-stage"],
+  ["a merge keeping ours", "git merge -s ours origin/main", "merge-side-discard"],
+  ["a merge keeping ours, long form", "git merge --strategy=ours origin/main", "merge-side-discard"],
+  ["a merge keeping ours, split long form", "git merge --strategy ours origin/main", "merge-side-discard"],
+  ["a merge auto-resolving ours", "git merge -X ours origin/main", "merge-side-discard"],
+  ["a merge auto-resolving theirs, joined", "git merge -Xtheirs origin/main", "merge-side-discard"],
+  ["a merge auto-resolving, long form", "git merge --strategy-option=theirs origin/main", "merge-side-discard"],
+  ["a merge of unrelated histories", "git merge --allow-unrelated-histories other", "merge-side-discard"],
+  ["a pull keeping ours", "git pull -s ours origin main", "merge-side-discard"],
+  ["a pull auto-resolving theirs", "git pull -X theirs origin main", "merge-side-discard"],
+  ["a forced pull", "git pull --force origin main", "merge-side-discard"],
+  ["a PR merge", "gh pr merge 297 --squash", "pr-merge-or-close"],
+  ["a PR close", "gh pr close 297", "pr-merge-or-close"],
+  ["a repository delete", "gh repo delete ChrisMiho/TheJudge --yes", "pr-merge-or-close"],
+  ["a recursive remove", "rm -r build", "recursive-remove"],
+  ["a recursive remove, capital R", "rm -R build", "recursive-remove"],
+  ["a recursive remove, long flag", "rm --recursive build", "recursive-remove"],
+  ["a forced branch delete", "git branch -D topic", "force-branch-delete"],
+  ["a forced branch delete, long flags", "git branch --delete --force topic", "force-branch-delete"],
+  ["a forced branch delete, split short flags", "git branch -d -f topic", "force-branch-delete"],
+  ["a data refresh", "npm run data:refresh", "data-refresh"],
+  ["a data refresh with args", "npm run data:refresh -- --skip-download", "data-refresh"],
+  ["a Scryfall refresh by node", "node scripts/refresh-scryfall-data.mjs", "data-refresh"],
+  ["a Scryfall refresh by tsx", "tsx scripts/refresh-scryfall-data.mjs", "data-refresh"],
+  ["a worktree outside the repo, absolute", "git worktree add /tmp/elsewhere -b x", "worktree-outside-root"],
+  ["a worktree outside the repo, relative", "git worktree add ../elsewhere -b x", "worktree-outside-root"],
+  ["a worktree in the repo but outside .worktrees", "git worktree add scratch -b x", "worktree-outside-root"],
+  [
+    "a codehealth skill",
+    "echo x > .claude/skills/codehealth/SKILL.md",
+    "protected-path-write"
+  ],
+  [
+    "the codehealth skill mirror",
+    "echo x > .agents/skills/codehealth/SKILL.md",
+    "protected-path-write"
+  ]
+]
+
+for (const [name, command, rule] of PROFILE_PARITY_GRAPH_TIER) {
+  test(`graph tier denies ${name} with a lock present`, () => {
+    const denied = bash(command, LIVE_LOCK)
+    assert.equal(denied.decision, "deny", `expected a deny for: ${command}`)
+    assert.equal(denied.rule, rule)
+    assert.equal(denied.tier, "graph")
+    assert.match(denied.reason, /\S/)
+  })
+
+  test(`graph tier allows ${name} with no lock`, () => {
+    assert.equal(bash(command, NO_LOCK).decision, "allow", `wrongly denied without a lock: ${command}`)
+  })
+}
+
+// The near misses. Each sits one token from a deny above, and each is ordinary
+// run mechanics a node is expected to use.
+const PROFILE_PARITY_GRAPH_ALLOWED = [
+  "git stash list",
+  "git stash show stash@{0}",
+  "git stash push -u -m wip-tag",
+  "git stash apply 0fc368ea",
+  "git reset --soft HEAD~1",
+  "git reset PRD/work/x/README.md",
+  "git add PRD/work/x/README.md scripts/lib/boundary-rules.mjs",
+  "git add -p",
+  "git add ./scripts/a.mjs",
+  "git merge origin/main",
+  "git merge --no-ff origin/main",
+  "git pull --ff-only origin main",
+  "git rebase -X theirs origin/main",
+  "gh pr create --base main --head topic --title t --body b",
+  "gh pr view 297",
+  "gh pr edit 297 --body b",
+  "rm build/stale.txt",
+  "rm -f .worktrees/.graph-run-state.json",
+  "git rm -r PRD/work/old-slug",
+  "git branch -d topic",
+  "git branch --list topic",
+  "npm run data:validate",
+  "node scripts/eval-answer-quality.mjs --dry-run",
+  "git worktree add .worktrees/implement-x -b x origin/main",
+  "git worktree list",
+  "git worktree remove .worktrees/kickoff-x"
+]
+
+for (const command of PROFILE_PARITY_GRAPH_ALLOWED) {
+  test(`graph tier allows near miss: ${command}`, () => {
+    assert.equal(bash(command, LIVE_LOCK).decision, "allow", `wrongly denied with a lock: ${command}`)
+  })
+}
+
+test("an absolute worktree path inside .worktrees is allowed", () => {
+  const root = process.env.CLAUDE_PROJECT_DIR
+  const result = bash(`git worktree add ${root}/.worktrees/implement-x -b x origin/main`, LIVE_LOCK)
+  assert.equal(result.decision, "allow")
+})
+
+/**
+ * Every profile deny entry, rendered as one representative call.
+ *
+ * A `*` after a space stands for an argument (`x`); a `*` glued to a flag means
+ * "this flag, with or without more" and is dropped, so `--force*` renders as
+ * `--force` rather than the unmatched `--forcex`. An unbalanced quote is
+ * closed.
+ */
+function representativeCall(entry) {
+  const match = /^(Bash|Read|Edit)\((.*)\)$/.exec(entry)
+  assert.ok(match, `unrecognised profile entry: ${entry}`)
+  const [, kind, body] = match
+  if (kind !== "Bash") {
+    const file_path = body.replace(/^\.\//, "").replace(/\*\*$/, "SKILL.md").replace(/\*/g, "x")
+    return { toolName: kind === "Read" ? "Read" : "Write", toolInput: { file_path, content: "x" } }
+  }
+  let command = body.replace(/ \*/g, " x").replace(/\*/g, "")
+  if ((command.match(/"/g) ?? []).length % 2 === 1) command += '"'
+  return { toolName: "Bash", toolInput: { command } }
+}
+
+// Profile entries the hook deliberately does not mirror, each with its reason.
+// Adding an entry here is a decision, reviewed like any other boundary change.
+const PROFILE_ONLY = new Map([
+  [
+    "Bash(sed -i*)",
+    "not a boundary: editing an ordinary file with `sed -i` is mechanics; the protected-path rule already resolves its targets"
+  ],
+  ["Bash(sed * -i*)", "as above"],
+  [
+    "Bash(git push origin main:*)",
+    "the destination decides: `main:<other>` publishes to `<other>`, never to `main`; `protected-branch-push` denies every refspec whose destination is a protected branch"
+  ],
+  ["Bash(git push -u origin main:*)", "as above"],
+  ["Bash(git push origin master:*)", "as above"],
+  ["Bash(git push -u origin master:*)", "as above"]
+])
+
+test("every profile deny entry is also denied by the hook while a run holds the lock", () => {
+  const profile = JSON.parse(readFileSync(path.join(REPO_ROOT, ".claude", "graph-profile.json"), "utf8"))
+  const misses = []
+  for (const entry of profile.permissions.deny) {
+    if (PROFILE_ONLY.has(entry)) continue
+    const call = representativeCall(entry)
+    const result = decide(JSON.stringify({ tool_name: call.toolName, tool_input: call.toolInput }), LIVE_LOCK)
+    if (result.decision !== "deny") misses.push(`${entry} → ${JSON.stringify(call.toolInput)}`)
+  }
+  assert.deepEqual(misses, [], "profile denies the hook does not enforce")
+})
+
+test("every profile-only exemption still names a real profile entry", () => {
+  const profile = JSON.parse(readFileSync(path.join(REPO_ROOT, ".claude", "graph-profile.json"), "utf8"))
+  for (const entry of PROFILE_ONLY.keys()) {
+    assert.ok(profile.permissions.deny.includes(entry), `stale exemption: ${entry}`)
+  }
+})
+
+// ---------------------------------------------------------------------------
+// The build node writes only inside its own worktree (REQ-193), denied up
+// front rather than detected afterwards by `classifyBuildWrites`.
+// ---------------------------------------------------------------------------
+
+const BUILD_SLUG = "some-slug"
+
+function buildRun(node = "build") {
+  return records({
+    lock: JSON.stringify({ slug: BUILD_SLUG, runId: "graph-1", pid: 1, startedAt: "t" }),
+    state: runStateOf({ node })
+  })
+}
+
+function buildWorktree() {
+  return path.join(process.env.CLAUDE_PROJECT_DIR, ".worktrees", `implement-${BUILD_SLUG}`)
+}
+
+const OUTSIDE_BUILD_WRITES = [
+  ["a Write under /tmp", () => tool("Write", { file_path: "/tmp/grep-count.txt", content: "x" }, buildRun())],
+  [
+    "a Write into the launch checkout",
+    () =>
+      tool(
+        "Write",
+        { file_path: path.join(process.env.CLAUDE_PROJECT_DIR, "PRD", "work", BUILD_SLUG, "README.md"), content: "x" },
+        buildRun()
+      )
+  ],
+  [
+    "an Edit in another worktree",
+    () =>
+      tool(
+        "Edit",
+        {
+          file_path: path.join(process.env.CLAUDE_PROJECT_DIR, ".worktrees", "kickoff-other", "a.md"),
+          old_string: "a",
+          new_string: "b"
+        },
+        buildRun()
+      )
+  ],
+  ["a redirection under /tmp", () => bash("grep -c x scripts/a.mjs > /tmp/count.txt", buildRun())],
+  ["a copy into the home directory", () => bash("cp scripts/a.mjs ~/a.mjs", buildRun())]
+]
+
+for (const [name, call] of OUTSIDE_BUILD_WRITES) {
+  test(`the build node is denied ${name}`, () => {
+    const result = call()
+    assert.equal(result.decision, "deny")
+    assert.equal(result.rule, "build-write-outside-worktree")
+    assert.match(result.reason, /implement-some-slug/)
+  })
+}
+
+const INSIDE_BUILD_WRITES = [
+  ["a Write inside its worktree", () => tool("Write", { file_path: path.join(buildWorktree(), "scripts", "a.mjs"), content: "x" }, buildRun())],
+  ["a relative redirection", () => bash("node scripts/a.mjs > .tmp/out.txt", buildRun())],
+  ["a redirection to /dev/null", () => bash("npm run test 2>/dev/null", buildRun())],
+  ["a descriptor redirection", () => bash("npm run test 2>&1 | tail -5", buildRun())],
+  ["a Read outside its worktree", () => tool("Read", { file_path: "/tmp/anything.txt" }, buildRun())],
+  ["an absolute redirection inside its worktree", () => bash(`echo x > ${buildWorktree()}/.tmp/x.txt`, buildRun())]
+]
+
+for (const [name, call] of INSIDE_BUILD_WRITES) {
+  test(`the build node is allowed ${name}`, () => {
+    assert.equal(call().decision, "allow")
+  })
+}
+
+test("the out-of-worktree rule binds the build node only", () => {
+  // The driver's own bookkeeping, and every other node, write outside the build
+  // worktree by design (the run-state file, the release record).
+  for (const node of ["driver-bookkeeping", "plan", "review", "close"]) {
+    const result = tool("Write", { file_path: "/tmp/scratch.txt", content: "x" }, buildRun(node))
+    assert.notEqual(result.rule, "build-write-outside-worktree", `fired for ${node}`)
+  }
 })
