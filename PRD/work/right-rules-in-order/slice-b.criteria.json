@@ -2,16 +2,16 @@
   "slug": "right-rules-in-order",
   "slice": "B",
   "criteria": [
-    { "id": "B1", "statement": "Stemmer unit tests pass and no dependency is added to any package.json", "value": false, "evidence": { "command": "npm --workspace apps/backend run test" } },
-    { "id": "B2", "statement": "Token-fix tests cover dots, can't, stemming, card keywords and the six dropped verbs", "value": false, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.test.ts"] } },
-    { "id": "B3", "statement": "Stray-number tests cover rule 613, CR 613, bare 613 and 613.9", "value": false, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.test.ts"] } },
-    { "id": "B4", "statement": "Concept-map test: every concept word is in the rule index (163 words, 82 entries: 77 oracle, 5 type-line)", "value": false, "evidence": { "paths": ["apps/backend/src/gameRulesConceptMap.test.ts"] } },
-    { "id": "B5", "statement": "Query builder tests: raw oracle text never enters the main query; turn step and obsolete-term words do", "value": false, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.test.ts"] } },
-    { "id": "B6", "statement": "Per-card search tests: two reserved slots, separate query, off under mock, larger-cap legs keep them", "value": false, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.test.ts"] } },
-    { "id": "B7", "statement": "Meaning weight is 0.65 and the 12 labelled fixture checks pass", "value": false, "evidence": { "command": "npm --workspace apps/backend run test" } },
-    { "id": "B8", "statement": "Benchmark hybrid recall@5 at or above 0.8526 clean and 0.8333 polluted; a miss parks the build", "value": false, "evidence": { "command": "rag-retrieval-benchmark" } },
-    { "id": "B9", "statement": "Ranks of 702.3a, 113.7a and 615.12 recorded before and after in the evidence log", "value": false, "evidence": { "manual": true } },
-    { "id": "B10", "statement": "Slots REQ-233, 234, 235, 178, 180, 182, 167, 190, 220 and the retrieval doc rewrite applied by intent", "value": false, "evidence": { "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/system-map/game-rules-retrieval.md"] } },
-    { "id": "B11", "statement": "npm run quality:check passes", "value": false, "evidence": { "command": "npm run quality:check" } }
+    { "id": "B1", "statement": "Stemmer unit tests pass and no dependency is added to any package.json", "value": true, "evidence": { "command": "npm --workspace apps/backend run test" } },
+    { "id": "B2", "statement": "Token-fix tests cover dots, can't, stemming, card keywords and the six dropped verbs", "value": true, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.test.ts"] } },
+    { "id": "B3", "statement": "Stray-number tests cover rule 613, CR 613, bare 613 and 613.9", "value": true, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.test.ts"] } },
+    { "id": "B4", "statement": "Concept-map test: every concept word is in the rule index (163 words, 82 entries: 77 oracle, 5 type-line)", "value": true, "evidence": { "paths": ["apps/backend/src/gameRulesConceptMap.test.ts"] } },
+    { "id": "B5", "statement": "Query builder tests: raw oracle text never enters the main query; turn step and obsolete-term words do", "value": true, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.test.ts"] } },
+    { "id": "B6", "statement": "Per-card search tests: two reserved slots, separate query, off under mock, larger-cap legs keep them", "value": true, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.test.ts"] } },
+    { "id": "B7", "statement": "Meaning weight is 0.65 and the 12 labelled fixture checks pass", "value": true, "evidence": { "command": "npm --workspace apps/backend run test" } },
+    { "id": "B8", "statement": "Benchmark hybrid recall@5 at or above 0.8526 clean and 0.8333 polluted; a miss parks the build", "value": true, "evidence": { "command": "rag-retrieval-benchmark" } },
+    { "id": "B9", "statement": "Ranks of 702.3a, 113.7a and 615.12 recorded before and after in the evidence log", "value": true, "evidence": { "manual": true } },
+    { "id": "B10", "statement": "Slots REQ-233, 234, 235, 178, 180, 182, 167, 190, 220 and the retrieval doc rewrite applied by intent", "value": true, "evidence": { "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/system-map/game-rules-retrieval.md"] } },
+    { "id": "B11", "statement": "npm run quality:check passes", "value": true, "evidence": { "command": "npm run quality:check" } }
   ]
 }

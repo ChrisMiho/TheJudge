@@ -2,14 +2,21 @@
 // ruling reach the answering model's top ten. Ported from the probe at
 // PRD/work/probe-prompt-format-tuning/runs/search-trained-embedder/score-trained.mjs.
 //
-// --fidelity   Score production's own top ten (the shipped search as it runs today) and also
-//              recompute the ranking independently; the two must agree on every question. Prints the
-//              five fidelity numbers the build is gated on:
+// Default      Score the search this checkout ships (the production code's top ten, per-card slots and
+//              all) with the committed rule vectors, and print the five numbers the build tracks:
 //                deciding-rule citations found in the suite (tuning + check)
 //                suite questions with every deciding rule found
 //                of the hard 25, citations found
 //                corpus citations found
 //                corpus cases with every deciding rule found
+// --fidelity   The slice-A stop gate. Also recompute the search as it ran BEFORE `right-rules-in-order`
+//              (word tokens of the old kind, blend 0.6, no concept map, no per-card slots) with a
+//              reimplementation here, and require it to agree with production's top ten on every
+//              question. Valid only against the code of that time (the slice-A commit): after the
+//              search fixes land, production differs from the reimplementation by design, and this
+//              flag reports that as a mismatch. The recorded gate result: 473 / 159 / 5 / 351 / 305.
+// --ranks      "caseId:ruleId,..." Also prints each corpus case's deciding rule's rank in the shipped
+//              ordering and in the pre-change reimplementation (ranks of committed corpus ids only).
 //
 // Reads the practice suite from the launch checkout (read-only). Per-question results are written ONLY
 // under output/rule-search-eval/ (git-ignored). Stdout carries counts only: no question text, ids,
@@ -32,10 +39,8 @@ const SETS = arg("--sets", "suite,corpus").split(",");
 const ALPHA = 0.6; // production blend today
 const CAP = 10;
 
-if (!args.includes("--fidelity")) {
-  console.error("score-rule-search: pass --fidelity (the only mode in this build step).");
-  process.exit(2);
-}
+const FIDELITY = args.includes("--fidelity");
+const RANK_CASES = (arg("--ranks", "") || "").split(",").filter(Boolean).map((pair) => pair.split(":"));
 mkdirSync(OUT, { recursive: true });
 // The results folder must be git-ignored before anything is written to it.
 const ignored = spawnSync("git", ["check-ignore", "-q", join(OUT, "probe.json")], { cwd: REPO });
@@ -43,10 +48,9 @@ if (ignored.status !== 0) throw new Error("output/rule-search-eval/ is not git-i
 
 const imp = (rel) => import(pathToFileURL(`${REPO}/${rel}`).href);
 const evalMod = await imp("scripts/eval-answer-quality.mjs");
-const ws = await imp("scripts/eval-worked-solutions.mjs");
 const fid = await imp("scripts/lib/prompt-fidelity.mjs");
 const sg = await imp("scripts/lib/practice-suite.mjs");
-const { preparePromptInput, buildRetrievalQueryText } = await imp("apps/backend/src/prompt/preparation.ts");
+const { preparePromptInput, buildRetrievalQueryText, buildPerCardSearchTexts } = await imp("apps/backend/src/prompt/preparation.ts");
 const { askAiRequestSchema } = await imp("apps/backend/src/validation/askAiRequest.ts");
 const R = await imp("apps/backend/src/gameRulesRetrieval.ts");
 
@@ -123,6 +127,7 @@ function rank(cos, L, boost, curatedMask) {
 const WS_DIR = join(REPO, "apps/backend/src/eval/worked-solutions");
 const hardIds = new Set(existsSync(HARD25) ? JSON.parse(readFileSync(HARD25, "utf8")).ids : []);
 const CASES = [];
+const cardVectorByKey = new Map();
 async function prep(set, c) {
   const parsed = askAiRequestSchema.safeParse(fid.buildCaseRequest(c));
   if (!parsed.success) return null;
@@ -130,9 +135,23 @@ async function prep(set, c) {
   const queryText = buildRetrievalQueryText(request, { cardDetailIndex: resources.cardDetailIndex });
   const vector = await embedder.embed(queryText);
   fid.assertQueryEmbedded({ mode: embedder.mode, vector, caseId: "case" });
-  const prod = preparePromptInput(request, { ...resources, queryEmbedding: vector, collectEnrichmentDebug: true, supplementalRuleCap: CAP });
+  // REQ-235: each card's own oracle text is embedded on its own, as the route handler does.
+  const cardEmbeddings = new Map();
+  for (const card of buildPerCardSearchTexts(request, { cardDetailIndex: resources.cardDetailIndex })) {
+    if (!cardVectorByKey.has(card.key)) cardVectorByKey.set(card.key, await embedder.embed(card.text));
+    const cardVector = cardVectorByKey.get(card.key);
+    if (cardVector) cardEmbeddings.set(card.key, cardVector);
+  }
+  const options = { ...resources, queryEmbedding: vector, cardEmbeddings, collectEnrichmentDebug: true };
+  const prod = preparePromptInput(request, { ...options, supplementalRuleCap: CAP });
   if (!prod.enrichmentDebug.supplemental.usedSemantic) throw new Error("semantic retrieval did not run");
   const prodTop = prod.enrichmentDebug.supplemental.selected.map((r) => r.ruleId);
+  const wanted = RANK_CASES.filter(([id]) => id === c.id);
+  const shippedRanks = {};
+  if (wanted.length > 0) {
+    const full = preparePromptInput(request, { ...options, supplementalRuleCap: index.length }).enrichmentDebug.supplemental.selected.map((r) => r.ruleId);
+    for (const [, ruleId] of wanted) shippedRanks[ruleId] = full.indexOf(ruleId) + 1 || null;
+  }
   const curated = new Set((prod.enrichmentDebug.curatedGameRules.topics ?? []).flatMap((t) => t.ruleNumbers ?? []));
   const { buildPromptContext, buildLookupPromptContext } = await imp("apps/backend/src/prompt/context.ts");
   let questionText, cards;
@@ -147,7 +166,7 @@ async function prep(set, c) {
   const curatedMask = new Uint8Array(RN);
   RIDS.forEach((id, i) => { if (curated.has(id)) curatedMask[i] = 1; });
   const deciding = [...new Set(c.expected?.decidingRuleIds ?? [])];
-  return { id: c.id, set, split: set === "suite" ? half(c.id) : set, hard: set === "suite" && hardIds.has(c.id), deciding, curated, curatedMask, queryText, L: lexScores(toks), boost: boosts(qIds, questionIds), prodTop };
+  return { id: c.id, set, split: set === "suite" ? half(c.id) : set, hard: set === "suite" && hardIds.has(c.id), deciding, curated, curatedMask, queryText, L: lexScores(toks), boost: boosts(qIds, questionIds), prodTop, shippedRanks };
 }
 if (SETS.includes("suite")) {
   // the suite lives in the launch checkout; ask git there whether it is ignored (read-only)
@@ -155,7 +174,12 @@ if (SETS.includes("suite")) {
     suiteDir: SUITE,
     checkIgnore: (p) => sg.gitCheckIgnore(p, { cwd: dirname(dirname(SUITE)) })
   });
-  const { selected } = await ws.loadSuiteSelection({ suiteDir: SUITE });
+  // Every selectable suite question counts, stale or not: a rule-data fix changes a snapshot hash, which
+  // would otherwise drop questions from the universe the targets were measured on (1,181 usable).
+  const { loadGoldCases } = await imp("scripts/lib/gold-cases.mjs");
+  const { selected } = sg.selectSuiteCases(await loadGoldCases(join(SUITE, "cases"), { external: true }), sg.normalizeSuiteFilters(), {
+    isStale: () => false
+  });
   for (const c of selected) { const p = await prep("suite", c); if (p) CASES.push(p); }
 }
 if (SETS.includes("corpus")) {
@@ -181,10 +205,14 @@ const cosFor = (c) => {
 };
 const embeddingOf = new Map();
 for (const c of CASES) embeddingOf.set(c.id + c.set, await embedder.embed(c.queryText));
+const legacyRanks = [];
 for (const c of CASES) {
-  const mine = rank(cosFor(c), c.L, c.boost, c.curatedMask).slice(0, CAP);
-  if (mine.join() !== c.prodTop.join()) mismatch++;
-  // fidelity scores production's own top ten
+  const fullOrder = rank(cosFor(c), c.L, c.boost, c.curatedMask);
+  if (FIDELITY && fullOrder.slice(0, CAP).join() !== c.prodTop.join()) mismatch++;
+  for (const [id, ruleId] of RANK_CASES) {
+    if (id === c.id) legacyRanks.push(`${id} ${ruleId}: before ${fullOrder.indexOf(ruleId) + 1 || "-"}, after ${c.shippedRanks[ruleId] ?? "-"}`);
+  }
+  // production's own top ten is what gets scored
   const top = new Set(c.prodTop);
   const groups = c.set === "suite" ? [`suite-${c.split}`, ...(c.hard ? ["hard25"] : [])] : [c.set];
   let found = 0;
@@ -197,10 +225,11 @@ for (const c of CASES) {
   }
   percase[`${c.set}:${c.id}`] = flags;
 }
-writeFileSync(join(OUT, "percase-fidelity.json"), JSON.stringify(percase));
+writeFileSync(join(OUT, FIDELITY ? "percase-fidelity.json" : "percase-shipped.json"), JSON.stringify(percase));
 const g = (n) => agg[n] ?? blank();
 const suiteFound = g("suite-tuning").found + g("suite-check").found;
 const suiteAll = g("suite-tuning").all + g("suite-check").all;
 console.log(`cases: ${SETS.map((s) => `${s} ${CASES.filter((c) => c.set === s).length}`).join(", ")}`);
-console.log(`independent recomputation differs from production's top ten on ${mismatch} questions`);
-console.log(`fidelity: suite citations ${suiteFound} / suite every-rule ${suiteAll} / hard25 ${g("hard25").found} / corpus citations ${g("corpus").found} / corpus every-rule ${g("corpus").all}`);
+if (FIDELITY) console.log(`independent recomputation differs from production's top ten on ${mismatch} questions`);
+for (const line of legacyRanks) console.log(`rank ${line}`);
+console.log(`${FIDELITY ? "fidelity" : "shipped search"}: suite citations ${suiteFound} / suite every-rule ${suiteAll} / hard25 ${g("hard25").found} / corpus citations ${g("corpus").found} / corpus every-rule ${g("corpus").all}`);

@@ -6,6 +6,8 @@ import {
   buildQueryText,
   buildQueryTokens,
   buildQueryTokensFromParts,
+  buildRetrievalQuery,
+  retrievalInputFromPromptContext,
   collectCuratedRuleIds,
   cosineSimilarity,
   HYBRID_BLEND_ALPHA,
@@ -533,8 +535,9 @@ describe("Backend - Game Rules", () => {
         populatedZones: [battlefieldCard("flying creature with cascade")]
       });
       const { tokens } = buildQueryTokens(context, new Set(["cascade"]));
-      const cascade = tokens.find((t) => t.token === "cascade");
-      const flying = tokens.find((t) => t.token === "flying");
+      // Tokens are Porter stems (REQ-233): "cascade" -> "cascad", "flying" -> "fly".
+      const cascade = tokens.find((t) => t.token === "cascad");
+      const flying = tokens.find((t) => t.token === "fly");
 
       // "cascade" is both the question's own token and a keyword found in the
       // card's oracle text; the compact per-card signal carries only the
@@ -550,7 +553,7 @@ describe("Backend - Game Rules", () => {
         populatedZones: [battlefieldCard("flying ability")]
       });
       const { tokens } = buildQueryTokens(context, new Set());
-      const flyingEntries = tokens.filter((t) => t.token === "flying");
+      const flyingEntries = tokens.filter((t) => t.token === "fly");
       expect(flyingEntries).toHaveLength(1);
       expect(flyingEntries[0]!.source).toBe("question");
     });
@@ -569,7 +572,7 @@ describe("Backend - Game Rules", () => {
         new Set(["deathtouch"])
       );
 
-      expect(result.tokens.find((token) => token.token === "happens")).toMatchObject({
+      expect(result.tokens.find((token) => token.token === "happen")).toMatchObject({
         source: "question",
         isKeyword: false
       });
@@ -613,14 +616,15 @@ describe("Backend - Game Rules", () => {
         populatedZones: [battlefieldCard("Deathtouch")]
       });
       const index = [
-        makeEntry({ ruleId: "702.85", searchText: "702.85 cascade", parentRuleIds: ["702"] }),
+        makeEntry({ ruleId: "702.85", searchText: "702.85 cascad", parentRuleIds: ["702"] }),
         makeEntry({ ruleId: "702.2", searchText: "702.2 deathtouch", parentRuleIds: ["702"] })
       ];
-      const resources = makeResources(3432, { cascade: 4, deathtouch: 9 }, ["cascade", "deathtouch"]);
-      const query = buildQueryTokens(context, resources.keywordVocabulary);
+      const resources = makeResources(3432, { cascad: 4, deathtouch: 9 }, ["cascade", "deathtouch"]);
+      // The game-mode entry points add the In-Depth turn step to the query (REQ-178).
+      const query = buildRetrievalQuery(retrievalInputFromPromptContext(context), resources);
 
       expect(
-        retrieveRulesForQuery(query.tokens, query.queryRuleIds, index, new Set(), 5, resources)
+        retrieveRulesForQuery(query.tokens, query.queryRuleIds, index, new Set(), 5, resources, null, query.questionRuleIds)
       ).toEqual(retrieveSupplementalRules(context, index, new Set(), 5, resources));
       expect(
         retrieveRulesForQueryWithDebug(
@@ -631,7 +635,8 @@ describe("Backend - Game Rules", () => {
           5,
           resources,
           null,
-          query.queryText
+          query.queryText,
+          query.questionRuleIds
         )
       ).toEqual(retrieveSupplementalRulesWithDebug(context, index, new Set(), 5, resources));
     });
@@ -644,8 +649,8 @@ describe("Backend - Game Rules", () => {
   describe("retrieveSupplementalRules — IDF scoring", () => {
     it("never surfaces oracle-text noise a card's full oracle text used to flood the query with (REQ-178)", () => {
       const index = [
-        makeEntry({ ruleId: "702.85", sectionTitle: "Cascade", text: "702.85. Cascade.", searchText: "702.85 cascade", parentRuleIds: ["702"] }),
-        makeEntry({ ruleId: "100.1", sectionTitle: "General", text: "100.1. General.", searchText: "100.1 resolve", parentRuleIds: ["100"] })
+        makeEntry({ ruleId: "702.85", sectionTitle: "Cascade", text: "702.85. Cascade.", searchText: "702.85 cascad", parentRuleIds: ["702"] }),
+        makeEntry({ ruleId: "100.1", sectionTitle: "General", text: "100.1. General.", searchText: "100.1 resolv", parentRuleIds: ["100"] })
       ];
       const context = makeContext({
         finalQuestion: "How does cascade work",
@@ -655,7 +660,7 @@ describe("Backend - Game Rules", () => {
         // never reach the query via the compact per-card signal.
         populatedZones: [battlefieldCard("resolve")]
       });
-      const resources = makeResources(3432, { cascade: 4, resolve: 100 }, ["cascade"]);
+      const resources = makeResources(3432, { cascad: 4, resolv: 100 }, ["cascade"]);
       const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
 
       expect(result[0]!.ruleId).toBe("702.85");
@@ -664,14 +669,14 @@ describe("Backend - Game Rules", () => {
 
     it("boosts a card's real keyword (REQ-180) above generic low-IDF rules", () => {
       const index = [
-        makeEntry({ ruleId: "702.2", sectionTitle: "Deathtouch", text: "702.2. Deathtouch.", searchText: "702.2 deathtouch lethal damage", parentRuleIds: ["702"] }),
-        makeEntry({ ruleId: "100.6", sectionTitle: "General", text: "100.6. General.", searchText: "100.6 general rules game", parentRuleIds: ["100"] })
+        makeEntry({ ruleId: "702.2", sectionTitle: "Deathtouch", text: "702.2. Deathtouch.", searchText: "702.2 deathtouch lethal damag", parentRuleIds: ["702"] }),
+        makeEntry({ ruleId: "100.6", sectionTitle: "General", text: "100.6. General.", searchText: "100.6 gener rule game", parentRuleIds: ["100"] })
       ];
       const context = makeContext({
         finalQuestion: "What about damage rules",
         populatedZones: [battlefieldCard("Some other reminder text", "Test Card", "Creature", ["Deathtouch"])]
       });
-      const resources = makeResources(3432, { deathtouch: 9, damage: 179, rules: 50 }, ["deathtouch"]);
+      const resources = makeResources(3432, { deathtouch: 9, damag: 179, rule: 50 }, ["deathtouch"]);
       const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
 
       expect(result[0]!.ruleId).toBe("702.2");
@@ -700,10 +705,10 @@ describe("Backend - Game Rules", () => {
       // but entry X has a higher single-token IDF than entry Y.
       const index = [
         makeEntry({ ruleId: "400.1", sectionTitle: "X", text: "400.1.", searchText: "alpha bravo", parentRuleIds: ["400"] }),
-        makeEntry({ ruleId: "300.1", sectionTitle: "Y", text: "300.1.", searchText: "charlie delta", parentRuleIds: ["300"] })
+        makeEntry({ ruleId: "300.1", sectionTitle: "Y", text: "300.1.", searchText: "charli delta", parentRuleIds: ["300"] })
       ];
       const context = makeContext({ finalQuestion: "alpha bravo charlie delta", gameContext: { playerCount: 2, players: [], turnPhase: "main_1", selectedZones: [] } });
-      const resources = makeResources(1000, { alpha: 2, bravo: 18, charlie: 6, delta: 6 }, []);
+      const resources = makeResources(1000, { alpha: 2, bravo: 18, charli: 6, delta: 6 }, []);
       const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
 
       expect(result[0]!.ruleId).toBe("400.1");
@@ -724,11 +729,11 @@ describe("Backend - Game Rules", () => {
 
     it("still excludes curated rule ids from the supplemental pool", () => {
       const index = [
-        makeEntry({ ruleId: "702.85", searchText: "702.85 cascade", parentRuleIds: ["702"] }),
-        makeEntry({ ruleId: "702.86", searchText: "702.86 cascade", parentRuleIds: ["702"] })
+        makeEntry({ ruleId: "702.85", searchText: "702.85 cascad", parentRuleIds: ["702"] }),
+        makeEntry({ ruleId: "702.86", searchText: "702.86 cascad", parentRuleIds: ["702"] })
       ];
       const context = makeContext({ finalQuestion: "cascade", gameContext: { playerCount: 2, players: [], turnPhase: "main_1", selectedZones: [] } });
-      const resources = makeResources(3432, { cascade: 4 }, ["cascade"]);
+      const resources = makeResources(3432, { cascad: 4 }, ["cascade"]);
       const result = retrieveSupplementalRules(context, index, new Set(["702.85"]), 5, resources);
 
       expect(result.map((r) => r.ruleId)).not.toContain("702.85");

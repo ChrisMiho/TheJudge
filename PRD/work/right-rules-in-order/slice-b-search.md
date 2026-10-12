@@ -1,6 +1,6 @@
 # Slice B — Search
 
-## Status: planned
+## Status: done
 
 ## Goal
 

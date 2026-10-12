@@ -401,11 +401,12 @@ const MAX_ERROR_MESSAGE_CHARS = 300;
  * (`preparePromptInput`, REQ-185); any other arm comes from `deps.buildArmPrompt`
  * (REQ-230, wired in scripts/eval-answer-quality.mjs).
  */
-function buildPromptFor({ deps, arm, request, cap, vector, caseEntry }) {
+function buildPromptFor({ deps, arm, request, cap, vector, cardEmbeddings, caseEntry }) {
   const prepared = deps.preparePromptInput(request, {
     ...deps.resources,
     supplementalRuleCap: cap,
     queryEmbedding: vector ?? null,
+    cardEmbeddings,
     collectEnrichmentDebug: true
   });
   if (arm.id === DEFAULT_ARM) return { prepared, promptText: prepared.promptText };
@@ -696,6 +697,7 @@ export async function executeExperiment(params, deps) {
         model,
         cap,
         vector: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
+        cardEmbeddings: queryEmbeddingByCaseId.cardEmbeddingsByCaseId?.get(caseEntry.id),
         knownRuleIds,
         folder,
         heldOutIds,
@@ -784,13 +786,14 @@ async function answerAndGrade({
   model,
   cap,
   vector,
+  cardEmbeddings,
   knownRuleIds,
   folder,
   heldOutIds = new Set(),
   passesCap,
   log
 }) {
-  const { prepared, promptText, bundleRuleIds = [] } = buildPromptFor({ deps, arm, request, cap, vector, caseEntry });
+  const { prepared, promptText, bundleRuleIds = [] } = buildPromptFor({ deps, arm, request, cap, vector, cardEmbeddings, caseEntry });
   const retrieval = deps.describeRetrieval(prepared.enrichmentDebug?.supplemental, caseEntry.expected.decidingRuleIds, {
     requireSemantic: deps.requireSemantic,
     caseId: caseEntry.id

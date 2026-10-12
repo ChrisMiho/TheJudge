@@ -172,8 +172,9 @@ describe("game rules build policy", () => {
     expect(entry100_1a.sectionTitle).toBe("General");
     expect(entry100_1a.parentRuleIds).toEqual(["100.1", "100"]);
     expect(entry100_1a.searchText).toContain("100.1a");
-    expect(entry100_1a.searchText).toContain("general");
-    expect(entry100_1a.searchText).toContain("two-player");
+    // REQ-233: searchText holds the rule's Porter-stemmed tokens ("general" -> "gener"); a hyphen cuts a word.
+    expect(entry100_1a.searchText).toContain("gener");
+    expect(entry100_1a.searchText).toContain("two player");
   });
 
   it("parseRuleIndex stops at the Glossary section and excludes glossary content", () => {

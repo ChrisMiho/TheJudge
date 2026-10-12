@@ -6,15 +6,16 @@ import {
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
 import { ALWAYS_ON_TOPIC_IDS, selectCardWordingTopicIds, selectGameRulesTopics } from "../gameRulesTopicSelection.js";
 import {
-  buildCompactCardSignal,
-  buildQueryText,
-  buildQueryTokensFromParts,
+  buildRetrievalQuery,
   collectCuratedRuleIds,
+  retrievalInputFromPromptContext,
   retrieveRulesForQuery,
   retrieveRulesForQueryWithDebug,
-  retrieveSupplementalRules,
-  retrieveSupplementalRulesWithDebug,
-  type GameRulesRuleIndexEntry
+  type GameRulesRuleIndexEntry,
+  type PerCardSearchText,
+  type PerCardVector,
+  type RetrievalQuery,
+  type RetrievalQueryInput
 } from "../gameRulesRetrieval.js";
 import { buildLookupPromptContext, buildPromptContext, type CardDetailIndex } from "./context.js";
 import type { ComboCatalog } from "../commanderSpellbook/catalog.js";
@@ -75,6 +76,13 @@ export type PreparePromptInputOptions = {
    */
   queryEmbedding?: number[] | null;
   /**
+   * REQ-235: each card's own oracle text, embedded on its own by the async
+   * route handler, keyed by `perCardTextKey(text)` (see `buildPerCardSearchTexts`).
+   * Absent or empty (the `mock` provider, no cards, an embedding failure)
+   * means all System 3 slots come from the main ranking.
+   */
+  cardEmbeddings?: ReadonlyMap<string, readonly number[]>;
+  /**
    * REQ-190: overrides the System 3 supplemental-rule excerpt cap
    * (default: `DEFAULT_SUPPLEMENTAL_RULE_CAP`). Every production call site
    * leaves this unset; only the answer-quality run passes a value, so it can
@@ -94,11 +102,25 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
   return prepareGamePromptInput(request as GameAskAiRequest, options);
 }
 
+/** The retrieval query input (question, cards, In-Depth turn step) for a request, built from the same context the prompt uses. */
+export function buildRetrievalQueryInput(
+  request: AskAiRequest,
+  options: Pick<PreparePromptInputOptions, "cardDetailIndex"> = {}
+): RetrievalQueryInput {
+  if (request.mode === "lookup") {
+    const context = buildLookupPromptContext(request, options.cardDetailIndex);
+    return { questionText: request.question, cards: context.cards ?? [] };
+  }
+  return retrievalInputFromPromptContext(buildPromptContext(request as GameAskAiRequest, options.cardDetailIndex));
+}
+
 /**
- * REQ-181: the exact System 3 retrieval query text — question plus each
- * card's compact signal (REQ-178/REQ-180) — for the async route handler to
- * embed *before* calling `preparePromptInput`, so the vector can be passed
- * in as data and `preparePromptInput` itself stays synchronous. Pure and
+ * REQ-181 / REQ-234: the exact System 3 retrieval query text for the async
+ * route handler to embed *before* calling `preparePromptInput`, so the vector
+ * can be passed in as data and `preparePromptInput` itself stays synchronous.
+ * The question plus each card's compact signal (REQ-178/REQ-180), then the
+ * concept terms the cards' wording produced, the In-Depth turn step and any
+ * obsolete-term definition words -- never a card's raw oracle text. Pure and
  * side-effect-free; duplicates the (cheap) context-build `preparePromptInput`
  * does internally rather than making that function async.
  */
@@ -106,16 +128,28 @@ export function buildRetrievalQueryText(
   request: AskAiRequest,
   options: Pick<PreparePromptInputOptions, "cardDetailIndex"> = {}
 ): string {
-  if (request.mode === "lookup") {
-    const context = buildLookupPromptContext(request, options.cardDetailIndex);
-    const cardSignal = (context.cards ?? [])
-      .map((card) => buildCompactCardSignal(card.name, card.typeLine, card.keywords))
-      .join(" ");
-    return `${request.question} ${cardSignal}`.trim();
-  }
+  return buildRetrievalQuery(buildRetrievalQueryInput(request, options)).queryText;
+}
 
-  const context = buildPromptContext(request as GameAskAiRequest, options.cardDetailIndex);
-  return buildQueryText(context);
+/**
+ * REQ-235: one search text per distinct card -- its oracle text -- for the
+ * route handler to embed on its own and hand back as `cardEmbeddings`.
+ */
+export function buildPerCardSearchTexts(
+  request: AskAiRequest,
+  options: Pick<PreparePromptInputOptions, "cardDetailIndex"> = {}
+): PerCardSearchText[] {
+  return buildRetrievalQuery(buildRetrievalQueryInput(request, options)).perCardTexts;
+}
+
+/** The per-card vectors the route supplied for this query's cards (a card without one contributes nothing). */
+function resolveCardVectors(query: RetrievalQuery, options: PreparePromptInputOptions): PerCardVector[] {
+  const embeddings = options.cardEmbeddings;
+  if (!embeddings) return [];
+  return query.perCardTexts.flatMap((card) => {
+    const vector = embeddings.get(card.key);
+    return vector ? [{ cardName: card.cardName, vector }] : [];
+  });
 }
 
 function getRulingLimits() {
@@ -221,16 +255,11 @@ function prepareLookupPromptInput(
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
   // REQ-167 / REQ-178 / REQ-180: System 3 scores the question plus, for every
   // attached card, the same compact per-card signal (name, type line, real
-  // Scryfall keywords resolved server-side) game mode builds via
-  // `buildCompactCardSignal` — never the card's full oracle text. One shared
-  // signal builder, not a second implementation, so lookup and game mode
-  // cannot drift apart again.
-  const query = buildQueryTokensFromParts({
-    questionText: request.question,
-    oracleText: (context.cards ?? [])
-      .map((card) => buildCompactCardSignal(card.name, card.typeLine, card.keywords))
-      .join(" ")
-  });
+  // Scryfall keywords resolved server-side) game mode builds -- never the
+  // card's full oracle text. One shared query builder (`buildRetrievalQuery`),
+  // not a second implementation, so lookup and game mode cannot drift apart.
+  const query = buildRetrievalQuery({ questionText: request.question, cards: context.cards ?? [] });
+  const cardVectors = resolveCardVectors(query, options);
   const conversationHistory = request.conversationHistory;
   const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);
   const conversationHistoryChars = truncatedHistory.reduce((sum, turn) => sum + turn.content.length, 0);
@@ -253,7 +282,8 @@ function prepareLookupPromptInput(
       undefined,
       options.queryEmbedding ?? null,
       query.queryText,
-      query.questionRuleIds
+      query.questionRuleIds,
+      cardVectors
     );
     const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
     const promptText = buildLookupPromptText(context, {
@@ -296,7 +326,8 @@ function prepareLookupPromptInput(
     options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
     undefined,
     options.queryEmbedding ?? null,
-    query.questionRuleIds
+    query.questionRuleIds,
+    cardVectors
   );
   const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
   const promptText = buildLookupPromptText(context, {
@@ -326,6 +357,10 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
   const gameRulesTopics = selectGameRulesTopics(context, allGameRulesTopics);
   const gameRulesSection = formatGameRulesSection(gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
+  // REQ-178 / REQ-233 / REQ-234 / REQ-235: the same shared query builder lookup mode uses, plus
+  // the In-Depth turn step.
+  const query = buildRetrievalQuery(retrievalInputFromPromptContext(context));
+  const cardVectors = resolveCardVectors(query, options);
   const conversationHistory = request.conversationHistory;
   const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);
   const conversationHistoryChars = truncatedHistory.reduce((sum, t) => sum + t.content.length, 0);
@@ -334,13 +369,17 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
 
   if (options.collectEnrichmentDebug) {
     const rulingsResult = resolveRulingsForPrompt(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits, true);
-    const supplementalResult = retrieveSupplementalRulesWithDebug(
-      context,
+    const supplementalResult = retrieveRulesForQueryWithDebug(
+      query.tokens,
+      query.queryRuleIds,
       options.gameRulesRuleIndex ?? [],
       curatedRuleIds,
       options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
       undefined,
-      options.queryEmbedding ?? null
+      options.queryEmbedding ?? null,
+      query.queryText,
+      query.questionRuleIds,
+      cardVectors
     );
     const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
     const promptText = buildPromptText(context, {
@@ -372,13 +411,16 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
   }
 
   const resolvedRulings = resolveRulingsForPrompt(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits);
-  const supplementalRules = retrieveSupplementalRules(
-    context,
+  const supplementalRules = retrieveRulesForQuery(
+    query.tokens,
+    query.queryRuleIds,
     options.gameRulesRuleIndex ?? [],
     curatedRuleIds,
     options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
     undefined,
-    options.queryEmbedding ?? null
+    options.queryEmbedding ?? null,
+    query.questionRuleIds,
+    cardVectors
   );
   const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
   const promptText = buildPromptText(context, {

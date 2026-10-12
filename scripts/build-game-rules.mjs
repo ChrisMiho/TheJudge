@@ -24,32 +24,30 @@ export const CORE_TOPIC_IDS = Object.freeze([
   "layers-order"
 ]);
 
-// Keep this stopword set + tokenizer in sync with `tokenize` in
-// apps/backend/src/gameRulesRetrieval.ts so token-frequency stats match the scorer.
-const STOP_WORDS = new Set([
-  "and", "are", "can", "card", "cards", "does", "for", "from",
-  "has", "have", "how", "one", "that", "the", "this", "what",
-  "when", "will", "with"
-]);
+// REQ-233: one tokenizer and one Porter stemmer, shared with the backend's scoring and the model
+// training export. Node loads the TypeScript module directly (it has no imports and erasable types
+// only), so the rule side and the query side can never drift apart.
+const { tokenizeSearchText } = await import("../apps/backend/src/gameRulesStemmer.ts");
 
-function tokenizeForStats(value) {
-  return value
-    .toLowerCase()
-    .split(/[^a-z0-9.]+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 3 && !STOP_WORDS.has(token));
+/**
+ * REQ-233: a rule's `searchText` is its id, section title and text read through the shared tokenizer
+ * (sentence dots dropped, "can't" whole, U+2028 and no-break spaces as spaces, Porter stems), joined
+ * by single spaces. The backend splits it on spaces and never stems it again.
+ */
+export function buildSearchText(ruleId, sectionTitle, ruleText) {
+  return tokenizeSearchText([ruleId, sectionTitle, ruleText].join(" ")).join(" ");
 }
 
 /**
  * Document-frequency stats for IDF scoring (DEC-046). `df` counts the number of
  * rule entries whose `searchText` contains the token (deduped per rule), `N` is the
- * total rule count. Mirrors the scorer's tokenization.
+ * total rule count. `searchText` is already the scorer's tokens (REQ-233), so it is read by splitting on spaces.
  * @param {Array<{ searchText: string }>} ruleEntries
  */
 function buildTokenStats(ruleEntries) {
   const df = new Map();
   for (const entry of ruleEntries) {
-    const seen = new Set(tokenizeForStats(entry.searchText));
+    const seen = new Set(entry.searchText.split(" ").filter((token) => token.length > 0));
     for (const token of seen) {
       df.set(token, (df.get(token) ?? 0) + 1);
     }
@@ -296,7 +294,7 @@ export function parseRuleIndex(crText) {
     }
 
     const parentRuleIds = computeParentRuleIds(ruleId);
-    const searchText = [ruleId, currentSectionTitle, ruleText].join(" ").toLowerCase();
+    const searchText = buildSearchText(ruleId, currentSectionTitle, ruleText);
 
     entries.push({ ruleId, sectionTitle: currentSectionTitle, text: ruleText, searchText, parentRuleIds });
   }

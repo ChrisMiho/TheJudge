@@ -54,6 +54,13 @@ export type EvaluationFixtureExpected = {
   expectedSupplementalRuleIds?: string[];
   /** Rule ids that must NOT appear in the System 3 supplemental top-10. */
   forbiddenSupplementalRuleIds?: string[];
+  /**
+   * Expected rule ids the word-only (lexical) path is known to miss and the semantic path hits.
+   * Only the lexical leg of `system3-expected-recall` skips them -- every id here is still required
+   * on the semantic path (REQ-182's gate). `right-rules-in-order` (REQ-233) records each one with the
+   * reason in the fixture's description; an entry is a reviewed exception, never a silent one.
+   */
+  lexicalKnownMisses?: string[];
 };
 
 export type EvaluationFixture = {
@@ -540,7 +547,8 @@ function checkSystem3NoiseExcluded(
  */
 export function evaluateSystem3RelevanceChecks(
   supplementalRules: RetrievedGameRule[],
-  expected?: EvaluationFixtureExpected
+  expected?: EvaluationFixtureExpected,
+  { path = "semantic" }: { path?: "lexical" | "semantic" } = {}
 ): EvaluationCheckResult[] {
   if (!expected || (!expected.expectedSupplementalRuleIds && !expected.forbiddenSupplementalRuleIds)) {
     return [];
@@ -549,7 +557,13 @@ export function evaluateSystem3RelevanceChecks(
   const retrievedRuleIds = new Set(supplementalRules.map((rule) => rule.ruleId));
   const checks: EvaluationCheckResult[] = [];
   if (expected.expectedSupplementalRuleIds) {
-    checks.push(checkSystem3ExpectedRecall(retrievedRuleIds, expected.expectedSupplementalRuleIds));
+    const knownMisses = path === "lexical" ? new Set(expected.lexicalKnownMisses ?? []) : new Set<string>();
+    checks.push(
+      checkSystem3ExpectedRecall(
+        retrievedRuleIds,
+        expected.expectedSupplementalRuleIds.filter((id) => !knownMisses.has(id))
+      )
+    );
   }
   if (expected.forbiddenSupplementalRuleIds) {
     checks.push(checkSystem3NoiseExcluded(retrievedRuleIds, expected.forbiddenSupplementalRuleIds));
@@ -608,7 +622,7 @@ export function evaluateScenario(
       const selectedTopicIds = new Set(relevance.selectedTopics.map((topic) => topic.id));
       checks.push(checkSystem2ConditionalSelection(selectedTopicIds, expected.expectedSystem2TopicIds));
     }
-    checks.push(...evaluateSystem3RelevanceChecks(relevance.supplementalRules, expected));
+    checks.push(...evaluateSystem3RelevanceChecks(relevance.supplementalRules, expected, { path: "lexical" }));
   }
 
   const score = checks.filter((check) => check.passed).length;

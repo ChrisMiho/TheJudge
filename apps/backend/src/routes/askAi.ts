@@ -5,7 +5,7 @@ import {
   createValidationError
 } from "../errors.js";
 import { resolveCorrelationId, type AppLogger } from "../logging.js";
-import { buildRetrievalQueryText, preparePromptInput } from "../prompt/preparation.js";
+import { buildPerCardSearchTexts, buildRetrievalQueryText, preparePromptInput } from "../prompt/preparation.js";
 import type { CardDetailIndex } from "../prompt/context.js";
 import type { RulingEntry } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
@@ -100,9 +100,24 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
       // throws) — either way System 3 falls back to lexical retrieval with
       // no change in behavior or latency shape.
       let queryEmbedding: number[] | null = null;
+      // REQ-235: each card's own oracle text is embedded on its own (never merged into
+      // the main query); a card whose embedding fails contributes nothing.
+      let cardEmbeddings: Map<string, number[]> | undefined;
       if (embeddingProvider && embeddingProvider !== mockEmbeddingProvider) {
         const queryText = buildRetrievalQueryText(askAiRequest, { cardDetailIndex });
         queryEmbedding = await embeddingProvider.embed(queryText);
+        const cardTexts = buildPerCardSearchTexts(askAiRequest, { cardDetailIndex });
+        const vectors = await Promise.all(cardTexts.map((card) => embeddingProvider.embed(card.text)));
+        cardEmbeddings = new Map();
+        let failedCards = 0;
+        cardTexts.forEach((card, i) => {
+          const vector = vectors[i];
+          if (vector) cardEmbeddings!.set(card.key, vector);
+          else failedCards++;
+        });
+        if (failedCards > 0) {
+          logger.info("ask_ai.card_embedding_failed", { correlationId, failedCards, cardCount: cardTexts.length });
+        }
       }
 
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
@@ -114,7 +129,8 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
         gameRulesRuleIndex,
         comboCatalog,
         collectEnrichmentDebug,
-        queryEmbedding
+        queryEmbedding,
+        cardEmbeddings
       });
       const diagnostics = preparedPrompt.diagnostics;
       logger.info("ask_ai.prompt_context_build_completed", {

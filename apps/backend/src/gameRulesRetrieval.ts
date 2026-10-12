@@ -1,7 +1,10 @@
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { GameRulesTopic } from "./gameRules.js";
+import { conceptTermsForCards } from "./gameRulesConceptMap.js";
+import { tokenizeSearchText } from "./gameRulesStemmer.js";
 import type { PromptContext } from "./types/index.js";
 
 export type GameRulesRuleIndexEntry = {
@@ -29,6 +32,15 @@ function warnOnce(filePath: string, message: string, error?: unknown): void {
   } else {
     console.warn(message);
   }
+}
+
+const loggedErrors = new Set<string>();
+
+/** One error-level diagnostic per kind, naming both sides of a mismatch (REQ-181, REQ-237). */
+export function errorOnce(key: string, message: string): void {
+  if (loggedErrors.has(key)) return;
+  loggedErrors.add(key);
+  console.error(message);
 }
 
 function isGameRulesRuleIndexEntry(value: unknown): value is GameRulesRuleIndexEntry {
@@ -145,6 +157,49 @@ export function loadGameRulesKeywordVocabulary(filePath: string): Set<string> {
     const empty = new Set<string>();
     keywordVocabularyCache.set(filePath, empty);
     return empty;
+  }
+}
+
+/**
+ * REQ-179 / REQ-233: one entry of the rule book's glossary (`gameRulesGlossary.json`). It serves only
+ * obsolete-term query translation and is never delivered as an excerpt.
+ */
+export type GameRulesGlossaryEntry = {
+  term: string;
+  definition: string;
+  obsolete: boolean;
+  /** Only one sense of a live term is obsolete (for example "Play"); translation leaves it alone. */
+  obsoleteSense?: boolean;
+};
+
+const glossaryCache = new Map<string, GameRulesGlossaryEntry[]>();
+
+export function loadGameRulesGlossary(filePath: string): GameRulesGlossaryEntry[] {
+  const cached = glossaryCache.get(filePath);
+  if (cached !== undefined) return cached;
+
+  if (!existsSync(filePath)) {
+    warnOnce(filePath, `Game rules glossary missing; obsolete-term translation disabled: ${filePath}`);
+    glossaryCache.set(filePath, []);
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(readFileSync(filePath, "utf8")) as unknown;
+    const entries = (Array.isArray(parsed) ? parsed : []).filter(
+      (entry): entry is GameRulesGlossaryEntry =>
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof (entry as GameRulesGlossaryEntry).term === "string" &&
+        typeof (entry as GameRulesGlossaryEntry).definition === "string" &&
+        typeof (entry as GameRulesGlossaryEntry).obsolete === "boolean"
+    );
+    glossaryCache.set(filePath, entries);
+    return entries;
+  } catch (error) {
+    warnOnce(filePath, `Game rules glossary could not be parsed; obsolete-term translation disabled: ${filePath}`, error);
+    glossaryCache.set(filePath, []);
+    return [];
   }
 }
 
@@ -284,17 +339,20 @@ export type ScoringResources = {
   tokenStats: GameRulesTokenStats | null;
   keywordVocabulary: Set<string>;
   ruleEmbeddings: GameRulesRuleEmbeddings | null;
+  /** REQ-233: the rule book's glossary, for obsolete-term query translation. Absent means none. */
+  glossary?: GameRulesGlossaryEntry[];
 };
 
 let defaultResources: ScoringResources | null = null;
 
-function getDefaultScoringResources(): ScoringResources {
+export function getDefaultScoringResources(): ScoringResources {
   if (defaultResources) return defaultResources;
   const dataDir = resolve(dirname(fileURLToPath(import.meta.url)), "../data");
   defaultResources = {
     tokenStats: loadGameRulesTokenStats(resolve(dataDir, "gameRulesTokenStats.json")),
     keywordVocabulary: loadGameRulesKeywordVocabulary(resolve(dataDir, "gameRulesKeywordVocabulary.json")),
-    ruleEmbeddings: loadGameRulesRuleEmbeddings(resolve(dataDir, "gameRulesRuleEmbeddings.json"))
+    ruleEmbeddings: loadGameRulesRuleEmbeddings(resolve(dataDir, "gameRulesRuleEmbeddings.json")),
+    glossary: loadGameRulesGlossary(resolve(dataDir, "gameRulesGlossary.json"))
   };
   return defaultResources;
 }
@@ -314,6 +372,8 @@ export function collectCuratedRuleIds(topics: GameRulesTopic[]): Set<string> {
 // ---------------------------------------------------------------------------
 
 const QUESTION_TOKEN_MULTIPLIER = 3;
+/** REQ-234: a concept term (and the turn step, and an obsolete term's definition words) counts twice a card-signal word. */
+const CONCEPT_TOKEN_MULTIPLIER = 2;
 const KEYWORD_TOKEN_MULTIPLIER = 6;
 const SCORE_EXACT_RULE_ID = 100;
 const SCORE_PARENT_RULE_ID = 20;
@@ -335,46 +395,94 @@ const SCORE_PARENT_RULE_ID = 20;
 const SCORE_CROSS_REFERENCE = 10;
 
 /**
- * REQ-182: the single tuned weight for System 3's hybrid blend —
- * `alpha * cosine_norm + (1 - alpha) * lexical_norm` — measured at
- * implementation within the mandated band [0.50, 0.70]. With
- * `SCORE_CROSS_REFERENCE` above in place, all 12 labelled fixture checks pass
- * at every alpha from 0.50 through 0.70 (measured 2026-09-05). 0.60 is chosen
- * from that sweep: the first value where both clean and polluted benchmark
- * recall@5 clear the accepted floors (0.8526 / 0.8333) with real headroom
- * (0.8974 / 0.8910), leaving room for MRR to keep climbing at higher alpha
- * without costing any fixture. See REQ-182's Notes in
- * `PRD/sections/functional-requirements.md` for the full sweep.
+ * REQ-182: the single tuned weight for System 3's hybrid blend --
+ * `alpha * cosine_norm + (1 - alpha) * lexical_norm` -- inside the accepted band
+ * [0.50, 0.70]. 0.65 (changed from 0.60 by `right-rules-in-order`) is the weight
+ * the Magic-trained search model (REQ-236) was measured at, with the token fixes
+ * (REQ-233), the concept map (REQ-234) and per-card search (REQ-235) in place.
+ * All 12 labelled fixture checks and the benchmark floors (0.8526 clean, 0.8333
+ * polluted) stay gates at this weight. See REQ-182's Notes in
+ * `PRD/sections/functional-requirements.md` for the original sweep.
  */
-export const HYBRID_BLEND_ALPHA = 0.6;
+export const HYBRID_BLEND_ALPHA = 0.65;
 
-const STOP_WORDS = new Set([
-  "and", "are", "can", "card", "cards", "does", "for", "from",
-  "has", "have", "how", "one", "that", "the", "this", "what",
-  "when", "will", "with"
-]);
+/** REQ-235: how many of the System 3 slots the per-card searches reserve. The cap itself stays at REQ-190's value. */
+export const PER_CARD_RESERVED_SLOTS = 2;
 
-function tokenize(value: string): string[] {
-  return value.toLowerCase()
-    .split(/[^a-z0-9.]+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 3 && !STOP_WORDS.has(token));
+/** REQ-233: a single-word obsolete term used in more rules than this is a live Magic word, not translated. */
+const LIVE_WORD_DOCUMENT_FREQUENCY = 25;
+
+/**
+ * REQ-233: the one tokenizer (sentence dots dropped, "can't" whole, Porter stems), shared with the
+ * rule-index build and the training export. The committed index stores each rule's `searchText` as
+ * these tokens already, so the rule side is read by splitting on spaces, never stemmed twice.
+ */
+const tokenize = tokenizeSearchText;
+
+const searchTokenCache = new WeakMap<GameRulesRuleIndexEntry, Set<string>>();
+
+function searchTokensOf(entry: GameRulesRuleIndexEntry): Set<string> {
+  let tokens = searchTokenCache.get(entry);
+  if (!tokens) {
+    tokens = new Set(entry.searchText.split(" ").filter((token) => token.length > 0));
+    searchTokenCache.set(entry, tokens);
+  }
+  return tokens;
 }
 
-function extractRuleIds(value: string): string[] {
+/**
+ * REQ-233: the rule ids a text cites. A dotted id (`613.9`, `704.5aa`) always counts; a bare
+ * three-digit number counts only directly after "rule", "rules", "CR" or "section", so "100 life"
+ * is not a pointer to rule 100.
+ */
+export function extractRuleIds(value: string): string[] {
   const ids = new Set<string>();
-  for (const match of value.matchAll(/\b\d{3}(?:\.\d+[a-z]?)?\b/gi)) {
+  for (const match of value.matchAll(/\b\d{3}\.\d+[a-z]{0,2}\b/gi)) {
     ids.add(match[0]);
   }
+  for (const match of value.matchAll(/\b(?:rules?|cr|section)\s+(\d{3})\b(?!\.\d)/gi)) {
+    ids.add(match[1]!);
+  }
   return [...ids];
+}
+
+/**
+ * REQ-233: rule-book order for ties -- a comparator over the id's numbered parts and its letters, so
+ * `704.5z` sorts before `704.5aa` (one letter before two), where `parseFloat` read both as 704.5.
+ */
+export function compareRuleIds(a: string, b: string): number {
+  const partsOf = (id: string): Array<[number, string]> =>
+    id.split(".").map((part): [number, string] => {
+      const match = /^(\d*)([a-z]*)$/.exec(part);
+      return match ? [match[1] === "" ? -1 : Number(match[1]), match[2]!] : [-1, part];
+    });
+  const left = partsOf(a);
+  const right = partsOf(b);
+  for (let i = 0; i < Math.min(left.length, right.length); i++) {
+    const [leftNumber, leftLetters] = left[i]!;
+    const [rightNumber, rightLetters] = right[i]!;
+    if (leftNumber !== rightNumber) return leftNumber - rightNumber;
+    if (leftLetters !== rightLetters) {
+      if (leftLetters.length !== rightLetters.length) return leftLetters.length - rightLetters.length;
+      return leftLetters < rightLetters ? -1 : 1;
+    }
+  }
+  return left.length - right.length;
 }
 
 // ---------------------------------------------------------------------------
 // Query provenance (DEC-046)
 // ---------------------------------------------------------------------------
 
-export type QueryTokenSource = "question" | "oracle";
+export type QueryTokenSource = "question" | "oracle" | "concept";
 export type QueryToken = { token: string; source: QueryTokenSource; isKeyword: boolean };
+
+/** How much a source counts: the question three times a card-signal word, a concept word twice. */
+const SOURCE_MULTIPLIER: Record<QueryTokenSource, number> = {
+  question: QUESTION_TOKEN_MULTIPLIER,
+  concept: CONCEPT_TOKEN_MULTIPLIER,
+  oracle: 1
+};
 
 /**
  * Split the prompt context into a question-sourced string (the user's question)
@@ -387,15 +495,44 @@ export type QueryToken = { token: string; source: QueryTokenSource; isKeyword: b
  * without the flood.
  *
  * REQ-180: the keyword component comes from each card's real Scryfall
- * `keywords` array (resolved server-side by `cardId`), not from tokenizing
- * oracle text against the hand-curated static vocabulary — that vocabulary is
- * retained only for detecting a keyword named directly in the question text
- * (handled by `buildQueryTokensFromParts`'s existing per-token `isKeyword`
- * check, unchanged here).
+ * `keywords` array (resolved server-side by `cardId`), and every one of those
+ * keywords carries the keyword weight (REQ-233 amends REQ-180: not only the
+ * ones on the static vocabulary). The static vocabulary still detects a
+ * keyword named directly in the question text.
  */
 export function buildCompactCardSignal(name: string, typeLine: string, keywords: readonly string[] | undefined): string {
   return [name, typeLine, ...(keywords ?? [])].join(" ");
 }
+
+/** The words of every keyword in a list, as search tokens (a multi-word keyword counts word by word). */
+function keywordTokensOfList(keywords: readonly string[]): Set<string> {
+  return new Set(keywords.flatMap((keyword) => tokenize(keyword)));
+}
+
+const vocabularyTokenCache = new WeakMap<Set<string>, Set<string>>();
+
+/** The static keyword vocabulary as search tokens (stemmed the same way as the query). */
+function vocabularyTokens(vocabulary: Set<string>): Set<string> {
+  let tokens = vocabularyTokenCache.get(vocabulary);
+  if (!tokens) {
+    tokens = keywordTokensOfList([...vocabulary]);
+    vocabularyTokenCache.set(vocabulary, tokens);
+  }
+  return tokens;
+}
+
+/** What the word query is built from. `conceptText` is the text that counts at the concept weight. */
+export type QueryParts = {
+  questionText: string;
+  /** The compact per-card signals, joined. */
+  oracleText: string;
+  /** Every attached card's own Scryfall keywords: each one carries the keyword weight (REQ-180, REQ-233). */
+  cardKeywords?: readonly string[];
+  /** REQ-234 / REQ-233 / REQ-178: concept terms, the In-Depth turn step and obsolete-term definition words. */
+  conceptText?: string;
+  /** The text that is embedded for the main vector when it is not simply question + signal. */
+  embeddedText?: string;
+};
 
 function buildQueryParts(context: PromptContext): { questionText: string; oracleText: string } {
   const questionText = context.finalQuestion;
@@ -429,26 +566,29 @@ export function buildQueryTokens(
 }
 
 export function buildQueryTokensFromParts(
-  { questionText, oracleText }: { questionText: string; oracleText: string },
+  { questionText, oracleText, cardKeywords = [], conceptText = "", embeddedText }: QueryParts,
   keywordVocabulary: Set<string> = getDefaultScoringResources().keywordVocabulary
 ): { queryText: string; tokens: QueryToken[]; queryRuleIds: string[]; questionRuleIds: string[] } {
-  const queryText = `${questionText} ${oracleText}`;
+  const queryText = embeddedText ?? `${questionText} ${oracleText}`;
+  const vocabularyWords = vocabularyTokens(keywordVocabulary);
+  const cardKeywordWords = keywordTokensOfList(cardKeywords);
 
-  // Dedupe by token; the question source (higher multiplier) wins over oracle.
+  // Dedupe by token; the heavier source wins (question 3, concept 2, oracle 1) and a token that is
+  // a keyword anywhere stays a keyword.
   const byToken = new Map<string, QueryToken>();
-  const addToken = (token: string, source: QueryTokenSource): void => {
-    const isKeyword = keywordVocabulary.has(token);
+  const addToken = (token: string, source: QueryTokenSource, isKeyword: boolean): void => {
     const existing = byToken.get(token);
     if (!existing) {
       byToken.set(token, { token, source, isKeyword });
       return;
     }
-    if (source === "question") existing.source = "question";
+    if (SOURCE_MULTIPLIER[source] > SOURCE_MULTIPLIER[existing.source]) existing.source = source;
     existing.isKeyword = existing.isKeyword || isKeyword;
   };
 
-  for (const token of tokenize(questionText)) addToken(token, "question");
-  for (const token of tokenize(oracleText)) addToken(token, "oracle");
+  for (const token of tokenize(questionText)) addToken(token, "question", vocabularyWords.has(token));
+  for (const token of tokenize(oracleText)) addToken(token, "oracle", vocabularyWords.has(token) || cardKeywordWords.has(token));
+  for (const token of tokenize(conceptText)) addToken(token, "concept", false);
 
   // REQ-182 (owner decision, 2026-09-05): the cross-reference boost below is
   // matched against the question's cited ids only, never oracle-sourced text
@@ -459,8 +599,181 @@ export function buildQueryTokensFromParts(
   return {
     queryText,
     tokens: [...byToken.values()],
-    queryRuleIds: extractRuleIds(queryText),
+    queryRuleIds: extractRuleIds(`${questionText} ${oracleText}`),
     questionRuleIds: extractRuleIds(questionText)
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The whole retrieval query: question, cards, concepts, turn step, obsolete terms
+// ---------------------------------------------------------------------------
+
+/** A card as the search reads it. */
+export type RetrievalCard = {
+  cardId?: string;
+  name: string;
+  typeLine: string;
+  keywords?: readonly string[];
+  oracleText?: string;
+};
+
+export type RetrievalQueryInput = {
+  questionText: string;
+  cards: readonly RetrievalCard[];
+  /** REQ-178: In-Depth only -- the rule-book name of the current turn step ("cleanup step"). */
+  turnStep?: string | null;
+};
+
+/** REQ-235: one card's own search text, embedded on its own and never merged into the main query. */
+export type PerCardSearchText = { key: string; cardName: string; text: string };
+
+export type RetrievalQuery = ReturnType<typeof buildQueryTokensFromParts> & {
+  /** REQ-234: the de-duplicated concept terms the cards' wording produced. */
+  conceptTerms: string[];
+  /** REQ-233: the glossary terms the question used that the rule book marks obsolete. */
+  obsoleteTerms: string[];
+  /** REQ-235: one text per distinct card with oracle text. */
+  perCardTexts: PerCardSearchText[];
+};
+
+/** The key a per-card search text is stored under (frozen vectors, route embeddings): a hash of the text. */
+export function perCardTextKey(text: string): string {
+  return createHash("sha256").update(text, "utf8").digest("hex");
+}
+
+/** REQ-178: the rule-book name of a turn step, for the In-Depth query. */
+export function turnStepSearchName(turnPhase: string, combatStep?: string): string {
+  if (turnPhase === "combat") {
+    switch (combatStep) {
+      case "beginning_of_combat":
+        return "beginning of combat step";
+      case "declare_attackers":
+        return "declare attackers step";
+      case "declare_blockers":
+        return "declare blockers step";
+      case "combat_damage":
+        return "combat damage step";
+      case "end_of_combat":
+        return "end of combat step";
+      default:
+        return "combat phase";
+    }
+  }
+  switch (turnPhase) {
+    case "untap":
+      return "untap step";
+    case "upkeep":
+      return "upkeep step";
+    case "draw":
+      return "draw step";
+    case "main_1":
+      return "precombat main phase";
+    case "main_2":
+      return "postcombat main phase";
+    case "end_step":
+      return "end step";
+    case "cleanup":
+      return "cleanup step";
+    default:
+      return "";
+  }
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * REQ-233: the glossary entries the question uses that the rule book marks obsolete ("mana burn"),
+ * as the entries' terms and their definition text. An entry that flags only one obsolete sense of a
+ * live term ("Play") is skipped, and so is a single-word term the rules use as an ordinary word
+ * ("during"): translating those would add the same words to nearly every query.
+ */
+export function findObsoleteGlossaryTerms(
+  questionText: string,
+  glossary: readonly GameRulesGlossaryEntry[],
+  tokenStats: GameRulesTokenStats | null
+): { terms: string[]; definitionText: string } {
+  const question = questionText.toLowerCase().replace(/[‘’]/g, "'");
+  const terms: string[] = [];
+  const definitions: string[] = [];
+  for (const entry of glossary) {
+    if (!entry.obsolete || entry.obsoleteSense) continue;
+    const alternates = entry.term.split(",").map((alternate) => alternate.trim().toLowerCase()).filter((alternate) => alternate.length > 0);
+    const used = alternates.some((alternate) => {
+      const isSingleWord = !/[\s-]/.test(alternate);
+      if (isSingleWord) {
+        const [token] = tokenize(alternate);
+        if (token && (tokenStats?.df.get(token) ?? 0) >= LIVE_WORD_DOCUMENT_FREQUENCY) return false;
+      }
+      const phrase = escapeRegExp(alternate).replace(/\\-/g, "[- ]").replace(/-/g, "[- ]").replace(/\s+/g, "\\s+");
+      return new RegExp(`(?<![a-z0-9])${phrase}(?![a-z0-9])`).test(question);
+    });
+    if (!used) continue;
+    terms.push(entry.term);
+    definitions.push(entry.definition);
+  }
+  return { terms, definitionText: definitions.join(" ") };
+}
+
+/**
+ * REQ-178 / REQ-233 / REQ-234 / REQ-235: the one place the retrieval query is assembled. The
+ * question and each card's compact signal (never the card's oracle text), plus the concept terms the
+ * cards' wording produced, the In-Depth turn step and the definition words of any obsolete term the
+ * question used. The concept terms, the step and the definition words count at the concept weight in
+ * the word query and are appended to the text that is embedded. Each card's own oracle text becomes
+ * a separate per-card search text; it never enters the main query or its embedding.
+ */
+export function buildRetrievalQuery(
+  input: RetrievalQueryInput,
+  resources: Pick<ScoringResources, "keywordVocabulary" | "tokenStats" | "glossary"> = getDefaultScoringResources()
+): RetrievalQuery {
+  const signal = input.cards.map((card) => buildCompactCardSignal(card.name, card.typeLine, card.keywords)).join(" ");
+  const conceptTerms = conceptTermsForCards(input.cards);
+  const turnStep = input.turnStep?.trim() ?? "";
+  const obsolete = findObsoleteGlossaryTerms(input.questionText, resources.glossary ?? [], resources.tokenStats);
+
+  const embeddedText = [
+    `${input.questionText} ${signal}`.trim(),
+    conceptTerms.join(", "),
+    turnStep,
+    obsolete.definitionText
+  ]
+    .filter((part) => part.length > 0)
+    .join(" ");
+  const conceptText = [conceptTerms.join(" "), turnStep, obsolete.definitionText].filter((part) => part.length > 0).join(" ");
+
+  const query = buildQueryTokensFromParts(
+    {
+      questionText: input.questionText,
+      oracleText: signal,
+      cardKeywords: input.cards.flatMap((card) => card.keywords ?? []),
+      conceptText,
+      embeddedText
+    },
+    resources.keywordVocabulary
+  );
+
+  const perCardTexts: PerCardSearchText[] = [];
+  const seenCards = new Set<string>();
+  for (const card of input.cards) {
+    const text = (card.oracleText ?? "").trim();
+    if (text.length === 0) continue;
+    const identity = card.cardId && card.cardId.length > 0 ? card.cardId : card.name;
+    if (seenCards.has(identity)) continue;
+    seenCards.add(identity);
+    perCardTexts.push({ key: perCardTextKey(text), cardName: card.name, text });
+  }
+
+  return { ...query, conceptTerms, obsoleteTerms: obsolete.terms, perCardTexts };
+}
+
+/** The retrieval input for a game-mode prompt context: stack and zone cards, plus the current turn step. */
+export function retrievalInputFromPromptContext(context: PromptContext): RetrievalQueryInput {
+  return {
+    questionText: context.finalQuestion,
+    cards: [...context.orderedStack, ...context.populatedZones.flatMap((zone) => zone.items)],
+    turnStep: turnStepSearchName(context.gameContext.turnPhase, context.gameContext.combatStep)
   };
 }
 
@@ -536,14 +849,14 @@ function computeLexicalWordOverlapScore(
   let score = 0;
   let topTokenIdf = 0;
 
-  const searchTextTokenSet = new Set(tokenize(entry.searchText));
+  const searchTextTokenSet = searchTokensOf(entry);
 
   for (const { token, source, isKeyword } of tokens) {
     if (!searchTextTokenSet.has(token)) continue;
     const tokenDf = df?.get(token) ?? 1;
     const baseIdf = Math.log(N / Math.max(tokenDf, 1));
     let weight = baseIdf;
-    if (source === "question") weight *= QUESTION_TOKEN_MULTIPLIER;
+    weight *= SOURCE_MULTIPLIER[source];
     if (isKeyword) weight *= KEYWORD_TOKEN_MULTIPLIER;
     score += weight;
     if (baseIdf > topTokenIdf) topTokenIdf = baseIdf;
@@ -583,14 +896,14 @@ function scoreEntry(
     }
   }
 
-  const searchTextTokenSet = new Set(tokenize(entry.searchText));
+  const searchTextTokenSet = searchTokensOf(entry);
 
   for (const { token, source, isKeyword } of tokens) {
     if (!searchTextTokenSet.has(token)) continue;
     const tokenDf = df?.get(token) ?? 1;
     const baseIdf = Math.log(N / Math.max(tokenDf, 1));
     let weight = baseIdf;
-    if (source === "question") weight *= QUESTION_TOKEN_MULTIPLIER;
+    weight *= SOURCE_MULTIPLIER[source];
     if (isKeyword) weight *= KEYWORD_TOKEN_MULTIPLIER;
     score += weight;
     if (baseIdf > topTokenIdf) topTokenIdf = baseIdf;
@@ -657,7 +970,12 @@ function scoreIndex(
   resources: ScoringResources,
   queryVector: readonly number[] | null = null,
   questionRuleIds: readonly string[] = []
-): { scored: ScoredEntry[]; excludedCuratedRuleCount: number; usedSemantic: boolean } {
+): {
+  scored: ScoredEntry[];
+  excludedCuratedRuleCount: number;
+  usedSemantic: boolean;
+  ruleVectorById: ReadonlyMap<string, readonly number[]> | null;
+} {
   const N = resources.tokenStats?.N ?? index.length;
   const df = resources.tokenStats?.df ?? null;
   const queryRuleIdSet = new Set(queryRuleIds);
@@ -668,6 +986,15 @@ function scoreIndex(
   // (mock provider, embedding failure, missing/malformed artifact) is the
   // lexical path — never a thrown error, never a worse-than-before result.
   const embeddings = resources.ruleEmbeddings;
+  // REQ-181 (amended): a query vector whose size is not the rule vectors' size (an OpenAI-sized
+  // 1,536-dimension vector against the committed 384) is never silently ranked lexically: one
+  // error-level diagnostic names both sides, and the lexical path serves the question.
+  if (queryVector !== null && embeddings !== null && queryVector.length !== embeddings.dims) {
+    errorOnce(
+      "query-vector-dimension-mismatch",
+      `Query embedding has ${queryVector.length} dimensions but the committed rule vectors have ${embeddings.dims} (model ${embeddings.model}); the semantic path is disabled and System 3 falls back to lexical retrieval.`
+    );
+  }
   const useSemantic =
     queryVector !== null &&
     embeddings !== null &&
@@ -752,10 +1079,10 @@ function scoreIndex(
   scored.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if (b.topTokenIdf !== a.topTokenIdf) return b.topTokenIdf - a.topTokenIdf;
-    return parseFloat(a.entry.ruleId) - parseFloat(b.entry.ruleId);
+    return compareRuleIds(a.entry.ruleId, b.entry.ruleId);
   });
 
-  return { scored, excludedCuratedRuleCount, usedSemantic: useSemantic };
+  return { scored, excludedCuratedRuleCount, usedSemantic: useSemantic, ruleVectorById: embeddingByRuleId };
 }
 
 function toRetrievedGameRule(scored: ScoredEntry): RetrievedGameRule {
@@ -766,6 +1093,9 @@ function toRetrievedGameRule(scored: ScoredEntry): RetrievedGameRule {
     score: scored.score
   };
 }
+
+/** REQ-235: one card's own search vector (its oracle text embedded on its own). */
+export type PerCardVector = { cardName: string; vector: readonly number[] };
 
 export type SupplementalRulesDebug = {
   queryText: string;
@@ -783,6 +1113,8 @@ export type SupplementalRulesDebug = {
    * semantic path instead of an unnoticed fallback.
    */
   usedSemantic: boolean;
+  /** REQ-235: the selected rules that came from a per-card search, and the card each came from. */
+  perCardSelected: Array<{ ruleId: string; cardName: string }>;
 };
 
 export type SupplementalRulesWithDebug = {
@@ -790,6 +1122,59 @@ export type SupplementalRulesWithDebug = {
   runnerUp: RetrievedGameRule[];
   debug: SupplementalRulesDebug;
 };
+
+/**
+ * REQ-235: per-card search. Each card's own vector is ranked cosine-only against the committed rule
+ * vectors (curated rules excluded, REQ-179). Cards are taken in order of their best cosine score;
+ * each contributes its top-ranked rule unless that rule is already selected (then the card is
+ * skipped), until `PER_CARD_RESERVED_SLOTS` are filled. The main ranking keeps the first
+ * `max - PER_CARD_RESERVED_SLOTS` slots and fills every slot the cards leave open.
+ */
+function selectWithPerCardSlots(
+  scored: ScoredEntry[],
+  max: number,
+  cardVectors: readonly PerCardVector[],
+  index: GameRulesRuleIndexEntry[],
+  excludeRuleIds: Set<string>,
+  ruleVectorById: ReadonlyMap<string, readonly number[]> | null
+): { selected: ScoredEntry[]; perCardSelected: Array<{ ruleId: string; cardName: string }> } {
+  if (ruleVectorById === null || cardVectors.length === 0 || max <= PER_CARD_RESERVED_SLOTS) {
+    return { selected: scored.slice(0, max), perCardSelected: [] };
+  }
+
+  const entryById = new Map(index.map((entry) => [entry.ruleId, entry]));
+  const dimensions = ruleVectorById.values().next().value?.length ?? 0;
+  const topHits: Array<{ cardName: string; entry: GameRulesRuleIndexEntry; cosine: number }> = [];
+  for (const card of cardVectors) {
+    if (card.vector.length !== dimensions) continue;
+    let best: { entry: GameRulesRuleIndexEntry; cosine: number } | null = null;
+    for (const [ruleId, ruleVector] of ruleVectorById) {
+      if (excludeRuleIds.has(ruleId)) continue;
+      const entry = entryById.get(ruleId);
+      if (!entry) continue;
+      const cosine = cosineSimilarity(card.vector, ruleVector);
+      if (best === null || cosine > best.cosine || (cosine === best.cosine && compareRuleIds(ruleId, best.entry.ruleId) < 0)) {
+        best = { entry, cosine };
+      }
+    }
+    if (best) topHits.push({ cardName: card.cardName, ...best });
+  }
+  topHits.sort((a, b) => b.cosine - a.cosine);
+
+  const keep = scored.slice(0, max - PER_CARD_RESERVED_SLOTS);
+  const chosen = new Set(keep.map((candidate) => candidate.entry.ruleId));
+  const picks: ScoredEntry[] = [];
+  const perCardSelected: Array<{ ruleId: string; cardName: string }> = [];
+  for (const hit of topHits) {
+    if (picks.length >= PER_CARD_RESERVED_SLOTS) break;
+    if (chosen.has(hit.entry.ruleId)) continue;
+    chosen.add(hit.entry.ruleId);
+    picks.push({ entry: hit.entry, score: hit.cosine, topTokenIdf: 0 });
+    perCardSelected.push({ ruleId: hit.entry.ruleId, cardName: hit.cardName });
+  }
+  const fill = scored.filter((candidate) => !chosen.has(candidate.entry.ruleId)).slice(0, max - keep.length - picks.length);
+  return { selected: [...keep, ...picks, ...fill], perCardSelected };
+}
 
 export function retrieveRulesForQueryWithDebug(
   queryTokens: QueryToken[],
@@ -800,7 +1185,8 @@ export function retrieveRulesForQueryWithDebug(
   resources: ScoringResources = getDefaultScoringResources(),
   queryVector: readonly number[] | null = null,
   queryText = queryTokens.map((token) => token.token).join(" "),
-  questionRuleIds: readonly string[] = []
+  questionRuleIds: readonly string[] = [],
+  cardVectors: readonly PerCardVector[] = []
 ): SupplementalRulesWithDebug {
   if (index.length === 0) {
     return {
@@ -814,12 +1200,13 @@ export function retrieveRulesForQueryWithDebug(
         selected: [],
         runnerUp: [],
         candidatesScored: 0,
-        usedSemantic: false
+        usedSemantic: false,
+        perCardSelected: []
       }
     };
   }
 
-  const { scored, excludedCuratedRuleCount, usedSemantic } = scoreIndex(
+  const { scored, excludedCuratedRuleCount, usedSemantic, ruleVectorById } = scoreIndex(
     queryTokens,
     queryRuleIds,
     index,
@@ -828,8 +1215,10 @@ export function retrieveRulesForQueryWithDebug(
     queryVector,
     questionRuleIds
   );
-  const selected = scored.slice(0, max).map(toRetrievedGameRule);
-  const runnerUp = scored.slice(max, max + 10).map(toRetrievedGameRule);
+  const picked = selectWithPerCardSlots(scored, max, cardVectors, index, excludeRuleIds, ruleVectorById);
+  const selected = picked.selected.map(toRetrievedGameRule);
+  const selectedIds = new Set(selected.map((rule) => rule.ruleId));
+  const runnerUp = scored.filter((candidate) => !selectedIds.has(candidate.entry.ruleId)).slice(0, 10).map(toRetrievedGameRule);
 
   return {
     selected,
@@ -842,7 +1231,8 @@ export function retrieveRulesForQueryWithDebug(
       selected: selected.map((rule) => ({ ruleId: rule.ruleId, sectionTitle: rule.sectionTitle, score: rule.score })),
       runnerUp: runnerUp.map((rule) => ({ ruleId: rule.ruleId, sectionTitle: rule.sectionTitle, score: rule.score })),
       candidatesScored: scored.length,
-      usedSemantic
+      usedSemantic,
+      perCardSelected: picked.perCardSelected
     }
   };
 }
@@ -855,11 +1245,12 @@ export function retrieveRulesForQuery(
   max = 5,
   resources: ScoringResources = getDefaultScoringResources(),
   queryVector: readonly number[] | null = null,
-  questionRuleIds: readonly string[] = []
+  questionRuleIds: readonly string[] = [],
+  cardVectors: readonly PerCardVector[] = []
 ): RetrievedGameRule[] {
   if (index.length === 0) return [];
-  const { scored } = scoreIndex(queryTokens, queryRuleIds, index, excludeRuleIds, resources, queryVector, questionRuleIds);
-  return scored.slice(0, max).map(toRetrievedGameRule);
+  const { scored, ruleVectorById } = scoreIndex(queryTokens, queryRuleIds, index, excludeRuleIds, resources, queryVector, questionRuleIds);
+  return selectWithPerCardSlots(scored, max, cardVectors, index, excludeRuleIds, ruleVectorById).selected.map(toRetrievedGameRule);
 }
 
 export function retrieveSupplementalRulesWithDebug(
@@ -868,9 +1259,10 @@ export function retrieveSupplementalRulesWithDebug(
   excludeRuleIds: Set<string>,
   max = 5,
   resources: ScoringResources = getDefaultScoringResources(),
-  queryVector: readonly number[] | null = null
+  queryVector: readonly number[] | null = null,
+  cardVectors: readonly PerCardVector[] = []
 ): SupplementalRulesWithDebug {
-  const query = buildQueryTokens(context, resources.keywordVocabulary);
+  const query = buildRetrievalQuery(retrievalInputFromPromptContext(context), resources);
   return retrieveRulesForQueryWithDebug(
     query.tokens,
     query.queryRuleIds,
@@ -880,7 +1272,8 @@ export function retrieveSupplementalRulesWithDebug(
     resources,
     queryVector,
     query.queryText,
-    query.questionRuleIds
+    query.questionRuleIds,
+    cardVectors
   );
 }
 
@@ -890,9 +1283,10 @@ export function retrieveSupplementalRules(
   excludeRuleIds: Set<string>,
   max = 5,
   resources: ScoringResources = getDefaultScoringResources(),
-  queryVector: readonly number[] | null = null
+  queryVector: readonly number[] | null = null,
+  cardVectors: readonly PerCardVector[] = []
 ): RetrievedGameRule[] {
-  const query = buildQueryTokens(context, resources.keywordVocabulary);
+  const query = buildRetrievalQuery(retrievalInputFromPromptContext(context), resources);
   return retrieveRulesForQuery(
     query.tokens,
     query.queryRuleIds,
@@ -901,6 +1295,7 @@ export function retrieveSupplementalRules(
     max,
     resources,
     queryVector,
-    query.questionRuleIds
+    query.questionRuleIds,
+    cardVectors
   );
 }

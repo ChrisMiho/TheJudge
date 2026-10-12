@@ -365,10 +365,9 @@ describe("Backend - Ask AI", () => {
       expect(usedSemanticOf(first)).toBe(false);
       expect(first.promptText).toBe(second.promptText);
       expect(first.enrichmentDebug?.supplemental.selected).toEqual(second.enrichmentDebug?.supplemental.selected);
-      // The lexical result is a genuinely different ranking (no embedding to
-      // rank by) — 701.8b is not among its top 5, proving the two paths are
-      // actually independent, not coincidentally identical.
-      expect(first.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId)).not.toContain("701.8b");
+      // (Before the REQ-233 token fixes this test also asserted that 701.8b was not among the
+      // lexical top ten. Stemmed words now bring the rule into the lexical ranking too, so that
+      // assertion no longer separates the two paths; `usedSemantic === false` above is the proof.)
     });
   });
 

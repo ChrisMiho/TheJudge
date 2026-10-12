@@ -148,15 +148,24 @@ export async function buildTrace({ cases, resources, parseRequest, freezeCheck, 
     const request = await parseRequest(caseEntry);
     const freeze = freezeCheck(caseEntry.id, request);
     let queryEmbedding;
+    let cardEmbeddings;
     let vectorSource = VECTOR_SOURCES.lexical;
     if (freeze.state === "fresh") {
       queryEmbedding = freeze.vector;
+      cardEmbeddings = freeze.cardEmbeddings;
       vectorSource = VECTOR_SOURCES.frozen;
     } else {
-      queryEmbedding = embedLocal ? await embedLocal(request) : null;
+      // `embedLocal` returns a vector, or { vector, cardEmbeddings } when per-card search (REQ-235) applies.
+      const embedded = embedLocal ? await embedLocal(request) : null;
+      if (embedded && !Array.isArray(embedded)) {
+        queryEmbedding = embedded.vector;
+        cardEmbeddings = embedded.cardEmbeddings;
+      } else {
+        queryEmbedding = embedded;
+      }
       if (queryEmbedding) vectorSource = freeze.state === "missing" ? VECTOR_SOURCES.noFrozenVector : VECTOR_SOURCES.embeddedLocally;
     }
-    const base = { ...resources, queryEmbedding, collectEnrichmentDebug: true };
+    const base = { ...resources, queryEmbedding, cardEmbeddings, collectEnrichmentDebug: true };
     const full = prepare(request, { ...base, supplementalRuleCap: fullCap });
     const production = prepare(request, { ...base, supplementalRuleCap: productionCap });
     traced.push(

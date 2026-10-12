@@ -111,7 +111,7 @@ export async function runEvidenceTrace({ argv = [], git, loadCases, loadResource
 
 /** The real dependencies: the backend's own prompt builder, the committed frozen vectors and baseline, the bundled local embedder. */
 export async function defaultTraceDeps() {
-  const { preparePromptInput, buildRetrievalQueryText } = await import("../apps/backend/src/prompt/preparation.ts");
+  const { preparePromptInput, buildRetrievalQueryText, buildPerCardSearchTexts } = await import("../apps/backend/src/prompt/preparation.ts");
   const { loadFrozenVectors, checkReFreeze } = await import("../apps/backend/src/eval/rules-gate/frozenVectors.ts");
   const { loadBaseline } = await import("../apps/backend/src/eval/rules-gate/baseline.ts");
   const { parseCaseRequest } = await import("./lib/rules-gate-inputs.mjs");
@@ -128,7 +128,13 @@ export async function defaultTraceDeps() {
         prepare: preparePromptInput,
         embedLocal: async (request) => {
           embedder ??= await buildEmbedder({ EMBEDDING_PROVIDER: "local" });
-          return embedder.embed(buildRetrievalQueryText(request, { cardDetailIndex: resources.cardDetailIndex }));
+          const vector = await embedder.embed(buildRetrievalQueryText(request, { cardDetailIndex: resources.cardDetailIndex }));
+          const cardEmbeddings = new Map();
+          for (const card of buildPerCardSearchTexts(request, { cardDetailIndex: resources.cardDetailIndex })) {
+            const cardVector = await embedder.embed(card.text);
+            if (cardVector) cardEmbeddings.set(card.key, cardVector);
+          }
+          return { vector, cardEmbeddings };
         },
         baseline: loadBaseline()
       };

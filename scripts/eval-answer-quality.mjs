@@ -533,7 +533,8 @@ export async function measurePrompts({ cases, excerptCaps, env }) {
       const prepared = preparePromptInput(buildCaseRequest(caseEntry), {
         ...resources,
         supplementalRuleCap: cap,
-        queryEmbedding: vectors.get(caseEntry.id) ?? null
+        queryEmbedding: vectors.get(caseEntry.id) ?? null,
+        cardEmbeddings: vectors.cardEmbeddingsByCaseId?.get(caseEntry.id)
       });
       measured.set(promptKey(caseEntry.id, cap), {
         promptHash: hashPrompt(prepared.promptText),
@@ -800,6 +801,7 @@ export async function executeEvaluation(
           ...deps.resources,
           supplementalRuleCap: cap,
           queryEmbedding: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
+          cardEmbeddings: queryEmbeddingByCaseId.cardEmbeddingsByCaseId?.get(caseEntry.id),
           collectEnrichmentDebug: true
         });
         const retrieval = describeRetrieval(prepared.enrichmentDebug?.supplemental, caseEntry.expected.decidingRuleIds, {

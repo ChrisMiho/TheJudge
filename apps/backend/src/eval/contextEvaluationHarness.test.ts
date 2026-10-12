@@ -19,6 +19,7 @@ import { preparePromptInput, resolveGameComboCandidates } from "../prompt/prepar
 import type { AskAiRequest, GameAskAiRequest } from "../types/index.js";
 import type { ComboVariant } from "../commanderSpellbook/catalog.js";
 import { cardDetailIndexFromRequest } from "./fixtureCardDetail.js";
+import { resolveFrozenCardEmbeddings } from "./frozenCardVectors.js";
 import {
   buildChecklistReport,
   buildEvalComboCatalog,
@@ -181,6 +182,12 @@ function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = 
 function evaluateFixtureRequestWithDebug(fixture: EvaluationFixture, queryEmbedding: number[] | null) {
   const comboCatalog = fixture.disableComboEnrichment ? undefined : evalComboCatalog;
   const cardDetailIndex = cardDetailIndexFromRequest(fixture.request);
+  // REQ-235: the committed frozen per-card vectors stand in for the embeddings the route handler
+  // makes, and a fixture card without one fails loudly instead of silently contributing nothing.
+  const frozenCards = queryEmbedding === null ? null : resolveFrozenCardEmbeddings(fixture.request as never, cardDetailIndex);
+  if (frozenCards) {
+    expect(frozenCards.missingKeys, `${fixture.id}: a card has no frozen per-card vector (npm run eval:build-frozen-card-vectors)`).toEqual([]);
+  }
   const prepared = preparePromptInput(fixture.request, {
     gameRulesTopics: allGameRulesTopics,
     gameRulesRuleIndex: ruleIndex,
@@ -188,7 +195,8 @@ function evaluateFixtureRequestWithDebug(fixture: EvaluationFixture, queryEmbedd
     cardDetailIndex,
     comboCatalog,
     collectEnrichmentDebug: true,
-    queryEmbedding
+    queryEmbedding,
+    cardEmbeddings: frozenCards?.embeddings
   });
   // `usedSemantic` rides through `enrichmentDebug.supplemental` at runtime
   // (preparation.ts passes the debug object through by reference) but isn't

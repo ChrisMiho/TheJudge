@@ -172,6 +172,7 @@ function evaluateCase(caseEntry: GoldCase, inputs: RulesGateInputs): CaseGateRes
   const prepared = preparePromptInput(request, {
     ...resources,
     queryEmbedding: freeze.state === "fresh" ? freeze.vector : null,
+    cardEmbeddings: freeze.state === "fresh" ? freeze.cardEmbeddings : undefined,
     supplementalRuleCap: inputs.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
     collectEnrichmentDebug: true
   });

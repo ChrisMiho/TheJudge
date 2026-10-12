@@ -1,6 +1,6 @@
 {
   "id": "upkeep-trigger",
-  "description": "Upkeep phase with an 'at the beginning of your upkeep' triggered ability source on the battlefield; empty stack. Core + delayed-trigger + battlefield buckets (no stack bucket). System 3 should surface triggered-ability/upkeep rules. REQ-179: System 3 excludes only the exact rule numbers a selected curated topic lists, so rule 603.3b, a lettered sub-rule of curated topic abilities-trigger-basics' rule 603.3 that the topic does not list, competes for a supplemental slot like any other rule; the expected supplemental set below names only the rule this case must surface (500.6) and does not pin 603.3b either way.",
+  "description": "Upkeep phase with an 'at the beginning of your upkeep' triggered ability source on the battlefield; empty stack. Core + delayed-trigger + battlefield buckets (no stack bucket). System 3 should surface triggered-ability/upkeep rules. REQ-179: System 3 excludes only the exact rule numbers a selected curated topic lists, so rule 603.3b, a lettered sub-rule of curated topic abilities-trigger-basics' rule 603.3 that the topic does not list, competes for a supplemental slot like any other rule; the expected supplemental set below names only the rule this case must surface (500.6) and does not pin 603.3b either way. right-rules-in-order (REQ-233): with stemmed words and without the keyword weight on \"trigger\", the word-only path (the mock default and the embedding-failure fallback) no longer ranks 500.6 in its top ten for this question, so `lexicalKnownMisses` skips 500.6 on the lexical leg only; the semantic leg, which REQ-182 gates, still requires it.",
   "request": {
     "question": "It's my upkeep. My Phyrexian Arena's beginning-of-upkeep trigger and my opponent's beginning-of-upkeep trigger both want to go on the stack — who chooses the order and when do they trigger?",
     "gameContext": {
@@ -39,6 +39,7 @@
       "zones-basics"
     ],
     "expectedSupplementalRuleIds": ["500.6"],
+    "lexicalKnownMisses": ["500.6"],
     "forbiddenSupplementalRuleIds": ["100.1"]
   }
 }

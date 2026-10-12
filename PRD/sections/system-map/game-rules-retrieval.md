@@ -1,5 +1,5 @@
 # Game rules retrieval
-Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-177, REQ-178, REQ-179, REQ-180, REQ-181, REQ-220
+Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-177, REQ-178, REQ-179, REQ-180, REQ-181, REQ-220, REQ-233, REQ-234, REQ-235
 
 ## How it works
 
@@ -23,13 +23,20 @@ common interactions.
 
 System 3 is supplemental retrieval. It builds a query from the user's question plus a
 compact per-card signal — each submitted or attached card's name, type line, and
-keyword list — deliberately not the cards' full oracle text, which floods the query and
-was measured to drop recall@5 from 0.577 to 0.026 on a labelled benchmark. It then
-ranks official rule excerpts and selects at most ten. Ranking is hybrid: when the
+keyword list — plus fixed rule-book terms: the concept terms the committed concept map
+draws from each card's wording (REQ-234), in In-Depth the current turn step's name, and,
+for an obsolete term in the question, its glossary definition (REQ-233); deliberately not
+the cards' full oracle text, which floods the query and was measured to drop recall@5 from
+0.577 to 0.026 on a labelled benchmark. Word matching strips sentence dots, stems every
+word on both sides, and gives every card keyword the keyword weight (REQ-233, REQ-180).
+It then ranks official rule excerpts and selects at most ten: at least eight from this
+main ranking, and up to two reserved for per-card search, in which each card's own oracle
+text is embedded and ranked on its own and the best cards' top hits fill the reserved
+slots (REQ-235). Ranking is hybrid: when the
 embedding-provider seam is active the query is embedded and cosine-ranked against a
 committed per-rule embedding vector, that cosine score and the IDF-weighted lexical
 score are each normalised against the query's own top score, and the two are blended by
-a single tuned weight, with the exact rule-ID and parent rule-ID boost merged into the
+a single tuned weight (0.65 meaning, REQ-182), with the exact rule-ID and parent rule-ID boost merged into the
 blended score so a cited rule number (for example "rule 613.9") is still pulled even
 when semantic similarity misses it. The IDF-weighted lexical scorer alone is retained as
 the mock/offline default, as the source of the exact-rule-ID boost, and as the fallback
@@ -39,7 +46,7 @@ earlier lexical-only behaviour. The blend exists because semantic-only ranking, 
 0.83 vs 0.53 with cards) but lost an expected rule on short lookup-mode questions — a
 card name, type line, and one keyword — in three of eight labelled fixtures, scoring 9
 of 12 checks against lexical's 12 of 12 (REQ-182). Ties prefer the highest matching
-signal, then ascending rule ID. Before output is selected, System 3 excludes rule IDs already selected by
+signal, then rule-book order (REQ-233). Before output is selected, System 3 excludes rule IDs already selected by
 System 2 — exactly the rule numbers the selected topics list, because a topic prints only
 the rules it lists; a lettered sub-rule of a listed parent that the topic does not list
 competes like any other rule (REQ-179) — and the prompt does not print the same rule in
@@ -70,14 +77,15 @@ selects System 2 topics from game-state signals and the card-wording gate (REQ-2
 and derives the selected curated rule IDs from those topics.
 
 Those curated rule IDs become the exclusion set for System 3. When a semantic embedding
-provider is active, the async route handler embeds the query first and passes the query
-vector into prompt preparation as an option, so `preparePromptInput` stays synchronous.
-Supplemental retrieval builds the query from the question plus the per-card keyword
-signal, ranks the rule index (cosine over the committed rule embeddings when a query
+provider is active, the async route handler embeds the query, and each card's oracle text
+for per-card search, first and passes the vectors into prompt preparation as an option, so
+`preparePromptInput` stays synchronous. Supplemental retrieval builds the query from the
+question plus the per-card keyword signal and concept terms (and, in In-Depth, the turn
+step), ranks the rule index (cosine over the committed rule embeddings when a query
 vector is present, IDF-weighted lexical otherwise or on embedding failure) with the
 exact-rule-ID boost merged in, drops entries whose own rule ID is already in the
 System 2 set (a listed parent rule ID does not drop its sub-rules), and returns the
-top ten excerpts plus debug data when
+top ten excerpts — two slots reserved for per-card hits — plus debug data when
 mock enrichment diagnostics are enabled. Prompt rendering places the resulting sections
 as curated rules, then supplemental excerpts, then official rulings.
 
@@ -89,8 +97,9 @@ shape change or a deterministic rules-engine answer (canonical rule: `goals-and-
 
 - System 1: `apps/backend/src/cardRulings.ts`
 - System 2: `apps/backend/src/gameRulesTopicSelection.ts`, `apps/backend/src/gameRules.ts`
-- System 3: `apps/backend/src/gameRulesRetrieval.ts`
-- System 3 data: `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed per-rule embeddings artifact (REQ-181), and per-card `keywords` resolved from `apps/backend/data/cardDetailByOracleId.json.br` (REQ-180)
+- System 3: `apps/backend/src/gameRulesRetrieval.ts`; the shared word matching and Porter stemmer `apps/backend/src/gameRulesStemmer.ts` (REQ-233)
+- Concept map: one committed module, `apps/backend/src/gameRulesConceptMap.ts` (REQ-234)
+- System 3 data: `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed per-rule embeddings artifact (REQ-181), the rule-book glossary `apps/backend/data/gameRulesGlossary.json` and edition record `gameRulesBookMeta.json` (REQ-179), and per-card `keywords` resolved from `apps/backend/data/cardDetailByOracleId.json.br` (REQ-180)
 - Embedding-provider seam: `EMBEDDING_PROVIDER` flag, mirroring the `ASK_AI_PROVIDER` boundary under `apps/backend/src/providers/`
 
 ## Worked example
@@ -102,12 +111,14 @@ it selects the always-on topics plus combat and battlefield-oriented curated top
 Those topics render in `GAME RULES (reference)`.
 
 System 3 then retrieves more specific rule excerpts. It builds the query from the
-question plus the attached cards' names, type lines, and keywords — not their full
-oracle text — embeds it with the active provider, and cosine-ranks it against the
+question plus the attached cards' names, type lines, keywords and concept terms, and the
+combat damage step's name — not their full oracle text — embeds it with the active
+provider, and cosine-ranks it against the
 committed rule embeddings, so the excerpts that actually address deathtouch and
 combat-damage assignment surface even when they share few literal words with the
 question. Any explicit rule number in the query still pulls in an exact or parent match
-through the merged boost. If a combat damage rule is already listed in the System 2
+through the merged boost. Each card's own text is searched separately, and its best hit
+can take one of two reserved slots. If a combat damage rule is already listed in the System 2
 topic set, that exact rule ID is excluded from System 3 so the supplemental block uses
 its ten slots for additional relevant context rather than duplicating the baseline; the
 rule's lettered sub-rules, which the topic does not print, still compete for those slots.
@@ -130,7 +141,7 @@ reference material and simply omits `OFFICIAL RULINGS`.
   Exact matching is enough only because each curated topic prints exactly the rules it
   lists; a test over the committed game-rules data holds every topic to that and fails
   if a topic ever carries a rule it does not list (REQ-179).
-- System 3 is capped at ten supplemental excerpts per request (raised from five on 2026-09-09, REQ-190).
+- System 3 is capped at ten supplemental excerpts per request (raised from five on 2026-09-09, REQ-190), two of them reserved for per-card search (REQ-235).
 - System 3 ranking is a hybrid blend (normalised cosine over committed rule embeddings
   plus normalised lexical IDF overlap) with the exact-rule-ID boost merged in and
   lexical alone retained as the mock/offline default and the failure fallback; those
@@ -145,6 +156,8 @@ reference material and simply omits `OFFICIAL RULINGS`.
   measures the semantic path via committed frozen query embeddings — no live embedding
   or AI call — and by a committed offline labelled benchmark (REQ-177). The human
   relevance report is held to the harness's verdict by a parity test (REQ-177).
+- The concept map is a fixed, committed table; no model call produces search terms at request time (REQ-234).
+- A query vector whose size differs from the committed rule vectors' (OpenAI's 1,536 against 384) is reported loudly — one error-level diagnostic naming both sizes — and the lexical path serves the question; it is never silently ranked as a semantic result (REQ-181).
 - Q-001, the System 3 keyword-vocabulary derivation strategy, is answered: per-card
   Scryfall `keywords` in the committed backend artifact, unioned at query time
   (REQ-180). The hand-curated vocabulary is retained only for detecting a keyword named
