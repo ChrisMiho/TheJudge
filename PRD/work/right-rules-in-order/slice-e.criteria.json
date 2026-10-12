@@ -1,0 +1,15 @@
+{
+  "slug": "right-rules-in-order",
+  "slice": "E",
+  "criteria": [
+    { "id": "E1", "statement": "Step-table tests: named step adds its summary under PHASE GUIDANCE in Quick Lookup, at most three, in turn order; none when no step is named", "value": false, "evidence": { "command": "npm --workspace apps/backend run test" } },
+    { "id": "E2", "statement": "Each corrected step-summary fact has a test", "value": false, "evidence": { "paths": ["apps/backend/src/prompt"] } },
+    { "id": "E3", "statement": "Excerpt tests: rule-book order, grouped labels from part titles, each id once, lead-in added where needed", "value": false, "evidence": { "paths": ["apps/backend/src/prompt"] } },
+    { "id": "E4", "statement": "Every lead-in with a list arrives with it; the 12,000-character budget holds; overflow line fires on 0 corpus cases", "value": false, "evidence": { "paths": ["apps/backend/src/prompt"] } },
+    { "id": "E5", "statement": "Curated manifest includes 117.3a-d and 400.7 sub-rules as topic rule numbers and the REQ-179 data test passes", "value": false, "evidence": { "paths": ["apps/backend/data/gameRulesTopicManifest.json", "apps/backend/src/gameRulesTopicData.test.ts"] } },
+    { "id": "E6", "statement": "Pointer tests: at most ten resolved pointers, first sentence capped at 250 characters", "value": false, "evidence": { "paths": ["apps/backend/src/prompt"] } },
+    { "id": "E7", "statement": "REQ-238, 239, 240, 244, 022, 024 and rules-section parts of layout and assembly docs applied by intent", "value": false, "evidence": { "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/system-map/prompt-layout-spec.md", "PRD/sections/system-map/prompt-assembly.md"] } },
+    { "id": "E8", "statement": "Each golden prompt change is reviewed and listed in the evidence log", "value": false, "evidence": { "manual": true } },
+    { "id": "E9", "statement": "npm run quality:check passes", "value": false, "evidence": { "command": "npm run quality:check" } }
+  ]
+}

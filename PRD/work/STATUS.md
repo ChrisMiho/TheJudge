@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order: trained search model, search fixes, prompt fixes. Mapped into slices A to G; next is the build. |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order: trained search model, search fixes, prompt fixes. Gate answered (39 accept); next is the gate-qc re-grade, then build. |
 
 ## refining
 

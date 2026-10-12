@@ -1,0 +1,16 @@
+{
+  "slug": "right-rules-in-order",
+  "slice": "C",
+  "criteria": [
+    { "id": "C1", "statement": "Ported scripts exist under scripts/ with no practice-suite text; privacy-scan reports 0", "value": false, "evidence": { "command": "privacy-scan" } },
+    { "id": "C2", "statement": "Paths for pairs, checkpoints and model folders are git-ignored", "value": false, "evidence": { "command": "git check-ignore" } },
+    { "id": "C3", "statement": "Manifest writer produces model id and per-file SHA-256 from a fake directory and prints the upload commands", "value": false, "evidence": { "command": "npm run test:scripts", "paths": ["scripts/package-embedding-model.mjs"] } },
+    { "id": "C4", "statement": "Fetch script passes against a local directory and refuses a changed byte, a missing file and a wrong manifest", "value": false, "evidence": { "paths": ["scripts/fetch-embedding-model.mjs", "scripts/fetch-embedding-model.test.mjs"] } },
+    { "id": "C5", "statement": "Lambda packaging refuses without the verified model and the NFR-017 budget test passes", "value": false, "evidence": { "paths": ["scripts/package-lambda.test.mjs", "scripts/lambda-package-budget.test.mjs"] } },
+    { "id": "C6", "statement": "Identity tests: model-id mismatch and OpenAI-sized vector are refused loudly; runtime falls back to lexical with one named diagnostic", "value": false, "evidence": { "command": "npm --workspace apps/backend run test" } },
+    { "id": "C7", "statement": "Committed no-weights test passes and git ls-files shows no weight files", "value": false, "evidence": { "command": "git ls-files" } },
+    { "id": "C8", "statement": "REQ-236 (tooling), 237, 181, 183, 184, 232, NFR-017 and integrations-and-data.md applied by intent", "value": false, "evidence": { "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/non-functional-requirements.md", "PRD/sections/integrations-and-data.md"] } },
+    { "id": "C9", "statement": "npm run quality:check passes", "value": false, "evidence": { "command": "npm run quality:check" } },
+    { "id": "C10", "statement": "Dated evidence-log line: the slice made no network or AWS call", "value": false, "evidence": { "manual": true } }
+  ]
+}
