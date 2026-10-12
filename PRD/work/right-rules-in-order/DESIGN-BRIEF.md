@@ -77,7 +77,7 @@ and may run beside C.
 
 - No reranker, no BM25, no bigger off-the-shelf embedder, no labelled rule text
   inside the vectors (intake "Results that were tested and rejected").
-- The excerpt cap stays ten (REQ-190).
+- The excerpt cap stays ten (REQ-190). **Amended 2026-10-12 at the build-half park:** the owner accepted up to fifteen excerpts with a 0.6 relevance cutoff (REQ-190) and keyword rule sets beside the excerpts (REQ-235); see `GATE-QUESTIONS.md` `## Build-half amendments` and `evidence/fix-experiments.md`.
 - No change to answer grading, the judge, or the rubric.
 - P5 ("use only the provided context") and P13 (instructions as a system
   message) stay as they are; a paid run tests them later.

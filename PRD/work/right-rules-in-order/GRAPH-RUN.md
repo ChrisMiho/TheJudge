@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
-- Current node: `owner-action` (build parked at slice D)
+- Current node: `build` (attempt 2)
 - Next action: `/graph-implement PRD/work/right-rules-in-order/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
 
 ## Node ledger
@@ -24,11 +24,12 @@
 
 ## Open gate
 
-- Terminal state: `PARKED` at `owner-action` during `build` (slice D), run `graph-20261011-190751`.
+- Terminal state (historical): `PARKED` at `owner-action` during `build` (slice D), run `graph-20261011-190751`.
 - Question: the trained search model clears every numeric floor, but 2 of the 14 labelled search checks now miss. The question about creatures with two keywords on one card no longer finds rule 702.2b in the top ten (it ranks 17th). The upkeep-trigger question finds rule 500.6 at 11th, one place short. Both found them on the stock model. REQ-182 says every labelled check must pass under the semantic path, and the brief (assumption 19) says a miss parks the build. Choose one: (a) accept the two misses as recorded known-misses for the trained model, amending REQ-182 by intent in this build, and continue; or (b) revisit the training recipe before continuing. Driver recommendation: (a) — the model roughly doubles deciding-rule recall on held-out questions (check half 445 against the stock model's 223) and passes both benchmark floors with room (0.9231 / 0.9167).
 - Evidence: `PRD/work/right-rules-in-order/evidence/build-log.md` (slice D section); node ledger row 8; reproduction command `npx vitest run src/eval/contextEvaluationHarness.test.ts` (in `apps/backend`, with both stashes applied).
 - Preserved work: local branches `parked/right-rules-in-order-slice-d-data` (`56028ffe`) and `parked/right-rules-in-order-slice-d-manifest` (`734a3754`); model folder `.worktrees/implement-right-rules-in-order/output/rule-search-model/` — do not prune this worktree.
 - Resume: give the answer in session or under this section, then `/graph-implement PRD/work/right-rules-in-order/` — re-enters `build` attempt 2 at slice D with the trained-model data restored from those branches.
+- RESOLVED 2026-10-12: the owner rejected accepting the misses and asked for a fix. Driver diagnosis (throwaway test on the 100% model): off-topic rules filled slots (five layer rules on the deathtouch question) and the card's keyword rule arrived in pieces. Free cross-validated measurement `evidence/fix-experiments.md` (commit `1a7e9f65`): keyword sets beside the ten plus a 0.6 relevance cutoff at cap 15 passes 14 of 14 labelled checks; check half 445 → 520, every-rule check 144 → 169, hard 25 19 → 24, corpus 423/366 → 435/372, bench@5 131 → 131; practice-question rule text 4,220 → 6,707 characters. The owner accepted both spec changes (REQ-190, REQ-235) — `GATE-QUESTIONS.md` `## Build-half amendments`; brief non-goal reconciled. Lock retaken (`graph-20261011-190751`), graph canary `nohup true` denied. Resumes at `build` attempt 2.
 
 ### Spec-forming gate (resolved)
 
@@ -264,6 +265,43 @@ Leave the `GRAPH-RUN.md` `## Node ledger` and `## Dispatch prompts` alone. If yo
 
 Report back: per slice the commit SHA and criteria count true; the PR URL; `npm run quality:check` result; the slice-D numbers (CV check, tuning, every-rule, hard 25; final corpus citations and every-rule cases, bench@5, Necropotence, benchmark recall@5 clean and polluted, labelled checks, rules-gate net change); the model id and folder size; every deviation from a slice doc; every file path you wrote (for the write-scope check); and the final `git status --porcelain`.
 
+### build (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order
+
+You are node 6 (`build`) of build-half graph run `graph-20261011-190751`, attempt 2, resuming after the owner resolved the slice-D park. Invoke the `thejudge-implement-all` skill and follow it in its graph-controlled mode (`graph is controlling`: no questions to the user, no approval pauses). Package: `PRD/work/right-rules-in-order/` inside the working directory above. Shared branch: `thejudge-auto/right-rules-in-order-work` (HEAD after the driver commit below). Work in this worktree in place; no second worktree, no contributor branch. Slices A, B, C are done; finish D, then E, F, G of `GAMEPLAN.md`.
+
+What changed since attempt 1 (read these first):
+- `GRAPH-RUN.md` `## Open gate` and node ledger row 8 (why it parked); `evidence/fix-experiments.md` (the measurement); `GATE-QUESTIONS.md` `## Build-half amendments` — two owner-accepted spec changes: REQ-190 (System 3 shows up to fifteen excerpts: thirteen main-ranking slots plus the two per-card slots, with a semantic-path relevance cutoff dropping main candidates whose unboosted blended score is below 0.6 of the top one, rules the question cites by number exempt; the lexical-only fallback keeps a plain top-N with no cutoff) and REQ-235 (each covered card's Scryfall keywords that name a 701/702 keyword rule add all that rule's lettered pieces as one set after the selected excerpts, de-duplicated and REQ-179-excluded, sharing a 6,000-character per-prompt budget, a set that would overflow skipped whole, not counted against the cap; the rule index ships each keyword rule's title as data). Apply both to `PRD/sections/` by intent with their companion edits (REQ-181, REQ-182, REQ-179, `system-map/game-rules-retrieval.md`, prompt-layout docs).
+- The measurement code is in the git-ignored `output/rule-search-eval/fix-experiments.patch` (`git apply --check` passes at `1a556f1b`). Use it as the starting point, then make the accepted behaviour the shipped default: keyword sets beside, cutoff 0.6, cap 15, budget 6,000, as named constants; drop the variants the owner did not choose (inside-the-ten, other cutoffs) from shipped code. The keyword titles must come from the committed rule index, not the git-ignored rule book at runtime.
+- Restore the held-out trained-model data before continuing slice D: `git checkout 56028ffe -- <the 7 files listed by git diff --stat 56028ffe^1 56028ffe>` and `git checkout 734a3754^3 -- apps/backend/data/embeddingModel.manifest.json`. These are commits on the local branches `parked/right-rules-in-order-slice-d-data` and `parked/right-rules-in-order-slice-d-manifest`; do not pop or drop any stash. The model is in `output/rule-search-model/` (`onnx/F-fold0..4`, `F-foldall`, `upload/rule-search-ed14e631c046`).
+
+Gates for the rest of slice D, on the shipped defaults:
+- `--cv` must reproduce the measured recommended variant exactly: check 520, tuning 511, every-rule check 169, hard 25 24, corpus 435 / 372, bench@5 131. A mismatch stops and parks; report both sets of numbers.
+- The slice-D floors still hold (check at least 430, tuning 410, every-rule check 140, hard 25 15; final corpus 410 and 355, bench@5 118, Necropotence 514.1/514.2/514.3a in both versions); benchmark recall@5 at or above 0.8526 clean and 0.8333 polluted; all 14 labelled semantic checks pass. Any miss parks — report it and stop; do not tune anything to a single fixture.
+- Re-baseline the rules gate once on the trained model with these defaults (`--allow-regressions`), every lost hit listed (corpus case ids only), net hits up.
+- Report rule characters per prompt for search excerpts plus keyword sets.
+Then slices E, F, G as written, by intent with the amendments (keyword-set pieces are excerpts for grouping, labelling and rule-book order; prompt goldens will change because more excerpts reach the prompt — review each golden change, never regenerate blindly).
+
+Rules for this build (unchanged from attempt 1):
+- Privacy is hard: no practice-suite question, answer, card list, id or per-question result in any committed file; no model weights tracked; per-question files only under git-ignored `output/`. Run `node scripts/privacy-scan.mjs` before each commit that touches evidence.
+- Nothing outward-facing: no S3 upload, AWS bootstrap or deploy, no paid model calls, no `npm run data:refresh`, no network writes.
+- Every path you write must lie inside `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order/`. Run tests with that absolute path as the working directory; never cd into /Users/chrismiho/Coding/Projects/TheJudge/apps (attempt 1 did once).
+- Criteria are self-reported in this half; for each criterion you set true, run the real check and keep its command and result in `evidence/build-log.md`. Review re-verifies independently.
+- Long commands: foreground Bash with a long timeout; if longer than 10 minutes, the Bash tool run_in_background parameter and wait — never `nohup` or a trailing `&`.
+- Prettier only for JSON/YAML. Benchmark result files: commit only intended new baselines.
+- Open the code PR into `main` with `gh pr create --base main` once all slices are done. Title: `[THEJUDGE-AUTO][READY] Right rules in order (right-rules-in-order)`. The body opens per `PRD/instructions/plain-language-standard.md` and carries the line `<!-- thejudge-auto:v1:registered:right-rules-in-order -->`, the owner's before-merge model upload commands (profile `thejudge-admin`, `models/<model-id>/`, the `scripts/aws-bootstrap.sh` note — attempt 1 found the deploy role already reads the bucket), the rules-gate lost-hit list, the cap-15 / keyword-set amendments with their measured numbers and the prompt-length trade-off, and the after-merge steps from the brief. Never merge or close a PR.
+- When every slice is done and every criterion true, set `STATUS.ship-ready` as the only marker (the marker is `STATUS.owner-action` now — replace it) and move the `PRD/work/STATUS.md` board row fully to ship-ready.
+
+Mechanics: change files with the Write and Edit tools; no `sed -i` and no heredocs in chained Bash (attempt 1 used `sed -i`). Git as short separate calls from inside the worktree: `git add <explicit paths>`, `git commit`, `git push origin thejudge-auto/right-rules-in-order-work`. Never `git add -A` or `.`, never force-push, never `git -C`. End every commit message with these two lines:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01CWhjS7D5QcyWHjdQTguakK
+Leave `GRAPH-RUN.md` `## Node ledger` and `## Dispatch prompts` alone. Spawn no helper subagents. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: per slice the commit SHA and criteria true; the PR URL; `npm run quality:check` result; the slice-D numbers (cv reproduction, final model, benchmark, labelled 14/14, rules-gate net change and lost hits count); characters per prompt; every deviation from a slice doc; every file path you wrote; and the final `git status --porcelain`.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -271,3 +309,6 @@ Report back: per slice the commit SHA and criteria count true; the PR URL; `npm 
 | "Luna gets the right rules in an order she can follow: trained search model, search fixes, prompt fixes" (owner launch request, 2026-10-11, with the staged graph brief) | answered-once | shape | — |
 | "Accept all recommended, ask for input on ones that you need input from me for" (owner's answer to the 39 GATE-QUESTIONS.md slots, given in session 2026-10-11; 38 filled accept by the driver at the owner's request, REQ-232 asked separately) | answered-once | define | — |
 | "yes it does" (owner's answer, in session 2026-10-11, to whether the practice-suite permission covers training the shipped search model; REQ-232 filled accept by the driver) | answered-once | define | — |
+| "is this an argument that we need to expand on the number of rules being included? everything about this new model sounds amazing, i dont know why we wouldnt try to figure out how to keep moving forward without accepting missing or other oddities that we come across through implementation" (owner, in session 2026-10-12, at the slice-D park) | answered-once | build | — |
+| "yes, run the measurement on both fixes" (owner, in session 2026-10-12; free local measurement, `evidence/fix-experiments.md`) | answered-once | build | — |
+| "yes to both, resume the build" (owner, in session 2026-10-12: accept the REQ-190 cap-15 cutoff-0.6 amendment and the REQ-235 keyword-set amendment, recorded as the two `## Build-half amendments` slots in `GATE-QUESTIONS.md`) | answered-once | build | — |

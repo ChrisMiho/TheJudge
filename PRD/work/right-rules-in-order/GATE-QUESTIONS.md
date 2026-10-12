@@ -2007,3 +2007,46 @@ behaviour.
 
 - Verdict: accept
 - Reason:
+
+## Build-half amendments (answered in session, 2026-10-12)
+
+Raised when the build parked at slice D: the trained model missed 2 of 14 labelled search checks. A free cross-validated measurement (`evidence/fix-experiments.md`) found the two changes below clear all 14 and raise deciding-rule recall everywhere. The owner answered both `accept` in session (see `GRAPH-RUN.md` `## Instruction ledger`). `build` applies them by intent against the branch's current `PRD/sections/` text.
+
+## REQ-190 — amended again: up to fifteen excerpts, cut at 60% of the top score
+
+**What this decides:** whether rule search may show Luna up to fifteen rule excerpts instead of exactly ten, keeping only rules that score close to the best one.
+
+**In plain terms:** today search always shows ten excerpts, padding with weak matches. With this change it shows up to fifteen, thirteen from the main search plus the two per-card slots. A main-search rule is dropped when its meaning-and-words score is below 60% of the top rule's, so weak matches stop padding the list. Rules the question cites by number are never dropped. Measured held-out: deciding rules reaching Luna 445 to 498 alone, 520 with the keyword sets below; rule text per practice question 4,220 to 6,707 characters with both, still under the roughly 7,500 production ships today. This change rests on the search measurement, not on a recorded answer-quality run, which REQ-190 otherwise requires; the paid answer run after merge is that check.
+
+**What happens if you say no:** the cap stays ten and the upkeep labelled check keeps missing (rule 500.6 ranks 11th).
+
+```diff
+-- Description: An answer-quality run may answer the same gold case at more than one System 3 supplemental-excerpt cap, for every answer model in the lineup (REQ-188), and score the legs side by side, so the effect of attaching more rule excerpts on the *answer* can be observed. Production retrieval is one of the legs: System 3 is capped at ten excerpts (REQ-181, REQ-182, `system-map/game-rules-retrieval.md`), raised from five on 2026-09-09 by this requirement's own run-3 measurement.
++- Description: An answer-quality run may answer the same gold case at more than one System 3 supplemental-excerpt cap, for every answer model in the lineup (REQ-188), and score the legs side by side, so the effect of attaching more rule excerpts on the *answer* can be observed. Production retrieval is one of the legs: System 3 is capped at fifteen excerpts — thirteen main-ranking slots plus the two per-card slots (REQ-235) — with a relevance cutoff on the semantic path: a main-ranking candidate whose blended score (before rule-id boosts) is below 0.6 × the top main candidate's is dropped, except a rule the question cites by number (REQ-181, REQ-182, `system-map/game-rules-retrieval.md`). Raised from five to ten on 2026-09-09 by this requirement's run-3 measurement, and from ten to up-to-fifteen-with-cutoff on 2026-10-12 by the owner on the right-rules-in-order cross-validated search measurement.
+-  - the deployed cap is 10, raised from 5 on 2026-09-09 (`rule-excerpt-cap-ten`) on the recorded run-3 measurement in the notes below. Changing it again requires the same evidence — a recorded run showing a different cap scored better for the deployed model — and an amendment to REQ-181, REQ-182, and `system-map/game-rules-retrieval.md` alongside this requirement, never a change made inside this requirement alone
++  - the deployed cap is 15 with the 0.6 relevance cutoff (2026-10-12, right-rules-in-order, owner decision on the cross-validated search measurement: check-half deciding-rule citations 445 → 520 with REQ-235's keyword sets, all 14 labelled checks passing); before that 10, raised from 5 on 2026-09-09 (`rule-excerpt-cap-ten`) on the run-3 answer measurement. The first paid answer run after this change is its answer-quality check. Changing the cap or the cutoff again requires a recorded measurement and an amendment to REQ-181, REQ-182, and `system-map/game-rules-retrieval.md` alongside this requirement
+```
+
+Companion edits, by intent: `DEFAULT_SUPPLEMENTAL_RULE_CAP` becomes 15 and a named cutoff constant 0.6; the run's `--excerpt-cap` default follows the deployed cap; REQ-181 and REQ-182 and `system-map/game-rules-retrieval.md` state the cap and cutoff; the lexical-only fallback keeps the plain top-N with no cutoff.
+
+- Verdict: accept
+- Reason: owner, in session 2026-10-12 (yes to both)
+
+## REQ-235 — amended: each card's keyword rule arrives as a full set beside the excerpts
+
+**What this decides:** whether a card's keyword brings its whole rule to Luna — every lettered piece of, for example, the deathtouch rule — on top of the search excerpts.
+
+**In plain terms:** today a deathtouch creature gets whichever deathtouch pieces search happens to rank, and the one that says the damaged creature is destroyed (702.2b) ranked 17th. With this change each card's keywords that name a keyword rule (702.x abilities, 701.x actions) add that rule's lettered pieces as one set, after the search excerpts, skipping pieces already shown. Sets share a 6,000-character budget per prompt; a set that would overflow it is skipped whole. Measured: about 3.2 pieces added per practice question, the budget binding on 13 of 1,181. The rule index ships each keyword rule's title so the match works.
+
+**What happens if you say no:** keyword rules keep arriving in pieces and the deathtouch labelled check keeps missing.
+
+```diff
+-  - the number of reserved slots is one named constant, `2`; the System 3 cap stays ten (REQ-190)
++  - the number of reserved slots is one named constant, `2`; the System 3 cap is REQ-190's
++  - keyword sets: for each card per-card search covers, every Scryfall keyword (REQ-180's source) whose name matches a keyword rule's title (701.N or 702.N, title shipped in the rule index) adds all that rule's lettered pieces as one set after the selected excerpts, skipping pieces already selected or excluded by REQ-179; sets share one named per-prompt character budget of 6,000 characters for the added pieces, and a set that would exceed it is skipped whole; keyword-set pieces are not counted against the cap and the enrichment-debug sidecar names them and their card
+```
+
+Companion edits, by intent: REQ-179's index records each 701/702 keyword rule's title (data only, never an excerpt); `system-map/game-rules-retrieval.md` and the prompt-layout docs describe the keyword sets.
+
+- Verdict: accept
+- Reason: owner, in session 2026-10-12 (yes to both)
