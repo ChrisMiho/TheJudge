@@ -1,26 +1,24 @@
 # Quality check — right-rules-in-order
 
-**Verdict: PASS.** Graph-controlled run (`graph-20261011-234114`, node `gate-qc`, attempt 1). No findings. The package stays at `STATUS.refined`.
+**Verdict: PASS.** Graph-controlled re-grade after the owner's verdicts (build-half run `graph-20261011-190751`, node `gate-qc`, attempt 1). No findings. The package stays at `STATUS.refined`.
 
-Checked: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (39 slots, verdicts blank by design), `evidence/amendment-grep.md`, `intake/GRAPH-BRIEF-search-and-prompt.md`. The probe folder was not opened. No network or paid calls.
+Checked: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (39 slots, all `accept`), `evidence/amendment-grep.md`, `intake/GRAPH-BRIEF-search-and-prompt.md`. Branch `thejudge-auto/right-rules-in-order-work`, cut from `origin/main` `9776e936` (includes rename PR #292). The probe folder was not opened. No network or paid calls.
 
 ## Requested checks
 
 | # | Check | Result |
 | --- | --- | --- |
-| 1 | Every removed and context diff line matches current `PRD/sections/` | Pass. One script over all 39 diffs checked 344 removed and context lines against the target file (`functional-requirements.md`, `non-functional-requirements.md`, `user-flows.md`, or the named section doc). 0 mismatches. |
-| 2 | Plain-language block and complete diff in every slot | Pass. All 39 slots carry "What this decides", "In plain terms", "What happens if you say no", a closed `diff` fence, and an empty `- Verdict:` / `- Reason:`. New-requirement slots carry the whole entry as added lines. |
-| 3 | Amendment grep re-runs to the same count, every hit has a disposition | Pass. The recorded pattern re-run over `PRD/sections` gives 100 hits in 12 files. The table has 100 rows with the same file:line set (no missing, no extra): 70 amend, 5 build, 25 no change. Every amend/build row names an existing slot. |
-| 4 | Acceptance targets measurable and numerically consistent | Pass. Brief targets 1-3 and 5 match the intake gates exactly (473/159/5/351/305; check >= 430, tuning >= 410, every-rule >= 140, hard 25 >= 15; corpus >= 410 and >= 355; bench@5 >= 118; 17 of 30). Each is a count or threshold. Size: intake 4.9k against 7.5k is search-excerpt characters and is report-only; the 12,000-character list budget covers any two of the largest lists (2 x 5,359 = 10,718). The always-on lists add 916 + 2,833 = 3,749, matching "about 3,750" in the slot and "3.7k" in the brief. |
-| 5 | REQ-233 to REQ-245 unused; no DEC added | Pass. No hit for these ids in `PRD/sections` on `main` or `origin/main`. No `DEC-###` entry is added in any slot (DEC mentions are citations only). |
-| 6 | Privacy | Pass. A local scan of 50-character windows from every practice-suite question and answer against every package `.md` found 0 matches (count only). No suite ids or per-question results. The corpus case ids named (Necropotence, 702.3a, 113.7a, 615.12 cases) are already committed in `functional-requirements.md`. `git ls-files` lists no `.onnx`, `.safetensors` or checkpoints; the only `.bin` files are pre-existing frontend fixtures. |
-| 7 | `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` | Pass. Empty. |
+| 1 | Every removed and context diff line matches current `PRD/sections/` | Pass. One script parsed all 39 diff fences and looked each removed or context line up, as an exact string, in the target file (`functional-requirements.md`, `non-functional-requirements.md`, `user-flows.md`, or the named section doc). 341 non-blank lines checked, 0 mismatches. (The 344 recorded at refresh counts 3 blank context lines.) |
+| 2 | Amendment grep re-runs to the same count, every hit has a disposition | Pass. The recorded pattern over `PRD/sections` gives 100 hits. The table has 100 rows with the identical file:line set (0 missing, 0 extra): 70 amend, 5 build, 25 no change. Every amend/build row names a slot that exists as a `##` heading in `GATE-QUESTIONS.md` (the section-doc rows name the doc's slot). No drift from main moving. |
+| 3 | 39 verdicts consistent with the brief | Pass. All 39 `- Verdict:` lines read `accept`, matching `## Gate verdicts` in `GRAPH-RUN.md` (39/0/0). The brief's figures appear in the accepted slots without conflict: meaning weight 0.65 inside REQ-182's 0.50-0.70 band, 12,000-character list budget, two reserved per-card slots with the cap staying ten (REQ-190), thresholds 430/410/140/15 and 118 and 17 of 30, the `--allow-regressions` one-time re-baseline, private S3 storage (REQ-237/183/184, NFR-017), and the REQ-232 and REQ-234 slots for assumptions 3 and 2. Reconciliation list in `GRAPH-RUN.md` is "none", and no brief passage needs a change. |
+| 4 | REQ-233 to REQ-245 unused; no DEC added | Pass. 0 hits for these ids in `PRD/sections`. `git diff --name-only origin/main HEAD` touches only `PRD/work/STATUS.md` and package files. No `DEC-###` entry is added in any slot. |
+| 5 | Privacy | Pass. A local scan compared 50-character windows of every long string in all 1,485 practice-suite cases (9,265 strings: questions, answers, card text) against every file in the package: 0 matches. 0 suite case ids appear. The suite's old source name appears in 0 package files. `git ls-files` lists no `.onnx`, `.safetensors`, `.pt` or `.ckpt` file. Counts only; nothing from the suite is quoted here. |
+| 6 | `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` | Pass. Empty. |
 
 ## Skill checklist
 
-- Current-state contradictions: none found. The brief reconciles REQ-095/REQ-190 (assumption 1), REQ-220's recorded rejection (assumption 2), and REQ-232 (assumption 3) as explicit slots.
-- Stack ordering preserved: REQ-243 keeps bottom-to-top semantics and only unifies the prompt wording to 1-based "Stack item N".
-- Technical design rules: no endpoint, request, response or frontend change; no new npm dependency; no rules engine.
-- Screen layout: no user-visible screen change, so no `screen-layout.md` row is needed.
-- Open questions: none; each open choice passed the preparation-contract ladder and is listed as a material assumption. Two (assumptions 2 and 3) are surfaced as gate slots.
-- Package state: exactly one marker, `STATUS.refined`. `GRAPH-RUN.md` and `README.md` untouched.
+- No contradiction with current feature specs or cited REQ/FLOW entries: the accepted diffs apply cleanly to current text (check 1).
+- Vocabulary, stack ordering (REQ-243 unifies prompt wording only; the request array convention is unchanged), and technical-design rules hold: no endpoint, request, response or frontend change; no new npm dependency; no rules engine.
+- Screen layout: no user-visible screen change, so no `screen-layout.md` row.
+- Open questions: none; blocker list in the brief is "None".
+- Package state: exactly one marker, `STATUS.refined`; board row is under `## refined`. `GRAPH-RUN.md` and `README.md` untouched by this node.
