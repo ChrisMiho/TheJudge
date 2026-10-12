@@ -20,10 +20,33 @@
 
 ## Open gate
 
-- Question: answer the 11 verdict slots in `PRD/work/follow-ups-keep-their-rules/GATE-QUESTIONS.md` (accept, edit with a reason, or reject with a reason), then merge the docs PR to build.
+- RESOLVED 2026-10-12: 11 of 11 verdicts read from the merged answered file (11 accept, 0 edit, 0 reject); see `## Gate verdicts`.
+- Question (answered): answer the 11 verdict slots in `PRD/work/follow-ups-keep-their-rules/GATE-QUESTIONS.md` (accept, edit with a reason, or reject with a reason), then merge the docs PR to build.
 - PR: https://github.com/ChrisMiho/TheJudge/pull/296 (docs-only, `thejudge-auto/follow-ups-keep-their-rules → main`)
 - Evidence: gate-qc PASS (row 4); `DESIGN-BRIEF.md`; `evidence/offline-measurement.md`.
 - Resume: after the merge, `/graph-implement PRD/work/follow-ups-keep-their-rules/`.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-246` | accept | "Accepted as proposed." Records a follow-up item that is not part of this build: once REQ-247's pushback mode exists, test a variant for new-topic follow-ups where the follow-up's own search fills only excerpt slots the opening question left free, never displacing an opening-question excerpt (first case: the Necropotence "what about end step cleanup?" turn). |
+| `REQ-247` | accept | — |
+| `REQ-178` | accept | — |
+| `REQ-022` | accept | — |
+| `REQ-074` | accept | — |
+| `REQ-027` | accept | — |
+| `REQ-024` | accept | — |
+| `REQ-238` | accept | — |
+| `REQ-242` | accept | — |
+| `REQ-226` | accept | — |
+| `REQ-228` | accept | — |
+
+Tally: 11 accept, 0 edit, 0 reject. `## Blocker questions` in `GATE-QUESTIONS.md` reads "None".
+
+### Brief reconciliation
+
+none
 
 ## Dispatch prompts
 
@@ -131,6 +154,24 @@ Rules:
 - Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
 
 Report back: PASS or FAIL, the complete issue list on FAIL, and `git status --porcelain` of the working directory.
+
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules
+
+You are the gate-resolution step of graph run `graph-20261012-152231` (build half), attempt 1, on branch `thejudge-auto/follow-ups-keep-their-rules-work`. Run the `graph-gate-review` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules/.claude/skills/graph-gate-review/SKILL.md` in full) on `PRD/work/follow-ups-keep-their-rules/` in the working directory above.
+
+The owner's answered `GATE-QUESTIONS.md` merged to main in PR #296: 11 slots, all `accept`. Apply the verdicts inside `GATE-QUESTIONS.md` as the skill says (finalize the proposal in the work folder; never edit `PRD/sections/`). Reconcile `DESIGN-BRIEF.md` and the README intake pointer to every `edit` or `reject` — with all-accept there may be none, but check, and report a `### Brief reconciliation` list (write `none` if empty). The REQ-246 reason records a follow-up item that is explicitly not part of this build; keep it recorded, do not fold it into scope. Write the `## Gate verdicts` section into `GRAPH-RUN.md`, resolve `## Open gate` there, and restore `STATUS.refined` (exactly one marker) with the board row in `PRD/work/STATUS.md` under refined (move the row fully: remove from the old section, add to the new).
+
+Rules:
+- Use the Write and Edit tools for every file change. Run git as short separate calls (`git add <path>`, then `git commit`, then `git push -u origin thejudge-auto/follow-ups-keep-their-rules-work`). Stage explicit paths only.
+- Spawn no subagents or forks, do not sleep or poll, and stay under 60 tool calls. No paid or network calls other than the push.
+- Do not touch `PRD/sections/`, code, or any `thejudge-*` skill.
+- Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
+
+Report back: the verdict tally, the `### Brief reconciliation` list, the commit sha, the final STATUS marker, and `git status --porcelain` of the working directory.
 
 ## Instruction ledger
 
