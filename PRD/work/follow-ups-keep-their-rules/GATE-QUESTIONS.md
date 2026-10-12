@@ -80,8 +80,8 @@ re-checking pushback with mostly different rules, and the "wasn't provided" answ
 +  - known limit, parked: in the owner's live three-turn Necropotence conversation (2026-10-12), the third turn's own words ("what about end step cleanup?") found 514.1, 514.2 and 514.3a; under this requirement that turn keeps the opening question's rules instead
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Accepted as proposed (owner instruction, 2026-10-12: fill in the driver's recommendation). The intake's paid probe found that mixing the follow-up's words into the search doubled side-detail flips, so the measured design ships. Follow-up item, not part of this build: once REQ-247's pushback mode exists, test a variant for new-topic follow-ups in which the follow-up's own search fills only excerpt slots the opening question left free, never displacing an opening-question excerpt — first case: the owner's Necropotence "what about end step cleanup?" turn.
 
 ## REQ-247 — the eval can push back on Luna's first answer and score what happens
 
@@ -140,7 +140,7 @@ post-merge check of REQ-246 has no instrument, and the probe scripts stay untrac
 +  - the lone judge never sees attached cards' oracle text (noted by the cap-15 answer check, #295); that holds for both turns and is not changed here
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-178 — the excerpt search query uses the opening question on a follow-up
@@ -168,7 +168,7 @@ follow-up's words still drive the search, contradicting REQ-246 if that is accep
 +  - REQ-246 (the question a follow-up's query is built from)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-022 — rules enrichment names the opening question on a follow-up
@@ -197,7 +197,7 @@ its rules, contradicting REQ-246 if that is accepted.
 +  - REQ-246 (a follow-up's rules come from the opening question)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-074 — Quick Lookup follow-ups carry the opening question's rules
@@ -230,7 +230,7 @@ own words, contradicting REQ-246 if that is accepted.
 +  - REQ-246
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-027 — the follow-up contract states where a follow-up's rules come from
@@ -256,7 +256,7 @@ REQ-246 alone carries the rule.
 +  - REQ-246
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-024 — step guidance on a Quick Lookup follow-up follows the opening question
@@ -284,7 +284,7 @@ follow-up's own words, while its searched excerpts follow the opening question.
 +  - REQ-246
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-238 — Quick Lookup step summaries on a follow-up come from the opening question
@@ -311,7 +311,7 @@ follow-up's words.
 +  - REQ-246 (a follow-up reads the opening question)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-242 — In-Depth curated topics on a follow-up come from the opening question
@@ -342,7 +342,7 @@ topics, while their searched excerpts follow the opening question.
 +  - REQ-246 (a follow-up reads the opening question)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-226 — experiment records carry the turn in a pushback run
@@ -370,7 +370,7 @@ pushback wording it used.
 +  - REQ-247 (the follow-up run that adds the turn to a record's key)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-228 — the paired report compares one turn at a time
@@ -396,7 +396,7 @@ runs and could mix first answers with pushback answers.
 +  - REQ-247 (the follow-up runs whose turns it selects)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## Blocker questions

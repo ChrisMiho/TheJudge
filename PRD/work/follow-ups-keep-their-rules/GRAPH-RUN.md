@@ -137,3 +137,4 @@ Report back: PASS or FAIL, the complete issue list on FAIL, and `git status --po
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "merged it, start the follow-ups build" (owner, in session 2026-10-12; mechanics: launch the queued follow-ups kickoff from `PRD/work/probe-prompt-format-tuning/GRAPH-BRIEF.md`) | answered-once | preflight | — |
+| "fill in the answers with your recommendation" (owner, in session 2026-10-12, after the PR #296 summary; covers exactly the 11 slots of this `GATE-QUESTIONS.md`; the driver filled 11 accept verdicts, REQ-246 accepted as proposed with a recorded follow-up item for new-topic follow-ups) | answered-once | gate-qc | — |
