@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/follow-ups-keep-their-rules`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-follow-ups-keep-their-rules`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261012-195753/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/follow-ups-keep-their-rules/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 6` | branch `thejudge-auto/follow-ups-keep-their-rules` cut from `origin/main` `0461969f` into `.worktrees/kickoff-follow-ups-keep-their-rules` and pushed (`git ls-remote` shows `0461969f`); lock `.worktrees/.graph-run.lock` holds run `graph-20261012-195753`; universal canary `rm -rf .worktrees/.graph-canary-nonexistent` denied, graph canary `nohup true` denied while the lock was held; `Profile: unverified`; launch checkout porcelain unchanged (4 untracked folders) | 2026-10-12 |
 | 2 | shape | sonnet | ok | `0 → 19` | commit `d9f2bb2d` pushed: `PRD/work/follow-ups-keep-their-rules/` with `IDEA.md` (8 `## Prior run` lines), `README.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md` and `intake/DRIVER-NOTE-changes-since-the-brief.md` (driver `cmp`: byte-identical to staging), board row under `## ideation`; staged copy left (removal under `.worktrees/` is denied) | 2026-10-12 |
+| 3 | define | opus | ok | `0 → 101` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (11 slots, all verdicts blank: new REQ-246, REQ-247; amended REQ-022, REQ-024, REQ-027, REQ-074, REQ-178, REQ-226, REQ-228, REQ-238, REQ-242; no blocker), `evidence/amendment-grep.md` (268 hits = 13 amend / 13 build / 242 no change), `evidence/offline-measurement.md` (62-case diagnostic manifest at `0461969f`: carried excerpts 62/62, In-Depth curated topics 9/9, lookup step guidance 53/53; today 6 of 9 In-Depth follow-ups change topics); `STATUS.refined` only marker, board row under `## refined`; driver `git diff --stat HEAD -- PRD/sections apps scripts` empty. Deviation: node wrote the first README/board/grep drafts with short python scripts and renamed markers with `mv` (no denial) | 2026-10-12 |
 
 ## Open gate
 
@@ -100,6 +101,32 @@ Rules:
 - If a command is denied, stop and report it verbatim; never retry it.
 
 Report back: the files you wrote, every proposed stable ID (new and amended) with one plain line each, any blocker question, the measured numbers behind each acceptance target, the final STATUS marker, and `git status --porcelain` of the working directory.
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-follow-ups-keep-their-rules
+
+You are node 4 (`gate-qc`) of graph run `graph-20261012-195753`, attempt 1. Run the `thejudge-quality-check` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-follow-ups-keep-their-rules/.claude/skills/thejudge-quality-check/SKILL.md` and `PRD/instructions/preparation-contract.md`) on `PRD/work/follow-ups-keep-their-rules/` in the working directory above, in orchestrated mode.
+
+Grade `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` against the skill's checklist and the current truth in `PRD/sections/`. In particular check:
+- every old and context line in each `GATE-QUESTIONS.md` diff matches the current `PRD/sections/` text at the stated place, verbatim;
+- every amend row in `evidence/amendment-grep.md` has a slot in `GATE-QUESTIONS.md`, and no slot is missing for a requirement the brief changes;
+- each slot opens with the three plain-language lines (What this decides, In plain terms, What happens if you say no) and leaves `- Verdict:` and `- Reason:` blank;
+- new IDs are REQ-246 and REQ-247 and collide with nothing on main; no DEC is minted;
+- every numeric acceptance target cites a measurement under `evidence/`, and the brief's code references (file and line) are true in this working directory;
+- no practice-suite question, answer, id, card list or per-question result appears in any package file.
+
+Emit an explicit PASS or FAIL. On FAIL, list every issue completely, each with file, line and the fix needed; do not fix anything yourself beyond what the skill allows in orchestrated mode, and set the status markers as the skill says. On PASS, leave the package at `STATUS.refined`.
+
+Rules:
+- Verify directly by reading files and running short greps. Spawn no subagents or forks, do not sleep or poll, and stay well under 60 tool calls.
+- Write nothing except what the skill requires on FAIL (status marker, README status line, board row). Use the Write and Edit tools for any file change. Do not commit or push. Do not touch `GRAPH-RUN.md`.
+- No paid or network calls. Do not run the package's measurement scripts; read their recorded output.
+- Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
+
+Report back: PASS or FAIL, the complete issue list on FAIL, and `git status --porcelain` of the working directory.
 
 ## Instruction ledger
 
