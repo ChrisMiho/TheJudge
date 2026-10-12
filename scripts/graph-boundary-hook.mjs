@@ -422,6 +422,7 @@ export function decide(rawPayload, io = {}) {
     flippedCriteria,
     observedEvidence,
     lockRunId: runActive ? runIdFromLock(readRunLock(root, read)) : null,
+    lockSlug: runActive ? slugFromLock(readRunLock(root, read)) : null,
     release: runActive ? readRelease(root, read ?? readFileSync) : null,
     priorDenials: runActive && runState !== null ? readPriorDenials(root, runState.runId, io) : null
   })

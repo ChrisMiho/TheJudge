@@ -29,6 +29,8 @@ export const PROTECTED_PATH_PATTERNS = Object.freeze([
   ".claude/settings*.json",
   ".claude/skills/thejudge-*/**",
   ".agents/skills/thejudge-*/**",
+  ".claude/skills/codehealth/**",
+  ".agents/skills/codehealth/**",
   "scripts/graph-boundary-hook.mjs"
 ])
 
