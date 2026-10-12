@@ -13,7 +13,7 @@ Luna gets the right rules in an order she can follow: a Magic-trained search mod
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/right-rules-in-order
+- Autonomous base: origin/main
 
 ## Preparation gate
 

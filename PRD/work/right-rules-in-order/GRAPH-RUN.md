@@ -1,10 +1,10 @@
 # Graph run — right-rules-in-order
 
-- Run ID: `graph-20261011-234114`
+- Run ID: `graph-20261011-190751` (build half; spec-forming half `graph-20261011-234114`)
 - Profile: `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/right-rules-in-order`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-right-rules-in-order`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
 - Current node: `owner-action`
 - Next action: `/graph-implement PRD/work/right-rules-in-order/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
