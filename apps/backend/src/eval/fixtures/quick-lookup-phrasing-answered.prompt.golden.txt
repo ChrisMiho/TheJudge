@@ -84,5 +84,20 @@ Example: One effect reads, “White creatures get +1/+1,” and another reads, �
 
 729.1b. 729.1b No effects or definitions created in either the main game or the subgame have any meaning in the other, except as defined by the effect that created the subgame. For example, the effect may say that something happens in the main game to the winner or loser of the subgame.
 
+732.3. 732.3. Sometimes a loop can be fragmented, meaning that each player involved in the loop performs an independent action that results in the same game state being reached multiple times. If that happens, the active player (or, if the active player is not involved in the loop, the first player in turn order who is involved) must then make a different game choice so the loop does not continue.
+Example: In a two-player game, the active player controls a creature with the ability “{0}: This creature gains flying,” the nonactive player controls a permanent with the ability “{0}: Target creature loses flying,” and nothing in the game cares how many times an ability has been activated. Say the active player activates his creature’s ability, it resolves, then the nonactive player activates her permanent’s ability targeting that creature, and it resolves. This returns the game to a game state it was at before. The active player must make a different game choice (in other words, anything other than activating that creature’s ability again). The creature doesn’t have flying. Note that the nonactive player could have prevented the fragmented loop simply by not activating her permanent’s ability, in which case the creature would have had flying. The nonactive player always has the final choice and is therefore able to determine whether the creature has flying.
+
+312.5. 312.5. Each phenomenon card has a triggered ability that triggers when you encounter it. “When you encounter [this phenomenon]” means “When you move this card off a planar deck and turn it face up.”
+
+110.5b. 110.5b Permanents enter the battlefield untapped, unflipped, face up, and phased in unless a spell or ability says otherwise.
+
+111.4. 111.4. A spell or ability that creates a token sets both its name and its subtype(s). If the spell or ability doesn’t specify the name of the token, its name is the same as its subtype(s) plus the word “Token.” Once a token is on the battlefield, changing its name doesn’t change its subtype(s), and vice versa.
+Example: Dwarven Reinforcements is a sorcery that says, in part, “Create two 2/1 red Dwarf Berserker creature tokens.” The tokens created as it resolves are each named Dwarf Berserker Token and each have the creature types Dwarf and Berserker.
+Example: Minsc, Beloved Ranger says, in part, “When Minsc enters, create Boo, a legendary 1/1 red Hamster creature token with trample and haste.” That token’s subtype is Hamster, but because Minsc specifies that the token’s name is Boo, neither “Hamster” nor “Token” are part of its name.
+Example: Spitting Image is a sorcery that says, in part, “Create a token that’s a copy of target creature.” All of that token’s characteristics will match the copiable characteristics of the creature targeted by that spell. If Spitting Image targets Doomed Dissenter, a Human creature, the name of the token the spell creates will be Doomed Dissenter, not Human Token or Doomed Dissenter Token.
+
+111.12. 111.12. If an effect instructs a player to create a token that is a copy of a nonexistent object, no token is created (see rule 707, “Copying Objects”). This does not apply to an effect that would use the last known information of an object.
+Example: Mimic Vat has a triggered ability whose effect gives you the option to exile a card and an activated ability that says “Create a token that’s a copy of a card exiled with this artifact. It gains haste. Exile it at the beginning of the next end step.” If no card has been exiled with Mimic Vat’s triggered ability, no token is created.
+
 QUESTION
 What does it mean when people say a deck has a combo?

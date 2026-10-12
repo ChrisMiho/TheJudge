@@ -335,3 +335,58 @@ test("rebuilt from the same rule book, only the listed pieces change their id, t
   const expectedChanged = [...GLUED_TITLE_IDS, "704.5z"].map((id) => `${id}:text`).sort();
   assert.deepEqual([...diff.changed].sort(), expectedChanged);
 });
+
+// REQ-179 / REQ-235: each lettered piece of a 701/702 keyword rule carries the rule's title as data.
+const KEYWORD_FIXTURE = `
+These rules are effective as of September 25, 2026.
+
+Glossary
+Credits
+
+7. Additional Rules
+
+702. Keyword Abilities
+
+702.1. General
+
+702.1a Keyword abilities are the game's shorthand.
+
+702.2. Deathtouch
+
+702.2a Deathtouch is a static ability.
+
+702.2b A creature dealt damage by a source with deathtouch is destroyed.
+
+701. Keyword Actions
+
+701.9. Discard
+
+701.9a To discard a card, move it from its owner's hand to their graveyard.
+
+Glossary
+
+Deathtouch
+A keyword.
+
+Credits
+`;
+
+test("parseRuleIndex records each keyword rule's title on its lettered pieces and nowhere else", () => {
+  const entries = parseRuleIndex(KEYWORD_FIXTURE);
+  const byId = new Map(entries.map((entry) => [entry.ruleId, entry]));
+  assert.equal(byId.get("702.2a")?.keywordTitle, "Deathtouch");
+  assert.equal(byId.get("702.2b")?.keywordTitle, "Deathtouch");
+  assert.equal(byId.get("701.9a")?.keywordTitle, "Discard");
+  // 702.1 is the section's general rule, not a keyword.
+  assert.equal(byId.get("702.1a")?.keywordTitle, undefined);
+  // The title is data: no excerpt text changes.
+  assert.ok(!byId.get("702.2a").text.includes("keywordTitle"));
+});
+
+test("the committed rule index ships keyword titles on 701/702 pieces", () => {
+  const index = JSON.parse(fs.readFileSync("apps/backend/data/gameRulesRuleIndex.json", "utf8"));
+  const titled = index.filter((entry) => entry.keywordTitle);
+  assert.ok(titled.length > 500);
+  assert.ok(titled.every((entry) => /^70[12]\.\d+[a-z]+$/.test(entry.ruleId)));
+  assert.equal(index.find((entry) => entry.ruleId === "702.2b")?.keywordTitle, "Deathtouch");
+});

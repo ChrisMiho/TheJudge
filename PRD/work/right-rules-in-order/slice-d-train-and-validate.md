@@ -1,6 +1,6 @@
 # Slice D — First training, cross-validation, vectors, gates
 
-## Status: blocked
+## Status: done
 
 ## Goal
 
@@ -20,17 +20,17 @@ Train the Magic search model locally, prove it with 5-fold cross-validation, shi
 
 ## Acceptance criteria
 
-- [ ] Hard-25 reproduced from local material with ids only in a git-ignored path (or the build parked)
-- [ ] 5-fold CV meets check >= 430, tuning >= 410, every-rule check >= 140, hard 25 >= 15; counts recorded in the evidence log
-- [ ] Final model meets corpus >= 410, >= 355 cases with every rule, bench@5 >= 118, Necropotence ids 514.1/514.2/514.3a in the top ten in both versions
-- [ ] Leak check and latency/quantization check run and their counts are recorded
-- [ ] The manifest is committed with correct hashes and every committed vector file records the trained model id
-- [ ] Benchmark floors (0.8526 / 0.8333) and the 12 labelled checks pass on the trained model
-- [ ] Rules gate re-baselined once with every lost hit listed and net hits up
-- [ ] `git ls-files` lists no weight files and `scripts/privacy-scan.mjs` reports 0 matches
-- [ ] Stemming-case ranks and rule characters per prompt are recorded
-- [ ] The upload commands doc is committed outside `PRD/work/`
-- [ ] `npm run quality:check` passes
+- [x] Hard-25 reproduced from local material with ids only in a git-ignored path (or the build parked)
+- [x] 5-fold CV meets check >= 430, tuning >= 410, every-rule check >= 140, hard 25 >= 15; counts recorded in the evidence log
+- [x] Final model meets corpus >= 410, >= 355 cases with every rule, bench@5 >= 118, Necropotence ids 514.1/514.2/514.3a in the top ten in both versions
+- [x] Leak check and latency/quantization check run and their counts are recorded
+- [x] The manifest is committed with correct hashes and every committed vector file records the trained model id
+- [x] Benchmark floors (0.8526 / 0.8333) and the 12 labelled checks pass on the trained model
+- [x] Rules gate re-baselined once with every lost hit listed and net hits up
+- [x] `git ls-files` lists no weight files and `scripts/privacy-scan.mjs` reports 0 matches
+- [x] Stemming-case ranks and rule characters per prompt are recorded
+- [x] The upload commands doc is committed outside `PRD/work/`
+- [x] `npm run quality:check` passes
 
 ## Verification
 

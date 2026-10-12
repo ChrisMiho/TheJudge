@@ -82,5 +82,15 @@ Example: An effect that reads “Prevent all damage creatures would deal this tu
 
 702.37a. 702.37a Morph is a static ability that functions in any zone from which you could play the card it’s on, and the morph effect works any time the card is face down. “Morph [cost]” means “You may cast this card as a 2/2 face-down creature with no text, no name, no subtypes, and no mana cost by paying {3} rather than paying its mana cost.” (See rule 708, “Face-Down Spells and Permanents.”)
 
+702.38b. 702.38b If a creature has multiple instances of amplify, each one works separately.
+
+702.43b. 702.43b If a creature has multiple instances of modular, each one works separately.
+
+702.44d. 702.44d If an object has multiple instances of sunburst, each one works separately.
+
+702.58b. 702.58b If a permanent has multiple instances of graft, each one works separately.
+
+702.63c. 702.63c If a permanent has multiple instances of vanishing, each works separately.
+
 QUESTION
 How does cascade work?

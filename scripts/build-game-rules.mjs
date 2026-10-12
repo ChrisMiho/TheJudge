@@ -299,7 +299,33 @@ export function parseRuleIndex(crText) {
     entries.push({ ruleId, sectionTitle: currentSectionTitle, text: ruleText, searchText, parentRuleIds });
   }
 
-  return cleanRuleIndexEntries(entries);
+  return annotateKeywordRuleTitles(cleanRuleIndexEntries(entries), keywordRuleTitlesOf(text));
+}
+
+/**
+ * REQ-179 / REQ-235: the keyword rules' titles, read from the title-only lines of the rule book
+ * (`702.2. Deathtouch`, `701.9. Discard`): rule number -> title. 701.1 and 702.1 are the sections'
+ * general rules, not keywords. The first line per rule number wins.
+ */
+export function keywordRuleTitlesOf(text) {
+  const titles = new Map();
+  for (const match of text.matchAll(/^(70[12]\.(\d+))\. (.+?)\s*$/gm)) {
+    if (match[2] === "1") continue;
+    if (!titles.has(match[1])) titles.set(match[1], match[3].trim());
+  }
+  return titles;
+}
+
+/**
+ * Each lettered piece of a keyword rule carries `keywordTitle`, the rule's title, so the backend can
+ * match a card's Scryfall keyword to the rule's whole set. Data only: the title is never an excerpt.
+ */
+export function annotateKeywordRuleTitles(entries, titles) {
+  return entries.map((entry) => {
+    const parent = /^(70[12]\.\d+)[a-z]+$/.exec(entry.ruleId)?.[1];
+    const title = parent ? titles.get(parent) : undefined;
+    return title ? { ...entry, keywordTitle: title } : entry;
+  });
 }
 
 function mapPreviousTopics(previousTopics) {

@@ -110,7 +110,7 @@ function preparedPrompt(caseEntry: GoldCase): string {
 
 describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
   describe("the committed corpus", () => {
-    it("passes the gate against the committed baseline, with the 15 of 18 first-ship cases hitting", () => {
+    it("passes the gate against the committed baseline, with the 16 of 18 first-ship cases hitting", () => {
       const outcome = runGate();
       expect(outcome.report).toContain("Rules gate:");
       expect(outcome.results.filter((result) => result.failures.length > 0)).toEqual([]);
@@ -130,11 +130,10 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
       const recorded = firstShip.filter((caseEntry) => baseline.cases[caseEntry.id]);
       const hits = recorded.filter((caseEntry) => baseline.cases[caseEntry.id].miss.length === 0);
       const misses = recorded.filter((caseEntry) => baseline.cases[caseEntry.id].miss.length > 0).map((c) => c.id);
-      expect(hits.length).toBe(15);
-      // right-rules-in-order, slice B (stock model, new search): combat-damage-assignment-order-multiple-blockers
-      // (510.1c) drops out of the first-ship hits; slice D re-measures this with the trained model.
+      expect(hits.length).toBe(16);
+      // right-rules-in-order, slice D (trained model, cap 15 with the relevance cutoff and keyword sets): the
+      // combat-damage-assignment case (510.1c) is back among the first-ship hits.
       expect(misses.sort()).toEqual([
-        "combat-damage-assignment-order-multiple-blockers",
         "panharmonicon-controller-not-entering-permanent",
         "restoration-angel-blink-resets-counters"
       ]);
@@ -268,7 +267,7 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
         const withTopic = Object.values(baseline.cases).filter((entry) => (entry.inTopic?.length ?? 0) > 0);
         // 11 before the resolution-recipe-eval hard cases; the 16 new cases add seven In-Depth twins whose rules a curated topic carries.
         expect(withTopic.length).toBe(18);
-        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(329);
+        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(376);
       });
     });
 

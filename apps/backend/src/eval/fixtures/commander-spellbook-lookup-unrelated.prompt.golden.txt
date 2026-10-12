@@ -84,6 +84,22 @@ Example: Fire//Ice is a split card whose halves have the mana costs {1}{R} and {
 
 702.174c. 702.174c Some effects trigger whenever a player gives a gift. Such an ability triggers whenever an instant or sorcery spell that player controls whose gift cost was paid resolves. It also triggers whenever the gift triggered ability of a permanent that player controls resolves.
 
+702.174j. 702.174j For instant and sorcery spells, the effect of a gift ability always happens before any other spell abilities of the card. If the spell is countered or otherwise leaves the stack before resolving, the gift effect doesn’t happen.
+
+707.10. 707.10. To copy a spell, activated ability, or triggered ability means to put a copy of it onto the stack; a copy of a spell isn’t cast and a copy of an activated ability isn’t activated. A copy of a spell or ability copies both the characteristics of the spell or ability and all decisions made for it, including modes, targets, the value of X, and additional or alternative costs. (See rule 601, “Casting Spells.”) Choices that are normally made on resolution are not copied. If an effect of the copy refers to objects used to pay its costs, it uses the objects used to pay the costs of the original spell or ability. A copy of a spell is owned by the player under whose control it was put on the stack. A copy of a spell or ability is controlled by the player under whose control it was put on the stack. A copy of a spell is itself a spell, even though it has no spell card associated with it. A copy of an ability is itself an ability.
+Example: A player casts Fork, targeting an Emerald Charm. Fork reads, “Copy target instant or sorcery spell, except that the copy is red. You may choose new targets for the copy.” Emerald Charm is a modal green instant. When the Fork resolves, it puts a copy of the Emerald Charm on the stack except the copy is red, not green. The copy has the same mode that was chosen for the original Emerald Charm. It does not necessarily have the same target, but only because Fork allows choosing of new targets.
+Example: Fling is an instant that reads, “As an additional cost to cast this spell, sacrifice a creature” and “Fling deals damage equal to the sacrificed creature’s power to any target.” When determining how much damage a copy of Fling deals, it checks the power of the creature sacrificed to pay for the original Fling.
+Example: Dawnglow Infusion is a sorcery that reads, “You gain X life if {G} was spent to cast this spell and X life if {W} was spent to cast it.” Because mana isn’t an object, a copy of Dawnglow Infusion won’t cause you to gain any life, no matter what mana was spent to cast the original spell.
+
+712.21c. 712.21c If an effect can find the new object that a melded permanent becomes as it leaves the battlefield, it finds both cards. (See rule 400.7.) If that effect causes actions to be taken upon those cards, the same actions are taken upon each of them.
+Example: Otherworldly Journey is an instant that reads “Exile target creature. At the beginning of the next end step, return that card to the battlefield under its owner’s control with a +1/+1 counter on it.” A player casts Otherworldly Journey targeting Chittering Host, a melded permanent. Chittering Host is exiled. At the beginning of the next end step, Midnight Scavengers and Graf Rats are both returned to the battlefield, each with a +1/+1 counter on it.
+Example: False Demise is an Aura with the ability “When enchanted creature dies, return that card to the battlefield under your control.” A Chittering Host enchanted by False Demise dies. The triggered ability returns both Midnight Scavengers and Graf Rats to the battlefield.
+Example: Mimic Vat is an artifact that reads, in part, “Whenever a nontoken creature dies, you may exile that card.” A Chittering Host dies. As Mimic Vat’s triggered ability resolves, its controller makes a single choice and both cards that represented Chittering Host are either exiled or not.
+
+304.2. 304.2. When an instant spell resolves, the actions stated in its rules text are followed. Then it’s put into its owner’s graveyard.
+
+404.1. 404.1. A player’s graveyard is their discard pile. Any object that’s countered, discarded, destroyed, or sacrificed is put on top of its owner’s graveyard, as is any instant or sorcery spell that’s finished resolving. Each player’s graveyard starts out empty.
+
 CARD (looked up)
 name: Dark Consultation
 manaCost: {B}

@@ -82,6 +82,17 @@ Example: A player’s mana pool contains {R}{G} which can be spent only to cast 
 208.3a. 208.3a If an effect would be created that sets the base power and/or toughness of a noncreature permanent, or otherwise modifies its power and/or toughness, that effect is created even though it doesn’t do anything unless that permanent becomes a creature.
 Example: Veteran Motorist has the ability “Whenever this creature crews a Vehicle, that Vehicle gets +1/+1 until end of turn,” and it’s tapped to pay the crew cost of a Vehicle. This triggered ability resolves while the Vehicle it crewed isn’t yet a creature. The continuous effect is created and will apply to the Vehicle once it becomes a creature.
 
+301.5. 301.5. Some artifacts have the subtype “Equipment.” An Equipment can be attached to a creature. It can’t legally be attached to anything that isn’t a creature.
+
+303.4d. 303.4d An Aura can’t enchant itself. If this occurs somehow, the Aura is put into its owner’s graveyard. An Aura that’s also a creature can’t enchant anything. If this occurs somehow, the Aura becomes unattached, then is put into its owner’s graveyard. (These are state-based actions. See rule 704.) An Aura can’t enchant more than one object or player. If a spell or ability would cause an Aura to become attached to more than one object or player, the Aura’s controller chooses which object or player it becomes attached to.
+
+510.1b. 510.1b An unblocked creature assigns its combat damage to the player, planeswalker, or battle it’s attacking. If it isn’t currently attacking anything (if, for example, it was attacking a planeswalker that has left the battlefield), it assigns no combat damage.
+
+603.2g. 603.2g An ability triggers only if its trigger event actually occurs. An event that’s prevented or replaced won’t trigger anything.
+Example: An ability that triggers on damage being dealt won’t trigger if all the damage is prevented.
+
+603.6. 603.6. Trigger events that involve objects changing zones are called “zone-change triggers.” Many abilities with zone-change triggers attempt to do something to that object after it changes zones. During resolution, these abilities look for the object in the zone that it moved to. If the object is unable to be found in the zone it went to, the part of the ability attempting to do something to the object will fail to do anything. The ability could be unable to find the object because the object never entered the specified zone, because it left the zone before the ability resolved, or because it is in a zone that is hidden from a player, such as a library or an opponent’s hand. (This rule applies even if the object leaves the zone and returns again before the ability resolves.) The most common zone-change triggers are enters-the-battlefield triggers and leaves-the-battlefield triggers.
+
 CARD (looked up)
 name: Dark Consultation
 manaCost: {B}

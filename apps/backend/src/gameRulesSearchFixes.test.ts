@@ -13,11 +13,14 @@ import {
   findObsoleteGlossaryTerms,
   getDefaultScoringResources,
   HYBRID_BLEND_ALPHA,
+  KEYWORD_SET_CHAR_BUDGET,
+  keywordRuleSetsForCards,
   PER_CARD_RESERVED_SLOTS,
   perCardTextKey,
   retrievalInputFromPromptContext,
   retrieveRulesForQuery,
   retrieveRulesForQueryWithDebug,
+  SUPPLEMENTAL_RELEVANCE_CUTOFF,
   turnStepSearchName,
   type GameRulesRuleIndexEntry,
   type GameRulesGlossaryEntry,
@@ -361,11 +364,14 @@ describe("REQ-235 per-card search", () => {
   });
 
   it("fills a slot the cards leave open from the main ranking, never exceeding the cap", () => {
+    // The relevance cutoff (REQ-190) may leave fewer than ten, never more.
     const none = select(10, [{ cardName: "Same as main", vector: angles(1.2) }]);
-    expect(none.selected).toHaveLength(10);
+    expect(none.selected.length).toBeGreaterThanOrEqual(8);
+    expect(none.selected.length).toBeLessThanOrEqual(10);
     expect(none.debug.perCardSelected).toEqual([]);
     const oneCard = select(10, [{ cardName: "A", vector: angles(75.5) }]);
-    expect(oneCard.selected).toHaveLength(10);
+    expect(oneCard.selected.length).toBeGreaterThanOrEqual(9);
+    expect(oneCard.selected.length).toBeLessThanOrEqual(10);
     expect(oneCard.debug.perCardSelected).toHaveLength(1);
   });
 
@@ -417,5 +423,100 @@ describe("REQ-235 per-card search", () => {
     );
     expect(query.perCardTexts.map((card) => card.cardName)).toEqual(["A", "C"]);
     expect(query.queryText).not.toContain("Draw two cards");
+  });
+});
+
+describe("REQ-190 relevance cutoff", () => {
+  // Rules at angles from a query at 0.5 degrees: cosine to the query falls as the angle grows.
+  const angles = (degrees: number): number[] => [Math.cos((degrees * Math.PI) / 180), Math.sin((degrees * Math.PI) / 180)];
+  const degrees = [0, 1, 2, 3, 4, 5, 6, 7, 45, 60, 75, 90];
+  const ids = degrees.map((_, i) => `${100 + i}.1`);
+  const embeddings = { model: "m", dims: 2, ruleIds: ids, vectors: degrees.map(angles) };
+  const resources = resourcesWith({ ruleEmbeddings: embeddings, tokenStats: { N: 100, df: new Map([["word", 90]]) } });
+  const index = ids.map((id) => entry(id, `${id} word`));
+  const run = (queryRuleIds: string[], queryVector: number[] | null, max = 15) =>
+    retrieveRulesForQueryWithDebug([], queryRuleIds, index, new Set(), max, resources, queryVector, "q", []);
+
+  it("drops main candidates scoring under 0.6 of the top one, so a cap of 15 does not pad the list", () => {
+    expect(SUPPLEMENTAL_RELEVANCE_CUTOFF).toBe(0.6);
+    const result = run([], angles(0.5));
+    const selected = result.selected.map((rule) => rule.ruleId);
+    expect(selected.slice(0, 8)).toEqual(ids.slice(0, 8));
+    expect(selected.length).toBeLessThan(12);
+    expect(selected).not.toContain("111.1");
+    expect(result.debug.usedSemantic).toBe(true);
+  });
+
+  it("keeps a rule the question cites by number even when its blend is far under the cutoff", () => {
+    const result = run(["111.1"], angles(0.5));
+    expect(result.selected.map((rule) => rule.ruleId)).toContain("111.1");
+  });
+
+  it("the lexical-only fallback keeps a plain top-N with no cutoff", () => {
+    const result = retrieveRulesForQueryWithDebug([{ token: "word", source: "question", isKeyword: false }], [], index, new Set(), 12, resources, null, "q", []);
+    expect(result.debug.usedSemantic).toBe(false);
+    expect(result.selected).toHaveLength(12);
+  });
+});
+
+describe("REQ-235 keyword sets", () => {
+  const piece = (ruleId: string, title: string, text: string) =>
+    entry(ruleId, `${ruleId} word`, { text, keywordTitle: title, parentRuleIds: [ruleId.replace(/[a-z]+$/, ""), ruleId.split(".")[0]!] });
+  const long = (n: number) => "x".repeat(n);
+  const index: GameRulesRuleIndexEntry[] = [
+    entry("100.1", "100.1 word"),
+    piece("702.2a", "Deathtouch", "702.2a short"),
+    piece("702.2b", "Deathtouch", "702.2b short"),
+    piece("702.2c", "Deathtouch", "702.2c short"),
+    piece("702.9a", "Flying", long(5000)),
+    piece("702.9b", "Flying", long(2000)),
+    piece("702.19a", "Trample", "702.19a short")
+  ];
+  const card = (name: string, keywords: string[], oracleText = "text") => ({ name, typeLine: "Creature", keywords, oracleText });
+  const resources = resourcesWith();
+  const run = (cards: ReturnType<typeof card>[], exclude = new Set<string>()) =>
+    retrieveRulesForQueryWithDebug(
+      [{ token: "word", source: "question", isKeyword: false }],
+      [],
+      index,
+      exclude,
+      1,
+      resources,
+      null,
+      "q",
+      [],
+      [],
+      keywordRuleSetsForCards(cards, index)
+    );
+
+  it("matches a card's Scryfall keyword to the rule's title and adds every lettered piece after the excerpts", () => {
+    const sets = keywordRuleSetsForCards([card("Snake", ["Deathtouch"])], index);
+    expect(sets).toEqual([{ cardName: "Snake", keyword: "Deathtouch", ruleId: "702.2", pieceIds: ["702.2a", "702.2b", "702.2c"] }]);
+    const result = run([card("Snake", ["Deathtouch"])]);
+    expect(result.selected).toHaveLength(4);
+    expect(result.selected.slice(1).map((rule) => rule.ruleId)).toEqual(["702.2a", "702.2b", "702.2c"]);
+    expect(result.debug.keywordSetSelected.map((hit) => hit.cardName)).toEqual(["Snake", "Snake", "Snake"]);
+  });
+
+  it("skips pieces already selected or excluded, and cards with no oracle text or no matching keyword", () => {
+    const excluded = run([card("Snake", ["Deathtouch"])], new Set(["702.2b"]));
+    expect(excluded.selected.map((rule) => rule.ruleId)).not.toContain("702.2b");
+    expect(keywordRuleSetsForCards([card("Vanilla", [], "text"), card("Blank", ["Deathtouch"], "")], index)).toEqual([]);
+    expect(keywordRuleSetsForCards([card("Odd", ["Not A Keyword"])], index)).toEqual([]);
+  });
+
+  it("skips a set whole when it would overflow the character budget, and keeps later sets", () => {
+    expect(KEYWORD_SET_CHAR_BUDGET).toBe(6000);
+    // Flying alone is 7,000 characters; the Trample set still fits.
+    const result = run([card("Bird", ["Flying", "Trample"])]);
+    const ids = result.selected.map((rule) => rule.ruleId);
+    expect(ids).not.toContain("702.9a");
+    expect(ids).not.toContain("702.9b");
+    expect(ids).toContain("702.19a");
+  });
+
+  it("counts one set per rule even when two cards share the keyword", () => {
+    const sets = keywordRuleSetsForCards([card("A", ["Deathtouch"]), card("B", ["Deathtouch"])], index);
+    expect(sets).toHaveLength(1);
   });
 });

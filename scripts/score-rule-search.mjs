@@ -39,7 +39,6 @@ const CASES_FILE = arg("--cases", join(MODELS, "data/cases.jsonl"));
 const MODE = args.includes("--cv") ? "cv" : args.includes("--final") ? "final" : "shipped";
 const SETS = arg("--sets", MODE === "final" ? "corpus,bench" : MODE === "cv" ? "suite,corpus,bench" : "suite,corpus").split(",");
 const RANK_CASES = (arg("--ranks", "") || "").split(",").filter(Boolean).map((pair) => pair.split(":"));
-const CAP = 10;
 const NECRO = ["necropotence-silence-borne-upon-a-wind-cleanup", "necropotence-silence-borne-upon-a-wind-cleanup-in-depth"];
 
 mkdirSync(OUT, { recursive: true });
@@ -52,7 +51,9 @@ const evalMod = await imp("scripts/eval-answer-quality.mjs");
 const fid = await imp("scripts/lib/prompt-fidelity.mjs");
 const sg = await imp("scripts/lib/practice-suite.mjs");
 const { loadGoldCases } = await imp("scripts/lib/gold-cases.mjs");
-const { preparePromptInput, buildRetrievalQueryInput } = await imp("apps/backend/src/prompt/preparation.ts");
+const { preparePromptInput, buildRetrievalQueryInput, DEFAULT_SUPPLEMENTAL_RULE_CAP } = await imp("apps/backend/src/prompt/preparation.ts");
+// The shipped cap (REQ-190): search excerpts only; a card's keyword sets (REQ-235) come on top and are counted in the characters.
+const CAP = DEFAULT_SUPPLEMENTAL_RULE_CAP;
 const { askAiRequestSchema } = await imp("apps/backend/src/validation/askAiRequest.ts");
 const R = await imp("apps/backend/src/gameRulesRetrieval.ts");
 const B = await imp("apps/backend/src/eval/ragRetrievalBenchmark.ts");
@@ -96,7 +97,7 @@ async function prepRequestCase(set, c) {
   return {
     id: c.id, set, split: set === "suite" ? half(c.id) : set, hard: set === "suite" && hardIds.has(c.id), necro: set === "corpus" ? NECRO.indexOf(c.id) : -1,
     fold: MODE === "cv" ? foldOf.get(`${set}:${c.id}`) : undefined,
-    deciding: [...new Set(c.expected?.decidingRuleIds ?? [])], curated, query, request
+    deciding: [...new Set(c.expected?.decidingRuleIds ?? [])], curated, query, request, cards: input.cards
   };
 }
 if (SETS.includes("suite")) {
@@ -117,7 +118,7 @@ if (SETS.includes("bench")) {
   for (const [i, item] of B.loadBenchmarkCorpus().items.entries()) {
     CASES.push({
       id: `bench-${i}`, set: "bench", split: "bench", hard: false, necro: -1, fold: MODE === "cv" ? i % 5 : undefined,
-      deciding: [item.expectedRuleId], curated: new Set(), query: R.buildRetrievalQuery({ questionText: item.question, cards }), request: null
+      deciding: [item.expectedRuleId], curated: new Set(), query: R.buildRetrievalQuery({ questionText: item.question, cards }), request: null, cards
     });
   }
 }
@@ -133,7 +134,7 @@ async function rankShipped(c) {
     const v = cardVectorByKey.get(card.key);
     if (v) cardVectors.push({ cardName: card.cardName, vector: v });
   }
-  return { ids: R.retrieveRulesForQuery(c.query.tokens, c.query.queryRuleIds, index, c.curated, CAP, baseScoring, vector, c.query.questionRuleIds, cardVectors), vector };
+  return { ids: R.retrieveRulesForQuery(c.query.tokens, c.query.queryRuleIds, index, c.curated, CAP, baseScoring, vector, c.query.questionRuleIds, cardVectors, R.keywordRuleSetsForCards(c.cards ?? [], index)), vector };
 }
 
 // Trained-model scoring: a model folder's q8 ONNX embeds the rules and every query text, then the shipped
@@ -172,7 +173,7 @@ async function modelScorer(name) {
       const vector = await embedCached(c.query.queryText);
       const cardVectors = [];
       for (const card of c.query.perCardTexts) cardVectors.push({ cardName: card.cardName, vector: await embedCached(card.text) });
-      return R.retrieveRulesForQuery(c.query.tokens, c.query.queryRuleIds, index, c.curated, max, scoring, vector, c.query.questionRuleIds, cardVectors);
+      return R.retrieveRulesForQuery(c.query.tokens, c.query.queryRuleIds, index, c.curated, max, scoring, vector, c.query.questionRuleIds, cardVectors, R.keywordRuleSetsForCards(c.cards ?? [], index));
     },
     async dispose() { await pipe.dispose?.(); }
   };
@@ -229,10 +230,10 @@ console.log(`${MODE === "shipped" ? "shipped search" : MODE === "cv" ? "5-fold c
 if (SETS.includes("suite")) {
   console.log(`  suite: tuning ${g("suite-tuning").found} / check ${g("suite-check").found} citations (total ${suiteFound}); every-rule tuning ${g("suite-tuning").all} / check ${g("suite-check").all} (total ${suiteAll}); hard 25 ${g("hard25").found} of ${g("hard25").cites}`);
   const sq = g("suite-tuning").q + g("suite-check").q;
-  if (sq) console.log(`  rule characters per suite question (ten excerpts): ${Math.round((g("suite-tuning").chars + g("suite-check").chars) / sq)}`);
+  if (sq) console.log(`  rule characters per suite question (search excerpts plus keyword sets): ${Math.round((g("suite-tuning").chars + g("suite-check").chars) / sq)}`);
 }
 if (SETS.includes("corpus")) {
   console.log(`  corpus: ${g("corpus").found} citations of ${g("corpus").cites}; ${g("corpus").all} of ${g("corpus").q} cases with every deciding rule; Necropotence 514.1/514.2/514.3a ranks: Quick ${necroOut[0] ?? "-"}, In-Depth ${necroOut[1] ?? "-"}`);
-  if (g("corpus").q) console.log(`  rule characters per corpus question (ten excerpts): ${Math.round(g("corpus").chars / g("corpus").q)}`);
+  if (g("corpus").q) console.log(`  rule characters per corpus question (search excerpts plus keyword sets): ${Math.round(g("corpus").chars / g("corpus").q)}`);
 }
 if (SETS.includes("bench")) console.log(`  bench@5: ${g("bench").f5} of ${g("bench").q}`);

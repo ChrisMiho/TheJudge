@@ -345,7 +345,7 @@ as the current shipped configuration, not product truth.
 - Conversation limits: 1–20 turns, alternating roles starting with user and
   ending with assistant, per-message cap — shared with the main flow, not a
   Quick-Lookup-specific policy. (REQ-072, REQ-075)
-- Retrieval: System 3 returns a small capped best-ranked set (top 10), curated
+- Retrieval: System 3 returns a capped best-ranked set (up to 15, REQ-190, plus each card's keyword rules as whole sets, REQ-235), curated
   core-topic rule numbers excluded by exact number; ranking is a hybrid blend of
   normalised cosine over the committed per-rule embeddings and normalised
   lexical IDF overlap, with the exact-rule-id boost merged into the blended

@@ -14,6 +14,12 @@ export type GameRulesRuleIndexEntry = {
   text: string;
   searchText: string;
   parentRuleIds: string[];
+  /**
+   * REQ-179 / REQ-235: on each lettered piece of a 701/702 keyword rule, that rule's title
+   * ("Deathtouch"). Data only -- it matches a card's Scryfall keyword to the rule's whole set and is
+   * never part of an excerpt.
+   */
+  keywordTitle?: string;
 };
 
 export type RetrievedGameRule = {
@@ -416,6 +422,20 @@ export const HYBRID_BLEND_ALPHA = 0.65;
 
 /** REQ-235: how many of the System 3 slots the per-card searches reserve. The cap itself stays at REQ-190's value. */
 export const PER_CARD_RESERVED_SLOTS = 2;
+
+/**
+ * REQ-190: on the semantic path a main-ranking candidate whose blended score (before rule-id and
+ * cross-reference boosts) is below this share of the top main candidate's is dropped, so weak
+ * matches stop padding the list. A rule the question cites by number (a boosted candidate) always
+ * stays. The lexical-only fallback keeps a plain top-N with no cutoff.
+ */
+export const SUPPLEMENTAL_RELEVANCE_CUTOFF = 0.6;
+
+/**
+ * REQ-235: the per-prompt character budget for keyword-set rules added beside the selected
+ * excerpts. A set that would overflow it is skipped whole.
+ */
+export const KEYWORD_SET_CHAR_BUDGET = 6000;
 
 /** REQ-233: a single-word obsolete term used in more rules than this is a live Magic word, not translated. */
 const LIVE_WORD_DOCUMENT_FREQUENCY = 25;
@@ -1133,6 +1153,8 @@ export type SupplementalRulesDebug = {
   usedSemantic: boolean;
   /** REQ-235: the selected rules that came from a per-card search, and the card each came from. */
   perCardSelected: Array<{ ruleId: string; cardName: string }>;
+  /** REQ-235: the keyword-set rules added beside the selected excerpts, and the card whose keyword each came from. */
+  keywordSetSelected: Array<{ ruleId: string; cardName: string }>;
 };
 
 export type SupplementalRulesWithDebug = {
@@ -1194,6 +1216,119 @@ function selectWithPerCardSlots(
   return { selected: [...keep, ...picks, ...fill], perCardSelected };
 }
 
+/**
+ * REQ-235: one card's keyword that names a keyword rule (702.N keyword ability, 701.N keyword
+ * action), with all that rule's lettered pieces in rule-book order.
+ */
+export type KeywordRuleSet = { cardName: string; keyword: string; ruleId: string; pieceIds: string[] };
+
+const keywordPiecesCache = new WeakMap<readonly GameRulesRuleIndexEntry[], { parentByTitle: Map<string, string>; piecesByParent: Map<string, string[]> }>();
+
+function keywordPiecesOf(index: readonly GameRulesRuleIndexEntry[]) {
+  const cached = keywordPiecesCache.get(index);
+  if (cached) return cached;
+  const parentByTitle = new Map<string, string>();
+  const piecesByParent = new Map<string, string[]>();
+  for (const entry of index) {
+    if (!entry.keywordTitle) continue;
+    const parent = entry.parentRuleIds[0];
+    if (!parent) continue;
+    const title = entry.keywordTitle.trim().toLowerCase();
+    if (!parentByTitle.has(title)) parentByTitle.set(title, parent);
+    const list = piecesByParent.get(parent) ?? [];
+    list.push(entry.ruleId);
+    piecesByParent.set(parent, list);
+  }
+  for (const list of piecesByParent.values()) list.sort(compareRuleIds);
+  const built = { parentByTitle, piecesByParent };
+  keywordPiecesCache.set(index, built);
+  return built;
+}
+
+/**
+ * REQ-235: the keyword sets for the cards the per-card search covers (a card with oracle text, one
+ * per card identity): every Scryfall keyword whose name is a keyword rule's title (shipped in the
+ * rule index as `keywordTitle`), as that rule's lettered pieces. One set per rule, in card order.
+ */
+export function keywordRuleSetsForCards(cards: readonly RetrievalCard[], index: readonly GameRulesRuleIndexEntry[]): KeywordRuleSet[] {
+  const { parentByTitle, piecesByParent } = keywordPiecesOf(index);
+  const sets: KeywordRuleSet[] = [];
+  const seenRules = new Set<string>();
+  const seenCards = new Set<string>();
+  for (const card of cards) {
+    if ((card.oracleText ?? "").trim().length === 0) continue;
+    const identity = card.cardId && card.cardId.length > 0 ? card.cardId : card.name;
+    if (seenCards.has(identity)) continue;
+    seenCards.add(identity);
+    for (const keyword of card.keywords ?? []) {
+      const parent = parentByTitle.get(keyword.trim().toLowerCase());
+      if (!parent || seenRules.has(parent)) continue;
+      const pieces = piecesByParent.get(parent);
+      if (!pieces || pieces.length === 0) continue;
+      seenRules.add(parent);
+      sets.push({ cardName: card.name, keyword, ruleId: parent, pieceIds: [...pieces] });
+    }
+  }
+  return sets;
+}
+
+/**
+ * REQ-190 / REQ-235: the System 3 selection. On the semantic path, main-ranking candidates below
+ * `SUPPLEMENTAL_RELEVANCE_CUTOFF` x the top unboosted blend are dropped (a boosted candidate, one the
+ * question cites by number, stays); the per-card slots and the fill run as before over what is left;
+ * then each keyword set is added whole beside the result, skipping pieces already chosen or excluded,
+ * under `KEYWORD_SET_CHAR_BUDGET` (a set that would overflow is skipped whole, and the added pieces do
+ * not count against `max`).
+ */
+function selectSupplemental(
+  scored: ScoredEntry[],
+  max: number,
+  cardVectors: readonly PerCardVector[],
+  index: GameRulesRuleIndexEntry[],
+  excludeRuleIds: Set<string>,
+  ruleVectorById: ReadonlyMap<string, readonly number[]> | null,
+  queryRuleIds: readonly string[],
+  questionRuleIds: readonly string[],
+  keywordSets: readonly KeywordRuleSet[]
+): { selected: ScoredEntry[]; perCardSelected: Array<{ ruleId: string; cardName: string }>; keywordSetSelected: Array<{ ruleId: string; cardName: string }> } {
+  let main = scored;
+  if (ruleVectorById !== null && scored.length > 0) {
+    const queryRuleIdSet = new Set(queryRuleIds);
+    const questionRuleIdSet = new Set(questionRuleIds);
+    const boostOf = (candidate: ScoredEntry): number =>
+      computeIdBoost(candidate.entry, queryRuleIdSet) + computeCrossReferenceBoost(candidate.entry, questionRuleIdSet);
+    let top = 0;
+    for (const candidate of scored) top = Math.max(top, candidate.score - boostOf(candidate));
+    const floor = SUPPLEMENTAL_RELEVANCE_CUTOFF * top;
+    main = scored.filter((candidate) => {
+      const boost = boostOf(candidate);
+      return boost > 0 || candidate.score - boost >= floor;
+    });
+  }
+
+  const picked = selectWithPerCardSlots(main, max, cardVectors, index, excludeRuleIds, ruleVectorById);
+  const selected = [...picked.selected];
+  const keywordSetSelected: Array<{ ruleId: string; cardName: string }> = [];
+  if (keywordSets.length > 0) {
+    const entryById = new Map(index.map((entry) => [entry.ruleId, entry]));
+    const chosen = new Set(selected.map((candidate) => candidate.entry.ruleId));
+    let used = 0;
+    for (const set of keywordSets) {
+      const fresh = set.pieceIds.filter((ruleId) => !chosen.has(ruleId) && !excludeRuleIds.has(ruleId) && entryById.has(ruleId));
+      if (fresh.length === 0) continue;
+      const chars = fresh.reduce((sum, ruleId) => sum + entryById.get(ruleId)!.text.length, 0);
+      if (used + chars > KEYWORD_SET_CHAR_BUDGET) continue;
+      used += chars;
+      for (const ruleId of fresh) {
+        chosen.add(ruleId);
+        selected.push({ entry: entryById.get(ruleId)!, score: 0, topTokenIdf: 0 });
+        keywordSetSelected.push({ ruleId, cardName: set.cardName });
+      }
+    }
+  }
+  return { selected, perCardSelected: picked.perCardSelected, keywordSetSelected };
+}
+
 export function retrieveRulesForQueryWithDebug(
   queryTokens: QueryToken[],
   queryRuleIds: string[],
@@ -1204,7 +1339,8 @@ export function retrieveRulesForQueryWithDebug(
   queryVector: readonly number[] | null = null,
   queryText = queryTokens.map((token) => token.token).join(" "),
   questionRuleIds: readonly string[] = [],
-  cardVectors: readonly PerCardVector[] = []
+  cardVectors: readonly PerCardVector[] = [],
+  keywordSets: readonly KeywordRuleSet[] = []
 ): SupplementalRulesWithDebug {
   if (index.length === 0) {
     return {
@@ -1219,7 +1355,8 @@ export function retrieveRulesForQueryWithDebug(
         runnerUp: [],
         candidatesScored: 0,
         usedSemantic: false,
-        perCardSelected: []
+        perCardSelected: [],
+        keywordSetSelected: []
       }
     };
   }
@@ -1233,7 +1370,7 @@ export function retrieveRulesForQueryWithDebug(
     queryVector,
     questionRuleIds
   );
-  const picked = selectWithPerCardSlots(scored, max, cardVectors, index, excludeRuleIds, ruleVectorById);
+  const picked = selectSupplemental(scored, max, cardVectors, index, excludeRuleIds, ruleVectorById, queryRuleIds, questionRuleIds, keywordSets);
   const selected = picked.selected.map(toRetrievedGameRule);
   const selectedIds = new Set(selected.map((rule) => rule.ruleId));
   const runnerUp = scored.filter((candidate) => !selectedIds.has(candidate.entry.ruleId)).slice(0, 10).map(toRetrievedGameRule);
@@ -1250,7 +1387,8 @@ export function retrieveRulesForQueryWithDebug(
       runnerUp: runnerUp.map((rule) => ({ ruleId: rule.ruleId, sectionTitle: rule.sectionTitle, score: rule.score })),
       candidatesScored: scored.length,
       usedSemantic,
-      perCardSelected: picked.perCardSelected
+      perCardSelected: picked.perCardSelected,
+      keywordSetSelected: picked.keywordSetSelected
     }
   };
 }
@@ -1264,11 +1402,14 @@ export function retrieveRulesForQuery(
   resources: ScoringResources = getDefaultScoringResources(),
   queryVector: readonly number[] | null = null,
   questionRuleIds: readonly string[] = [],
-  cardVectors: readonly PerCardVector[] = []
+  cardVectors: readonly PerCardVector[] = [],
+  keywordSets: readonly KeywordRuleSet[] = []
 ): RetrievedGameRule[] {
   if (index.length === 0) return [];
   const { scored, ruleVectorById } = scoreIndex(queryTokens, queryRuleIds, index, excludeRuleIds, resources, queryVector, questionRuleIds);
-  return selectWithPerCardSlots(scored, max, cardVectors, index, excludeRuleIds, ruleVectorById).selected.map(toRetrievedGameRule);
+  return selectSupplemental(scored, max, cardVectors, index, excludeRuleIds, ruleVectorById, queryRuleIds, questionRuleIds, keywordSets).selected.map(
+    toRetrievedGameRule
+  );
 }
 
 export function retrieveSupplementalRulesWithDebug(
@@ -1280,7 +1421,8 @@ export function retrieveSupplementalRulesWithDebug(
   queryVector: readonly number[] | null = null,
   cardVectors: readonly PerCardVector[] = []
 ): SupplementalRulesWithDebug {
-  const query = buildRetrievalQuery(retrievalInputFromPromptContext(context), resources);
+  const input = retrievalInputFromPromptContext(context);
+  const query = buildRetrievalQuery(input, resources);
   return retrieveRulesForQueryWithDebug(
     query.tokens,
     query.queryRuleIds,
@@ -1291,7 +1433,8 @@ export function retrieveSupplementalRulesWithDebug(
     queryVector,
     query.queryText,
     query.questionRuleIds,
-    cardVectors
+    cardVectors,
+    keywordRuleSetsForCards(input.cards, index)
   );
 }
 
@@ -1304,7 +1447,8 @@ export function retrieveSupplementalRules(
   queryVector: readonly number[] | null = null,
   cardVectors: readonly PerCardVector[] = []
 ): RetrievedGameRule[] {
-  const query = buildRetrievalQuery(retrievalInputFromPromptContext(context), resources);
+  const input = retrievalInputFromPromptContext(context);
+  const query = buildRetrievalQuery(input, resources);
   return retrieveRulesForQuery(
     query.tokens,
     query.queryRuleIds,
@@ -1314,6 +1458,7 @@ export function retrieveSupplementalRules(
     resources,
     queryVector,
     query.questionRuleIds,
-    cardVectors
+    cardVectors,
+    keywordRuleSetsForCards(input.cards, index)
   );
 }

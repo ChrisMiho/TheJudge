@@ -85,8 +85,12 @@ step), ranks the rule index (cosine over the committed rule embeddings when a qu
 vector is present, IDF-weighted lexical otherwise or on embedding failure) with the
 exact-rule-ID boost merged in, drops entries whose own rule ID is already in the
 System 2 set (a listed parent rule ID does not drop its sub-rules), and returns the
-top ten excerpts — two slots reserved for per-card hits — plus debug data when
-mock enrichment diagnostics are enabled. Prompt rendering places the resulting sections
+up to fifteen excerpts — two slots reserved for per-card hits, and on the semantic path
+main-ranking candidates scoring under 0.6 of the top unboosted blend dropped unless the
+question cites their rule number (REQ-190). Each attached card's keyword rules (its Scryfall
+keywords that name a 701/702 rule) then add that rule's lettered pieces as one whole set
+after the excerpts, skipping pieces already chosen, under a 6,000-character budget
+(REQ-235). Debug data comes with it when mock enrichment diagnostics are enabled. Prompt rendering places the resulting sections
 as curated rules, then supplemental excerpts, then official rulings.
 
 The output is reference text for the prompt. Missing or unparsable artifacts degrade by
@@ -99,7 +103,7 @@ shape change or a deterministic rules-engine answer (canonical rule: `goals-and-
 - System 2: `apps/backend/src/gameRulesTopicSelection.ts`, `apps/backend/src/gameRules.ts`
 - System 3: `apps/backend/src/gameRulesRetrieval.ts`; the shared word matching and Porter stemmer `apps/backend/src/gameRulesStemmer.ts` (REQ-233)
 - Concept map: one committed module, `apps/backend/src/gameRulesConceptMap.ts` (REQ-234)
-- System 3 data: `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed per-rule embeddings artifact (REQ-181), the rule-book glossary `apps/backend/data/gameRulesGlossary.json` and edition record `gameRulesBookMeta.json` (REQ-179), and per-card `keywords` resolved from `apps/backend/data/cardDetailByOracleId.json.br` (REQ-180)
+- System 3 data: `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed rule index, whose 701/702 pieces carry their keyword rule's title as data (REQ-179), the committed per-rule embeddings artifact (REQ-181), the rule-book glossary `apps/backend/data/gameRulesGlossary.json` and edition record `gameRulesBookMeta.json` (REQ-179), and per-card `keywords` resolved from `apps/backend/data/cardDetailByOracleId.json.br` (REQ-180)
 - Embedding-provider seam: `EMBEDDING_PROVIDER` flag, mirroring the `ASK_AI_PROVIDER` boundary under `apps/backend/src/providers/`
 
 ## Worked example
@@ -120,7 +124,7 @@ question. Any explicit rule number in the query still pulls in an exact or paren
 through the merged boost. Each card's own text is searched separately, and its best hit
 can take one of two reserved slots. If a combat damage rule is already listed in the System 2
 topic set, that exact rule ID is excluded from System 3 so the supplemental block uses
-its ten slots for additional relevant context rather than duplicating the baseline; the
+its slots for additional relevant context rather than duplicating the baseline; the
 rule's lettered sub-rules, which the topic does not print, still compete for those slots.
 
 System 1 independently checks the submitted card IDs against the rulings index. If one
@@ -141,7 +145,7 @@ reference material and simply omits `OFFICIAL RULINGS`.
   Exact matching is enough only because each curated topic prints exactly the rules it
   lists; a test over the committed game-rules data holds every topic to that and fails
   if a topic ever carries a rule it does not list (REQ-179).
-- System 3 is capped at ten supplemental excerpts per request (raised from five on 2026-09-09, REQ-190), two of them reserved for per-card search (REQ-235).
+- System 3 is capped at fifteen supplemental search excerpts per request — thirteen main-ranking slots plus two reserved for per-card search (REQ-235) — raised from five to ten on 2026-09-09 and to up-to-fifteen with a 0.6 relevance cutoff on 2026-10-12 (REQ-190). The cutoff applies on the semantic path only; the lexical-only fallback keeps a plain top-N. Keyword-set rules (REQ-235, up to 6,000 characters per prompt) come on top of the cap and are not counted against it.
 - System 3 ranking is a hybrid blend (normalised cosine over committed rule embeddings
   plus normalised lexical IDF overlap) with the exact-rule-ID boost merged in and
   lexical alone retained as the mock/offline default and the failure fallback; those

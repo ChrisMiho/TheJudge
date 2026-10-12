@@ -8,6 +8,7 @@ import { ALWAYS_ON_TOPIC_IDS, selectCardWordingTopicIds, selectGameRulesTopics }
 import {
   buildRetrievalQuery,
   collectCuratedRuleIds,
+  keywordRuleSetsForCards,
   retrievalInputFromPromptContext,
   retrieveRulesForQuery,
   retrieveRulesForQueryWithDebug,
@@ -44,13 +45,16 @@ import type {
 } from "../types/index.js";
 
 /**
- * REQ-190: the number of System 3 supplemental-rule excerpts a prepared
- * prompt attaches. Every production call site passes no override and gets
- * exactly this value; the answer-quality run (REQ-188) is the only caller
- * that ever overrides it, via `PreparePromptInputOptions.supplementalRuleCap`,
+ * REQ-190: the most System 3 supplemental-rule excerpts a prepared prompt
+ * attaches from search: thirteen main-ranking slots plus the two per-card slots
+ * (REQ-235), with the relevance cutoff (`SUPPLEMENTAL_RELEVANCE_CUTOFF`) letting
+ * a question with few close matches show fewer. Keyword-set rules (REQ-235)
+ * come on top of this and are not counted against it. Every production call
+ * site passes no override and gets exactly this value; the answer-quality run
+ * (REQ-188) is the only caller that ever overrides it, via `PreparePromptInputOptions.supplementalRuleCap`,
  * so a larger cap is an experiment parameter, never a production change.
  */
-export const DEFAULT_SUPPLEMENTAL_RULE_CAP = 10;
+export const DEFAULT_SUPPLEMENTAL_RULE_CAP = 15;
 
 export type PreparedPromptInput = {
   context: PromptInputContext;
@@ -260,6 +264,8 @@ function prepareLookupPromptInput(
   // not a second implementation, so lookup and game mode cannot drift apart.
   const query = buildRetrievalQuery({ questionText: request.question, cards: context.cards ?? [] });
   const cardVectors = resolveCardVectors(query, options);
+  // REQ-235: each attached card's keyword rules arrive as whole sets beside the search excerpts.
+  const keywordSets = keywordRuleSetsForCards(context.cards ?? [], options.gameRulesRuleIndex ?? []);
   const conversationHistory = request.conversationHistory;
   const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);
   const conversationHistoryChars = truncatedHistory.reduce((sum, turn) => sum + turn.content.length, 0);
@@ -283,7 +289,8 @@ function prepareLookupPromptInput(
       options.queryEmbedding ?? null,
       query.queryText,
       query.questionRuleIds,
-      cardVectors
+      cardVectors,
+      keywordSets
     );
     const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
     const promptText = buildLookupPromptText(context, {
@@ -327,7 +334,8 @@ function prepareLookupPromptInput(
     undefined,
     options.queryEmbedding ?? null,
     query.questionRuleIds,
-    cardVectors
+    cardVectors,
+    keywordSets
   );
   const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
   const promptText = buildLookupPromptText(context, {
@@ -359,8 +367,10 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
   // REQ-178 / REQ-233 / REQ-234 / REQ-235: the same shared query builder lookup mode uses, plus
   // the In-Depth turn step.
-  const query = buildRetrievalQuery(retrievalInputFromPromptContext(context));
+  const retrievalInput = retrievalInputFromPromptContext(context);
+  const query = buildRetrievalQuery(retrievalInput);
   const cardVectors = resolveCardVectors(query, options);
+  const keywordSets = keywordRuleSetsForCards(retrievalInput.cards, options.gameRulesRuleIndex ?? []);
   const conversationHistory = request.conversationHistory;
   const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);
   const conversationHistoryChars = truncatedHistory.reduce((sum, t) => sum + t.content.length, 0);
@@ -379,7 +389,8 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
       options.queryEmbedding ?? null,
       query.queryText,
       query.questionRuleIds,
-      cardVectors
+      cardVectors,
+      keywordSets
     );
     const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
     const promptText = buildPromptText(context, {
@@ -420,7 +431,8 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
     undefined,
     options.queryEmbedding ?? null,
     query.questionRuleIds,
-    cardVectors
+    cardVectors,
+    keywordSets
   );
   const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
   const promptText = buildPromptText(context, {

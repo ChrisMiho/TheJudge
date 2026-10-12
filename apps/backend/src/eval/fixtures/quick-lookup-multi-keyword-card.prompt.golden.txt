@@ -80,6 +80,36 @@ Use these additional official rule excerpts as reference. They do not override t
 
 602.5a. 602.5a A creature’s activated ability with the tap symbol ({T}) or the untap symbol ({Q}) in its activation cost can’t be activated unless the creature has been under its controller’s control since the start of their most recent turn. Ignore this rule for creatures with haste (see rule 702.10).
 
+702.10c. 702.10c If a creature has haste, its controller can activate its activated abilities whose cost includes the tap symbol or the untap symbol even if that creature hasn’t been controlled by that player continuously since their most recent turn began. (See rule 302.6.)
+
+111.4. 111.4. A spell or ability that creates a token sets both its name and its subtype(s). If the spell or ability doesn’t specify the name of the token, its name is the same as its subtype(s) plus the word “Token.” Once a token is on the battlefield, changing its name doesn’t change its subtype(s), and vice versa.
+Example: Dwarven Reinforcements is a sorcery that says, in part, “Create two 2/1 red Dwarf Berserker creature tokens.” The tokens created as it resolves are each named Dwarf Berserker Token and each have the creature types Dwarf and Berserker.
+Example: Minsc, Beloved Ranger says, in part, “When Minsc enters, create Boo, a legendary 1/1 red Hamster creature token with trample and haste.” That token’s subtype is Hamster, but because Minsc specifies that the token’s name is Boo, neither “Hamster” nor “Token” are part of its name.
+Example: Spitting Image is a sorcery that says, in part, “Create a token that’s a copy of target creature.” All of that token’s characteristics will match the copiable characteristics of the creature targeted by that spell. If Spitting Image targets Doomed Dissenter, a Human creature, the name of the token the spell creates will be Doomed Dissenter, not Human Token or Doomed Dissenter Token.
+
+702.1c. 702.1c An effect may state that “the same is true for” a list of keyword abilities or similar. If one of those keyword abilities has variants or variables and the effect grants that keyword or counters of that keyword to one or more objects and/or players, it grants each appropriate variant and variable of that keyword.
+Example: Concerted Effort is an enchantment that reads “At the beginning of each upkeep, creatures you control gain flying until end of turn if a creature you control has flying. The same is true for fear, first strike, double strike, landwalk, protection, trample, and vigilance.” As that triggered ability resolves, each landwalk and protection ability from among creatures you control is granted to each creature you control.
+
+702.2b. 702.2b A creature with toughness greater than 0 that’s been dealt damage by a source with deathtouch since the last time state-based actions were checked is destroyed as a state-based action. See rule 704.
+
+702.62a. 702.62a Suspend is a keyword that represents three abilities. The first is a static ability that functions while the card with suspend is in a player’s hand. The second and third are triggered abilities that function in the exile zone. “Suspend N—[cost]” means “If you could begin to cast this card by putting it onto the stack from your hand, you may pay [cost] and exile it with N time counters on it. This action doesn’t use the stack,” and “At the beginning of your upkeep, if this card is suspended, remove a time counter from it,” and “When the last time counter is removed from this card, if it’s exiled, you may play it without paying its mana cost if able. If you don’t, it remains exiled. If you cast a creature spell this way, it gains haste until you lose control of the spell or the permanent it becomes.”
+
+702.20c. 702.20c Multiple instances of vigilance on the same creature are redundant.
+
+702.10a. 702.10a Haste is a static ability.
+
+702.10b. 702.10b If a creature has haste, it can attack even if it hasn’t been controlled by its controller continuously since their most recent turn began. (See rule 302.6.)
+
+702.10d. 702.10d Multiple instances of haste on the same creature are redundant.
+
+702.2a. 702.2a Deathtouch is a static ability.
+
+702.2d. 702.2d The deathtouch rules function no matter what zone an object with deathtouch deals damage from.
+
+702.2e. 702.2e If an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had deathtouch.
+
+702.2f. 702.2f Multiple instances of deathtouch on the same object are redundant.
+
 CARD (looked up)
 name: Questing Beast
 manaCost: {2}{G}{G}

@@ -1117,7 +1117,8 @@ describe("Backend - Game Rules", () => {
       const context = makeContext({ finalQuestion: "trigger ability window" });
       const result = retrieveSupplementalRules(context, blendIndex, new Set(), 5, blendResources, [1, 0]);
       expect(result[0]!.ruleId).toBe("601.2");
-      expect(result.map((r) => r.ruleId)).toContain("602.3");
+      // 602.3 blends to 1 - alpha = 0.35, under 0.6 x the top blend (0.65): the relevance cutoff (REQ-190) drops it.
+      expect(result.map((r) => r.ruleId)).not.toContain("602.3");
     });
 
     it("merges the exact-rule-id boost into the blended score even with zero cosine and zero lexical overlap", () => {
@@ -1149,7 +1150,8 @@ describe("Backend - Game Rules", () => {
         },
         [1, 0]
       );
-      const scoreById = new Map(result.debug.selected.map((r) => [r.ruleId, r.score]));
+      // The cutoff drops 602.3 from the selection; its score is read from the runner-up list.
+      const scoreById = new Map([...result.debug.selected, ...result.debug.runnerUp].map((r) => [r.ruleId, r.score]));
       expect(scoreById.get("601.2")).toBeCloseTo(HYBRID_BLEND_ALPHA, 10);
       expect(scoreById.get("602.3")).toBeCloseTo(1 - HYBRID_BLEND_ALPHA, 10);
     });

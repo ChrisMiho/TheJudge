@@ -400,12 +400,12 @@ describe("Backend - Ask AI", () => {
       return parsed.question;
     }
 
-    it("DEFAULT_SUPPLEMENTAL_RULE_CAP is 10 — production's current cap", () => {
-      expect(DEFAULT_SUPPLEMENTAL_RULE_CAP).toBe(10);
+    it("DEFAULT_SUPPLEMENTAL_RULE_CAP is 15 — production's current cap (REQ-190)", () => {
+      expect(DEFAULT_SUPPLEMENTAL_RULE_CAP).toBe(15);
     });
 
     it.each(SIX_GOLD_CASE_IDS)(
-      "with no cap override, %s's assembled prompt is byte-identical to an explicit cap of 10 (the default)",
+      "with no cap override, %s's assembled prompt is byte-identical to an explicit cap of 15 (the default)",
       (caseId) => {
         const request: LookupAskAiRequest = { mode: "lookup", question: loadGoldQuestion(caseId) };
 
@@ -415,20 +415,20 @@ describe("Backend - Ask AI", () => {
           collectEnrichmentDebug: true,
           queryEmbedding: null
         });
-        const withExplicitTen = preparePromptInput(request, {
+        const withExplicitDefault = preparePromptInput(request, {
           gameRulesTopics: realGameRulesTopics,
           gameRulesRuleIndex: realRuleIndex,
           collectEnrichmentDebug: true,
           queryEmbedding: null,
-          supplementalRuleCap: 10
+          supplementalRuleCap: 15
         });
 
-        expect(withDefault.promptText).toBe(withExplicitTen.promptText);
-        expect(withDefault.enrichmentDebug?.supplemental.selected.length).toBeLessThanOrEqual(10);
+        expect(withDefault.promptText).toBe(withExplicitDefault.promptText);
+        expect(withDefault.enrichmentDebug?.supplemental.selected.length).toBeLessThanOrEqual(15);
       }
     );
 
-    it("a cap-15 override extends the same ranking's runnerUp without changing the top 10", () => {
+    it("a cap-10 override is a prefix of the default ranking, which continues into the cap-10 runnerUp", () => {
       const request: LookupAskAiRequest = {
         mode: "lookup",
         question: loadGoldQuestion("illegal-target-partial-resolution")
@@ -438,14 +438,14 @@ describe("Backend - Ask AI", () => {
         gameRulesTopics: realGameRulesTopics,
         gameRulesRuleIndex: realRuleIndex,
         collectEnrichmentDebug: true,
-        queryEmbedding: null
+        queryEmbedding: null,
+        supplementalRuleCap: 10
       });
       const atFifteen = preparePromptInput(request, {
         gameRulesTopics: realGameRulesTopics,
         gameRulesRuleIndex: realRuleIndex,
         collectEnrichmentDebug: true,
-        queryEmbedding: null,
-        supplementalRuleCap: 15
+        queryEmbedding: null
       });
 
       const tenIds = atTen.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId) ?? [];
