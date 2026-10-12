@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # right-rules-in-order
 
@@ -14,3 +14,9 @@ Luna gets the right rules in an order she can follow: a Magic-trained search mod
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/right-rules-in-order
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/right-rules-in-order/DESIGN-BRIEF.md`
+- Findings: none

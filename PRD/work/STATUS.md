@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order: trained search model, search fixes, prompt fixes. Brief and 39 gate slots written; verdicts pending. |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order: trained search model, search fixes, prompt fixes. Quality check PASS; answer the 39 slots in `GATE-QUESTIONS.md`, then merge the docs PR to build. |
 
 ## deferred
 

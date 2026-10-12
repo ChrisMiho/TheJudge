@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/right-rules-in-order`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-right-rules-in-order`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/right-rules-in-order/`
+- Current node: `owner-action`
+- Next action: `/graph-implement PRD/work/right-rules-in-order/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
 
 ## Node ledger
 
@@ -16,10 +16,14 @@
 | 1 | preflight | haiku | ok | `0 → 6` | branch `thejudge-auto/right-rules-in-order` pushed from `.worktrees/kickoff-right-rules-in-order` at `61d32c76` (`git ls-remote --heads origin thejudge-auto/right-rules-in-order`); lock `.worktrees/.graph-run.lock` pid 83313; launch checkout untouched (still on `main`); shape root, base `origin/main` | 2026-10-11 |
 | 2 | shape | sonnet | ok | `0 → 12` | `PRD/work/right-rules-in-order/` (IDEA.md, README.md, STATUS.ideation, `intake/GRAPH-BRIEF-search-and-prompt.md` byte-identical to the staged copy, `cmp` clean); board row under ideation; commit `e0c78ba9` pushed; 17 prior-run receipts in IDEA.md; driver added `## Autonomous metadata` to README | 2026-10-11 |
 | 3 | define | opus | ok | `0 → 95` | `PRD/work/right-rules-in-order/DESIGN-BRIEF.md` (363 lines, 12 acceptance targets, 23 assumptions), `PRD/work/right-rules-in-order/GATE-QUESTIONS.md` (39 slots, 39 blank verdicts: new REQ-233–245; amended REQ-022, 024, 030, 074, 167, 176, 178, 179, 180, 181, 182, 183, 184, 190, 220, 232, NFR-017, FLOW-011, FLOW-023; 7 section docs), `evidence/amendment-grep.md` (100 hits = 70 amend / 5 build / 25 no change); no blocker questions; `STATUS.refined` only marker, board row under refined; commit `09467219` pushed; node-reported diff check 206 removed + 138 context lines exact; `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` empty; no paid or network calls | 2026-10-11 |
+| 4 | gate-qc | sonnet | ok | `0 → 24` | PASS attempt 1, findings none — `PRD/work/right-rules-in-order/QUALITY-CHECK.md`, commit `abb4ed8b` pushed; 344 removed/context diff lines exact over 39 slots; amendment grep re-run 100 hits = 100 rows; REQ-233–245 unused on `origin/main`; privacy scan 0 matches; `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action` (marker and board row moved); docs PR below | 2026-10-11 |
 
 ## Open gate
 
-- None
+- Terminal state: `PARKED` at `owner-action` after gate-qc PASS (run one stops here by design).
+- Question: answer `PRD/work/right-rules-in-order/GATE-QUESTIONS.md` — 39 slots (new REQ-233–245; 19 amended REQ/NFR/FLOW entries; 7 section docs), each `accept`, `edit` or `reject`, with a reason for edit or reject. Two slots need a deliberate yes: REQ-232 (may the shipped search model train on the local practice suite) and REQ-234 (the concept map reverses REQ-220's recorded rejection of card-wording terms).
+- Evidence: `PRD/work/right-rules-in-order/QUALITY-CHECK.md` (PASS, no findings); `PRD/work/right-rules-in-order/DESIGN-BRIEF.md`.
+- Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` picks it up, or run `/graph-implement PRD/work/right-rules-in-order/`.
 
 ## Dispatch prompts
 
