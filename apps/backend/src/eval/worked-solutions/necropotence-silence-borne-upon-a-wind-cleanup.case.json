@@ -4,7 +4,8 @@
   "tier": 3,
   "review": {
     "status": "approved",
-    "reviewedOn": "2026-10-07"
+    "reviewedOn": "2026-10-12",
+    "note": "Re-approved 2026-10-12 by the owner after #293 stripped a stray chapter heading from the end of the case’s deciding rule text (514.3a / 616.2); no rule wording changed."
   },
   "cards": [
     {
@@ -53,9 +54,9 @@
     ]
   },
   "snapshot": {
-    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "ruleIndexHash": "5b780ef413c855f7b9c4e20ded93316862dd6af7da1a8c1c0ba18513480ecfe4",
     "dependsOnHashes": {
-      "rules": "5d46ad4b2a35207ae5522f787b1080a3afb1aff98a7cb79d3a328ddd4fc4995a",
+      "rules": "5e77ddcf0844eb3d1182b8a4881fb173f09bb76a092b651fd56cbd60c5108d5b",
       "oracle": "f80583be5b931087b5461cf98ea903569ff56bdff4091674950a1dd143704f75",
       "rulings": "e30afb5cc015df38a1d1c238330b5256b237c8da82cf3d64fd5b7d25328cc835"
     }
