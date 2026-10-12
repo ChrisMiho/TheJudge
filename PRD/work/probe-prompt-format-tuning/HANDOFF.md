@@ -1,7 +1,7 @@
 # Handoff — prompt-format tuning toward 100%
 
 Written 2026-10-10 at the end of the session that built and ran the recipe test
-and the RulesGuru suite. Start the fresh session with:
+and the practice suite. Start the fresh session with:
 
 ```
 /thejudge-investigate PRD/work/probe-prompt-format-tuning/HANDOFF.md
@@ -11,7 +11,7 @@ and the RulesGuru suite. Start the fresh session with:
 
 How should the prompt Luna (GPT-6 Luna, the model that answers players) receives
 be organized so she answers every rules question right? Use the new local
-RulesGuru practice suite (about 1,245 judge-style questions) to find where she
+practice suite (about 1,245 judge-style questions) to find where she
 goes wrong, then find a prompt format that fixes those misses without breaking
 anything she already gets right.
 
@@ -48,16 +48,16 @@ fixed the Necropotence cleanup case (2 → 5 of 6). A candidate the numbers poin
 to, not a decision: "trust an attached ruling first; work through the steps only
 when no ruling settles it".
 
-**The RulesGuru suite is built and loaded, but never run.**
-- 1,485 questions imported into `output/rulesguru/` (gitignored, local only),
+**The practice suite is built and loaded, but never run.**
+- 1,485 questions imported into `output/practice-suite/` (gitignored, local only),
   1,245 usable as cases. Set aside: 78 unresolved card, 2 ambiguous card,
   159 with no cited rule, 1 duplicate answer. 61 more are tagged "Unsupported
   answers" and are left out of runs unless `--include-unsupported`.
 - Commands (REQ-232 in `PRD/sections/functional-requirements.md` is the spec):
-  - free, no provider call: `npm run eval:worked-solutions -- --suite rulesguru`
+  - free, no provider call: `npm run eval:worked-solutions -- --suite practice`
     — does the rule each question cites reach Luna's prompt? Split by level,
     complexity and Comprehensive Rules section.
-  - paid: `npm run eval:answer-quality -- --suite rulesguru --run-id <id> --model gpt-6-luna [--sample N --seed S] [--level …] [--complexity …] [--suite-tag …] --max-cost-usd <≤15>`
+  - paid: `npm run eval:answer-quality -- --suite practice --run-id <id> --model gpt-6-luna [--sample N --seed S] [--level …] [--complexity …] [--suite-tag …] --max-cost-usd <≤15>`
     — dry run without `--confirm-live-calls`. A 200-question sample estimates
     **$2.35**; the full 1,245 would be about $14.6 by estimate (real spend has run
     near 60% of the estimate, so roughly $9). Keep every live run at
@@ -65,15 +65,15 @@ when no ruling settles it".
 
 ## Three constraints that shape the plan (challenge them with the owner if needed)
 
-1. **RulesGuru answers are community-written, not ground truth.** A suite result
-   is "agrees with RulesGuru", never "correct" (REQ-232, REQ-186). A
-   disagreement may be Luna's error or RulesGuru's. Use the suite to **find
+1. **Practice-suite answers are community-written, not ground truth.** A suite result
+   is "agrees with the practice suite", never "correct" (REQ-232, REQ-186). A
+   disagreement may be Luna's error or the suite's. Use the suite to **find
    patterns** of disagreement, then check the pattern against the Comprehensive
    Rules and Wizards rulings before treating it as a Luna weakness.
 2. **The suite runs today's prompt only.** By the accepted REQ-232, a suite run
    refuses any arm but A. Old-versus-new format comparisons run on the committed
    corpus (`npm run eval:answer-quality` with a manifest and `--arm A --arm X`),
-   where answers are owner-approved. Two ways to bring a RulesGuru finding into
+   where answers are owner-approved. Two ways to bring a practice-suite finding into
    that comparison:
    - write a corpus case in the project's own words with a Wizards answer and
      approve it by hand (REQ-185's promotion rule: nothing from the suite is
@@ -97,7 +97,7 @@ when no ruling settles it".
 2. Run a seeded paid sample of today's prompt (200 questions, about $2.35) on
    the tuning half. Group the disagreements by level, complexity, rules section
    and tag; read the transcripts; sort each pattern into "Luna is wrong",
-   "RulesGuru is wrong or ambiguous", or "rule never reached the prompt".
+   "the suite's answer is wrong or ambiguous", or "rule never reached the prompt".
 3. For each real Luna pattern, propose a format change, and write or select
    corpus cases that exercise it.
 4. Compare old versus new on the corpus diagnostic set and the hard set, with the
@@ -113,9 +113,9 @@ when no ruling settles it".
 - **Paid runs refuse the main checkout** while it has untracked files (the
   owner's `PRD/work/` folders, including this one). Run from a clean worktree:
   `git worktree add --detach .worktrees/<name> origin/main`, then `npm ci` and
-  `node scripts/warm-embedding-model-cache.mjs` inside it. The RulesGuru suite
-  lives in the main checkout's `output/rulesguru/`; copy it into the worktree's
-  `output/rulesguru/` (gitignored there too) for a suite run.
+  `node scripts/warm-embedding-model-cache.mjs` inside it. The practice suite
+  lives in the main checkout's `output/practice-suite/`; copy it into the worktree's
+  `output/practice-suite/` (gitignored there too) for a suite run.
 - **Paid runs need the owner's go-ahead.** The auto-mode allow rule for
   `npm run eval:*` is in the owner's settings; every live run passes
   `--max-cost-usd` 15 or less. Dry run first, and stop if a figure differs from
@@ -132,11 +132,11 @@ when no ruling settles it".
 
 ## Privacy rules (non-negotiable)
 
-RulesGuru questions are used with permission, local only. No RulesGuru
+Practice-suite questions stay local only. No suite
 question text, answer text, card roll, converted case or per-question result goes
 into any committed file, PR body, receipt, commit message or `PRD/` text —
-counts, levels, rules sections and tags only. Write nothing about how the
-permission was obtained beyond "used with permission, local only". Findings that
+counts, levels, rules sections and tags only. Never name the suite's source.
+Findings that
 need examples describe the rules pattern in the project's own words.
 
 ## Where to write

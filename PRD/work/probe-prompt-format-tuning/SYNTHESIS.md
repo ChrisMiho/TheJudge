@@ -40,7 +40,7 @@ the ruling, so holding matters as much as fixing.
 | --- | --- |
 | Ordinary corpus cases (the project's own) | 43–44 of 44 |
 | Hard corpus cases, 18 × 6 | 101 of 108 (94%) |
-| Practice suite (RulesGuru, 1,184 questions, used with permission, local only) | 67–69% agree per pass; 31% of questions flip between passes |
+| Practice suite (1,184 questions, local only) | 67–69% agree per pass; 31% of questions flip between passes |
 | Hard 25 practice questions (level 3 / Corner Case, each answer checked) | about 53% (66 of 125) |
 | The 10 hardest of those | 8 of 50 |
 
@@ -213,7 +213,7 @@ There are two ways past that:
 **What we know:**
 - His app runs Claude Opus and reportedly gets near 100%.
 - He got the Necropotence end-step cleanup question right on the first try.
-- He tests with the same RulesGuru questions, so his numbers can be compared
+- He tests with the same practice-suite questions, so his numbers can be compared
   with our 67–69% suite agreement once we know how he scores.
 - He uses RAG, not the whole rule book, and spent a lot of time on chunking.
 - He says a conversation costs a few cents with Opus. That matches the
@@ -349,7 +349,7 @@ our tests so far assumed.
 - how many chunks reach the prompt;
 - how card text is used in the query;
 - prompt structure;
-- how he scores RulesGuru, and his number.
+- how he scores the practice suite, and his number.
 
 ## Alternative decisive test: Opus on our hard questions
 
@@ -390,13 +390,13 @@ same escalation idea applies with Opus.
 
 - **Worktree:** `.worktrees/probe-pft` (detached at `9a9852dc`, `npm ci` done,
   embedder warm). It holds all local practice-suite data under
-  `output/rulesguru/`. Paid runs refuse a checkout with untracked files, so
+  `output/practice-suite/`. Paid runs refuse a checkout with untracked files, so
   they run there. Don't remove it without asking.
 - **Every live run:** dry run first. Pass `--max-cost-usd` ≤ 15, or a script's
   own hard stop. Check `embeddingProvider` `local` and the reported model on
   every record.
 - **Sets:**
-  - hard 25: `output/rulesguru/reports/pft-hard25-verify.json`;
+  - hard 25: `output/practice-suite/reports/pft-hard25-verify.json`;
   - hard 10: `pft-hard10.json`, picked by `runs/model-compare/pick-hard10.mjs`.
 - **Reusable scripts:**
   - two-turn pushback with any OpenAI model and both judges:

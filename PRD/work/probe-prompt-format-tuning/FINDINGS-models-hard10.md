@@ -2,7 +2,7 @@
 
 Session 3, 2026-10-11. Cost: Luna $0.94, Sol $2.83. Scripts and counts-only
 analysis: `runs/model-compare/`. Records are local only, in the worktree's
-`output/rulesguru/runs/probe-models-hard10/`.
+`output/practice-suite/runs/probe-models-hard10/`.
 
 **Setup:** the 10 hard-25 questions Luna gets right least often (8 right in 150
 earlier answers). Each model answers with today's production prompt, then hears

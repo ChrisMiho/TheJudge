@@ -4,7 +4,7 @@
 // Every answer is graded twice, by gpt-6.1-sol (today's judge) and by gpt-6-luna (candidate cheap judge), so the
 // run also measures whether the cheap judge agrees, and whether Sol-judging-Sol skews the result.
 // No effort parameter is sent to any model (production sends none); the reported effort is recorded.
-// Cases: output/rulesguru/reports/pft-hard10.json (from pick-hard10.mjs). Outputs stay under output/rulesguru/.
+// Cases: output/practice-suite/reports/pft-hard10.json (from pick-hard10.mjs). Outputs stay under output/practice-suite/.
 // Usage (from .worktrees/probe-pft): npx tsx <this file> --model luna|sol|terra [--live] [--repeats 5] [--concurrency 3] [--limit N]
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -13,7 +13,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 
 const MODELS = { luna: "gpt-6-luna", sol: "gpt-6-sol", terra: "gpt-5.6-terra" };
 // gpt-5.6-terra has no rate in the eval's table. Third-party listings (2026-07/10) give $2.00/$12.00 and
@@ -45,7 +45,7 @@ const fid = await imp("scripts/lib/prompt-fidelity.mjs");
 const gold = await imp("scripts/lib/gold-cases.mjs");
 const exp = await imp("scripts/lib/experiment-run.mjs");
 const ji = await imp("scripts/lib/judge-inputs.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const { hashPrompt } = await imp("scripts/lib/answer-quality-run.mjs");
 const { preparePromptInput, buildRetrievalQueryText } = await imp("apps/backend/src/prompt/preparation.ts");
 const { formatSupplementalRulesSection } = await imp("apps/backend/src/prompt/promptFormatting.ts");

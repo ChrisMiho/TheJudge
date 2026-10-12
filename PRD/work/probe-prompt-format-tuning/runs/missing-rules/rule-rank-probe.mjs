@@ -1,14 +1,14 @@
 // Free, local probe (no API calls): for every practice-suite question the suite run selects, where does each
 // deciding rule land in System 3's rule search? Production retrieval, cap 10, local embedder.
 // Prints aggregate counts only (rule ids, buckets, levels) — no question ids, text or answers.
-// Per-question detail goes to the gitignored output/rulesguru/reports/pft-rule-ranks.json (local only).
+// Per-question detail goes to the gitignored output/practice-suite/reports/pft-rule-ranks.json (local only).
 // Usage (from .worktrees/probe-pft): npx tsx <this file> [--set hard25]
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 const args = process.argv.slice(2);
 const SET = args.includes("--set") ? args[args.indexOf("--set") + 1] : "suite";
 const CAP = 10;
@@ -19,7 +19,7 @@ const evalMod = await imp("scripts/eval-answer-quality.mjs");
 const ws = await imp("scripts/eval-worked-solutions.mjs");
 const fid = await imp("scripts/lib/prompt-fidelity.mjs");
 const ra = await imp("scripts/lib/rule-availability.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const { preparePromptInput, buildRetrievalQueryText } = await imp("apps/backend/src/prompt/preparation.ts");
 const { askAiRequestSchema } = await imp("apps/backend/src/validation/askAiRequest.ts");
 const { loadGameRulesRuleEmbeddings, cosineSimilarity } = await imp("apps/backend/src/gameRulesRetrieval.ts");

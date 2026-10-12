@@ -14,7 +14,7 @@ import { join } from "node:path";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
 const OUT = `${REPO}/output/models-probe`;
-const SUITE_CAND = `${REPO}/output/rulesguru/reports/pft-rerank-candidates-suite.json`;
+const SUITE_CAND = `${REPO}/output/practice-suite/reports/pft-rerank-candidates-suite.json`;
 const CR = "/Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/cr/source.txt";
 const args = process.argv.slice(2);
 const arg = (k, d) => (args.includes(`--${k}`) ? args[args.indexOf(`--${k}`) + 1] : d);

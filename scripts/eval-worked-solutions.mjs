@@ -26,8 +26,8 @@
 //   npm run eval:worked-solutions -- --output output/worked-solutions-report.txt
 //   EMBEDDING_PROVIDER=mock npm run eval:worked-solutions   # lexical-only pass
 //
-// `--suite rulesguru` runs the same check over the local practice suite
-// (REQ-232; used with permission, local only) instead of the corpus: cases are
+// `--suite practice` runs the same check over the local practice suite
+// (REQ-232; local only) instead of the corpus: cases are
 // read from the suite folder in the loader's external mode, filtered by
 // `--level`, `--complexity`, `--suite-tag` and `--include-unsupported`, scored
 // by rule group, and reported split by level, complexity and rules section.
@@ -54,7 +54,7 @@ import {
   normalizeSuiteFilters,
   resolveInsideSuite,
   selectSuiteCases
-} from "./lib/rulesguru-suite.mjs";
+} from "./lib/practice-suite.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -70,10 +70,10 @@ export function parseArgs(argv) {
   const getAll = (name) => argv.flatMap((arg, index) => (arg === name && index + 1 < argv.length ? [argv[index + 1]] : []));
   const outputPath = getFlag("--output");
   const suite = getFlag("--suite");
-  if (suite !== undefined && suite !== "rulesguru") throw new Error(`--suite must be "rulesguru", got "${suite}"`);
+  if (suite !== undefined && suite !== "practice") throw new Error(`--suite must be "practice", got "${suite}"`);
   if (suite === undefined) {
     const stray = SUITE_FLAGS.find((flag) => argv.includes(flag));
-    if (stray) throw new Error(`${stray} only applies with --suite rulesguru`);
+    if (stray) throw new Error(`${stray} only applies with --suite practice`);
   }
   const filters = normalizeSuiteFilters({
     level: getAll("--level"),
@@ -86,7 +86,7 @@ export function parseArgs(argv) {
 
 export const USAGE = [
   "Usage: npm run eval:worked-solutions -- [--output <file>]",
-  "       npm run eval:worked-solutions -- --suite rulesguru [--level <0|1|2|3|corner>]... [--complexity <simple|intermediate|complicated>]...",
+  "       npm run eval:worked-solutions -- --suite practice [--level <0|1|2|3|corner>]... [--complexity <simple|intermediate|complicated>]...",
   "                                          [--suite-tag <tag>]... [--include-unsupported] [--output <file inside the suite folder>]",
   "",
   "Free and offline. The suite mode reads the local practice suite and writes its report under the suite folder's reports/."

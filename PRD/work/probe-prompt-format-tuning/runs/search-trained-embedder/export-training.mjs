@@ -14,7 +14,7 @@ import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 const OUT = `${REPO}/output/models-probe/train/data`;
 mkdirSync(OUT, { recursive: true });
 
@@ -22,7 +22,7 @@ const imp = (rel) => import(pathToFileURL(`${REPO}/${rel}`).href);
 const evalMod = await imp("scripts/eval-answer-quality.mjs");
 const ws = await imp("scripts/eval-worked-solutions.mjs");
 const fid = await imp("scripts/lib/prompt-fidelity.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const { preparePromptInput, buildRetrievalQueryText } = await imp("apps/backend/src/prompt/preparation.ts");
 const { buildPromptContext, buildLookupPromptContext } = await imp("apps/backend/src/prompt/context.ts");
 const { askAiRequestSchema } = await imp("apps/backend/src/validation/askAiRequest.ts");

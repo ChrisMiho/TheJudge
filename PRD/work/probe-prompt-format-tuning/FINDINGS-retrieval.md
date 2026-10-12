@@ -1,6 +1,6 @@
 # Findings — does the cited rule reach Luna's prompt?
 
-Free check, 2026-10-10, `npm run eval:worked-solutions -- --suite rulesguru` on `main` (`9a9852dc`), embedding provider `local`. Counts only (privacy rules: no question text, ids or per-question results).
+Free check, 2026-10-10, `npm run eval:worked-solutions -- --suite practice` on `main` (`9a9852dc`), embedding provider `local`. Counts only (privacy rules: no question text, ids or per-question results).
 
 ## Headline
 

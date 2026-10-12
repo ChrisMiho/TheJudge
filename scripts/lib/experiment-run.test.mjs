@@ -881,7 +881,7 @@ function suiteFixtureCase(id, { level = 1, complexity = "simple", excluded = nul
     tier: "external",
     review: { status: "draft", reviewedOn: null },
     source: { authority: "external-unapproved" },
-    suite: { name: "rulesguru", questionId: 1, level, complexity, tags: [], citedRuleIds: ["100.1"], ruleGroups: [["100.1"]], excluded }
+    suite: { name: "practice", questionId: 1, level, complexity, tags: [], citedRuleIds: ["100.1"], ruleGroups: [["100.1"]], excluded }
   });
 }
 
@@ -903,11 +903,11 @@ test("suite validation passes a present, non-excluded, non-stale case and refuse
 
 test("a suite run with a fake client writes only under its temporary run folder, labels agreement, splits by level and complexity, and resumes", async () => {
   const cases = [suiteFixtureCase("suite-a", { level: 0 }), suiteFixtureCase("suite-b", { level: "corner", complexity: "complicated" })];
-  const manifest = { formatVersion: 1, suite: { name: "rulesguru" }, cases: cases.map((c) => manifestEntryFor(c)) };
+  const manifest = { formatVersion: 1, suite: { name: "practice" }, cases: cases.map((c) => manifestEntryFor(c)) };
   const params = await experimentParams({
     cases,
     manifest,
-    suite: { name: "rulesguru" },
+    suite: { name: "practice" },
     extraFiles: { "suite-manifest.json": manifest },
     maxCostUsd: null
   });
@@ -920,11 +920,11 @@ test("a suite run with a fake client writes only under its temporary run folder,
   assert.ok(tree["run-one/suite-manifest.json"], "the filter manifest is saved in the run folder");
   assert.ok(tree["run-one/summary.json"] && tree["run-one/manifest.json"] && tree["run-one/calls.jsonl"]);
 
-  assert.match(summary.suite.label, /agrees with RulesGuru/);
-  assert.deepEqual(summary.suite.byLevel, { 0: { graded: 1, agreesWithRulesGuru: 1 }, corner: { graded: 1, agreesWithRulesGuru: 1 } });
+  assert.match(summary.suite.label, /agrees with the practice suite/);
+  assert.deepEqual(summary.suite.byLevel, { 0: { graded: 1, agreesWithPracticeSuite: 1 }, corner: { graded: 1, agreesWithPracticeSuite: 1 } });
   assert.deepEqual(summary.suite.byComplexity, {
-    complicated: { graded: 1, agreesWithRulesGuru: 1 },
-    simple: { graded: 1, agreesWithRulesGuru: 1 }
+    complicated: { graded: 1, agreesWithPracticeSuite: 1 },
+    simple: { graded: 1, agreesWithPracticeSuite: 1 }
   });
   assert.deepEqual(summary.records.map((r) => [r.strata.level, r.strata.complexity]), [["0", "simple"], ["corner", "complicated"]]);
 

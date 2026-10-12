@@ -1,17 +1,17 @@
-// Throwaway probe: Luna (today's default effort, no effort parameter) on the hard-25 RulesGuru set, with every
+// Throwaway probe: Luna (today's default effort, no effort parameter) on the hard-25 practice-suite set, with every
 // deciding rule the verifier named added to the prompt's supplemental excerpts section when the prompt does not
 // already carry it. Mirrors the pass runs (arm A, cap 10, local embedder, gpt-6.1-sol judge) for one answer; the
 // ONLY change from production is the added excerpts, in the exact `<ruleId>. <text>` format and section
 // formatSupplementalRulesSection prints, with rule-index text verbatim.
 // Usage: npx tsx <this file> [--live] [--concurrency 3] [--repeats 5] [--limit N]
-// Every output stays under output/rulesguru/ (gitignored, local only).
+// Every output stays under output/practice-suite/ (gitignored, local only).
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 const VERIFY = JSON.parse(readFileSync(`${SUITE}/reports/pft-hard25-verify.json`, "utf8"));
 const CASE_IDS = VERIFY.final;
 const PASSES = [1, 2, 3, 4, 5].map((n) => `${SUITE}/runs/pft-pass${n}`);
@@ -39,7 +39,7 @@ const gold = await imp("scripts/lib/gold-cases.mjs");
 const exp = await imp("scripts/lib/experiment-run.mjs");
 const ji = await imp("scripts/lib/judge-inputs.mjs");
 const ra = await imp("scripts/lib/rule-availability.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const arms = await imp("scripts/lib/diagnostic-arms.mjs");
 const { hashPrompt } = await imp("scripts/lib/answer-quality-run.mjs");
 const { preparePromptInput } = await imp("apps/backend/src/prompt/preparation.ts");

@@ -4,7 +4,7 @@
 // curated topic data or Comprehensive Rules text — so no question, card or answer text is ever printed.
 import { readFileSync } from "node:fs";
 
-const R = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/rulesguru/runs/probe-unclear-hard25/records.jsonl";
+const R = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/practice-suite/runs/probe-unclear-hard25/records.jsonl";
 const recs = readFileSync(R, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
 const judged = recs.filter((r) => r.stepJudgement && !r.undetermined);
 const inc = (o, k, n = 1) => (o[k] = (o[k] ?? 0) + n);

@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
 const SET = process.argv[2] ?? "suite";
 const index = JSON.parse(readFileSync(`${REPO}/apps/backend/data/gameRulesRuleIndex.json`, "utf8"));
-const detail = JSON.parse(readFileSync(`${REPO}/output/rulesguru/reports/pft-rule-ranks-${SET}.json`, "utf8"));
+const detail = JSON.parse(readFileSync(`${REPO}/output/practice-suite/reports/pft-rule-ranks-${SET}.json`, "utf8"));
 const pointer = (t) => /:\s*$/.test(t.trim()) || /following (rules|exception|exceptions|steps|order)/i.test(t);
 const childrenOf = new Map();
 for (const e of index) for (const p of e.parentRuleIds.slice(0, 1)) { if (!childrenOf.has(p)) childrenOf.set(p, []); childrenOf.get(p).push(e.ruleId); }

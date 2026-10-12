@@ -160,7 +160,7 @@ can't muddy it.
   resumes from disk. From `.worktrees/probe-pft`, run:
   `npx tsx /Users/chrismiho/Coding/Projects/TheJudge/PRD/work/probe-prompt-format-tuning/runs/pushback-hard25/pushback-hard25-probe.mjs --set hard25 --live`.
   The owner launches live runs with `!`. Records go to the worktree's
-  `output/rulesguru/runs/probe-pushback-hard25/` (local only).
+  `output/practice-suite/runs/probe-pushback-hard25/` (local only).
 - **Analyze:** `node runs/pushback-hard25/analyze.mjs`. It prints counts only,
   for pushback and the neutral self-check on the same 25 side by side:
   held / flipped (outcome vs side) / fixed / still wrong, per-question fix and
@@ -178,7 +178,7 @@ can't muddy it.
 Script: `runs/missing-rules/rule-rank-probe.mjs`. It uses production retrieval
 (cap 10, local embedder) on every practice question, and finds where each
 deciding rule lands in the rule search. It prints counts only. Per-question
-detail goes to the worktree's `output/rulesguru/reports/pft-rule-ranks-{suite,hard25}.json`
+detail goes to the worktree's `output/practice-suite/reports/pft-rule-ranks-{suite,hard25}.json`
 (local only).
 
 | | Whole suite (1,181 questions*) | Hard 25 |
@@ -253,7 +253,7 @@ can only be unclear wording or a reasoning slip. The every-rule-added script is
 
 - **Worktree:** `.worktrees/probe-pft`, detached at `9a9852dc`, with `npm ci`
   done and the embedder warm. It holds all local practice-suite run data under
-  `output/rulesguru/`. Don't remove it without asking the owner. Paid runs refuse
+  `output/practice-suite/`. Don't remove it without asking the owner. Paid runs refuse
   a checkout with untracked files, which is why they run there and not from main.
 - **Every live run:** dry run first, and stop if a figure differs from the plan.
   Pass `--max-cost-usd` ≤ 15. Check that every record shows `embeddingProvider`
@@ -261,23 +261,23 @@ can only be unclear wording or a reasoning slip. The every-rule-added script is
 - **REQ-232:** a suite run refuses any arm but A. The owner approved comparing
   settings on the hard 25 in local probe scripts only, as an informed exception.
 - **"Right"** means Correctness 2 from the judge, rubric `2026-10-10.1`. A
-  practice-suite answer is "agrees with RulesGuru", never ground truth. The
+  practice-suite answer is "agrees with the practice suite", never ground truth. The
   owner sided with the strict judge: a right outcome with a real side error
   scores 1.
 - **Variance:** 31% of practice questions flip between passes, so compare
   settings with repeats (×5 on the hard 25, ×3 or ×6 on the corpus), never single
   runs.
 - **Hard 25 list and verdicts:** worktree
-  `output/rulesguru/reports/pft-hard25.json` and `pft-hard25-verify.json` (local
+  `output/practice-suite/reports/pft-hard25.json` and `pft-hard25-verify.json` (local
   only). One answer cites a stale rule number: old 726, now 727.
 
 ## Privacy (non-negotiable)
 
-Practice-suite (RulesGuru) questions are used with permission, local only. No
+Practice-suite questions stay local only. No
 question text, answer text, card list, converted case or per-question result
 goes into any committed file, PR body, receipt, commit message or `PRD/` text.
 Use counts, levels, rules sections and tags only. Describe examples in the
-project's own words. Data lives in the gitignored `output/rulesguru/` in the
+project's own words. Data lives in the gitignored `output/practice-suite/` in the
 worktree. Write nothing about how the permission was obtained beyond "used with
 permission, local only".
 

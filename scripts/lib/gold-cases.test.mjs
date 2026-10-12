@@ -511,7 +511,7 @@ function validSuiteCase(overrides = {}) {
     ...validTier1Case({ id: "suite-sample-1", question: "An invented practice question?" }),
     tier: "external",
     expected: { outcome: null, shortAnswer: "Invented short answer.", answer: "Invented practice answer text.", decidingRuleIds: ["100.1"] },
-    source: { authority: "external-unapproved", publisher: "Invented publisher", license: "used with permission, local only", questionId: 1 },
+    source: { authority: "external-unapproved", publisher: "Invented publisher", license: "local only", questionId: 1 },
     suite: {
       name: "invented-suite",
       questionId: 1,

@@ -15,7 +15,7 @@ import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 import { REPO, MODELS, loadModel, saveVecs, loadVecs, sha, embedMany } from "./lib-embed.mjs";
 
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 const arg = (k, d) => (process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : d);
 const MODEL_KEYS = arg("--models", "minilm").split(",");
 const VARIANTS = arg("--variants", "A").split(",");
@@ -29,7 +29,7 @@ const imp = (rel) => import(pathToFileURL(`${REPO}/${rel}`).href);
 const evalMod = await imp("scripts/eval-answer-quality.mjs");
 const ws = await imp("scripts/eval-worked-solutions.mjs");
 const fid = await imp("scripts/lib/prompt-fidelity.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const { isHeadingOnlyEntry } = await imp("scripts/build-game-rules.mjs");
 const { preparePromptInput, buildRetrievalQueryText } = await imp("apps/backend/src/prompt/preparation.ts");
 const { buildPromptContext, buildLookupPromptContext } = await imp("apps/backend/src/prompt/context.ts");

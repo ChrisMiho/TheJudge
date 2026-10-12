@@ -11,7 +11,7 @@
 // `--model`, `--excerpt-cap`), as are the other selections (`--tag`, `--tier`,
 // `--sample N`, `--all`).
 //
-// `--suite rulesguru --run-id <id>` is a third mode (REQ-232): it grades the
+// `--suite practice --run-id <id>` is a third mode (REQ-232): it grades the
 // local practice suite's unapproved, external cases (never the committed
 // corpus), selected by `--level`, `--complexity`, `--suite-tag` and
 // `--include-unsupported` (plus `--sample N --seed S`), arm A only, through the
@@ -85,7 +85,7 @@ import {
   normalizeSuiteFilters,
   resolveInsideSuite,
   selectSuiteCases
-} from "./lib/rulesguru-suite.mjs";
+} from "./lib/practice-suite.mjs";
 import {
   ARM_IDS,
   ARM_REGISTRY,
@@ -209,7 +209,7 @@ export function parseArgs(argv) {
   // Experiment-mode flags (REQ-226): none of them exists in a routine run.
   const experimentFlags = {};
   const armIds = [];
-  // Local practice-suite mode (REQ-232): its own flags, none of which exists outside `--suite rulesguru`.
+  // Local practice-suite mode (REQ-232): its own flags, none of which exists outside `--suite practice`.
   let suiteName;
   const suiteLevels = [];
   const suiteComplexities = [];
@@ -277,9 +277,9 @@ export function parseArgs(argv) {
 
   if (suiteName === undefined) {
     const stray = ["--level", "--complexity", "--suite-tag", "--include-unsupported"].find((flag) => argv.includes(flag));
-    if (stray) throw new Error(`${stray} only applies to a local practice-suite run: add --suite rulesguru.`);
+    if (stray) throw new Error(`${stray} only applies to a local practice-suite run: add --suite practice.`);
   } else {
-    if (suiteName !== "rulesguru") throw new Error(`--suite must be "rulesguru", got "${suiteName ?? ""}".`);
+    if (suiteName !== "practice") throw new Error(`--suite must be "practice", got "${suiteName ?? ""}".`);
     const refused = selectionFlags.filter((flag) => flag !== "--sample");
     if (experimentFlags.manifest !== undefined) refused.push("--manifest");
     if (experimentFlags.regradeFrom !== undefined) refused.push("--regrade-from");
@@ -340,7 +340,7 @@ export function parseArgs(argv) {
 
 /**
  * Experiment mode (REQ-226) is on exactly when `--run-id` is named (with
- * `--suite rulesguru`, `--run-id` names a suite run, REQ-232, not experiment
+ * `--suite practice`, `--run-id` names a suite run, REQ-232, not experiment
  * mode: it takes no manifest and builds its own from its filters); every other
  * experiment flag without it is a mistake, refused by name rather than
  * silently running a routine run that merges into the committed file.

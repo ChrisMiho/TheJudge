@@ -4,8 +4,8 @@
 // (conversationHistory, REQ-027) whose supplemental rule-excerpt block is swapped for turn 1's exact excerpts
 // (carry-forward). The ONLY change from arm C is the turn-2 text: a neutral self-check instead of the pushback line.
 // Both turns judged alone (judgeAnswerAlone, gpt-6.1-sol).
-//   --set hard25 : RulesGuru hard-25 (`final` ids), cases loaded as the suite run loads them; output stays under
-//                  output/rulesguru/ (gitignored, local only).
+//   --set hard25 : practice-suite hard-25 (`final` ids), cases loaded as the suite run loads them; output stays under
+//                  output/practice-suite/ (gitignored, local only).
 //   --set corpus : the 62 rr-hard + rr-regression gold cases.
 // Honesty: local embedder, semantic retrieval every turn, provider model gpt-6-luna, reported effort medium,
 // judge gpt-6.1-sol; turn-1 prompt hash must equal the earlier runs' prompt (suite: pft-pass records; corpus:
@@ -19,7 +19,7 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 const BACKUPS = "/Users/chrismiho/Coding/Projects/TheJudge-backups/resolution-recipe-2026-10-10";
 const RUNS = "/Users/chrismiho/Coding/Projects/TheJudge/PRD/work/probe-prompt-format-tuning/runs";
 const SCRATCH = "/private/tmp/claude-501/-Users-chrismiho-Coding-Projects-TheJudge/77c7ed2c-0a20-456e-a5b5-09f17f281567/scratchpad/pushback-hard25";
@@ -59,7 +59,7 @@ const gold = await imp("scripts/lib/gold-cases.mjs");
 const exp = await imp("scripts/lib/experiment-run.mjs");
 const ji = await imp("scripts/lib/judge-inputs.mjs");
 const ra = await imp("scripts/lib/rule-availability.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const { hashPrompt } = await imp("scripts/lib/answer-quality-run.mjs");
 const { preparePromptInput, buildRetrievalQueryText } = await imp("apps/backend/src/prompt/preparation.ts");
 const { formatSupplementalRulesSection } = await imp("apps/backend/src/prompt/promptFormatting.ts");

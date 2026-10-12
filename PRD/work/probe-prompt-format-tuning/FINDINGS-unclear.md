@@ -2,7 +2,7 @@
 
 Session 3, 2026-10-11. Cost $2.66. 25 hard practice questions × 4. Script and
 counts-only analysis: `runs/unclear-hard25/`. Records are local only, in the
-worktree's `output/rulesguru/runs/probe-unclear-hard25/`.
+worktree's `output/practice-suite/runs/probe-unclear-hard25/`.
 
 **Setup:** every deciding rule was added to Luna's prompt (the same additions as
 the every-rule run that scored 75 of 125). She first listed her steps, naming the

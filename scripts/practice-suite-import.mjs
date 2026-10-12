@@ -1,20 +1,24 @@
 // Imports the local practice suite's questions into the gitignored suite folder
-// (REQ-232). Used with permission, local only. The owner runs this by hand from
+// (REQ-232). Local only. The owner runs this by hand from
 // the main checkout; no agent and no test ever runs it.
 //
-//   npm run eval:rulesguru:import
+//   npm run eval:practice-suite:import
 //
-// It refuses to start unless git reports the suite folder ignored. It prints
+// It refuses to start unless git reports the suite folder ignored and the
+// PRACTICE_SUITE_API_URL environment variable holds the question API address. It prints
 // counts only. Stop it any time; running it again resumes from the last saved id.
 
 import { pathToFileURL } from "node:url";
 
-import { importQuestions } from "./lib/rulesguru-import.mjs";
-import { SUITE_DIR, assertSuiteIgnored } from "./lib/rulesguru-suite.mjs";
+import { API_URL_ENV, importQuestions } from "./lib/practice-suite-import.mjs";
+import { SUITE_DIR, assertSuiteIgnored } from "./lib/practice-suite.mjs";
 
 async function main() {
   assertSuiteIgnored();
+  const baseUrl = process.env[API_URL_ENV];
+  if (!baseUrl) throw new Error(`Set ${API_URL_ENV} to the question API address before importing.`);
   const counts = await importQuestions({
+    baseUrl,
     fetch: globalThis.fetch,
     now: () => Date.now(),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),

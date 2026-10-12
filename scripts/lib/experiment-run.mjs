@@ -312,17 +312,17 @@ export function suiteAgreementCounts(suite, okRecords) {
     const table = {};
     for (const record of okRecords) {
       const key = record.strata?.[field] ?? "unknown";
-      table[key] ??= { graded: 0, agreesWithRulesGuru: 0 };
+      table[key] ??= { graded: 0, agreesWithPracticeSuite: 0 };
       if (!record.undetermined) {
         table[key].graded += 1;
-        if (record.scores?.correctness === 2) table[key].agreesWithRulesGuru += 1;
+        if (record.scores?.correctness === 2) table[key].agreesWithPracticeSuite += 1;
       }
     }
     return Object.fromEntries(Object.entries(table).sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true })));
   };
   return {
     name: suite.name,
-    label: "agrees with RulesGuru (the source's own answer, never ground truth)",
+    label: "agrees with the practice suite (the source's own answer, never ground truth)",
     byLevel: split("level"),
     byComplexity: split("complexity")
   };

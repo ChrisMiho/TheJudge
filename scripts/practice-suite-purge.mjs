@@ -1,8 +1,8 @@
 // Deletes the local practice suite's whole folder and nothing else (REQ-232).
-// Used with permission, local only.
+// Local only.
 //
-//   npm run eval:rulesguru:purge             prints how many files it would delete
-//   npm run eval:rulesguru:purge -- --yes    deletes the suite folder
+//   npm run eval:practice-suite:purge             prints how many files it would delete
+//   npm run eval:practice-suite:purge -- --yes    deletes the suite folder
 //
 // It refuses a target that does not resolve to exactly the suite folder: no
 // parent path, no sibling, no symlink escape.
@@ -11,7 +11,7 @@ import { lstat, readdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { SUITE_DIR, assertSuiteIgnored, resolveInsideSuite } from "./lib/rulesguru-suite.mjs";
+import { SUITE_DIR, assertSuiteIgnored, resolveInsideSuite } from "./lib/practice-suite.mjs";
 
 async function countFiles(dir) {
   let count = 0;

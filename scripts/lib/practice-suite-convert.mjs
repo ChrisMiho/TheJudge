@@ -1,9 +1,9 @@
 // Converts frozen raw suite questions into local draft cases (REQ-232).
-// Used with permission, local only.
+// Local only.
 //
 // Reads only `raw/` under the suite folder and committed repo data (passed in
 // as `cardNames` and `sources`); makes no network call. Deterministic: the same
-// inputs give the same bytes. Writes `cases/rulesguru-<id>.case.json` in the
+// inputs give the same bytes. Writes `cases/practice-<id>.case.json` in the
 // format version 2 shape (REQ-185) with `tier` "external", and a counts-and-
 // reasons report. A case that cannot be used in a run is still written, with
 // `suite.excluded` naming why, and is never selected.
@@ -17,11 +17,11 @@ import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { computeSnapshot } from "./gold-cases.mjs";
-import { mapCitedRules, ruleIdsOf } from "./rulesguru-rules.mjs";
+import { mapCitedRules, ruleIdsOf } from "./practice-suite-rules.mjs";
 
-export const SUITE_NAME = "rulesguru";
-export const SUITE_PUBLISHER = "RulesGuru";
-export const SUITE_LICENSE = "used with permission, local only";
+export const SUITE_NAME = "practice";
+export const SUITE_PUBLISHER = "practice suite";
+export const SUITE_LICENSE = "local only";
 export const EXCLUSION_REASONS = [
   "unresolved-card",
   "ambiguous-card",
@@ -123,7 +123,7 @@ export function buildCase(question, { cardNames, indexIds, snapshotSources, dupl
 
   const decidingRuleIds = [...new Set(groups.flat())];
   const caseEntry = {
-    id: `rulesguru-${question.id}`,
+    id: `practice-${question.id}`,
     formatVersion: 2,
     tier: "external",
     review: { status: "draft", reviewedOn: null },

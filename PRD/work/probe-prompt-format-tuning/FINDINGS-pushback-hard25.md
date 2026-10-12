@@ -4,7 +4,7 @@ Session 3, 2026-10-11. Cost $2.15. 25 hard practice questions × 5 conversations
 Turn 2 is the scripted pushback line ("I don't think that's right. Can you check
 it again?"), with turn 1's rule excerpts carried forward (arm C, the fix in
 `GRAPH-BRIEF.md`). Script and counts-only analysis: `runs/pushback-hard25/`.
-Records are local only, in the worktree's `output/rulesguru/runs/probe-pushback-hard25/`.
+Records are local only, in the worktree's `output/practice-suite/runs/probe-pushback-hard25/`.
 
 ## Answer
 

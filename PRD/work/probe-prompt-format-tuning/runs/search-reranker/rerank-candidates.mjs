@@ -2,7 +2,7 @@
 // Copied and trimmed from ../audit-search/search-audit-probe.mjs: production's hybrid ranking only
 // (0.6 × MiniLM cosine ÷ max + 0.4 × word match ÷ max + boosts), verified against production's top 10,
 // then the top 100 candidates per question are saved for the reranker stage.
-// --set suite  : practice suite (1,181). Saved INSIDE output/rulesguru/reports/ (gitignored) because it holds
+// --set suite  : practice suite (1,181). Saved INSIDE output/practice-suite/reports/ (gitignored) because it holds
 //                question text needed for reranking. Nothing private is printed.
 // --set corpus : the project's own worked-solutions corpus (415) incl. both Necropotence cases.
 // Usage (from .worktrees/probe-pft): EMBEDDING_PROVIDER=local npx tsx <this file> --set suite|corpus
@@ -12,7 +12,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 const OUT = `${REPO}/output/models-probe`;
 const args = process.argv.slice(2);
 const SET = args.includes("--set") ? args[args.indexOf("--set") + 1] : "corpus";
@@ -23,7 +23,7 @@ const imp = (rel) => import(pathToFileURL(`${REPO}/${rel}`).href);
 const evalMod = await imp("scripts/eval-answer-quality.mjs");
 const ws = await imp("scripts/eval-worked-solutions.mjs");
 const fid = await imp("scripts/lib/prompt-fidelity.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const { preparePromptInput, buildRetrievalQueryText } = await imp("apps/backend/src/prompt/preparation.ts");
 const { buildPromptContext, buildLookupPromptContext } = await imp("apps/backend/src/prompt/context.ts");
 const { askAiRequestSchema } = await imp("apps/backend/src/validation/askAiRequest.ts");
