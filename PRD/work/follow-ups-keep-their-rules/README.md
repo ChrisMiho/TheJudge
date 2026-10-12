@@ -1,4 +1,4 @@
-status: ship-ready
+status: owner-action
 
 # follow-ups-keep-their-rules
 

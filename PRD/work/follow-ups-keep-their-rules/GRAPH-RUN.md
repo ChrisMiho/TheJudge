@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261012-195753/`
-- Current node: `gate-review` (build half claimed)
+- Current node: `build` parked (owner-action); next node `review`
 - Next action: `/graph-implement PRD/work/follow-ups-keep-their-rules/`
 
 ## Node ledger
@@ -20,14 +20,15 @@
 | 5 | gate-review | sonnet | ok | `0 → 18` | build half run `graph-20261012-152231`: claim commit `1a3ea9a9` on `thejudge-auto/follow-ups-keep-their-rules-work` cut from `origin/main` `67678d05` (docs PR #296 merge; kickoff worktree removed clean); lock taken from the launch root, graph canary `nohup true` denied; `graph-gate-review` commit `997fc929`: 11 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-12 |
 | 6 | gate-qc | sonnet | ok | `0 → 14` | PASS, build-half attempt 1 of 3, re-graded after gate resolution at `origin/main` `67678d05`: all 24 old/context diff lines match `PRD/sections/functional-requirements.md` verbatim at their stated lines; REQ-246/REQ-247 free (REQ-245 last, line 6455); brief code references true (`useAskAiSubmitOrchestration.ts`, `askAiRequest.ts:231-246`, `routes/askAi.ts:106-110`, `gameRulesTopicSelection.ts:142`, `preparation.ts`); brief consistent with 11 accepts, REQ-246 follow-up item out of build scope; `STATUS.refined` only marker; porcelain empty. Non-blocking: `DESIGN-BRIEF.md` line 6 still says the eleven slots are to be decided. `README.md` `## Preparation gate` stands PASS, findings none | 2026-10-12 |
 | 7 | plan | sonnet | ok | `0 → 25` | `GAMEPLAN.md`; `slice-a-eval-pushback-mode.md` + `slice-a.criteria.json` (14 criteria, all `false`, each with evidence; REQ-247, REQ-226, REQ-228; tooling only); `slice-b-follow-ups-keep-rules.md` + `slice-b.criteria.json` (13 criteria, all `false`; REQ-246 + seven amendments + 13 derived-doc rows; ship gates); REQ-246 follow-up item listed out of scope; paid before/after runs listed as owner steps; `STATUS.active` only marker; README `## Slices`; board row moved refined → active | 2026-10-12 |
+| 8 | build | sonnet | parked | `0 → 147` | Work done: slice A commit `61ea4899`, slice B commit `3626876e`, pushed (`origin` tip `3626876e`); criteria 14/14 and 13/13 `true`; PR https://github.com/ChrisMiho/TheJudge/pull/297 open; node set `STATUS.ship-ready`. Return-side check: launch checkout `git status --porcelain` identical before and after (4 untracked folders). Write scope: `classifyBuildWrites` outcome `park` — `node 6 wrote outside its scope: /tmp/<grep-count temp file, deleted>`. Also self-reported: bare `git stash` then `git stash pop` once (contract `## Boundaries`: never drop, pop or reorder a stash); `git stash list` top entry afterwards is the older `green-mobile-branch-declutter-work` WIP, so the pop took back only its own push. Hook denials this run: none — `git stash pop` is denied only in `.claude/graph-profile.json` (not loaded, `Profile: unverified`), and `scripts/lib/boundary-rules.mjs` has no stash rule. Other self-reported deviations: edits via Python/`sed` instead of Write/Edit; gitignored `node_modules` symlinks in the worktree; read-only use of the launch checkout's model cache for B10 (stock MiniLM; trained model absent) | 2026-10-12 |
 
 ## Open gate
 
-- RESOLVED 2026-10-12: 11 of 11 verdicts read from the merged answered file (11 accept, 0 edit, 0 reject); see `## Gate verdicts`.
-- Question (answered): answer the 11 verdict slots in `PRD/work/follow-ups-keep-their-rules/GATE-QUESTIONS.md` (accept, edit with a reason, or reject with a reason), then merge the docs PR to build.
-- PR: https://github.com/ChrisMiho/TheJudge/pull/296 (docs-only, `thejudge-auto/follow-ups-keep-their-rules → main`)
-- Evidence: gate-qc PASS (row 4); `DESIGN-BRIEF.md`; `evidence/offline-measurement.md`.
-- Resume: after the merge, `/graph-implement PRD/work/follow-ups-keep-their-rules/`.
+- Gate: `build` (node 6) parked on its return-side write-scope check, 2026-10-12.
+- Question: accept the build's two out-of-bounds actions as harmless and continue to review? (1) one temp file written under `/tmp` and deleted at once; (2) one bare `git stash` + `git stash pop` of its own changes. Driver recommendation: accept both. The repository and the launch checkout are unchanged and the stash stack's prior entries are intact. Record the guardrail gap as follow-up: the boundary hook has no stash rule, so the contract's claim that the hook enforces the whole boundary list does not hold for stash pop/drop.
+- Evidence: node ledger row 8; `git stash list` (top entry `0fc368ea`, the older `green-mobile-branch-declutter-work` WIP); PR https://github.com/ChrisMiho/TheJudge/pull/297.
+- Resume: write `RESOLVED <date>: <verdict>` at the top of this section (or tell the driver in session), then `/graph-implement PRD/work/follow-ups-keep-their-rules/`. On resume the driver restores `STATUS.ship-ready` and enters at `review` (node 7), not `close` — review has not run.
+- Earlier gate: `define`, RESOLVED 2026-10-12 — 11 of 11 verdicts accept (docs PR https://github.com/ChrisMiho/TheJudge/pull/296); see `## Gate verdicts`.
 
 ## Gate verdicts
 
