@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
-- Current node: `owner-action` (review parked)
+- Current node: `build` (attempt 3, review loop 1)
 - Next action: `/graph-implement PRD/work/right-rules-in-order/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
 
 ## Node ledger
@@ -26,11 +26,12 @@
 
 ## Open gate
 
-- Terminal state: `PARKED` at `owner-action` after `review` attempt 1 (CHANGES REQUESTED), run `graph-20261011-190751`. Review loops used: 0 of 2.
+- Terminal state (historical): `PARKED` at `owner-action` after `review` attempt 1 (CHANGES REQUESTED), run `graph-20261011-190751`. Review loops used: 0 of 2.
 - Question: two In-Depth layers questions (Blood Moon with Urborg; Mycosynth Lattice with March of the Machines) no longer get rule 613.1d (type-changing effects, layer 4), because nothing in those cards' wording now triggers the layers topic. The general fix is one concept-map entry: card wording that sets a type ("in addition to its other types", "Nonbasic lands are Mountains", "is an artifact creature") maps to the existing type-changing-effects layer concept. REQ-234 makes any concept-map change a separate owner-reviewed edit. Approve that entry? Driver recommendation: yes — then build attempt 3 removes the known-loss exception, restores REQ-236's re-baselined-once wording with a single re-baseline (3 lost hits: 903.4, 707.10, 701.12a), removes the claim that the loss was accepted, and narrows the cutoff exemption to exact cited ids (M-1) and fixes REQ-190's up-to-thirteen wording (M-2).
 - Evidence: node ledger row 10; `apps/backend/src/prompt/builtPromptChecks.test.ts:208-222`; `apps/backend/src/gameRulesConceptMap.ts:44`; `PRD/sections/functional-requirements.md:6197`, `:6249`, `:6270`, `:6429`.
 - Code PR: https://github.com/ChrisMiho/TheJudge/pull/293 (open; do not merge yet).
 - Resume: answer in session, then `/graph-implement PRD/work/right-rules-in-order/` — re-enters `build` attempt 3 (review loop 1 of 2).
+- RESOLVED 2026-10-12: the owner approved the concept-map entry, the fixes and the cleanup in session (see `## Instruction ledger`). Lock retaken (`graph-20261011-190751`), graph canary `nohup true` denied. Resumes at `build` attempt 3, review loop 1 of 2.
 
 ### Slice-D park (resolved)
 
@@ -337,6 +338,39 @@ Distrust the `true` marks in the criteria files: they are self-reported (the hoo
 
 Report: APPROVE or CHANGES REQUESTED; findings grouped Critical / Important / Minor, each with file:line and the criterion or target it violates; the commands you ran with their results; and, for each Important finding, the behaviour the fix must produce (state the behaviour, not a premise).
 
+### build (attempt 3, review loop 1)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order
+
+You are node 6 (`build`) of build-half graph run `graph-20261011-190751`, attempt 3 — review loop 1 of 2. Invoke the `thejudge-implement-all` skill in its graph-controlled mode (`graph is controlling`: no questions to the user, no approval pauses). Package `PRD/work/right-rules-in-order/`, shared branch `thejudge-auto/right-rules-in-order-work`, code PR https://github.com/ChrisMiho/TheJudge/pull/293 (already open — push to it; never merge or close it). Work in this worktree in place.
+
+Read first: `GRAPH-RUN.md` node ledger row 10 (the review findings) and `## Open gate`. The owner approved, in session, a concept-map addition, the two Important fixes and the two Minor cleanups below. Make each behave exactly as stated.
+
+1. Concept-map entry (owner-reviewed edit under REQ-234). Add one general entry to `apps/backend/src/gameRulesConceptMap.ts`: card wording that sets a permanent's type maps to the existing concept term `type-changing effects layer continuous effect`. It matches type-setting templating — `in addition to its other types`, `in addition to their other types`, `in addition to its other land types`, and a subject followed by `is` / `are` and an optional `a` / `an` and a card type, subtype or basic land type, as in `Nonbasic lands are Mountains`, `is an artifact creature`, `All permanents are artifacts`. It must not match conditional or targeting wording such as `if it is a creature`, `target creature`, or `that is a creature` — write tests for both sides. Update the concept-map count test and REQ-234's live text (entry counts and a dated note that the owner reviewed this entry on 2026-10-12). The result: both `layers-blood-moon-urborg-dependency-in-depth` and `layers-mycosynth-lattice-march-dependency-in-depth` In-Depth prompts carry 613.1d.
+2. Built-prompt check (I-1). Delete `KNOWN_REQ_242_LOSSES` from `apps/backend/src/prompt/builtPromptChecks.test.ts`. The check passes only when all 20 before-set 613.x / 510.x rules reach the prompt. If any is still missing after step 1, stop and report it; do not add a new exception.
+3. Rules gate (I-2). Restore `apps/backend/src/eval/rules-gate/baseline.json` to origin/main's version, then re-baseline exactly once with `npm run eval:rules-gate:baseline -- --allow-regressions`. List every lost hit (case id and rule) in the PR body and in `evidence/build-log.md`; net reaching rules must rise.
+4. Product truth (I-2). REQ-236 in `PRD/sections/functional-requirements.md` carries the accepted wording that the rules gate is re-baselined once, in this change. Remove the note recording a second raise. Remove the REQ-242 note text saying the 613.1d loss was accepted; record instead that the type-setting concept-map entry keeps the layers topic for type-setting cards. No PRD text may say the owner accepted a loss.
+5. Cutoff exemption (M-1). In `apps/backend/src/gameRulesRetrieval.ts`, the 0.6 relevance cutoff exempts only rules whose id the question cites by number exactly. Children of a cited parent and cross-referencing rules are subject to the cutoff like any other candidate. Add a test that a cited rule survives and a child of a cited parent below the floor is dropped.
+6. Wording (M-2). REQ-190's live text says the main ranking fills up to thirteen slots, not at least thirteen.
+
+Then re-measure on the shipped defaults and report each against attempt 2:
+- `--cv`: check (attempt 2: 520), tuning 511, every-rule check 169, hard 25 24, corpus 435 / 372, bench@5 131. A drop below the slice-D floors (430 / 410 / 140 / 15) parks; any other change, report it with its cause.
+- `--final`: corpus, bench@5, Necropotence 514.1/514.2/514.3a in both versions.
+- labelled semantic checks 14 of 14; benchmark recall@5 at or above 0.8526 clean and 0.8333 polluted; `npx vitest run src/prompt/builtPromptChecks.test.ts` with no exception list; `npm run quality:check` exit 0; `node scripts/privacy-scan.mjs` 0 matches.
+- `npm run benchmark:rag-retrieval` rewrites `scoredAt` in tracked result files: restore them unless the values changed intentionally.
+Update the PR body (`gh pr edit 293 --body-file <file under output/>`): the concept-map entry, the single re-baseline and its lost-hit list, the re-measured numbers. Keep the registration line `<!-- thejudge-auto:v1:registered:right-rules-in-order -->` and the owner's upload commands.
+
+Finish: every criterion stays true with fresh evidence for the ones this attempt touched (G1, G-criteria on the built-prompt check and rules gate, B-criteria on the cutoff); set `STATUS.ship-ready` as the only marker (it is `STATUS.owner-action` now) and move the `PRD/work/STATUS.md` board row fully to ship-ready.
+
+Rules (unchanged): privacy is hard — no practice-suite question, answer, card list, id or per-question result in any committed file or the PR body; no model weights tracked. Nothing outward-facing beyond pushing this branch and editing the PR body. Every path you write lies inside `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order/`; run tests from that absolute path, never from /Users/chrismiho/Coding/Projects/TheJudge/apps. Long commands: foreground with a long timeout, or the Bash tool run_in_background parameter — never `nohup` or a trailing `&`. Prettier only for JSON/YAML. File changes with the Write and Edit tools only — no `sed -i`, no heredocs in chained Bash (attempts 1 and 2 used `sed -i`). Git as short separate calls: `git add <explicit paths>`, `git commit`, `git push origin thejudge-auto/right-rules-in-order-work`; never `git add -A` or `.`, never force-push, never `git -C`. End every commit message with these two lines:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01CWhjS7D5QcyWHjdQTguakK
+Leave `GRAPH-RUN.md` `## Node ledger` and `## Dispatch prompts` alone. Spawn no helper subagents. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: per numbered item what changed (file:line) and its test; the re-measured numbers against attempt 2; the lost-hit list; the commit SHAs; every file path you wrote; `npm run quality:check` result; and the final `git status --porcelain`.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -347,3 +381,4 @@ Report: APPROVE or CHANGES REQUESTED; findings grouped Critical / Important / Mi
 | "is this an argument that we need to expand on the number of rules being included? everything about this new model sounds amazing, i dont know why we wouldnt try to figure out how to keep moving forward without accepting missing or other oddities that we come across through implementation" (owner, in session 2026-10-12, at the slice-D park) | answered-once | build | — |
 | "yes, run the measurement on both fixes" (owner, in session 2026-10-12; free local measurement, `evidence/fix-experiments.md`) | answered-once | build | — |
 | "yes to both, resume the build" (owner, in session 2026-10-12: accept the REQ-190 cap-15 cutoff-0.6 amendment and the REQ-235 keyword-set amendment, recorded as the two `## Build-half amendments` slots in `GATE-QUESTIONS.md`) | answered-once | build | — |
+| "i approve of the addition, the fixes, and the cleanup" (owner, in session 2026-10-12, at the review park: the type-setting concept-map entry under REQ-234 owner review, the I-1/I-2 fixes, and the M-1/M-2 cleanup) | answered-once | review | — |
