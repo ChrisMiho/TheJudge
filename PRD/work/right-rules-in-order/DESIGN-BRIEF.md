@@ -334,7 +334,7 @@ Each was resolved per question with the conservative ladder in
     In-Depth when it carries a game state. (Rung 3.)
 21. **Local inputs for `build`.** The raw 2026-09-25 rule book and the practice
     suite are read from the main checkout's git-ignored copies
-    (`apps/backend/data/cr/source.txt`, `output/rulesguru/`). Nothing is
+    (`apps/backend/data/cr/source.txt`, `output/practice-suite/`). Nothing is
     downloaded. If the rule book is absent, the build parks. (Rung 1, the
     human-approved refresh policy.)
 22. **Toolchain.** Training needs Python 3.12, `uv` and sentence-transformers,

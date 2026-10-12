@@ -1,6 +1,6 @@
 # Idea: Luna gets the right rules, in an order she can follow
 
-Problem: when a player asks a rules question, the rules that decide the ruling often never reach Luna, and the ones that do arrive in score order with no labels and with lists cut off after their lead-in. Outcome: a Magic-trained search model plus search fixes and prompt fixes, so the deciding rules reach her about twice as often, in rule-book order, labelled with where they sit, with Quick Lookup also getting the turn-step summary that In-Depth already gets. Non-goals: a reranker, BM25, a bigger off-the-shelf embedder, any change to answer grading, and any practice-suite (RulesGuru) question, answer, card list, id or per-question result in a committed file (counts, levels and rule ids only). Source: owner request 2026-10-11; evidence and the recipe are in `intake/GRAPH-BRIEF-search-and-prompt.md` (evidence, not authority).
+Problem: when a player asks a rules question, the rules that decide the ruling often never reach Luna, and the ones that do arrive in score order with no labels and with lists cut off after their lead-in. Outcome: a Magic-trained search model plus search fixes and prompt fixes, so the deciding rules reach her about twice as often, in rule-book order, labelled with where they sit, with Quick Lookup also getting the turn-step summary that In-Depth already gets. Non-goals: a reranker, BM25, a bigger off-the-shelf embedder, any change to answer grading, and any practice-suite question, answer, card list, id or per-question result in a committed file (counts, levels and rule ids only). Source: owner request 2026-10-11; evidence and the recipe are in `intake/GRAPH-BRIEF-search-and-prompt.md` (evidence, not authority).
 
 ## Prior run
 
@@ -19,5 +19,5 @@ Problem: when a player asks a rules question, the rules that decide the ruling o
 - Prior run: `PRD/instructions/receipts/resolution-recipe-eval-2026-10-10.md`
 - Prior run: `PRD/instructions/receipts/rules-test-harness-2026-10-06.md`
 - Prior run: `PRD/instructions/receipts/niche-interaction-rule-tests-2026-10-07.md`
-- Prior run: `PRD/instructions/receipts/rulesguru-local-suite-2026-10-10.md`
+- Prior run: `PRD/instructions/receipts/local-practice-suite-2026-10-10.md`
 - Prior run: `PRD/instructions/receipts/luna-answer-budget-2026-10-09.md`

@@ -143,7 +143,7 @@ The index rebuilds byte-for-byte today from the 2026-09-25 rule book. After the 
 ### C. The trained model
 
 1. **Training script, committed under `scripts/`.**
-   - It reads the local-only practice suite from a folder passed as a flag, defaulting to the git-ignored `output/rulesguru/`. A build worktree doesn't have that folder, so point the flag at the main checkout's copy, `/Users/chrismiho/Coding/Projects/TheJudge/output/rulesguru/` (1,245 selectable questions). It also reads the committed corpus and the rule index.
+   - It reads the local-only practice suite from a folder passed as a flag, defaulting to the git-ignored `output/practice-suite/`. A build worktree doesn't have that folder, so point the flag at the main checkout's copy, `/Users/chrismiho/Coding/Projects/TheJudge/output/practice-suite/` (1,245 selectable questions). It also reads the committed corpus and the rule index.
    - Every training pair must use the **shipped** query builder from B: production query text, concept terms, turn step. Train after A and B land. Rule-side text is the production embedding text, `${sectionTitle}: ${text}`, sliced to 2,000 characters.
    - Rule-book examples: each `Example:` passage is paired with its rule (277 pairs over 215 rules), with the example stripped from that rule's text during training.
    - Hard negatives: one per pair, from the current search's top 40, with the deciding rule's whole family removed.
@@ -271,7 +271,7 @@ One batch, Luna answering, judge gpt-6.1-sol, rubric as in `docs/eval/answer-qua
 
 ## Constraints (don't rediscover)
 
-- **Practice-suite data is local-only.** It lives in the git-ignored `output/rulesguru/` and is never committed. That rules out question text, answers, card lists, ids and per-question results in tests, fixtures, receipts, PR bodies or PRD. Committed text uses counts, levels and rule ids only. Its answers are community-written, so they are never ground truth under REQ-185.
+- **Practice-suite data is local-only.** It lives in the git-ignored `output/practice-suite/` and is never committed. That rules out question text, answers, card lists, ids and per-question results in tests, fixtures, receipts, PR bodies or PRD. Committed text uses counts, levels and rule ids only. Its answers are community-written, so they are never ground truth under REQ-185.
 - **The repository is public,** so no model weights in git. Training pairs and checkpoints stay in git-ignored folders.
 - **The mock default must still work:** an unset `EMBEDDING_PROVIDER` behaves as today with no model access, and CI quality checks need no AWS access.
 - **Prod embedder native chain:** prod has fallen back to lexical twice (onnx, sharp). After deploy, verify with one request plus a CloudWatch tail that the semantic path is live.

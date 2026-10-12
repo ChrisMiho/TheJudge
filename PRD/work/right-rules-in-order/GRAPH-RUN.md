@@ -25,6 +25,7 @@
 - Evidence: `PRD/work/right-rules-in-order/QUALITY-CHECK.md` (PASS, no findings); `PRD/work/right-rules-in-order/DESIGN-BRIEF.md`.
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/291
 - Answered 2026-10-11: all 39 slots `accept` (see `## Instruction ledger`). Remaining step: merge the docs PR.
+- Refreshed 2026-10-11 at the owner's request: the practice suite's source name is removed from this package, to match rename PR https://github.com/ChrisMiho/TheJudge/pull/292, which merges first. The REQ-232 diff's removed line is now the renamed current text, with the added sentence unchanged. The REQ-232 plain-language block drops its confirm sentence, which was answered yes. The folder paths read `output/practice-suite/`. The intake is re-copied byte-identical from the renamed probe file. One parenthetical in the shape dispatch prompt is removed. Check: 39 diff blocks, 344 removed/context lines, 0 mismatches against #292's `PRD/sections/`.
 - Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` picks it up, or run `/graph-implement PRD/work/right-rules-in-order/`.
 
 ## Dispatch prompts
@@ -65,7 +66,7 @@ Inputs:
 - Package path: `PRD/work/right-rules-in-order/` inside the working directory above. The driver already wrote `GRAPH-RUN.md` there; leave it alone and do not commit it. Never write to the launch checkout /Users/chrismiho/Coding/Projects/TheJudge itself.
 - Request (owner, 2026-10-11): Luna gets the right rules in an order she can follow — a Magic-trained search model, search fixes, and prompt fixes, as laid out in the staged graph brief.
 - Intake staging folder (absolute): /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/ — it holds one file, `GRAPH-BRIEF-search-and-prompt.md` (from the owner's probe folder `PRD/work/probe-prompt-format-tuning/`, committed to main in PR #290). Copy it byte-identical into `PRD/work/right-rules-in-order/intake/` (use `cp`, then verify with `cmp`). Leave the staged copy in place. Intake is evidence, never authority: do not open any document it cites.
-- Hard constraint from the intake: no practice-suite (RulesGuru) question, answer, card list, id or per-question result may appear in any committed file. Describe it by counts, levels and rule ids only.
+- Hard constraint from the intake: no practice-suite question, answer, card list, id or per-question result may appear in any committed file. Describe it by counts, levels and rule ids only.
 
 Required outputs:
 1. `IDEA.md`, `README.md`, the `STATUS.ideation` marker, and the `PRD/work/STATUS.md` board row, per the skill.
