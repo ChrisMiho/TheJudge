@@ -13,7 +13,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order: trained search model, search fixes, prompt fixes. Mapped into slices A to G; next is the build. |
 
 ## refined
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order. Build parked at slice D: the trained search model clears every floor but misses 2 of 14 labelled search checks; owner decides accept-as-known-miss or revisit the recipe. |
 
 ## deferred
 
