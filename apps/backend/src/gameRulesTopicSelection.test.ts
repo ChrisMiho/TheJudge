@@ -302,3 +302,22 @@ describe("Backend - Game Rules", () => {
     });
   });
 });
+
+describe("Backend - Game Rules - the question that triggers curated topics (REQ-242, REQ-246)", () => {
+  it("reads the context's own question when no rule-selection question is passed", () => {
+    expect(selectGameRulesTopics(makeContext({ question: "How does copying a spell work?" }), ALL_TOPICS).map((t) => t.id)).toContain(
+      "copying-spells-abilities"
+    );
+    expect(selectGameRulesTopics(makeContext({ question: "q" }), ALL_TOPICS).map((t) => t.id)).not.toContain("copying-spells-abilities");
+  });
+
+  it("reads the passed rule-selection question instead of the context's follow-up text", () => {
+    const followUpContext = makeContext({ question: "I don't think that's right. Can you check it again?" });
+    const withOpening = selectGameRulesTopics(followUpContext, ALL_TOPICS, "How does copying a spell work?").map((t) => t.id);
+    const withOwn = selectGameRulesTopics(followUpContext, ALL_TOPICS).map((t) => t.id);
+    expect(withOpening).toContain("copying-spells-abilities");
+    expect(withOwn).not.toContain("copying-spells-abilities");
+    // Only the question-word topics move; the always-on core is unchanged.
+    expect(withOpening.filter((id) => id !== "copying-spells-abilities")).toEqual(withOwn);
+  });
+});

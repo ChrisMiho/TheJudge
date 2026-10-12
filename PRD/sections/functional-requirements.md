@@ -379,14 +379,14 @@
   - supplemental section appears directly after `GAME RULES (reference)`; there is no separate rulings section (REQ-241)
   - supplemental section omitted when index missing, empty, or no rules score above 0
   - eval fixtures assert labeled supplemental recall per REQ-032
-  - the System 3 retrieval query is built from the player's question plus a compact per-card signal — name, type line, and keyword list — plus the concept terms the fixed concept map draws from each card's wording (REQ-234) and, in In-Depth, the current turn step (REQ-178); never from raw concatenated card oracle text, which only per-card search reads, as its own separate query (REQ-235)
+  - the System 3 retrieval query is built from the player's question (on a follow-up, the conversation's opening question, REQ-246) plus a compact per-card signal — name, type line, and keyword list — plus the concept terms the fixed concept map draws from each card's wording (REQ-234) and, in In-Depth, the current turn step (REQ-178); never from raw concatenated card oracle text, which only per-card search reads, as its own separate query (REQ-235)
   - System 3 scoring is a hybrid of meaning and word overlap when the embedding-provider seam is active (REQ-182): the query embedding is cosine-ranked against the committed rule embeddings and blended with the lexical IDF score, both normalised per query, with the exact-rule-id and parent-rule-id boost merged into the blended score. Lexical scoring alone is retained as the mock/offline default and as the fallback on any embedding failure, so those settings are never worse than the prior lexical-only behaviour. The blend exists because semantic-only ranking, measured 2026-09-05, was better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) but lost an expected rule on short lookup-mode questions in three of eight labelled fixtures (REQ-181, REQ-182)
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
   - no runtime CR or Scryfall fetch per request
   - no per-request external call for System 3 query embedding in the default (`mock`) or shipped-semantic (`local`) modes; the no-per-request-external-call posture is preserved by the packaged local model — the Magic-trained model, fetched from private storage only when the deploy package is built (REQ-236, REQ-237) — not reversed; only `EMBEDDING_PROVIDER=openai` would add one, and it is never the default
-  - System 2 selection uses game-state signals (`turnPhase`, `combatStep`) plus card wording in two fixed forms: whether two or more cards' oracle text carries replacement or prevention wording as REQ-220 defines it (the whole word "instead", "prevent", "prevents", or "prevented"), which selects the replacement-effect interaction topic (REQ-220); and, in In-Depth only, the concept terms of the cards and the question's words matched against a fixed trigger table for the topics populated zones used to select (REQ-242); card names and keywords never select a System 2 topic
+  - System 2 selection uses game-state signals (`turnPhase`, `combatStep`) plus card wording in two fixed forms: whether two or more cards' oracle text carries replacement or prevention wording as REQ-220 defines it (the whole word "instead", "prevent", "prevents", or "prevented"), which selects the replacement-effect interaction topic (REQ-220); and, in In-Depth only, the concept terms of the cards and the question's words (on a follow-up, the conversation's opening question's words, REQ-246) matched against a fixed trigger table for the topics populated zones used to select (REQ-242); card names and keywords never select a System 2 topic
   - System 3 owns all relevance-scored card/question-driven retrieval including oracle-keyword signals; REQ-220's wording gate and REQ-242's trigger table are fixed matching, not scoring
 - Dependencies:
   - DEC-045
@@ -397,6 +397,7 @@
   - REQ-181 (semantic retrieval mechanism: embeddings artifact, provider seam, runtime query-embed, lexical fallback)
   - REQ-182 (the hybrid blend that is now System 3's shipped ranking)
   - REQ-220 (the card-wording gate for the replacement-effect interaction topic)
+  - REQ-246 (a follow-up's rules come from the opening question)
 - Notes:
   - supersedes REQ-022 acceptance criteria that required all curated topics on every request
   - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement and System 2 deduplication are unchanged. The cap moved from five excerpts to ten (2026-09-09, `rule-excerpt-cap-ten`) on the measured result that the deployed model `gpt-4.1` scored 16/18 on the worked-solution gold set at five and 18/18 at ten, at unchanged answer latency (REQ-190); it became up to fifteen with a relevance cutoff on 2026-10-12 (`right-rules-in-order`, REQ-190), with each attached card's keyword rules added whole beside them (REQ-235)
@@ -434,7 +435,7 @@
   - when `turnPhase` is `combat`, guidance text is specific to the submitted `combatStep` when present; falls back to generic combat framing when absent
   - section is never omitted for a valid phase submission
   - canonical guidance strings per phase are the corrected strings in `apps/backend/src/prompt/phaseGuidance.ts`, each pinned by a test to the Comprehensive Rules it summarises (REQ-238); DEC-036's original strings are superseded
-  - a Quick Lookup prompt carries `PHASE GUIDANCE` right after `MTG REFERENCE` when its question names a turn step or an attached card's concept terms do, with one summary per named step, at most three, from the same strings (REQ-238)
+  - a Quick Lookup prompt carries `PHASE GUIDANCE` right after `MTG REFERENCE` when its question (on a follow-up, the conversation's opening question, REQ-246) names a turn step or an attached card's concept terms do, with one summary per named step, at most three, from the same strings (REQ-238)
 - Constraints:
   - prompt-only and backend-only beyond the `combatStep` field additions in DEC-037
   - do not add rules-validation behavior under the label of phase guidance
@@ -442,6 +443,7 @@
   - DEC-036
   - DEC-037
   - REQ-015
+  - REQ-246
 - Notes:
 
 ### REQ-025
@@ -501,6 +503,7 @@
   - current follow-up text goes in `question`, not duplicated in history
   - backend validates `conversationHistory` when present: non-empty array, max 20 turns, max 2000 chars/message, alternating user/assistant roles starting with user, last entry must be assistant
   - backend inserts `CONVERSATION HISTORY` section before `QUESTION` when history is present
+  - on a follow-up, the backend chooses the prompt's rules — System 3 excerpts, curated topics and step guidance — from the conversation's opening question (the first `conversationHistory` turn), not from the follow-up text; the payload is unchanged (REQ-246)
   - when `ASK_AI_PROVIDER=mock`, the assistant answer for each follow-up includes the exact assembled LLM-facing prompt that would have been sent for that user message, including `CONVERSATION HISTORY`, frozen `gameContext`, and any phase guidance
   - history chars budget is capped at `MAX_CONVERSATION_HISTORY_CHARS` (`EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` per DEC-042 amendment; revisit after latency/cost sampling); oldest turns truncated first
   - history budget contribution is included in `getPromptDiagnostics`
@@ -512,6 +515,7 @@
   - DEC-038
   - DEC-039
   - REQ-026
+  - REQ-246
 - Notes:
 
 ### REQ-028
@@ -1781,11 +1785,11 @@
 - Description: For `mode: "lookup"`, the backend must assemble one prompt that always runs question-driven rules retrieval, layers in per-card enrichment when a card is attached, omits game-state-only sections, and guards against off-domain questions.
 - Acceptance Criteria:
   - the assembled prompt always includes Quick Lookup's own MTG reference block, which describes only sections this mode contains (DEC-025, REQ-243), the always-on core game-rules topics (DEC-045 core set), and question-scored System 3 supplemental rules (DEC-046 / REQ-022)
-  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings directly under its block (DEC-029, REQ-241), and System 3 scored against the question plus a compact signal for each attached card — name, type line, and keyword list — plus the concept terms of its wording (REQ-234), rather than the card's full oracle text (REQ-178); each attached card's own text is searched separately for the two reserved per-card slots (REQ-235)
-  - the assembled prompt omits zone sections, System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state; it includes `PHASE GUIDANCE` only for turn steps the question names or an attached card's concept terms name (REQ-024, REQ-238)
+  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings directly under its block (DEC-029, REQ-241), and System 3 scored against the question (on a follow-up, the conversation's opening question, REQ-246) plus a compact signal for each attached card — name, type line, and keyword list — plus the concept terms of its wording (REQ-234), rather than the card's full oracle text (REQ-178); each attached card's own text is searched separately for the two reserved per-card slots (REQ-235)
+  - the assembled prompt omits zone sections, System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state; it includes `PHASE GUIDANCE` only for turn steps the question (on a follow-up, the conversation's opening question, REQ-246) names or an attached card's concept terms name (REQ-024, REQ-238)
   - the prompt instructs the model to quote only from the provided rule excerpts and to present the relevant ones verbatim plus an explanation
   - the prompt instructs the model to respond to off-domain / non-MTG questions in the "confused rules lookup" persona (DEC-108) rather than a direct answer or a generic capability refusal
-  - the assembled prompt includes the user `QUESTION` and, when present, the `CONVERSATION HISTORY` section (REQ-027) using the existing placement rules
+  - the assembled prompt includes the user `QUESTION` and, when present, the `CONVERSATION HISTORY` section (REQ-027) using the existing placement rules; on a follow-up, `QUESTION` carries the follow-up text while the rules sections are the opening question's (REQ-246)
   - the same enrichment helper functions used by the game flow and by each other are reused (single authoritative definitions), not re-implemented for lookup mode
   - success `{ answer }` and error response shapes are unchanged; plain-text answer output is preserved (REQ-013)
   - mock provider lookup-mode responses expose the exact assembled LLM-facing prompt consistent with existing mock behavior (DEC-017 / DEC-038)
@@ -1802,6 +1806,7 @@
   - DEC-025
   - DEC-045
   - DEC-046
+  - REQ-246
 - Notes:
   - during quick-lookup refinement this requirement was rewritten to merge the prior card-mode assembly (this ID) and rules-mode assembly (former REQ-077) into one branching prompt-assembly path, and to add the off-domain guardrail; see REQ-077
 
@@ -4195,9 +4200,9 @@
 ### REQ-178
 - Title: System 3 retrieval query is built from the question plus a compact card signal
 - Priority: high
-- Description: The System 3 supplemental-rules search query is built from the player's question plus a compact per-card signal — each submitted or attached card's name, type line, and keyword list — plus fixed rule-book terms: the concept terms the committed concept map draws from each card's wording (REQ-234) and, in In-Depth, the name of the game's current turn step; never every card's full oracle text, context notes, or zone ids. The assembled prompt is unchanged by this requirement; only the internal retrieval query changes.
+- Description: The System 3 supplemental-rules search query is built from the player's question plus a compact per-card signal — each submitted or attached card's name, type line, and keyword list — plus fixed rule-book terms: the concept terms the committed concept map draws from each card's wording (REQ-234) and, in In-Depth, the name of the game's current turn step; never every card's full oracle text, context notes, or zone ids. On a follow-up, the player's question is the conversation's opening question, not the follow-up text (REQ-246). The assembled prompt is unchanged by this requirement; only the internal retrieval query changes.
 - Acceptance Criteria:
-  - the retrieval query carries the player's question and, per card, that card's name, type line, and keyword list, plus the card's concept terms (REQ-234) and, in In-Depth, the current turn step's rule-book name (for example "cleanup step"), both at the concept weight in the word query and both appended to the embedded text; it never concatenates full oracle text or context notes into the query or its embedding
+  - the retrieval query carries the player's question — on a follow-up, the conversation's opening question, in both the word query and the embedded text (REQ-246) — and, per card, that card's name, type line, and keyword list, plus the card's concept terms (REQ-234) and, in In-Depth, the current turn step's rule-book name (for example "cleanup step"), both at the concept weight in the word query and both appended to the embedded text; it never concatenates full oracle text or context notes into the query or its embedding
   - per-card search (REQ-235) reads each card's oracle text as its own separate query and never merges it into this one
   - the change applies to both game mode and lookup mode, through the one shared retrieval path (no second implementation)
   - the assembled prompt text is unchanged by this requirement: card oracle text still renders in its own card sections exactly as today, and the supplemental section still carries the same search excerpts (up to 10 when this was written; REQ-190 sets today's cap)
@@ -4213,6 +4218,7 @@
   - REQ-022 (the System 3 enrichment requirement this narrows the query for)
   - REQ-167 (multi-card lookup, whose attached-card set feeds the query)
   - REQ-074 (lookup prompt assembly)
+  - REQ-246 (the question a follow-up's query is built from)
 - Notes:
   - this is Step 2 of the RAG gameplan and is independent of embeddings: a semantic query built from the same polluted input inherits the same flood (measured: semantic drops 0.885 clean to 0.603 polluted)
   - located in code: `buildQueryParts` in `apps/backend/src/gameRulesRetrieval.ts` currently appends turn phase, zone ids, and every card's name, type line, oracle text, and context notes
@@ -5959,7 +5965,8 @@
   - a manifest is a JSON file listing case ids, each with the SHA-256 of the case's `question` and of its `expected.answer`; the run refuses, naming each case, when a listed case is missing, is not `approved`, is flagged stale (REQ-225), or has a question or reference-answer hash that differs from the manifest; it never answers a case the manifest does not list
   - the run measures the checkout it executes from: it uses that checkout's prompt preparation, data loaders, embedder, `apps/backend/data/` files, and case files, and imports nothing from another checkout; it refuses when that checkout has uncommitted changes, records its full commit SHA, and with `--expect-commit <sha>` refuses when its HEAD differs
   - `--regrade-from <run-id>` answers nothing: it reads every stored answer transcript in the source run folder and grades each under the current judge model and rubric revision, writing new records only to the new run's own folder (the answer's token use, latency and retrieval facts are carried forward from the source); it refuses when the source run folder is missing, when it stored no answers, or when a stored answer lacks its answer text or the prompt it answered; the identity record names the source run id and the SHA-256 of its `manifest.json`; the source run folder is read, never written
-  - `--repeat <n>` (default 1) answers each case `n` independent times per answer model, excerpt cap, and arm; every record is keyed by case id, model, excerpt cap, arm (REQ-230), and repeat index
+  - `--repeat <n>` (default 1) answers each case `n` independent times per answer model, excerpt cap, and arm; every record is keyed by case id, model, excerpt cap, arm (REQ-230), and repeat index, and in a follow-up run (REQ-247) also by turn
+  - `--follow-up <name>` (REQ-247) is an experiment flag: it is refused without `--run-id`, never silently run as a routine run, and the identity record names the follow-up text's revision id
   - the run writes only under `output/answer-quality/runs/<run-id>/` (gitignored): `manifest.json` (the identity record), `calls.jsonl` (the checkpoint, REQ-227), one transcript per record, and a numbers-and-ids-only `summary.json`; it refuses to start when that folder already exists, except to resume (REQ-227)
   - the identity record holds: run id; the commit executed from; the SHA-256 of each file in `apps/backend/data/` and of each listed case file, and of the rule index; the manifest's SHA-256 and its case list (ids and hashes); answer model ids as requested and as the provider reports them; the request options sent (model and input only, REQ-188); the client timeout and retry count; `ASK_AI_PROVIDER`; `EMBEDDING_PROVIDER` and the embedding model id; whether the combo catalog was loaded; excerpt caps; arms and their revision ids; repeat count; judge model; rubric revision; the rate table with the date each rate was checked; the spending cap and any later change to it (REQ-227); the production answer timeout at the revision the run executed from (`DEFAULT_OPENAI_TIMEOUT_MS`: the overall answer budget from REQ-231 on, a per-attempt timeout before it), which the comparison report holds latency against (REQ-228); for a regrade run, the source run id and manifest hash; and the UTC start time
   - an experiment run never reads or writes `apps/backend/src/eval/answer-quality/results.json`
@@ -5976,6 +5983,7 @@
   - REQ-228 (the comparison report that reads run folders)
   - REQ-230 (the arms a record may carry)
   - REQ-232 (the local practice-suite run that reuses this machinery)
+  - REQ-247 (the follow-up run that adds the turn to a record's key)
 - Notes:
   - measured 2026-10-07: `--output-dir` moves only the transcripts; every recorded run merges into the committed results file at the fixed `RESULTS_RELATIVE_PATH` (`scripts/eval-answer-quality.mjs`), so two comparison runs over shared cases overwrite each other's records
   - proposed by the `answer-quality-investigation` package to compare PR #273's base `3e973ced` with its head `07cc3ab6`, neither of which contains this tooling — the reason each revision is measured from its own worktree with the tooling commits applied on top
@@ -6006,7 +6014,7 @@
 - Priority: medium
 - Description: A report command compares two experiment runs (REQ-226), or two arms or models within them, case by case, and shows which answers moved from right to wrong, wrong to right, or stayed, with denominators and case ids, so a regression can never hide inside an aggregate. It reports and never decides: no winner, no gate.
 - Acceptance Criteria:
-  - `npm run eval:answer-quality:compare -- <run-a> <run-b>` reads two run folders, with optional `--arm`, `--model`, `--cap` and `--repeats <from>-<to>` selectors (and `--arm-a`, `--arm-b`, `--model-a`, `--model-b`, `--repeats-a`, `--repeats-b` for one side); `--repeats` keeps only the records whose repeat index is in the range, so one arm's repeats can be split into halves and compared with each other within one run (`<run> <run> --arm A --repeats-a 1-3 --repeats-b 4-6`), which the report labels a noise-floor comparison; a bare run id resolves under `output/answer-quality/runs/`, and a side defaults to arm A, to the run's only model, and to every repeat; it makes no network call
+  - `npm run eval:answer-quality:compare -- <run-a> <run-b>` reads two run folders, with optional `--arm`, `--model`, `--cap`, `--repeats <from>-<to>` and `--turn <1|2>` selectors (and `--arm-a`, `--arm-b`, `--model-a`, `--model-b`, `--repeats-a`, `--repeats-b`, `--turn-a`, `--turn-b` for one side); `--repeats` keeps only the records whose repeat index is in the range, so one arm's repeats can be split into halves and compared with each other within one run (`<run> <run> --arm A --repeats-a 1-3 --repeats-b 4-6`), which the report labels a noise-floor comparison; `--turn` keeps only one turn's records of a follow-up run (REQ-247), so a case's first answer and its pushback answer are never pooled, and a run without follow-up records has only turn 1; a bare run id resolves under `output/answer-quality/runs/`, and a side defaults to arm A, to the run's only model, to every repeat, and to turn 1; it makes no network call
   - it refuses, printing every reason, and compares nothing, when the judge model or rubric revision differ between the two runs, when any case was judged against a different reference answer (or carries no reference hash) on the two sides, or when both sides select the same records (the same run, arm, model, cap and repeats); differences in the commit each run executed from, embedding provider or model, arm, answer model, or repeat range are the variable under study and are printed with each side
   - a side is `right` when its Correctness is 2 (REQ-187), `wrong` when 0 or 1, and `undetermined` when the judge returned undetermined or the record is an `error`; with repeats, a case's side is the majority of its repeats, and a case whose repeats disagree is listed as `unstable` with each repeat's Correctness (a tie has no majority and counts as missing)
   - it reports the counts right→right, wrong→right, right→wrong, wrong→wrong, and missing (undetermined or an error on either side, or a case in only one run), each with its denominator; it lists every right→wrong case id with its transcript paths on both sides, and the cases present in only one run
@@ -6024,6 +6032,7 @@
   - REQ-187 (Correctness, and tiers never pooled)
   - REQ-230 (diagnostic records kept apart)
   - REQ-227 (unpriced cost reporting)
+  - REQ-247 (the follow-up runs whose turns it selects)
 - Notes:
   - REQ-189's `compareRecords` already labels two records incomparable per case when the reference answer, judge, rubric, or embedding provider differ; this report builds on that per-case rule and adds the paired transition counts the routine run has no use for
   - the repeat selectors were added by the `resolution-recipe-eval` package (2026-10-10): its decision rule reads arm A's repeats 1–3 against 4–6 as the noise floor and compares arm R with arm A half against half; the report prints those numbers, and the rule is applied by the person reading it, never by this command
@@ -6300,7 +6309,7 @@
 ### REQ-238
 - Title: Turn-step summaries are correct, and Quick Lookup gets them when a step is named
 - Priority: high
-- Description: The phase-guidance summaries — the short "what happens in this step" paragraphs — are corrected against the Comprehensive Rules, and Quick Lookup now receives the summary for any turn step its question names, or that an attached card's wording points at through the concept map (REQ-234), the same help In-Depth gets for its current step.
+- Description: The phase-guidance summaries — the short "what happens in this step" paragraphs — are corrected against the Comprehensive Rules, and Quick Lookup now receives the summary for any turn step its question names (on a follow-up, the conversation's opening question, REQ-246), or that an attached card's wording points at through the concept map (REQ-234), the same help In-Depth gets for its current step.
 - Acceptance Criteria:
   - cleanup: says that damage is removed and "until end of turn" and "this turn" effects end (514.2) before any player gets priority, and that players get priority in cleanup only if a state-based action is performed or an ability triggers, after which another cleanup step follows (514.3a)
   - untap: says no player receives priority, and an ability that triggers during untap is put on the stack the next time a player would receive priority, usually in upkeep (502.4) — replacing "resolved before moving to the upkeep step"
@@ -6309,6 +6318,7 @@
   - one source of step text serves both modes (`STEP_SUMMARIES` in `apps/backend/src/prompt/phaseGuidance.ts`); In-Depth adds its "You are in the … step." lead line, Quick Lookup describes the step without claiming the game is in it
   - Quick Lookup: a step is named when the question contains a step name from one fixed committed table of the rule book's step and phase names (`TURN_STEP_NAME_TABLE`: untap, upkeep, draw, main, beginning of combat, declare attackers, declare blockers, combat damage, end of combat, end, cleanup — each matched by the rule book's own name for it, so a bare "draw", "combat damage" or "until end of turn" names nothing), or when an attached card's concept terms (REQ-234) name a step; the prompt carries the summary for each named step, de-duplicated, in turn order, at most three, under a `PHASE GUIDANCE` heading right after `MTG REFERENCE`
   - In-Depth keeps its current-step summary in its current place, with the corrected text
+  - on a follow-up, the named steps are read from the conversation's opening question, so a follow-up's `PHASE GUIDANCE` equals its opening question's (REQ-246)
   - acceptance: over every committed corpus case built as a Quick Lookup prompt, the summary is present whenever the question names a step; the Necropotence case's Quick Lookup prompt carries the cleanup summary
 - Constraints:
   - guidance is reference text; no rules-validation behaviour (REQ-024)
@@ -6317,6 +6327,7 @@
   - REQ-024 (phase guidance, amended)
   - REQ-074 (Quick Lookup assembly, amended)
   - REQ-234 (the concept terms that can name a step)
+  - REQ-246 (a follow-up reads the opening question)
 - Notes:
   - measured at intake on the saved prompts of the paid runs (cited): In-Depth answered `necropotence-silence-borne-upon-a-wind-cleanup` right 10 of 12 times, Quick Lookup 6 of 12; Quick Lookup's prompt had 703.4p fifth, after the priority rules, 514.3 without 514.3a, and no step guidance; in 5 of 6 Quick Lookup misses Luna found the priority window and still ruled that Silence applies (pooled p ≈ 0.04, a consistent mechanism, not yet proven — the post-merge paid run is the proof)
   - a card whose wording says "until end of turn" or "this turn" brings the cleanup summary through the concept map (the map reads that wording as a cleanup-step term); this is by design and bounded by the three-summary cap
@@ -6408,7 +6419,7 @@
 ### REQ-242
 - Title: In-Depth chooses curated topics by card wording and question, not by zone presence
 - Priority: medium
-- Description: In In-Depth, the curated topics that used to be added because the stack or the battlefield held cards are instead added when the cards' wording (through the concept map, REQ-234) or the question's words match the topic. The always-on core, the turn-phase and combat-step topics, the delayed-trigger topic and REQ-220's replacement-interaction gate are unchanged. Quick Lookup is unchanged.
+- Description: In In-Depth, the curated topics that used to be added because the stack or the battlefield held cards are instead added when the cards' wording (through the concept map, REQ-234) or the question's words (on a follow-up, the conversation's opening question's words, REQ-246) match the topic. The always-on core, the turn-phase and combat-step topics, the delayed-trigger topic and REQ-220's replacement-interaction gate are unchanged. Quick Lookup is unchanged.
 - Acceptance Criteria:
   - the stack-populated trigger (5 topics) and the battlefield-populated trigger (6 topics) are removed; each of those 11 topics is selected when a concept term from any card or a stemmed question word (REQ-233) matches one of the topic's trigger words
   - trigger words live in one fixed committed table (`IN_DEPTH_TOPIC_TRIGGERS` in `apps/backend/src/gameRulesTopicSelection.ts`), built only from words of the topic's own title and its listed rules' section titles in the rule book; a test asserts that and that every trigger word appears in the committed rule index
@@ -6416,6 +6427,7 @@
   - Quick Lookup's selection is unchanged: four always-on topics plus REQ-220
   - one shared selection function still serves both modes (REQ-220)
   - acceptance: on the 9 corpus cases that exist in both versions, In-Depth keeps at least 17 of their 30 deciding rules in the prompt (measured at build, 2026-10-12: 27 of 30; `inDepthTopicGuard.test.ts`)
+  - on a follow-up, the question-word triggers read the conversation's opening question, so a follow-up's curated topics equal its opening question's (REQ-246; measured 2026-10-12 on the 9 In-Depth diagnostic cases: today 6 change topics on a pushback follow-up, losing 8)
 - Constraints:
   - card names and keywords never select a topic; card wording does, through the fixed concept map only
   - no model call selects topics
@@ -6423,6 +6435,7 @@
   - REQ-022 (System 2 selection, amended)
   - REQ-220 (the card-wording gate, amended)
   - REQ-234 (the concept terms)
+  - REQ-246 (a follow-up reads the opening question)
 - Notes:
   - measured at intake (cited): across the 9 paired corpus cases, In-Depth delivered 17 of 30 deciding rules against Quick Lookup's 6 of 30, mostly through its zone-triggered layer topics
   - located at intake: `gameRulesTopicSelection.ts:32-39, 134-136`
@@ -6473,3 +6486,70 @@
   - REQ-180's notes recorded this as card-data work outside the RAG gameplan; this requirement takes it up
   - located at intake (cited): `cardDetail.ts:11-22`, `normalization.ts:15-16, 40-41`
   - measured at build, 2026-10-12 (`node scripts/build-card-detail-by-oracle-id.mjs` over the committed-source Scryfall bulk, 37,854 cards): power on 19,853 cards, loyalty on 339, 237 multi-face values; no other field of any card changed; the artifact grew from 1,701,595 to 1,735,902 bytes (+34,307); the prices artifact was byte-identical
+
+### REQ-246
+- Title: A follow-up keeps the rules its conversation's opening question found
+- Priority: high
+- Description: When a player sends a follow-up — any request carrying `conversationHistory` — every rules choice that reads the player's question reads the conversation's opening question instead: the first turn of `conversationHistory`, exactly as it was first sent, including any fallback. The cards and game context are already frozen for the conversation, so the follow-up's rules are the opening question's rules: the same System 3 supplemental excerpts in the same order, the same curated topics, and the same step guidance. The follow-up text is still the prompt's `QUESTION`, and `CONVERSATION HISTORY` is unchanged. The backend stays stateless: it re-runs rule selection on the opening question rather than storing turn 1's rules or receiving them in the request.
+- Acceptance Criteria:
+  - one function decides the question that rule selection reads — `conversationHistory[0].content` when history is present, otherwise `question` — and every reader below calls it; there is no second copy
+  - System 3: the main search query — its word half (tokens, rule-number and question rule ids, obsolete-term definitions, REQ-233) and its embedded text — is built from that question through the one shared query builder (REQ-178), in both modes; `buildRetrievalQueryText` and `buildPerCardSearchTexts` return the opening request's values for a follow-up, so the route embeds the opening question's query (REQ-181)
+  - In-Depth: the question-word triggers of the curated-topic table read that question (REQ-242)
+  - Quick Lookup: the turn steps named for `PHASE GUIDANCE` read that question (REQ-238)
+  - for a follow-up built from an opening request — same cards or game context, its question as `conversationHistory[0]` — the prompt's `PHASE GUIDANCE`, `GAME RULES (reference)` and `ADDITIONAL RELEVANT RULE EXCERPTS` sections are byte-identical to the opening request's, in both modes; unit tests prove it, including an opening question that names a turn step and one whose words trigger an In-Depth topic that the follow-up's words do not
+  - over the 62 cases of the committed diagnostic manifest, each built as a two-turn request with a fixed pushback follow-up and ranked with the committed frozen vectors (REQ-222), the follow-up's System 3 selection equals its opening question's, in order, in 62 of 62; its curated topics equal the opening's in 9 of 9 In-Depth cases; its `PHASE GUIDANCE` equals the opening's in 53 of 53 lookup cases
+  - a request without `conversationHistory` produces a prompt byte-identical to today's: every existing prompt test and fixture and the offline prompt gate (REQ-222) pass unchanged
+  - with `ASK_AI_PROVIDER=mock`, a follow-up's answer prints the assembled prompt carrying the opening question's rules (REQ-027)
+  - with the local model cache warm, embedding the same text twice in one process returns the same vector; the build records the check
+- Constraints:
+  - no `AskAiRequest`, Zod schema, response, route, endpoint or frontend change; no server-side session store or cache (REQ-027)
+  - the follow-up text never feeds rule selection, and follow-up results are never merged with the opening question's; a follow-up that raises a new topic gets no new rules
+  - card rulings, per-card search and keyword sets (REQ-235), card-wording topics (REQ-220, REQ-234) and In-Depth's current-step guidance are unchanged; they already come from the frozen cards and game context
+  - the combo section (REQ-094) is unchanged and still reads the follow-up text
+  - no change to scoring, the excerpt cap (REQ-190), the corpus, the embeddings or the answer budget (REQ-231)
+- Dependencies:
+  - REQ-027 (the follow-up contract; its first history turn is the opening question as sent)
+  - REQ-178 (System 3 query construction)
+  - REQ-238 (Quick Lookup step guidance)
+  - REQ-242 (In-Depth question-word topic triggers)
+  - REQ-074 (Quick Lookup prompt assembly)
+  - REQ-022 (rules enrichment)
+  - REQ-247 (the eval mode that measures it)
+- Notes:
+  - measured offline at refinement, 2026-10-12 at `0461969f`, on the 62 diagnostic cases (counts only, recorded in the build's receipt): the follow-up's search text differed from the opening's in 62 of 62; on the word-matching half alone a pushback follow-up kept 357 of the opening question's 836 search excerpts, all of them in 1 case; 6 of 9 In-Depth cases changed curated topics, losing 8; re-running the opening question with the history attached selected turn 1's rules in 62 of 62
+  - measured at intake on pre-#293 code (cited; paid; `gpt-6-luna`; 186 two-turn conversations per arm): reusing turn 1's excerpts took follow-ups that called a quoted rule "not provided" from 29 to 0, kept turn-2 grounding at turn 1's level (0.69 against 0.64, where today's fell from 0.66 to 0.26), and fixed the most wrong rulings, with outcome flips level within small counts; searching on "first question plus follow-up" instead doubled side-detail flips. The post-merge pushback run (REQ-247) re-measures this on today's code
+  - known limit, parked: in the owner's live three-turn Necropotence conversation (2026-10-12), the third turn's own words ("what about end step cleanup?") found 514.1, 514.2 and 514.3a; under this requirement that turn keeps the opening question's rules instead
+  - measured at build, 2026-10-12, on the same 62 cases with the committed frozen vectors: the follow-up's retrieval query text equals the opening's in 62 of 62, its System 3 selection equals the opening's in order in 62 of 62, its curated topics equal in 9 of 9 In-Depth cases, its `PHASE GUIDANCE` equal in 53 of 53 lookup cases, and its three rules sections are byte-identical in 62 of 62; embedding one text twice in one process returned the same vector on the stock MiniLM model (the Magic-trained model is not present in the build worktree; the check is recorded as an observation)
+
+### REQ-247
+- Title: An answer-quality experiment can push back on the first answer and score the follow-up
+- Priority: medium
+- Description: An experiment run (REQ-226) can ask each case as a two-turn conversation: turn 1 is the production request as today, and turn 2 is a production follow-up carrying a fixed pushback text, built the way the app builds a follow-up. Each answer is judged alone against the case's reference answer, and the run reports how often a right first answer held or flipped and how often a wrong one was fixed, with turn-2 grounding, turn-2 latency and the count of turn-2 answers that disown a rule turn 1 cited. It reports and never decides.
+- Acceptance Criteria:
+  - `--follow-up pushback` selects follow-up mode; it is accepted only in experiment mode (`--run-id` with `--manifest`) and refused, naming the reason, in a routine run, with `--regrade-from`, with a local practice-suite run (`--suite practice`), and with any arm but `A` (REQ-230)
+  - the pushback text lives in one committed place under a revision id — `pushback.1`: "I don't think that's right. Can you check it again?" — and the identity record (REQ-226) records that revision id; a later wording is a new revision, never an edit of `pushback.1`
+  - turn 2's request is turn 1's request with `question` set to the pushback text and `conversationHistory` set to `[{ role: "user", content: <turn 1's question exactly as sent> }, { role: "assistant", content: <turn 1's answer> }]`, the shape the app sends (REQ-027); the route's request schema (`askAiRequestSchema`) parses it before preparation, and a request the schema rejects is recorded as an `error` record naming the reason and is never sent
+  - turn 2 is embedded from `buildRetrievalQueryText` and `buildPerCardSearchTexts` of the turn-2 request, prepared by the checkout's unmodified `preparePromptInput`, and answered by the same model with the same request options (model and input only, REQ-188); REQ-188's refusals on a missing vector or a silent lexical pass apply to both turns
+  - each turn's answer is judged alone by the lone judge (REQ-186) against the case's reference answer, with that turn's own attached excerpts; the judge is not told which turn it grades or that a pushback happened; records carry the turn (REQ-226) and each turn writes its own transcript
+  - the spending check (REQ-227) covers a whole conversation — two answers and two grades — so a run never pays for a turn 1 it cannot follow up; a resume never repeats a completed turn, and a conversation whose turn 1 completed resumes at turn 2 from the stored turn-1 answer
+  - per answer model and excerpt cap, `summary.json` and the printed report give, each with its denominator: held (turn 1 Correctness 2, turn 2 Correctness 2); flipped on outcome (2 then 0); flipped on a side detail (2 then 1); fixed (0 or 1, then 2); still wrong (0 or 1, then 0 or 1); missing (an error or undetermined on either turn); mean Grounding on turn 1 and on turn 2; turn-2 latency mean, p50, p95 and maximum, and the count over the 30,000 ms answer budget (REQ-231); the turn-2 System 3 rule ids shared with turn 1, over turn 1's count; and the count of turn-2 answers that disown a rule turn 1 cited, each with its transcript path
+  - an answer disowns a rule when one of its sentences names a rule number the turn-1 answer cited and, by one fixed committed phrase list (for example "not provided", "wasn't provided", "not included", "not among the excerpts"), says that rule was not given; tests pin positive and negative sentences
+  - with `--repeat`, each repeat is its own conversation; the transition counts count every conversation, and the report also lists the cases whose repeats land in different transitions
+  - the run writes only to its own run folder and never reads or writes the committed scores file (REQ-226, REQ-189); `summary.json` holds numbers and ids only
+  - unit tests with an injected fake client prove: the turn-2 request shape and its schema parse; every refusal; that turn 2 is embedded from the turn-2 request's own query text; each transition; the disowning check; the whole-conversation spending check; resume at turn 2; and that no test makes a network call
+- Constraints:
+  - REQ-188's confirmation gate, credential loading, sequential calls, mock-first default and never-in-a-gate rules apply unchanged, and a live run requires REQ-227's spending cap
+  - evaluation tooling only: no change to `preparePromptInput`, routes, providers or any runtime code; the follow-up retrieval change is REQ-246's own
+  - no practice-suite data enters any committed file
+- Dependencies:
+  - REQ-226 (experiment mode, the record key and the identity record)
+  - REQ-227 (checkpoint, resume and the spending cap)
+  - REQ-186 (the lone judge)
+  - REQ-187 (Correctness and Grounding)
+  - REQ-228 (the paired report, which selects one turn)
+  - REQ-027 (the follow-up request shape)
+  - REQ-246 (the follow-up retrieval it measures)
+- Notes:
+  - motivated by the intake probe (2026-10-10, pre-#293, cited, committed corpus cases only): the same pushback text on the 62 diagnostic cases with 3 repeats; right first answers held 176 of 181 and flipped on the outcome once, and 2 or 3 of 4 side flips were judge errors on unchanged answers — the reason the report keeps outcome flips and side flips apart
+  - measured 2026-10-12 at `0461969f`: the 62 diagnostic cases are all approved with matching hashes, 9 In-Depth and 53 lookup; a turn-1 answer longer than the 10,000-character history-message cap the code enforces would make a request the app itself could not send, which is why a schema rejection is recorded as an error rather than sent
+  - the lone judge never sees attached cards' oracle text (noted by the cap-15 answer check, #295); that holds for both turns and is not changed here

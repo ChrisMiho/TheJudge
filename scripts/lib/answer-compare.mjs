@@ -51,14 +51,20 @@ const isRight = (record) => record.scores.correctness === 2;
  * prompt) and model (default: the run's only model). Refuses an ambiguous
  * model rather than guessing.
  */
-export function selectSide(run, { arm = "A", model, cap, repeats } = {}) {
+export function selectSide(run, { arm = "A", model, cap, repeats, turn } = {}) {
   const wanted = repeats === undefined || repeats === null ? null : parseRepeatSelector(repeats);
+  const wantedTurn = parseTurnSelector(turn);
+  // A run without follow-up records has only turn 1 (REQ-247), so a record with no turn is a turn-1 record.
   const records = run.summary.records.filter(
-    (record) => record.arm === arm && (cap === undefined || record.excerptCap === Number(cap)) && (wanted === null || wanted.has(record.repeat ?? 1))
+    (record) =>
+      record.arm === arm &&
+      (record.turn ?? 1) === wantedTurn &&
+      (cap === undefined || record.excerptCap === Number(cap)) &&
+      (wanted === null || wanted.has(record.repeat ?? 1))
   );
   if (records.length === 0) {
     throw new Error(
-      `Run ${run.identity.runId} has no records for arm ${arm}${cap === undefined ? "" : ` at excerpt cap ${cap}`}${wanted === null ? "" : ` in repeats ${repeats}`}.`
+      `Run ${run.identity.runId} has no records for arm ${arm}${cap === undefined ? "" : ` at excerpt cap ${cap}`}${wanted === null ? "" : ` in repeats ${repeats}`}${wantedTurn === 1 ? "" : ` at turn ${wantedTurn}`}.`
     );
   }
   const models = [...new Set(records.map((record) => record.model))].sort();
@@ -68,7 +74,17 @@ export function selectSide(run, { arm = "A", model, cap, repeats } = {}) {
   }
   const selected = records.filter((record) => record.model === chosenModel);
   if (selected.length === 0) throw new Error(`Run ${run.identity.runId} has no records for model ${chosenModel} on arm ${arm}.`);
-  return { run, arm, model: chosenModel, repeats: wanted === null ? null : String(repeats), records: selected };
+  return { run, arm, model: chosenModel, repeats: wanted === null ? null : String(repeats), turn: wantedTurn, records: selected };
+}
+
+/** A turn selector (REQ-228, REQ-247): 1 or 2, defaulting to turn 1; anything else is refused, naming it. */
+export function parseTurnSelector(turn) {
+  if (turn === undefined || turn === null) return 1;
+  const value = Number(turn);
+  if (!(value === 1 || value === 2) || String(turn).trim() !== String(value)) {
+    throw new Error(`--turn must be 1 or 2 (a follow-up run's first answer or its pushback answer), got "${turn}".`);
+  }
+  return value;
 }
 
 /**
@@ -90,7 +106,7 @@ export function parseRepeatSelector(spec) {
   return wanted;
 }
 
-const sideRecordKeys = (side) => side.records.map((record) => `${record.caseId}|${record.model}|${record.excerptCap}|${record.arm}|${record.repeat ?? 1}`).sort();
+const sideRecordKeys = (side) => side.records.map((record) => `${record.caseId}|${record.model}|${record.excerptCap}|${record.arm}|${record.repeat ?? 1}|${record.turn ?? 1}`).sort();
 
 /**
  * Why a side cannot be compared with itself (REQ-228): both sides select the same records of the same
@@ -102,7 +118,7 @@ export function selfComparisonReasons(sideA, sideB) {
   const keysB = sideRecordKeys(sideB);
   if (keysA.length !== keysB.length || keysA.some((key, index) => key !== keysB[index])) return [];
   return [
-    `both sides select the same records (run ${sideA.run.identity.runId}, arm ${sideA.arm}, model ${sideA.model}${sideA.repeats ? `, repeats ${sideA.repeats}` : ", every repeat"}): ` +
+    `both sides select the same records (run ${sideA.run.identity.runId}, arm ${sideA.arm}, model ${sideA.model}${sideA.repeats ? `, repeats ${sideA.repeats}` : ", every repeat"}${sideA.run.identity.followUp ? `, turn ${sideA.turn}` : ""}): ` +
       "a side compared with itself says nothing. Pick two different arms, runs or repeat ranges " +
       "(the noise floor is one arm's halves: --arm A --repeats-a 1-3 --repeats-b 4-6)"
   ];
@@ -282,6 +298,8 @@ export function summarizeSide(side) {
     commit: side.run.identity.commit,
     arm: side.arm,
     repeats: side.repeats ?? null,
+    // Named only for a follow-up run, so every other report reads as before (REQ-247).
+    ...(side.run.identity.followUp ? { turn: side.turn ?? 1 } : {}),
     answerLevel,
     armRevision: records[0]?.armRevision ?? null,
     model: side.model,
@@ -436,7 +454,7 @@ const answerShort = (counts) => `${counts.right}/${counts.graded} right, ${count
 function sideBlock(label, side) {
   const timeoutNote = side.timeoutIsAssumed ? " (assumed: this run's identity record names none)" : "";
   return [
-    `  ${label}: run ${side.runId} at commit ${side.commit}, arm ${side.arm}${side.armRevision ? ` (${side.armRevision})` : ""}, model ${side.model}${side.reportedModel ? ` (reported ${side.reportedModel})` : ""}${side.repeats ? `, repeats ${side.repeats}` : ""}`,
+    `  ${label}: run ${side.runId} at commit ${side.commit}, arm ${side.arm}${side.armRevision ? ` (${side.armRevision})` : ""}, model ${side.model}${side.reportedModel ? ` (reported ${side.reportedModel})` : ""}${side.repeats ? `, repeats ${side.repeats}` : ""}${side.turn ? `, turn ${side.turn}` : ""}`,
     `    answers: ${answerLevelText(side.answerLevel.overall)}`,
     `    latency: mean ${ms(side.latencyMs.mean)}, p50 ${ms(side.latencyMs.p50)}, p95 ${ms(side.latencyMs.p95)}; ${side.slowerThanTimeout} answers slower than the ${side.timeoutMs} ms production timeout${timeoutNote}`,
     `    errors ${side.errors} (of which timeouts ${side.timeouts}) across ${side.records} records`,

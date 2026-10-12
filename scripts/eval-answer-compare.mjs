@@ -14,6 +14,8 @@
 // (the production prompt); the default model is the run's only model.
 // --repeats <from>-<to> (also --repeats-a / --repeats-b) keeps only the records whose
 // repeat number is in the range (or a list such as 1,3,5-6); the default is every repeat.
+// --turn <1|2> (also --turn-a / --turn-b) keeps one turn of a follow-up run (REQ-247), so a case's first answer
+// and its pushback answer are never pooled; the default is turn 1, and a run without follow-up records has only turn 1.
 // Two sides that select the same records are refused: a side compared with itself says nothing.
 //
 // Besides printing, it writes a numbers-and-ids-only `compare-<a>-<b>.json` and the
@@ -30,7 +32,7 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export function parseCompareArgs(argv) {
   const positional = [];
-  const selectors = { arm: undefined, armA: undefined, armB: undefined, model: undefined, modelA: undefined, modelB: undefined, cap: undefined, repeats: undefined, repeatsA: undefined, repeatsB: undefined };
+  const selectors = { arm: undefined, armA: undefined, armB: undefined, model: undefined, modelA: undefined, modelB: undefined, cap: undefined, repeats: undefined, repeatsA: undefined, repeatsB: undefined, turn: undefined, turnA: undefined, turnB: undefined };
   const flagToKey = {
     "--arm": "arm",
     "--arm-a": "armA",
@@ -41,7 +43,10 @@ export function parseCompareArgs(argv) {
     "--cap": "cap",
     "--repeats": "repeats",
     "--repeats-a": "repeatsA",
-    "--repeats-b": "repeatsB"
+    "--repeats-b": "repeatsB",
+    "--turn": "turn",
+    "--turn-a": "turnA",
+    "--turn-b": "turnB"
   };
   for (let i = 0; i < argv.length; i++) {
     const key = flagToKey[argv[i]];
@@ -79,8 +84,8 @@ export async function runCompare({
   }
   const { runs, selectors } = parseCompareArgs(argv);
   const [runA, runB] = await Promise.all(runs.map((arg) => readRunFolder(resolveRunFolder(arg, { runsRoot, cwd }))));
-  const sideA = selectSide(runA, { arm: selectors.armA ?? selectors.arm, model: selectors.modelA ?? selectors.model, cap: selectors.cap, repeats: selectors.repeatsA ?? selectors.repeats });
-  const sideB = selectSide(runB, { arm: selectors.armB ?? selectors.arm, model: selectors.modelB ?? selectors.model, cap: selectors.cap, repeats: selectors.repeatsB ?? selectors.repeats });
+  const sideA = selectSide(runA, { arm: selectors.armA ?? selectors.arm, model: selectors.modelA ?? selectors.model, cap: selectors.cap, repeats: selectors.repeatsA ?? selectors.repeats, turn: selectors.turnA ?? selectors.turn });
+  const sideB = selectSide(runB, { arm: selectors.armB ?? selectors.arm, model: selectors.modelB ?? selectors.model, cap: selectors.cap, repeats: selectors.repeatsB ?? selectors.repeats, turn: selectors.turnB ?? selectors.turn });
   const selfReasons = selfComparisonReasons(sideA, sideB);
   const result = selfReasons.length > 0 ? { refused: true, selfComparison: true, reasons: selfReasons } : compareRunSides(sideA, sideB);
   const report = formatComparison(result, { labelA: runs[0], labelB: runs[1] });

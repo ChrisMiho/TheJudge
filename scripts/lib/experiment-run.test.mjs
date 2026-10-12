@@ -22,6 +22,7 @@ import {
   validateRunId
 } from "./experiment-run.mjs";
 import { sha256 } from "./gold-cases.mjs";
+import { PUSHBACK_TEXT, resolveFollowUp } from "./pushback-follow-up.mjs";
 
 // Everything here is offline: fake clients, fake prompt builders, a temp folder.
 
@@ -941,4 +942,275 @@ test("a corpus run is unchanged: no suite block in its identity or summary, no l
   assert.equal(Object.hasOwn(identity, "suite"), false);
   assert.equal(Object.hasOwn(summary, "suite"), false);
   assert.equal(Object.hasOwn(summary.records[0].strata, "level"), false);
+});
+
+// ---------------------------------------------------------------------------
+// Follow-up (pushback) runs (REQ-247)
+// ---------------------------------------------------------------------------
+
+const TURN_1_ANSWER = "Per rule 100.1 and 702.19b, yes.";
+const TURN_2_ANSWER = "Rechecked: rule 702.19b was not provided, but yes.";
+
+/** Fake deps that record every request prepared, parsed, embedded and judged, and answer turn 1 and turn 2 differently. */
+function followUpDeps(overrides = {}) {
+  const seen = { prepared: [], parsed: [], embedded: [], judged: [] };
+  const deps = fakeDeps({
+    preparePromptInput: (request) => {
+      seen.prepared.push(request);
+      const followUp = Boolean(request.conversationHistory);
+      return {
+        promptText: `PROMPT q=${request.question} history=${request.conversationHistory?.length ?? 0}`,
+        enrichmentDebug: { supplemental: { usedSemantic: true, selected: [{ ruleId: "100.1" }, { ruleId: followUp ? "100.9" : "100.2" }] } }
+      };
+    },
+    parseRequest: (request) => {
+      seen.parsed.push(request);
+      return request;
+    },
+    embedRequest: async (request) => {
+      seen.embedded.push(request);
+      return { vector: [0.5], cardEmbeddings: new Map() };
+    },
+    judgeAnswerAlone: async (params) => {
+      seen.judged.push(params);
+      return {
+        undetermined: false,
+        scores: { correctness: params.answerText === TURN_2_ANSWER ? 2 : 2, grounding: 2, calibration: 2, readability: 2 },
+        rationale: "Agrees.",
+        usage: { inputTokens: 1500, outputTokens: 800 }
+      };
+    },
+    ...overrides
+  });
+  return { deps, seen };
+}
+
+function followUpClient({ failTurn2 = false } = {}) {
+  const calls = [];
+  return {
+    calls,
+    responses: {
+      create: async (params) => {
+        calls.push(params);
+        const turn2 = params.input.includes("history=2");
+        if (turn2 && failTurn2) throw new Error("provider exploded");
+        return { output_text: turn2 ? TURN_2_ANSWER : TURN_1_ANSWER, usage: { input_tokens: 2000, output_tokens: 300 } };
+      }
+    }
+  };
+}
+
+async function followUpParams(overrides = {}) {
+  return experimentParams({ followUp: resolveFollowUp("pushback"), client: followUpClient(), ...overrides });
+}
+
+test("a follow-up run asks each case as two turns; turn 2 is the pushback with turn 1's question and answer as history, parsed and embedded from its own request", async () => {
+  const params = await followUpParams();
+  const { deps, seen } = followUpDeps();
+  const { summary } = await executeExperiment(params, deps);
+
+  assert.equal(params.client.calls.length, CASES.length * 2);
+  const turn2Requests = seen.prepared.filter((request) => request.conversationHistory);
+  assert.equal(turn2Requests.length, CASES.length);
+  assert.deepEqual(turn2Requests[0], {
+    mode: "lookup",
+    question: PUSHBACK_TEXT,
+    conversationHistory: [
+      { role: "user", content: "Question case-one?" },
+      { role: "assistant", content: TURN_1_ANSWER }
+    ]
+  });
+  assert.deepEqual(seen.parsed, turn2Requests, "the schema parses every turn-2 request before it is used");
+  assert.deepEqual(seen.embedded, turn2Requests, "turn 2 is embedded from the turn-2 request, not from the case");
+  assert.ok(params.client.calls[1].input.includes(`q=${PUSHBACK_TEXT}`));
+
+  assert.equal(summary.records.length, CASES.length * 2);
+  const [turn1, turn2] = summary.records;
+  assert.equal(turn1.turn, 1);
+  assert.equal(turn2.turn, 2);
+  assert.notEqual(turn1.key, turn2.key);
+  assert.equal(turn2.key, recordKey({ caseId: "case-one", model: "gpt-4.1", excerptCap: 10, arm: "A", repeat: 1, turn: 2 }));
+  assert.notEqual(turn1.transcript, turn2.transcript, "each turn writes its own transcript");
+  assert.deepEqual(turn1.system3RuleIds, ["100.1", "100.2"]);
+  assert.deepEqual(turn2.system3RuleIds, ["100.1", "100.9"]);
+  assert.deepEqual(turn2.disownedRuleIds, ["702.19b"]);
+  assert.equal(turn1.disownedRuleIds, undefined);
+  const transcripts = await readdir(join(params.runsRoot, "run-one", "transcripts"));
+  assert.equal(transcripts.length, CASES.length * 2);
+  const turn2Transcript = JSON.parse(await readFile(join(params.runsRoot, "run-one", turn2.transcript), "utf8"));
+  assert.equal(turn2Transcript.turn, 2);
+  assert.equal(turn2Transcript.answerText, TURN_2_ANSWER);
+
+  const identity = JSON.parse(await readFile(join(params.runsRoot, "run-one", "manifest.json"), "utf8"));
+  assert.deepEqual(identity.followUp, { name: "pushback", revision: "pushback.1" });
+  assert.equal(summary.followUp.groups[0].conversations, CASES.length);
+  assert.equal(summary.followUp.groups[0].disowned.count, CASES.length);
+});
+
+test("a run without a follow-up keeps its identity record, record keys and records unchanged", async () => {
+  const params = await experimentParams();
+  const { summary } = await executeExperiment(params, fakeDeps());
+  const identity = JSON.parse(await readFile(join(params.runsRoot, "run-one", "manifest.json"), "utf8"));
+  assert.equal("followUp" in identity, false);
+  assert.equal("followUp" in summary, false);
+  for (const record of summary.records) {
+    assert.equal("turn" in record, false);
+    assert.equal("system3RuleIds" in record, false);
+  }
+});
+
+test("each turn is judged alone: the judge is handed the case question and the turn's own excerpts, never the turn or the pushback", async () => {
+  const params = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]) });
+  const { deps, seen } = followUpDeps();
+  await executeExperiment(params, deps);
+
+  assert.equal(seen.judged.length, 2);
+  for (const judged of seen.judged) {
+    assert.equal(judged.question, "Question case-one?");
+    assert.deepEqual(Object.keys(judged).sort(), ["answerText", "attachedExcerpts", "client", "decidingRuleIds", "judgeModel", "question", "stateLines", "workedSolution"]);
+    const text = JSON.stringify({ ...judged, client: undefined });
+    assert.ok(!text.includes(PUSHBACK_TEXT), "the judge is not told about the pushback");
+    assert.doesNotMatch(text, /turn|pushback|follow-up/i);
+  }
+  assert.deepEqual(seen.judged.map((judged) => judged.answerText), [TURN_1_ANSWER, TURN_2_ANSWER]);
+});
+
+test("a turn-2 request the route's schema rejects is recorded as an error naming the reason and is never sent", async () => {
+  const params = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]) });
+  const { deps, seen } = followUpDeps({
+    parseRequest: () => {
+      throw new Error("conversationHistory.1.content: too long");
+    }
+  });
+  const { summary } = await executeExperiment(params, deps);
+
+  assert.equal(params.client.calls.length, 1, "only turn 1 was sent");
+  assert.equal(seen.embedded.length, 0);
+  const turn2 = summary.records.find((record) => record.turn === 2);
+  assert.equal(turn2.status, "error");
+  assert.equal(turn2.errorKind, "request-rejected");
+  assert.match(turn2.errorMessage, /schema rejects the follow-up request: conversationHistory\.1\.content: too long/);
+  assert.equal(summary.followUp.groups[0].missing, 1);
+  assert.ok(summary.notCompleted.includes(turn2.key));
+});
+
+test("the missing-vector and silent-lexical refusals apply to turn 2 as well as turn 1", async () => {
+  const refusedEmbed = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]) });
+  const { deps: embedRefusal } = followUpDeps({
+    embedRequest: async () => {
+      throw new Error("EMBEDDING_PROVIDER=local returned no embedding for gold case case-one");
+    }
+  });
+  await assert.rejects(() => executeExperiment(refusedEmbed, embedRefusal), /returned no embedding/);
+  assert.equal(refusedEmbed.client.calls.length, 1, "turn 2 is never sent");
+
+  const lexical = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]) });
+  const { deps: lexicalDeps } = followUpDeps({
+    describeRetrieval: (supplemental, expected, options) => {
+      if (supplemental.selected.some((rule) => rule.ruleId === "100.9") && options.requireSemantic) throw new Error("System 3 ran lexical retrieval");
+      return { usedSemantic: true, selectedRuleIds: [], goldRuleInPrompt: true };
+    }
+  });
+  await assert.rejects(() => executeExperiment(lexical, lexicalDeps), /System 3 ran lexical retrieval/);
+  assert.equal(lexical.client.calls.length, 1);
+});
+
+test("the spending check covers a whole conversation: turn 1 is not paid for when turn 2 would pass the cap", async () => {
+  // One answer 1.0 and one grade 0.5 per turn: a conversation is 3.0.
+  const estimateCallCostUsd = ({ kind }) => (kind === "answer" ? 1 : 0.5);
+  const PRICED = { "gpt-4.1": { inputUsdPerMillion: 2, outputUsdPerMillion: 8 }, "gpt-5": { inputUsdPerMillion: 2, outputUsdPerMillion: 8 } };
+  const tooLow = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]), maxCostUsd: 2.9 });
+  const { deps: lowDeps } = followUpDeps({ estimateCallCostUsd, rateTable: PRICED });
+  const stopped = await executeExperiment(tooLow, lowDeps);
+  assert.equal(tooLow.client.calls.length, 0, "not even turn 1 is sent");
+  assert.equal(stopped.summary.stoppedReason.kind, "cap");
+  assert.equal(stopped.summary.records.length, 0);
+
+  const enough = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]), maxCostUsd: 3 });
+  const { deps: okDeps } = followUpDeps({ estimateCallCostUsd, rateTable: PRICED });
+  const done = await executeExperiment(enough, okDeps);
+  assert.equal(enough.client.calls.length, 2);
+  assert.equal(done.summary.stoppedReason, null);
+});
+
+test("a resume never repeats a completed turn and resumes a conversation at turn 2 from the stored turn-1 answer", async () => {
+  const params = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]), client: followUpClient({ failTurn2: true }) });
+  const { deps } = followUpDeps();
+  const first = await executeExperiment(params, deps);
+  assert.equal(params.client.calls.length, 2);
+  assert.equal(first.summary.records.find((record) => record.turn === 2).status, "error");
+
+  // Without --retry-errors nothing is repeated.
+  const idle = { ...params, client: followUpClient(), resume: true };
+  const { deps: idleDeps } = followUpDeps();
+  await executeExperiment(idle, idleDeps);
+  assert.equal(idle.client.calls.length, 0);
+
+  // With --retry-errors only turn 2 is asked, from the stored turn-1 answer.
+  const retry = { ...params, client: followUpClient(), resume: true, retryErrors: true };
+  const { deps: retryDeps, seen } = followUpDeps();
+  const second = await executeExperiment(retry, retryDeps);
+  assert.equal(retry.client.calls.length, 1, "turn 1 is not asked again");
+  assert.ok(retry.client.calls[0].input.includes("history=2"));
+  assert.deepEqual(seen.prepared[0].conversationHistory[1], { role: "assistant", content: TURN_1_ANSWER });
+  assert.equal(second.summary.records.filter((record) => record.status === "ok").length, 2);
+
+  // Everything is complete now: a further resume asks nothing.
+  const done = { ...params, client: followUpClient(), resume: true, retryErrors: true };
+  await executeExperiment(done, followUpDeps().deps);
+  assert.equal(done.client.calls.length, 0);
+});
+
+test("a resume refuses when the follow-up revision differs from the one the run recorded", async () => {
+  const params = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]) });
+  await executeExperiment(params, followUpDeps().deps);
+  const changed = { ...params, client: followUpClient(), resume: true, followUp: { name: "pushback", revision: "pushback.2", text: "Really?" } };
+  await assert.rejects(() => executeExperiment(changed, followUpDeps().deps), /identity record changed \(followUp\)/);
+});
+
+test("with --repeat each repeat is its own conversation, and a case whose repeats land in different transitions is listed", async () => {
+  let judgeCalls = 0;
+  const params = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]), repeats: 2 });
+  const { deps } = followUpDeps({
+    judgeAnswerAlone: async () => {
+      judgeCalls += 1;
+      // Repeat 1 holds (2, 2); repeat 2 flips on the outcome (2, 0).
+      const correctness = judgeCalls === 4 ? 0 : 2;
+      return { undetermined: false, scores: { correctness, grounding: 2, calibration: 2, readability: 2 }, rationale: "r", usage: { inputTokens: 1, outputTokens: 1 } };
+    }
+  });
+  const { summary } = await executeExperiment(params, deps);
+
+  assert.equal(params.client.calls.length, 4, "two repeats, two turns each");
+  assert.deepEqual(summary.records.map((record) => `${record.repeat}/${record.turn}`), ["1/1", "1/2", "2/1", "2/2"]);
+  const [group] = summary.followUp.groups;
+  assert.equal(group.conversations, 2);
+  assert.equal(group.held, 1);
+  assert.equal(group.flippedOutcome, 1);
+  assert.deepEqual(group.unstableCases, [{ caseId: "case-one", transitions: ["held", "flippedOutcome"] }]);
+});
+
+test("a follow-up run grades each turn alone and makes no ranking call, even with two models", async () => {
+  const params = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]), models: ["gpt-4.1", "gpt-4.1-mini"] });
+  let ranked = 0;
+  const { deps } = followUpDeps({
+    judgeBlindRanking: async () => {
+      ranked += 1;
+      throw new Error("no ranking in a follow-up run");
+    }
+  });
+  const { summary } = await executeExperiment(params, deps);
+  assert.equal(ranked, 0);
+  assert.equal(summary.records.length, 4);
+  assert.equal(summary.followUp.groups.length, 2);
+});
+
+test("the follow-up summary and report print through the run's log and hold no model prose", async () => {
+  const params = await followUpParams({ cases: [CASES[0]], manifest: manifestFor([CASES[0]]) });
+  const logged = [];
+  params.log = (line) => logged.push(line);
+  await executeExperiment(params, followUpDeps().deps);
+  assert.match(logged.join("\n"), /Follow-up run: pushback \(pushback\.1\)/);
+  const summaryText = await readFile(join(params.runsRoot, "run-one", "summary.json"), "utf8");
+  assert.ok(!summaryText.includes(TURN_2_ANSWER));
 });

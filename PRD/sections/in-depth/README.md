@@ -301,10 +301,14 @@ retrieval/combo machinery that other specs own.
   conversationHistory }`. History is assembled client-side and includes the hidden
   initial question (including any fallback) and first answer, then all subsequent
   turns; the current follow-up text goes in `question`, not duplicated in history.
-  The backend inserts a `CONVERSATION HISTORY` section before `QUESTION`. History
+  The backend inserts a `CONVERSATION HISTORY` section before `QUESTION`, and
+  chooses the follow-up's rules — curated topics, step guidance and searched
+  excerpts — from the opening question, the first history turn, so a pushback
+  is re-checked against the rules the opening question found while the follow-up
+  text stays the question. History
   is ephemeral — no server-side session store — though the workspace's browser-
   local Question History (shared chrome) can persist and resume completed
-  conversations. (REQ-027, DEC-038, DEC-039, FLOW-005)
+  conversations. (REQ-027, REQ-246, DEC-038, DEC-039, FLOW-005)
 - Built: **↺ Start over** is visible once the first decrypt has succeeded and no
   request is in flight. It clears the conversation thread and the staged
   zones/cards/question/phase, and lands on a clean Ask a Question page
@@ -395,7 +399,8 @@ the game-mode request drives them. (DEC-020, DEC-010)
   when the embedding-provider seam is active, with the exact-rule-id boost
   merged into the blended score and lexical scoring alone retained as the
   mock/offline default and the fallback on any embedding failure (REQ-181,
-  REQ-182, REQ-236), from a query built from the question plus each submitted card's
+  REQ-182, REQ-236), from a query built from the question (on a follow-up, the
+  opening question, REQ-246) plus each submitted card's
   name, type line, keywords and concept terms and the current turn step, rather
   than its full oracle text (REQ-178, REQ-234), with two slots reserved for a
   separate search of each card's own text (REQ-235),

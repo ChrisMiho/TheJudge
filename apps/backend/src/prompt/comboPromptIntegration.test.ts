@@ -181,6 +181,44 @@ describe("Backend - Ask AI", () => {
       expect(withIntent.promptText).toContain("Demonic Consultation — MISSING");
     });
 
+    it("a follow-up's combo section still reads the follow-up text, and the follow-up text never feeds rule selection (REQ-246)", () => {
+      const history = [
+        { role: "user" as const, content: "How does this resolve?" },
+        { role: "assistant" as const, content: "It resolves normally." }
+      ];
+      const opening = gameRequestWithBoard("How does this resolve?", ["oracle-a"]);
+      const asksAboutCombos: GameAskAiRequest = { ...opening, question: "Do I have a combo here?", conversationHistory: history };
+      const quiet: GameAskAiRequest = { ...opening, question: "Thanks, and what about the board?", conversationHistory: history };
+
+      // The opening question has no combo intent; the follow-up does. The combo section follows the follow-up text.
+      expect(preparePromptInput(opening, { comboCatalog: catalog }).promptText).not.toContain(COMBO_SECTION_HEADING);
+      expect(preparePromptInput(asksAboutCombos, { comboCatalog: catalog }).promptText).toContain(COMBO_SECTION_HEADING);
+      expect(preparePromptInput(quiet, { comboCatalog: catalog }).promptText).not.toContain(COMBO_SECTION_HEADING);
+
+      // The reverse: intent in the opening question only does not make the follow-up's combo section appear.
+      const comboOpening = gameRequestWithBoard("Do I have a combo here?", ["oracle-a"]);
+      const followUp: GameAskAiRequest = {
+        ...comboOpening,
+        question: "Check it again.",
+        conversationHistory: [
+          { role: "user", content: "Do I have a combo here?" },
+          { role: "assistant", content: "Possibly." }
+        ]
+      };
+      expect(preparePromptInput(comboOpening, { comboCatalog: catalog }).promptText).toContain(COMBO_SECTION_HEADING);
+      expect(preparePromptInput(followUp, { comboCatalog: catalog }).promptText).not.toContain(COMBO_SECTION_HEADING);
+      const lookupOpening = lookupRequest("Does this card combo with anything?", "oracle-a");
+      const lookupFollowUp: LookupAskAiRequest = {
+        ...lookupOpening,
+        question: "Check it again.",
+        conversationHistory: [
+          { role: "user", content: "Does this card combo with anything?" },
+          { role: "assistant", content: "Maybe." }
+        ]
+      };
+      expect(preparePromptInput(lookupFollowUp, { comboCatalog: catalog }).promptText).not.toContain(COMBO_SECTION_HEADING);
+    });
+
     it("places the lookup-mode section after rulings and before conversation history", () => {
       const prepared = preparePromptInput(lookupRequest("Does this card combo with anything?", "oracle-a"), {
         comboCatalog: catalog

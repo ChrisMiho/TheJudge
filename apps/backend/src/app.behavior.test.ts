@@ -2,7 +2,8 @@ import request from "supertest";
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app/createApp.js";
 import { mockAskAiProvider } from "./providers/mockAskAiProvider.js";
-import type { PreparedPromptInput } from "./prompt/preparation.js";
+import { buildPerCardSearchTexts, buildRetrievalQueryText, type PreparedPromptInput } from "./prompt/preparation.js";
+import type { EmbeddingProvider } from "./providers/embeddingProvider.js";
 import { createAskAiRequest } from "./test-utils/requestBuilders.js";
 
 describe("Backend - Ask AI", () => {
@@ -52,6 +53,49 @@ describe("Backend - Ask AI", () => {
       expect(providerCalls[0]?.promptText).toContain("Rulings for Opt (published by Wizards of the Coast; apply one only when the situation matches it):");
       expect(providerCalls[0]?.promptText).toContain("- 2020-04-17: Use the published ruling as reference.");
       expect(providerCalls[0]?.diagnostics.rulingsCardCount).toBe(1);
+    });
+
+    it("embeds a follow-up's opening question, not the follow-up text, and hands the prompt the opening question's rules (REQ-246, REQ-181)", async () => {
+      const embedded: string[] = [];
+      const recordingEmbedder: EmbeddingProvider = {
+        async embed(text) {
+          embedded.push(text);
+          return null;
+        }
+      };
+      const providerCalls: PreparedPromptInput[] = [];
+      const app = createApp({
+        embeddingProvider: recordingEmbedder,
+        askAiProvider: {
+          generateAnswer(preparedPrompt) {
+            providerCalls.push(preparedPrompt);
+            return { answer: "ok" };
+          }
+        }
+      });
+      const opening = createAskAiRequest({ question: "How does copying a spell work while it is on the stack?" });
+      const followUp = {
+        ...opening,
+        question: "I don't think that's right. Can you check it again?",
+        conversationHistory: [
+          { role: "user" as const, content: opening.question },
+          { role: "assistant" as const, content: "A first answer." }
+        ]
+      };
+
+      await request(app).post("/api/ask-ai").send(opening).expect(200);
+      const openingEmbedded = [...embedded];
+      embedded.length = 0;
+      await request(app).post("/api/ask-ai").send(followUp).expect(200);
+
+      expect(openingEmbedded[0]).toBe(buildRetrievalQueryText(opening));
+      expect(embedded).toEqual(openingEmbedded);
+      expect(embedded.join("\n")).not.toContain("check it again");
+      expect(embedded[0]).toBe(buildRetrievalQueryText(followUp));
+      expect(buildPerCardSearchTexts(followUp)).toEqual(buildPerCardSearchTexts(opening));
+      // The prompt's QUESTION is still the follow-up text, with the history attached.
+      expect(providerCalls[1]?.promptText.endsWith("QUESTION\nI don't think that's right. Can you check it again?")).toBe(true);
+      expect(providerCalls[1]?.promptText).toContain("CONVERSATION HISTORY");
     });
 
     it("maps timeout-like provider exceptions to provider-timeout status/code", async () => {

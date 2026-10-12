@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildCaseRequest } from "./prompt-fidelity.mjs";
+import { buildCaseRequest, embedRequestQuery } from "./prompt-fidelity.mjs";
 
 const PANHARMONICON = { oracleId: "76678885-3674-443d-b9a2-2a460cf6aac0", name: "Panharmonicon" };
 const TARMOGOYF = { oracleId: "45900b2f-f6a9-4c42-9642-008f3c1cf6dd", name: "Tarmogoyf" };
@@ -103,4 +103,40 @@ test("loadPromptResources leaves the combo catalog out, and loads nothing for it
   const resources = await loadPromptResources({ env: { [COMBO_ENRICHMENT_ENV]: "false" }, modules });
   assert.equal("comboCatalog" in resources, false);
   assert.ok(!loaded.some((path) => path.includes("commanderSpellbook")));
+});
+
+// REQ-247: a follow-up request is embedded from its own query text, and the silent-fallback refusal applies to it too.
+
+const fakeQueryTexts = {
+  buildRetrievalQueryText: (request) => `query:${request.question}`,
+  buildPerCardSearchTexts: (request) => (request.cards ?? []).map((card) => ({ key: `k-${card.name}`, text: `card:${card.name}` }))
+};
+
+test("embedRequestQuery embeds the request's own query text and each attached card's text once", async () => {
+  const embedded = [];
+  const embedder = {
+    mode: "local",
+    embed: async (text) => {
+      embedded.push(text);
+      return [text.length];
+    }
+  };
+  const cardVectorCache = new Map();
+  const request = { question: "Is it still wrong?", cards: [{ name: "A" }] };
+  const first = await embedRequestQuery({ request, caseId: "c", embedder, cardDetailIndex: new Map(), cardVectorCache, queryTexts: fakeQueryTexts });
+  assert.deepEqual(first.vector, ["query:Is it still wrong?".length]);
+  assert.deepEqual([...first.cardEmbeddings.keys()], ["k-A"]);
+  await embedRequestQuery({ request: { ...request, question: "Again?" }, caseId: "c", embedder, cardDetailIndex: new Map(), cardVectorCache, queryTexts: fakeQueryTexts });
+  assert.deepEqual(embedded, ["query:Is it still wrong?", "card:A", "query:Again?"], "the card text is embedded once");
+});
+
+test("embedRequestQuery refuses a real embedder that returned no vector, and accepts null only under mock", async () => {
+  const failing = { mode: "local", embed: async () => null };
+  await assert.rejects(
+    () => embedRequestQuery({ request: { question: "q" }, caseId: "turn-2-case", embedder: failing, cardDetailIndex: new Map(), queryTexts: fakeQueryTexts }),
+    /returned no embedding for gold case turn-2-case/
+  );
+  const mock = { mode: "mock", embed: async () => null };
+  const result = await embedRequestQuery({ request: { question: "q" }, caseId: "c", embedder: mock, cardDetailIndex: new Map(), queryTexts: fakeQueryTexts });
+  assert.equal(result.vector, null);
 });

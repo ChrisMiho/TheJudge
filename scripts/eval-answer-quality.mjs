@@ -18,6 +18,11 @@
 // experiment-run machinery, writing only under the suite folder's `runs/`. Its
 // results are agreement with the source, never correctness.
 //
+// `--follow-up pushback` (REQ-247) is an experiment-mode flag (`--run-id` with `--manifest`, arm A only): each
+// case is asked as a two-turn conversation -- turn 1 is the production request, turn 2 a production follow-up
+// carrying a fixed pushback text (scripts/lib/pushback-follow-up.mjs) -- and each answer is graded alone. The
+// summary reports how often right answers held or flipped and wrong ones were fixed. It reports and never decides.
+//
 // Every answer goes through the production preparePromptInput path
 // (apps/backend/src/prompt/preparation.ts) with the same inputs a player's
 // request gets -- the committed card-detail and card-rulings indexes, every
@@ -100,6 +105,7 @@ import {
 import { attachedRuleIdsOf, buildJudgeInputs } from "./lib/judge-inputs.mjs";
 import { describeDecidingRules } from "./lib/rule-availability.mjs";
 import { loadLocalOpenAiEnv } from "./lib/local-openai-env.mjs";
+import { resolveFollowUp } from "./lib/pushback-follow-up.mjs";
 import {
   DEFAULT_EMBEDDING_PROVIDER,
   assertQueryEmbedded,
@@ -107,6 +113,7 @@ import {
   buildEmbedder,
   describeRetrieval,
   embedGoldCaseQueries,
+  embedRequestQuery,
   loadPromptResources,
   resolveEmbeddingProviderMode
 } from "./lib/prompt-fidelity.mjs";
@@ -259,6 +266,8 @@ export function parseArgs(argv) {
       experimentFlags.retryErrors = true;
     } else if (arg === "--max-cost-usd") {
       experimentFlags.maxCostUsd = Number(argv[++i]);
+    } else if (arg === "--follow-up") {
+      experimentFlags.followUp = argv[++i] ?? "";
     } else if (arg === "--arm") {
       armIds.push(argv[++i]);
       experimentFlags.arms = armIds;
@@ -280,6 +289,9 @@ export function parseArgs(argv) {
     if (stray) throw new Error(`${stray} only applies to a local practice-suite run: add --suite practice.`);
   } else {
     if (suiteName !== "practice") throw new Error(`--suite must be "practice", got "${suiteName ?? ""}".`);
+    if (experimentFlags.followUp !== undefined) {
+      throw new Error("--follow-up is not available in a local practice-suite run (REQ-232, REQ-247): the suite run asks one question per case. Drop --follow-up or --suite.");
+    }
     const refused = selectionFlags.filter((flag) => flag !== "--sample");
     if (experimentFlags.manifest !== undefined) refused.push("--manifest");
     if (experimentFlags.regradeFrom !== undefined) refused.push("--regrade-from");
@@ -364,6 +376,20 @@ function parseExperimentFlags(flags, selectionFlags, { suite = false } = {}) {
   if (flags.retryErrors && flags.resume === undefined) {
     throw new Error("--retry-errors re-attempts the error records of a run you resume: add --resume <run-id>.");
   }
+  if (flags.followUp !== undefined) {
+    if (!flags.runId) {
+      throw new Error("--follow-up is an experiment flag (REQ-226, REQ-247): a routine run never asks a follow-up. Name the run with --run-id <id> and list its cases with --manifest <file>.");
+    }
+    if (flags.regradeFrom !== undefined) {
+      throw new Error("--follow-up asks new answers and a regrade run asks none (it grades stored answers): drop --follow-up or --regrade-from.");
+    }
+    const otherArm = (flags.arms ?? []).find((armId) => armId !== DEFAULT_ARM);
+    if (otherArm !== undefined) throw new Error(`--follow-up runs arm ${DEFAULT_ARM} only (REQ-230, REQ-247), not --arm ${otherArm}.`);
+    if (!flags.manifest) {
+      throw new Error("--follow-up needs --manifest <file>: a follow-up run is an experiment run that lists its cases (REQ-247).");
+    }
+    resolveFollowUp(flags.followUp);
+  }
   for (const armId of flags.arms ?? []) {
     if (!ARM_IDS.includes(armId)) throw new Error(`--arm ${armId ?? ""} is not an arm: the arms are ${ARM_IDS.join(", ")}.`);
   }
@@ -399,7 +425,9 @@ function parseExperimentFlags(flags, selectionFlags, { suite = false } = {}) {
     armIds: [...new Set(flags.arms ?? [DEFAULT_ARM])],
     resume: flags.resume !== undefined,
     retryErrors: flags.retryErrors === true,
-    maxCostUsd: flags.maxCostUsd ?? null
+    maxCostUsd: flags.maxCostUsd ?? null,
+    // The follow-up this run asks as turn 2 (REQ-247): name, text revision id and text; null for a one-turn run.
+    followUp: flags.followUp === undefined ? null : resolveFollowUp(flags.followUp)
   };
 }
 
@@ -558,12 +586,14 @@ export function averagePromptChars(selectedCases, excerptCaps, measured) {
 }
 
 /** A character-count cost estimate (REQ-188's M3 methodology). Never a target -- the live run records its own actual usage. */
-export function estimateCost({ models, judgeModel, excerptCaps, goldCaseCount, avgPromptCharsByCap }) {
+export function estimateCost({ models, judgeModel, excerptCaps, goldCaseCount, avgPromptCharsByCap, turns = 1 }) {
+  // A follow-up run (REQ-247) asks each case as `turns` turns, each answered and graded alone, so it counts a whole conversation.
+  goldCaseCount *= turns;
   const legCount = models.length * excerptCaps.length;
   const answerCalls = goldCaseCount * legCount;
   const loneJudgeCalls = answerCalls;
-  // A single answer has nothing to be ranked against: a one-model run makes no ranking call (REQ-186).
-  const rankingCalls = models.length > 1 ? goldCaseCount * excerptCaps.length : 0;
+  // A single answer has nothing to be ranked against: a one-model run makes no ranking call (REQ-186); a follow-up run ranks nothing.
+  const rankingCalls = models.length > 1 && turns === 1 ? goldCaseCount * excerptCaps.length : 0;
 
   // A model with no rate is reported as unpriced, never counted as $0 (REQ-227).
   const unpricedModels = findUnpricedModels([...models, judgeModel], MODEL_PRICING_USD_PER_MILLION_TOKENS);
@@ -1094,6 +1124,7 @@ export async function runLiveExperiment(params) {
   const { RUBRIC_REVISION } = await import("../apps/backend/src/eval/answer-quality/rubric.ts");
   const resources = await loadPromptResources();
   const embedder = await buildEmbedder(params.env);
+  const { askAiRequestSchema } = await import("../apps/backend/src/validation/askAiRequest.ts");
   const { createHash } = await import("node:crypto");
   const { readdir } = await import("node:fs/promises");
   const { CASES_DIR, DATA_DIR } = await import("./lib/gold-cases.mjs");
@@ -1122,6 +1153,14 @@ export async function runLiveExperiment(params) {
     resources,
     ruleIds: resources.gameRulesRuleIndex.map((entry) => entry.ruleId),
     embedQueries: (cases) => embedGoldCaseQueries({ goldCases: cases, embedder, cardDetailIndex: resources.cardDetailIndex }),
+    // A follow-up run (REQ-247): turn 2's request goes through the route's own schema, then is embedded from its own query text.
+    parseRequest: (request) => {
+      const result = askAiRequestSchema.safeParse(request);
+      if (!result.success) throw new Error(result.error.message);
+      return result.data;
+    },
+    embedRequest: (request, caseEntry) =>
+      embedRequestQuery({ request, caseId: caseEntry.id, embedder, cardDetailIndex: resources.cardDetailIndex }),
     embeddingProvider: embedder.mode,
     embeddingModel: embedder.mode === "local" ? "Xenova/all-MiniLM-L6-v2" : "",
     requireSemantic: embedder.mode !== "mock",
@@ -1149,13 +1188,20 @@ export async function runLiveExperiment(params) {
 }
 
 export function describeExperimentPlan({ experiment, models, excerptCaps, arms, estimate, caseCount, folder, judgeModel }) {
+  const followUp = experiment.followUp;
   return [
     "Experiment run plan (no provider request has been made):",
     "",
     `  Run id: ${experiment.runId}  ->  ${folder}/ (the committed ${RESULTS_RELATIVE_PATH} is never read or written)`,
     experiment.regradeFrom
       ? `  Regrade: re-grades the stored answers of run ${experiment.regradeFrom}; makes no answer call.`
-      : `  Cases: ${caseCount} from the manifest, each answered ${experiment.repeats} time${experiment.repeats === 1 ? "" : "s"}.`,
+      : `  Cases: ${caseCount} from the manifest, each ${followUp ? "asked" : "answered"} ${experiment.repeats} time${experiment.repeats === 1 ? "" : "s"}${followUp ? " as a two-turn conversation" : ""}.`,
+    ...(followUp
+      ? [
+          `  Follow-up: ${followUp.name} (${followUp.revision}): turn 2 is a production follow-up built from turn 1's request and answer; each turn is graded alone, no blind ranking.`,
+          "  The call counts and the cost estimate below cover whole conversations (two answers and two grades each)."
+        ]
+      : []),
     `  Answer-model lineup: ${models.join(", ")}`,
     `  Judge model: ${judgeModel}`,
     `  Excerpt caps: ${excerptCaps.join(", ")}`,
@@ -1238,7 +1284,9 @@ async function runExperimentCommand({
       judgeModel,
       excerptCaps: parsed.excerptCaps,
       goldCaseCount: experiment.regradeFrom ? 0 : cases.length * experiment.repeats * arms.length,
-      avgPromptCharsByCap: averagePromptChars(cases, parsed.excerptCaps, measured)
+      avgPromptCharsByCap: averagePromptChars(cases, parsed.excerptCaps, measured),
+      // A follow-up run is estimated for the whole conversation: two answers and two grades per case (REQ-247).
+      turns: experiment.followUp ? 2 : 1
     });
     log(
       describeExperimentPlan({
@@ -1286,6 +1334,7 @@ async function runExperimentCommand({
     manifest,
     manifestSha256,
     expectCommit: experiment.expectCommit,
+    followUp: experiment.followUp,
     regradeFrom: experiment.regradeFrom,
     resume: experiment.resume,
     retryErrors: experiment.retryErrors,

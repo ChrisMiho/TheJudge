@@ -1775,3 +1775,119 @@ test("a live suite run needs --max-cost-usd; with it the runner gets the filter 
   assert.deepEqual(capped.client.calls, ["list"], "only the models-list access check; no completion")
   assert.deepEqual([await readFileAsync(committed, "utf8"), await readFileAsync(coverage, "utf8")], before)
 })
+
+// ---------------------------------------------------------------------------
+// Follow-up (pushback) mode (REQ-247): flags, refusals, the identity record, the plan
+// ---------------------------------------------------------------------------
+
+const FOLLOW_UP_BASE = ["--run-id", "fu", "--manifest", "m.json"]
+
+test("parseArgs reads --follow-up pushback in an experiment run and records the text's revision id", () => {
+  const parsed = parseArgs([...FOLLOW_UP_BASE, "--follow-up", "pushback"])
+  assert.deepEqual(parsed.experiment.followUp, { name: "pushback", revision: "pushback.1", text: "I don't think that's right. Can you check it again?" })
+  assert.equal(parseArgs(FOLLOW_UP_BASE).experiment.followUp, null)
+  assert.equal(parseArgs([...FOLLOW_UP_BASE, "--follow-up", "pushback", "--arm", "A"]).experiment.followUp.name, "pushback")
+})
+
+test("--follow-up is refused in a routine run, with --regrade-from, with --suite practice, with any arm but A, without --manifest, and for an unknown name, each naming its reason", () => {
+  assert.throws(() => parseArgs(["--follow-up", "pushback"]), /experiment flag.*a routine run never asks a follow-up.*--run-id/)
+  assert.throws(() => parseArgs(["--all", "--follow-up", "pushback"]), /a routine run never asks a follow-up/)
+  assert.throws(() => parseArgs(["--run-id", "fu", "--regrade-from", "earlier", "--follow-up", "pushback"]), /a regrade run asks none.*drop --follow-up or --regrade-from/)
+  assert.throws(() => parseArgs(["--suite", "practice", "--run-id", "s1", "--follow-up", "pushback"]), /not available in a local practice-suite run.*one question per case/)
+  assert.throws(() => parseArgs([...FOLLOW_UP_BASE, "--follow-up", "pushback", "--arm", "R"]), /--follow-up runs arm A only.*not --arm R/)
+  assert.throws(() => parseArgs([...FOLLOW_UP_BASE, "--follow-up", "pushback", "--arm", "A", "--arm", "C"]), /--follow-up runs arm A only.*not --arm C/)
+  assert.throws(() => parseArgs(["--run-id", "fu", "--follow-up", "pushback"]), /--follow-up needs --manifest <file>/)
+  assert.throws(() => parseArgs([...FOLLOW_UP_BASE, "--follow-up", "nudge"]), /--follow-up must name a follow-up: pushback/)
+  assert.throws(() => parseArgs([...FOLLOW_UP_BASE, "--follow-up"]), /--follow-up must name a follow-up/)
+})
+
+test("--resume carries --follow-up; a resume without --run-id is still an experiment run", () => {
+  const parsed = parseArgs(["--resume", "fu", "--manifest", "m.json", "--follow-up", "pushback"])
+  assert.equal(parsed.experiment.resume, true)
+  assert.equal(parsed.experiment.followUp.revision, "pushback.1")
+})
+
+test("the follow-up dry run prints a whole-conversation estimate, no blind ranking, and makes no paid call", async () => {
+  const a = fixtureCase("fu-a")
+  const b = fixtureCase("fu-b")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a), manifestEntryFor(b)], cases: [a, b] })
+  const dryArgs = (extra) => ["--run-id", "dry-fu", "--manifest", manifestPath, "--repeat", "3", ...extra]
+  const plan = async (extra, models = []) => {
+    const logs = []
+    const client = fakeAccessClient(["gpt-6-luna", "gpt-6.1-sol"])
+    const result = await run({
+      loadLocalEnv: noLocalEnv,
+      argv: [...dryArgs(extra), ...models],
+      env: {},
+      log: (line) => logs.push(line),
+      loadCases,
+      isStale: notStale,
+      measure: fakeMeasure,
+      client,
+      runExperiment: async () => {
+        throw new Error("a dry run never starts the run")
+      }
+    })
+    assert.deepEqual(client.calls, [], "no request of any kind")
+    return { logs, result }
+  }
+  const single = await plan([])
+  const followUp = await plan(["--follow-up", "pushback"])
+
+  assert.match(followUp.logs[0], /Cases: 2 from the manifest, each asked 3 times as a two-turn conversation/)
+  assert.match(followUp.logs[0], /Follow-up: pushback \(pushback\.1\)/)
+  assert.match(followUp.logs[0], /12 answer calls, 12 lone judge calls/)
+  assert.match(followUp.logs[0], /0 blind-ranking calls/)
+  assert.equal(followUp.result.estimate.answerCalls, single.result.estimate.answerCalls * 2)
+  assert.ok(followUp.result.estimate.totalCostUsd > single.result.estimate.totalCostUsd * 1.9, "the estimate covers both turns")
+
+  const bakeOff = await plan(["--follow-up", "pushback"], ["--model", "gpt-4.1", "--model", "gpt-4.1-mini"])
+  assert.equal(bakeOff.result.estimate.rankingCalls, 0, "a follow-up run ranks nothing")
+})
+
+test("a confirmed follow-up run hands the follow-up to the runner and leaves results.json byte-identical", async () => {
+  const a = fixtureCase("fu-live")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a)], cases: [a] })
+  const repoRootForTest = resolve(dirname(fileURLToPath(import.meta.url)), "..")
+  const committed = resolve(repoRootForTest, "apps/backend/src/eval/answer-quality/results.json")
+  const before = await readFileAsync(committed, "utf8")
+  let received
+  const client = fakeAccessClient(["gpt-6-luna", "gpt-6.1-sol"])
+  await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--run-id", "fu-live", "--manifest", manifestPath, "--follow-up", "pushback", "--max-cost-usd", "5", CONFIRM_FLAG],
+    env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+    log: () => {},
+    loadCases,
+    isStale: notStale,
+    client,
+    readResults: async () => {
+      throw new Error("an experiment run must never read the committed scores file")
+    },
+    runExperiment: async (params) => {
+      received = params
+      return { summary: "fake" }
+    }
+  })
+  assert.equal(received.followUp.revision, "pushback.1")
+  assert.deepEqual(received.arms.map((arm) => arm.id), ["A"])
+  assert.deepEqual(client.calls, ["list"], "only the models-list access check; no completion")
+  assert.equal(await readFileAsync(committed, "utf8"), before)
+})
+
+test("estimateCost without turns is unchanged", () => {
+  const base = { models: ["gpt-6-luna"], judgeModel: "gpt-6.1-sol", excerptCaps: [15], goldCaseCount: 10, avgPromptCharsByCap: { 15: 40000 } }
+  const one = estimateCost(base)
+  const two = estimateCost({ ...base, turns: 2 })
+  assert.equal(one.answerCalls, 10)
+  assert.equal(two.answerCalls, 20)
+  assert.equal(two.loneJudgeCalls, 20)
+})
+
+test("the pushback text is committed in exactly one place", () => {
+  const here = dirname(fileURLToPath(import.meta.url))
+  const holders = ["eval-answer-quality.mjs", "lib/experiment-run.mjs", "lib/pushback-follow-up.mjs", "lib/answer-compare.mjs"].filter((file) =>
+    readFileSync(resolve(here, file), "utf8").includes("check it again")
+  )
+  assert.deepEqual(holders, ["lib/pushback-follow-up.mjs"])
+})

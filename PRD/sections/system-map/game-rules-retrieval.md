@@ -15,7 +15,8 @@ System 2 is the curated baseline. It always includes core rules topics, then add
 conditional buckets from game-state signals: `turnPhase` and `combatStep`. In In-Depth,
 the topics populated zones used to add (spell casting, copying, layers, replacement
 effects and zone-change triggers) are added instead when a card's concept terms (the
-fixed concept map, REQ-234) or the question's words match a fixed trigger table built from
+fixed concept map, REQ-234) or the question's words (on a follow-up, the conversation's
+opening question's words, REQ-246) match a fixed trigger table built from
 the rule book's own titles (REQ-242). One topic is gated on card wording in both modes:
 when two or more cards —
 attached in a lookup, or on the stack or in any zone in a game — carry replacement or
@@ -28,7 +29,8 @@ a smaller `GAME RULES (reference)` section that still covers the stable vocabula
 model needs for stack, priority, zones, targets, combat, delayed triggers, and related
 common interactions.
 
-System 3 is supplemental retrieval. It builds a query from the user's question plus a
+System 3 is supplemental retrieval. It builds a query from the user's question (on a
+follow-up, the conversation's opening question, REQ-246) plus a
 compact per-card signal — each submitted or attached card's name, type line, and
 keyword list — plus fixed rule-book terms: the concept terms the committed concept map
 draws from each card's wording (REQ-234), in In-Depth the current turn step's name, and,
@@ -161,7 +163,8 @@ reference material and simply prints no rulings.
 - System 2 is driven by `turnPhase` and `combatStep`, plus card wording in two fixed
   forms: two or more cards whose oracle text says "instead" or "prevent" add the
   replacement-effect interaction topic (REQ-220), and, in In-Depth, the cards' concept
-  terms and the question's words select the formerly zone-gated topics through a fixed
+  terms and the question's words (on a follow-up, the opening question's words, REQ-246)
+  select the formerly zone-gated topics through a fixed
   trigger table (REQ-242). Card names and keywords never select a System 2 topic, and
   relevance scoring stays System 3's job.
 - System 3 is deduplicated against the System 2 selection by exact rule ID, so the same

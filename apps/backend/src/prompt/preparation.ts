@@ -34,6 +34,7 @@ import {
 } from "./normalization.js";
 import { namedTurnSteps } from "./phaseGuidance.js";
 import { layoutPromptRuleSections, type PromptRuleSections } from "./ruleLayout.js";
+import { gameRuleSelectionQuestion, ruleSelectionQuestion } from "./ruleSelectionQuestion.js";
 import { getPromptDiagnostics, type PromptDiagnostics } from "./promptDiagnostics.js";
 import { buildLookupPromptText, buildPromptText } from "./promptAssembly.js";
 import type {
@@ -108,16 +109,20 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
   return prepareGamePromptInput(request as GameAskAiRequest, options);
 }
 
-/** The retrieval query input (question, cards, In-Depth turn step) for a request, built from the same context the prompt uses. */
+/**
+ * The retrieval query input (question, cards, In-Depth turn step) for a request, built from the same context the prompt uses.
+ * On a follow-up the question is the conversation's opening question (REQ-246), so the route embeds the opening query.
+ */
 export function buildRetrievalQueryInput(
   request: AskAiRequest,
   options: Pick<PreparePromptInputOptions, "cardDetailIndex"> = {}
 ): RetrievalQueryInput {
   if (request.mode === "lookup") {
     const context = buildLookupPromptContext(request, options.cardDetailIndex);
-    return { questionText: request.question, cards: context.cards ?? [] };
+    return { questionText: ruleSelectionQuestion(request), cards: context.cards ?? [] };
   }
-  return retrievalInputFromPromptContext(buildPromptContext(request as GameAskAiRequest, options.cardDetailIndex));
+  const context = buildPromptContext(request as GameAskAiRequest, options.cardDetailIndex);
+  return retrievalInputFromPromptContext(context, gameRuleSelectionQuestion(request, context));
 }
 
 /**
@@ -276,12 +281,14 @@ function prepareLookupPromptInput(
   // Scryfall keywords resolved server-side) game mode builds -- never the
   // card's full oracle text. One shared query builder (`buildRetrievalQuery`),
   // not a second implementation, so lookup and game mode cannot drift apart.
-  const query = buildRetrievalQuery({ questionText: request.question, cards: context.cards ?? [] });
+  // REQ-246: on a follow-up, the conversation's opening question; the follow-up text stays the QUESTION section.
+  const ruleQuestion = ruleSelectionQuestion(request);
+  const query = buildRetrievalQuery({ questionText: ruleQuestion, cards: context.cards ?? [] });
   const cardVectors = resolveCardVectors(query, options);
   // REQ-235: each attached card's keyword rules arrive as whole sets beside the search excerpts.
   const keywordSets = keywordRuleSetsForCards(context.cards ?? [], options.gameRulesRuleIndex ?? []);
   // REQ-238: the turn steps the question, or an attached card's concept terms, name.
-  const namedSteps = namedTurnSteps([request.question, ...query.conceptTerms]);
+  const namedSteps = namedTurnSteps([ruleQuestion, ...query.conceptTerms]);
   const conversationHistory = request.conversationHistory;
   const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);
   const conversationHistoryChars = truncatedHistory.reduce((sum, turn) => sum + turn.content.length, 0);
@@ -383,11 +390,14 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
   const cardsForRulings = collectCardsForRulings(context);
   const limits = getRulingLimits();
   const allGameRulesTopics = options.gameRulesTopics ?? [];
-  const gameRulesTopics = selectGameRulesTopics(context, allGameRulesTopics);
+  // REQ-246: on a follow-up, both the curated-topic question words (REQ-242) and the System 3 query read
+  // the conversation's opening question; the follow-up text stays the QUESTION section.
+  const ruleQuestion = gameRuleSelectionQuestion(request, context);
+  const gameRulesTopics = selectGameRulesTopics(context, allGameRulesTopics, ruleQuestion);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
   // REQ-178 / REQ-233 / REQ-234 / REQ-235: the same shared query builder lookup mode uses, plus
   // the In-Depth turn step.
-  const retrievalInput = retrievalInputFromPromptContext(context);
+  const retrievalInput = retrievalInputFromPromptContext(context, ruleQuestion);
   const query = buildRetrievalQuery(retrievalInput);
   const cardVectors = resolveCardVectors(query, options);
   const keywordSets = keywordRuleSetsForCards(retrievalInput.cards, options.gameRulesRuleIndex ?? []);

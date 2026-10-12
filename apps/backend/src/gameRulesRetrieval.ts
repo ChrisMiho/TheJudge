@@ -797,9 +797,13 @@ export function buildRetrievalQuery(
 }
 
 /** The retrieval input for a game-mode prompt context: stack and zone cards, plus the current turn step. */
-export function retrievalInputFromPromptContext(context: PromptContext): RetrievalQueryInput {
+export function retrievalInputFromPromptContext(
+  context: PromptContext,
+  /** The question the query is built from: the one rule-selection question (REQ-246); a context-only caller has no history, so its own. */
+  questionText: string = context.finalQuestion
+): RetrievalQueryInput {
   return {
-    questionText: context.finalQuestion,
+    questionText,
     cards: [...context.orderedStack, ...context.populatedZones.flatMap((zone) => zone.items)],
     turnStep: turnStepSearchName(context.gameContext.turnPhase, context.gameContext.combatStep)
   };
