@@ -1,5 +1,5 @@
 // The local practice suite's one folder, its ignore guard, and the shared case
-// filters and selection (REQ-232). Used with permission, local only.
+// filters and selection (REQ-232). Local only.
 //
 // Every piece of suite data -- raw questions, converted cases, run output and
 // per-question results -- lives under SUITE_DIR, a gitignored folder that is
@@ -20,9 +20,9 @@ import { seededSample } from "./answer-quality-run.mjs";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 /** The one suite folder (B2). Every suite command resolves its paths from this constant. */
-export const SUITE_DIR = join(repoRoot, "output/rulesguru");
+export const SUITE_DIR = join(repoRoot, "output/practice-suite");
 /** The `.gitignore` line that must exist before any suite command writes. */
-export const SUITE_IGNORE_LINE = "output/rulesguru/";
+export const SUITE_IGNORE_LINE = "output/practice-suite/";
 
 export const SUITE_LEVELS = ["0", "1", "2", "3", "corner"];
 export const SUITE_COMPLEXITIES = ["simple", "intermediate", "complicated"];

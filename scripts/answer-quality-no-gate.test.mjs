@@ -21,10 +21,10 @@ const NEVER_IN_A_GATE = [
   "diagnostic-arms-check",
   "--confirm-live-calls",
   // The local practice suite (REQ-232): CI cannot see it, so no gate may name any of it.
-  "eval:rulesguru", // also covers :import, :convert and :purge
-  "rulesguru-import",
-  "rulesguru-convert",
-  "rulesguru-purge",
+  "eval:practice-suite", // also covers :import, :convert and :purge
+  "practice-suite-import",
+  "practice-suite-convert",
+  "practice-suite-purge",
   "--suite"
 ];
 
@@ -78,9 +78,9 @@ test("no gate script and no CI workflow invokes the answer-quality run, its comp
   // The three suite commands (REQ-232) are registered as their own on-demand scripts once the slices that
   // add them land; until then they must simply not exist in any other form.
   const suiteExpected = {
-    "eval:rulesguru:import": "node scripts/rulesguru-import.mjs",
-    "eval:rulesguru:convert": "node scripts/rulesguru-convert.mjs",
-    "eval:rulesguru:purge": "node scripts/rulesguru-purge.mjs"
+    "eval:practice-suite:import": "node scripts/practice-suite-import.mjs",
+    "eval:practice-suite:convert": "node scripts/practice-suite-convert.mjs",
+    "eval:practice-suite:purge": "node scripts/practice-suite-purge.mjs"
   };
   for (const [script, command] of Object.entries(suiteExpected)) {
     if (rootPkg.scripts[script] !== undefined) assert.equal(rootPkg.scripts[script], command, `${script} is registered as its own on-demand script`);
@@ -134,15 +134,15 @@ test("no *.test.mjs under scripts/ names the suite folder except the folder-guar
   };
   await walk(join(repoRoot, "scripts"));
   const self = fileURLToPath(import.meta.url);
-  const folderGuardTest = join(repoRoot, "scripts/lib/rulesguru-suite.test.mjs");
-  const suitePath = ["output", "rulesguru"].join("/");
+  const folderGuardTest = join(repoRoot, "scripts/lib/practice-suite.test.mjs");
+  const suitePath = ["output", "practice"].join("/");
   const globalFetch = /globalThis\.fetch|\bfetch\s*:\s*fetch\b|\bfetch\s*:\s*global\b|\bglobal\.fetch/;
   for (const file of found) {
     if (file === self) continue;
     const text = await readFile(file, "utf8");
     const name = file.slice(repoRoot.length + 1);
     if (file !== folderGuardTest) assert.ok(!text.includes(suitePath), `${name} must not name the suite folder; pass a temporary folder instead`);
-    if (/rulesguru-import/.test(text)) assert.ok(!globalFetch.test(text), `${name} must inject a fake fetch into the importer, never the global fetch`);
+    if (/practice-suite-import/.test(text)) assert.ok(!globalFetch.test(text), `${name} must inject a fake fetch into the importer, never the global fetch`);
   }
   assert.ok(found.includes(folderGuardTest), "the folder-guard test exists");
 });

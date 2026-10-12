@@ -1,15 +1,15 @@
-// Throwaway probe: Luna at reasoning effort low/high vs production (no effort -> medium) on the hard-25 RulesGuru set.
-// Mirrors `eval-answer-quality.mjs --suite rulesguru` (arm A, cap 10, local embedder, gpt-6.1-sol judge) for one answer;
+// Throwaway probe: Luna at reasoning effort low/high vs production (no effort -> medium) on the hard-25 practice-suite set.
+// Mirrors `eval-answer-quality.mjs --suite practice` (arm A, cap 10, local embedder, gpt-6.1-sol judge) for one answer;
 // the ONLY change from that run is `reasoning: { effort }` on the answer call.
 // Usage (from anywhere): npx tsx <this file> --effort low|high [--live] [--concurrency 3] [--repeats 5] [--limit N]
-// Every output stays under output/rulesguru/ (gitignored, local only).
+// Every output stays under output/practice-suite/ (gitignored, local only).
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 const CASE_IDS = JSON.parse(readFileSync(`${SUITE}/reports/pft-hard25-verify.json`, "utf8")).final;
 const PASSES = [1, 2, 3, 4, 5].map((n) => `${SUITE}/runs/pft-pass${n}`);
 
@@ -38,7 +38,7 @@ const gold = await imp("scripts/lib/gold-cases.mjs");
 const exp = await imp("scripts/lib/experiment-run.mjs");
 const ji = await imp("scripts/lib/judge-inputs.mjs");
 const ra = await imp("scripts/lib/rule-availability.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const { hashPrompt } = await imp("scripts/lib/answer-quality-run.mjs");
 const { preparePromptInput } = await imp("apps/backend/src/prompt/preparation.ts");
 const { judgeAnswerAlone } = await imp("apps/backend/src/eval/answer-quality/judge.ts");

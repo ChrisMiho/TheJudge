@@ -77,8 +77,8 @@ re-checks with; it doesn't fix any willingness to cave.
   hard Quick Lookup cases).
 - **The pushback eval is scored as held / flipped (outcome vs side) / fixed /
   still wrong.** "Flipped on outcome" is the number that must stay near zero.
-- **RulesGuru stays out of this build.** All evidence above is committed corpus
-  cases. No RulesGuru data, ids or results go into any committed file.
+- **The practice suite stays out of this build.** All evidence above is committed corpus
+  cases. No practice-suite data, ids or results go into any committed file.
 
 ## Design direction (converged)
 

@@ -1,8 +1,8 @@
-# Findings — five passes of the RulesGuru suite, today's prompt
+# Findings — five passes of the practice suite, today's prompt
 
-Run 2026-10-10 from `.worktrees/probe-pft` (`9a9852dc`), runs `pft-pass1`–`pft-pass5`: 1,184 questions × 5 = 5,920 answers, Luna at today's setting, judge gpt-6.1-sol (rubric 2026-10-10.1). Every answer used the local embedder and reported `gpt-6-luna`. Total $45.38. Counts only (privacy: no question text, ids or per-question results; those stay in the worktree's gitignored `output/rulesguru/`).
+Run 2026-10-10 from `.worktrees/probe-pft` (`9a9852dc`), runs `pft-pass1`–`pft-pass5`: 1,184 questions × 5 = 5,920 answers, Luna at today's setting, judge gpt-6.1-sol (rubric 2026-10-10.1). Every answer used the local embedder and reported `gpt-6-luna`. Total $45.38. Counts only (privacy: no question text, ids or per-question results; those stay in the worktree's gitignored `output/practice-suite/`).
 
-"Agree" = judge Correctness 2 against the RulesGuru answer. That is agreement, not correctness: RulesGuru answers are community-written. A 27-question spot check of hard ones found 25 hold up, 2 doubtful, 0 wrong.
+"Agree" = judge Correctness 2 against the suite's answer. That is agreement, not correctness: the suite's answers are community-written. A 27-question spot check of hard ones found 25 hold up, 2 doubtful, 0 wrong.
 
 ## Headline
 

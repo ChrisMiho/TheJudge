@@ -1,7 +1,7 @@
 // Hard-25 pushback (arm C) vs the automatic self-check on the same 25 × 5. Prints counts only — no case ids,
 // question text or answers — so the output is safe to summarize in PRD/work text.
 import { existsSync, readFileSync } from "node:fs";
-const SUITE = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/rulesguru/runs";
+const SUITE = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/practice-suite/runs";
 const load = (d) => (existsSync(`${SUITE}/${d}/records.jsonl`) ? readFileSync(`${SUITE}/${d}/records.jsonl`, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : []);
 const NOT_PROVIDED = /(wasn.t|was not|isn.t|is not|aren.t|are not|weren.t|were not|not) (provided|included|in the provided|available|given|supplied)/i;
 

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { mapCitedRules, ruleIdsOf } from "./rulesguru-rules.mjs";
+import { mapCitedRules, ruleIdsOf } from "./practice-suite-rules.mjs";
 
 const ruleIndex = ["100.1", "613.1a", "702.16a", "702.16b", "702.160", "702.17", "702.17a", "704.5g"].map((ruleId) => ({ ruleId, text: "x" }));
 const ids = ruleIdsOf(ruleIndex);

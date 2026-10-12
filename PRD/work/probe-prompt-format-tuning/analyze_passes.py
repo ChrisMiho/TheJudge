@@ -1,14 +1,14 @@
 """Aggregate the five suite passes. Aggregates print to stdout (safe to commit:
 counts, levels, sections, tags only). Per-question detail goes to a gitignored
-local file under output/rulesguru/reports/ -- never into PRD/.
+local file under output/practice-suite/reports/ -- never into PRD/.
 
 usage: python3 -I analyze_passes.py <worktree root>
 """
 import collections, hashlib, json, os, statistics, sys
 
 root = sys.argv[1]
-runs = os.path.join(root, "output/rulesguru/runs")
-cases_dir = os.path.join(root, "output/rulesguru/cases")
+runs = os.path.join(root, "output/practice-suite/runs")
+cases_dir = os.path.join(root, "output/practice-suite/cases")
 passes = sorted(d for d in os.listdir(runs) if d.startswith("pft-pass"))
 
 def half(case_id):
@@ -85,7 +85,7 @@ def reach(c):
     return [f"allDecidingRulesInPrompt={r.get('allDecidingRulesInPrompt')}"]
 table("By retrieval reach", reach)
 
-out = os.path.join(root, "output/rulesguru/reports/pft-variability.json")
+out = os.path.join(root, "output/practice-suite/reports/pft-variability.json")
 os.makedirs(os.path.dirname(out), exist_ok=True)
 json.dump({c: {"half": half(c), "agree": k_of[c], "level": meta[c]["level"],
                "complexity": meta[c]["complexity"], "tags": meta[c]["tags"],

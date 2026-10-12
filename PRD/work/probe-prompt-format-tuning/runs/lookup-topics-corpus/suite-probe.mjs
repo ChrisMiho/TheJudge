@@ -1,15 +1,15 @@
-// Throwaway probe: arm L (zone topics for attached permanents / instants+sorceries) on the hard-25 RulesGuru set.
+// Throwaway probe: arm L (zone topics for attached permanents / instants+sorceries) on the hard-25 practice-suite set.
 // Mirrors effort-suite-probe.mjs (arm A, cap 10, local embedder, gpt-6.1-sol judge, no effort param). The ONLY change
 // from production is arm L's extra GAME RULES topics via the lookup topic filter seam (see arm-l.mjs).
 // Usage: npx tsx <this file> [--live] [--concurrency 3] [--repeats 5] [--limit N]
-// Every RulesGuru output stays under output/rulesguru/ (gitignored, local only).
+// Every practice-suite output stays under output/practice-suite/ (gitignored, local only).
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
 import * as C from "./common.mjs";
 import { makeArmL } from "./arm-l.mjs";
 
-const SUITE = `${C.REPO}/output/rulesguru`;
+const SUITE = `${C.REPO}/output/practice-suite`;
 const VERIFY = JSON.parse(readFileSync(`${SUITE}/reports/pft-hard25-verify.json`, "utf8"));
 const CASE_IDS = VERIFY.final;
 const PASSES = [1, 2, 3, 4, 5].map((n) => `${SUITE}/runs/pft-pass${n}`);
@@ -29,7 +29,7 @@ const gold = await C.imp("scripts/lib/gold-cases.mjs");
 const exp = await C.imp("scripts/lib/experiment-run.mjs");
 const ji = await C.imp("scripts/lib/judge-inputs.mjs");
 const ra = await C.imp("scripts/lib/rule-availability.mjs");
-const sg = await C.imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await C.imp("scripts/lib/practice-suite.mjs");
 const arms = await C.imp("scripts/lib/diagnostic-arms.mjs");
 const { hashPrompt } = await C.imp("scripts/lib/answer-quality-run.mjs");
 const { preparePromptInput } = await C.imp("apps/backend/src/prompt/preparation.ts");

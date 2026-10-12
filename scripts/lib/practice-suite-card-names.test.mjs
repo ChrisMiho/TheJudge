@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildCardNameIndex } from "./rulesguru-card-names.mjs";
+import { buildCardNameIndex } from "./practice-suite-card-names.mjs";
 
 // Invented cards only.
 const detail = {

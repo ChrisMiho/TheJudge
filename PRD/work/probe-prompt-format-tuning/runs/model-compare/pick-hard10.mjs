@@ -1,10 +1,10 @@
 // Picks the 10 hard-25 questions Luna gets right least often at today's production setting (arm A, medium effort):
 // every first answer from the five suite passes plus the turn-1 answers of the pushback and self-check probes.
 // Ties broken by more wrong-outcome answers (correctness 0). Writes the id list to the gitignored
-// output/rulesguru/reports/pft-hard10.json; prints counts only.
+// output/practice-suite/reports/pft-hard10.json; prints counts only.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
-const SUITE = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/rulesguru";
+const SUITE = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/practice-suite";
 const ids = JSON.parse(readFileSync(`${SUITE}/reports/pft-hard25-verify.json`, "utf8")).final;
 const stats = new Map(ids.map((id) => [id, { n: 0, right: 0, zero: 0 }]));
 const add = (id, c) => { const s = stats.get(id); if (!s || c == null) return; s.n++; if (c === 2) s.right++; if (c === 0) s.zero++; };

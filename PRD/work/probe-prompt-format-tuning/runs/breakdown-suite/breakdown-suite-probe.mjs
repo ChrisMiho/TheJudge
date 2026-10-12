@@ -2,7 +2,7 @@
 // Case loading, prompt preparation and the judge mirror effort-suite-probe.mjs (suite run, arm A, cap 10, local embedder);
 // the turn-1 instruction, turn-2 follow-up and breakdown rubric are copied verbatim from run-breakdown.mts.
 // Usage: tsx <this file> [--live] [--repeats 4] [--concurrency 2] [--limit N]
-// All outputs stay under output/rulesguru/ (gitignored, local only). No suite content lives in this file.
+// All outputs stay under output/practice-suite/ (gitignored, local only). No suite content lives in this file.
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 const VERIFY = JSON.parse(readFileSync(`${SUITE}/reports/pft-hard25-verify.json`, "utf8"));
 const CASE_IDS = VERIFY.final;
 const PASSES = [1, 2, 3, 4, 5].map((n) => `${SUITE}/runs/pft-pass${n}`);
@@ -83,7 +83,7 @@ const gold = await imp("scripts/lib/gold-cases.mjs");
 const exp = await imp("scripts/lib/experiment-run.mjs");
 const ji = await imp("scripts/lib/judge-inputs.mjs");
 const ra = await imp("scripts/lib/rule-availability.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const { hashPrompt } = await imp("scripts/lib/answer-quality-run.mjs");
 const { preparePromptInput } = await imp("apps/backend/src/prompt/preparation.ts");
 const { judgeAnswerAlone } = await imp("apps/backend/src/eval/answer-quality/judge.ts");

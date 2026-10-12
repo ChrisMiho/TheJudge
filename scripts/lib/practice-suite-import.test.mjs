@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { classifyResponse, importQuestions, buildSettings } from "./rulesguru-import.mjs";
+import { classifyResponse, importQuestions, buildSettings } from "./practice-suite-import.mjs";
 
 // Invented questions in the API's field shape. Nothing here is real suite content.
 function invented(id, extra = {}) {
@@ -42,6 +42,7 @@ function world(respond, { latencyMs = 500 } = {}) {
   const calls = [];
   return {
     calls,
+    baseUrl: "https://example.invalid/api/questions/",
     now: () => clock,
     sleep: async (ms) => {
       clock += ms;
@@ -267,6 +268,12 @@ test("an empty batch ends cleanly and the printed result is counts only", async 
 test("fetch and the clock are required", async () => {
   await assert.rejects(() => importQuestions({ suiteDir: tempSuite(), now: () => 0, sleep: async () => {} }), /injected fetch/);
   await assert.rejects(() => importQuestions({ suiteDir: tempSuite(), fetch: async () => json([]) }), /injected clock/);
+});
+
+test("the question API address is required and never defaulted", async () => {
+  const w = world(() => json([]));
+  await assert.rejects(() => importQuestions({ ...w, baseUrl: undefined, suiteDir: tempSuite() }), /PRACTICE_SUITE_API_URL/);
+  assert.equal(w.calls.length, 0);
 });
 
 test("classifyResponse sorts API answers", () => {

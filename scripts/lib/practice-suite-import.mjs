@@ -1,8 +1,8 @@
 // Polite, resumable, freeze-on-import fetcher for the local practice suite
-// (REQ-232). Used with permission, local only.
+// (REQ-232). Local only.
 //
 // The only code in the repo that contacts the outside site, and only the
-// owner's hand runs it (scripts/rulesguru-import.mjs). `fetch`, the clock and
+// owner's hand runs it (scripts/practice-suite-import.mjs). `fetch`, the clock and
 // the sleep are required parameters of importQuestions(): the entry point
 // passes Node's global `fetch`; every test injects a fake. Nothing here knows
 // the suite folder's path -- the caller passes `suiteDir`.
@@ -23,7 +23,9 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-export const API_URL = "https://rulesguru.org/api/questions/";
+// The question API address is not in the repository: the entry point reads it
+// from the PRACTICE_SUITE_API_URL environment variable and passes it as `baseUrl`.
+export const API_URL_ENV = "PRACTICE_SUITE_API_URL";
 export const FROM_NAME = "TheJudge";
 export const START_BATCH_SIZE = 50;
 export const MIN_GAP_MS = 3000;
@@ -46,7 +48,7 @@ export function buildSettings({ previousId, count, from = FROM_NAME }) {
   };
 }
 
-export function buildRequestUrl(settings, baseUrl = API_URL) {
+export function buildRequestUrl(settings, baseUrl) {
   return `${baseUrl}?json=${encodeURIComponent(JSON.stringify(settings))}`;
 }
 
@@ -116,13 +118,14 @@ export async function importQuestions({
   sleep,
   suiteDir,
   from = FROM_NAME,
-  baseUrl = API_URL,
+  baseUrl,
   minGapMs = MIN_GAP_MS,
   rateLimitWaitMs = RATE_LIMIT_WAIT_MS,
   maxConsecutiveFailures = MAX_CONSECUTIVE_FAILURES
 }) {
   if (typeof fetch !== "function") throw new Error("importQuestions needs an injected fetch");
   if (typeof now !== "function" || typeof sleep !== "function") throw new Error("importQuestions needs an injected clock (now, sleep)");
+  if (typeof baseUrl !== "string" || baseUrl === "") throw new Error(`importQuestions needs the question API address (baseUrl); set ${API_URL_ENV}`);
 
   const rawDir = join(suiteDir, "raw");
   await mkdir(rawDir, { recursive: true });

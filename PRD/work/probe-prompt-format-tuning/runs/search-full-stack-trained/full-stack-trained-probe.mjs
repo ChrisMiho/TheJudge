@@ -21,7 +21,7 @@ import { pathToFileURL } from "node:url";
 import { conceptTerms } from "../search-bm25-stack/concept-map.mjs";
 
 const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-const SUITE = `${REPO}/output/rulesguru`;
+const SUITE = `${REPO}/output/practice-suite`;
 const MP = `${REPO}/output/models-probe`;
 const TRAIN = `${MP}/train`;
 const OUT = `${MP}/full-stack-trained`;
@@ -34,7 +34,7 @@ const imp = (rel) => import(pathToFileURL(`${REPO}/${rel}`).href);
 const evalMod = await imp("scripts/eval-answer-quality.mjs");
 const ws = await imp("scripts/eval-worked-solutions.mjs");
 const fid = await imp("scripts/lib/prompt-fidelity.mjs");
-const sg = await imp("scripts/lib/rulesguru-suite.mjs");
+const sg = await imp("scripts/lib/practice-suite.mjs");
 const { isHeadingOnlyEntry } = await imp("scripts/build-game-rules.mjs");
 const { preparePromptInput, buildRetrievalQueryText } = await imp("apps/backend/src/prompt/preparation.ts");
 const { buildPromptContext, buildLookupPromptContext } = await imp("apps/backend/src/prompt/context.ts");

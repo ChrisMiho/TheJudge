@@ -1638,16 +1638,16 @@ function suiteFixtureCase(id, { level = 1, complexity = "simple", tags = [], exc
     tier: "external",
     review: { status: "draft", reviewedOn: null },
     source: { authority: "external-unapproved" },
-    suite: { name: "rulesguru", questionId: 1, level, complexity, tags, citedRuleIds: ["100.1"], ruleGroups: [["100.1"]], excluded }
+    suite: { name: "practice", questionId: 1, level, complexity, tags, citedRuleIds: ["100.1"], ruleGroups: [["100.1"]], excluded }
   })
 }
 
 const SUITE_CASES = [
-  suiteFixtureCase("rulesguru-1", { level: 0, tags: ["Combat"] }),
-  suiteFixtureCase("rulesguru-2", { level: 1, tags: ["Combat"] }),
-  suiteFixtureCase("rulesguru-3", { level: 2, complexity: "complicated" }),
-  suiteFixtureCase("rulesguru-4", { level: 1, tags: ["Unsupported answers"] }),
-  suiteFixtureCase("rulesguru-5", { excluded: "unresolved-card" })
+  suiteFixtureCase("practice-1", { level: 0, tags: ["Combat"] }),
+  suiteFixtureCase("practice-2", { level: 1, tags: ["Combat"] }),
+  suiteFixtureCase("practice-3", { level: 2, complexity: "complicated" }),
+  suiteFixtureCase("practice-4", { level: 1, tags: ["Unsupported answers"] }),
+  suiteFixtureCase("practice-5", { excluded: "unresolved-card" })
 ]
 
 async function suiteRun(extra, { cases = SUITE_CASES } = {}) {
@@ -1676,15 +1676,15 @@ async function suiteRun(extra, { cases = SUITE_CASES } = {}) {
 }
 
 test("parseArgs reads a suite run, and refuses each flag a suite run cannot take, by name", () => {
-  const parsed = parseArgs(["--suite", "rulesguru", "--run-id", "s1", "--level", "0", "--level", "1", "--complexity", "simple", "--suite-tag", "Combat", "--sample", "5", "--seed", "9"])
-  assert.equal(parsed.suite.name, "rulesguru")
+  const parsed = parseArgs(["--suite", "practice", "--run-id", "s1", "--level", "0", "--level", "1", "--complexity", "simple", "--suite-tag", "Combat", "--sample", "5", "--seed", "9"])
+  assert.equal(parsed.suite.name, "practice")
   assert.deepEqual(parsed.suite.filters, { levels: ["0", "1"], complexities: ["simple"], tags: ["Combat"], includeUnsupported: false })
   assert.equal(parsed.suite.sample, 5)
   assert.equal(parsed.suite.seed, 9)
   assert.equal(parsed.experiment.runId, "s1")
   assert.deepEqual(parsed.experiment.armIds, ["A"])
 
-  const base = ["--suite", "rulesguru", "--run-id", "s1"]
+  const base = ["--suite", "practice", "--run-id", "s1"]
   for (const [extra, pattern] of [
     [["--manifest", "m.json"], /drop --manifest/],
     [["--changed"], /drop --changed/],
@@ -1696,18 +1696,18 @@ test("parseArgs reads a suite run, and refuses each flag a suite run cannot take
   ]) {
     assert.throws(() => parseArgs([...base, ...extra]), pattern, extra.join(" "))
   }
-  assert.throws(() => parseArgs(["--suite", "rulesguru"]), /--run-id/)
-  assert.throws(() => parseArgs(["--suite", "other", "--run-id", "x"]), /must be "rulesguru"/)
+  assert.throws(() => parseArgs(["--suite", "practice"]), /--run-id/)
+  assert.throws(() => parseArgs(["--suite", "other", "--run-id", "x"]), /must be "practice"/)
   assert.throws(() => parseArgs(["--level", "0"]), /only applies to a local practice-suite run/)
   assert.throws(() => parseArgs([...base, "--level", "9"]), /--level/)
 })
 
 test("a suite dry run prints the selected count and an estimate and makes no client call", async () => {
   const { client, logs, options } = await suiteRun()
-  const result = await run({ ...options, argv: ["--suite", "rulesguru", "--run-id", "dry"] })
+  const result = await run({ ...options, argv: ["--suite", "practice", "--run-id", "dry"] })
   assert.equal(result.ran, false)
   assert.equal(result.suite, true)
-  assert.deepEqual(result.caseIds, ["rulesguru-1", "rulesguru-2", "rulesguru-3"], "excluded and unsupported-answer cases are dropped")
+  assert.deepEqual(result.caseIds, ["practice-1", "practice-2", "practice-3"], "excluded and unsupported-answer cases are dropped")
   assert.deepEqual(client.calls, [])
   assert.match(logs[0], /3 of 5 suite cases selected \(dropped: 1 excluded, 1 unsupported-answer/)
   assert.match(logs[0], /Estimated cost: \$/)
@@ -1716,13 +1716,13 @@ test("a suite dry run prints the selected count and an estimate and makes no cli
 
 test("filters narrow a suite run; --sample with --seed is repeatable", async () => {
   const filtered = await suiteRun()
-  const f = await run({ ...filtered.options, argv: ["--suite", "rulesguru", "--run-id", "f", "--level", "0", "--level", "1", "--suite-tag", "combat"] })
-  assert.deepEqual(f.caseIds, ["rulesguru-1", "rulesguru-2"])
+  const f = await run({ ...filtered.options, argv: ["--suite", "practice", "--run-id", "f", "--level", "0", "--level", "1", "--suite-tag", "combat"] })
+  assert.deepEqual(f.caseIds, ["practice-1", "practice-2"])
 
-  const many = Array.from({ length: 12 }, (_, i) => suiteFixtureCase(`rulesguru-s${String(i).padStart(2, "0")}`))
+  const many = Array.from({ length: 12 }, (_, i) => suiteFixtureCase(`practice-s${String(i).padStart(2, "0")}`))
   const pick = async (seed) => {
     const s = await suiteRun({}, { cases: many })
-    return (await run({ ...s.options, argv: ["--suite", "rulesguru", "--run-id", "x", "--sample", "4", "--seed", String(seed)] })).caseIds
+    return (await run({ ...s.options, argv: ["--suite", "practice", "--run-id", "x", "--sample", "4", "--seed", String(seed)] })).caseIds
   }
   assert.deepEqual(await pick(3), await pick(3))
   assert.equal((await pick(3)).length, 4)
@@ -1730,16 +1730,16 @@ test("filters narrow a suite run; --sample with --seed is repeatable", async () 
 
 test("a suite run refuses when the suite folder is not ignored, and an --output-dir outside it", async () => {
   const unignored = await suiteRun({ checkIgnore: () => false })
-  await assert.rejects(() => run({ ...unignored.options, argv: ["--suite", "rulesguru", "--run-id", "x"] }), /\.gitignore/)
+  await assert.rejects(() => run({ ...unignored.options, argv: ["--suite", "practice", "--run-id", "x"] }), /\.gitignore/)
   const outside = await suiteRun()
   await assert.rejects(
-    () => run({ ...outside.options, argv: ["--suite", "rulesguru", "--run-id", "x", "--output-dir", tmpdir()] }),
+    () => run({ ...outside.options, argv: ["--suite", "practice", "--run-id", "x", "--output-dir", tmpdir()] }),
     /not the suite folder or inside it/
   )
 })
 
 test("a live suite run needs --max-cost-usd; with it the runner gets the filter manifest and the suite's own runs folder, and results.json is untouched", async () => {
-  const live = ["--suite", "rulesguru", "--run-id", "live", CONFIRM_FLAG]
+  const live = ["--suite", "practice", "--run-id", "live", CONFIRM_FLAG]
   const uncapped = await suiteRun({
     env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
     buildClient: async () => {
@@ -1764,12 +1764,12 @@ test("a live suite run needs --max-cost-usd; with it the runner gets the filter 
   assert.equal(result.ran, true)
   assert.equal(received.runsRoot.startsWith(await (await import("node:fs/promises")).realpath(capped.suiteDir)), true)
   assert.match(received.runsRoot, /runs$/)
-  assert.deepEqual(received.cases.map((c) => c.id), ["rulesguru-1", "rulesguru-2", "rulesguru-3"])
+  assert.deepEqual(received.cases.map((c) => c.id), ["practice-1", "practice-2", "practice-3"])
   assert.deepEqual(received.manifest.cases.map((c) => c.id), received.cases.map((c) => c.id))
   assert.equal(received.manifest.suite.seed, 1)
   assert.equal(received.extraFiles["suite-manifest.json"], received.manifest)
   assert.deepEqual(received.arms.map((a) => a.id), ["A"])
-  assert.equal(received.suite.name, "rulesguru")
+  assert.equal(received.suite.name, "practice")
   assert.equal(received.casesDir, join(capped.suiteDir, "cases"))
   assert.equal(received.maxCostUsd, 5)
   assert.deepEqual(capped.client.calls, ["list"], "only the models-list access check; no completion")

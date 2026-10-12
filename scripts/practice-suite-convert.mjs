@@ -1,7 +1,7 @@
 // Converts the frozen local practice-suite questions into local draft cases
-// (REQ-232). Used with permission, local only.
+// (REQ-232). Local only.
 //
-//   npm run eval:rulesguru:convert
+//   npm run eval:practice-suite:convert
 //
 // Reads the suite folder's raw/ and committed repo data only; no network.
 // Refuses to start unless git reports the suite folder ignored. Prints counts only.
@@ -9,9 +9,9 @@
 import { pathToFileURL } from "node:url";
 
 import { loadSnapshotSources } from "./lib/gold-cases.mjs";
-import { buildCardNameIndex, loadCardNameSources } from "./lib/rulesguru-card-names.mjs";
-import { convertSuite } from "./lib/rulesguru-convert.mjs";
-import { SUITE_DIR, assertSuiteIgnored } from "./lib/rulesguru-suite.mjs";
+import { buildCardNameIndex, loadCardNameSources } from "./lib/practice-suite-card-names.mjs";
+import { convertSuite } from "./lib/practice-suite-convert.mjs";
+import { SUITE_DIR, assertSuiteIgnored } from "./lib/practice-suite.mjs";
 
 async function main() {
   assertSuiteIgnored();

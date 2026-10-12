@@ -3,7 +3,7 @@
 // No case ids, question text or answers are printed.
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 
-const DIR = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/rulesguru/runs/probe-models-hard10";
+const DIR = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/practice-suite/runs/probe-models-hard10";
 const models = readdirSync(DIR).filter((m) => existsSync(`${DIR}/${m}/records.jsonl`));
 const load = (m) => readFileSync(`${DIR}/${m}/records.jsonl`, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
 const med = (a) => { const s = [...a].sort((x, y) => x - y); return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2; };

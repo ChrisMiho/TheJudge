@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import { pathToFileURL } from "node:url";
 
 export const REPO = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft";
-export const SUITE_RECORDS = `${REPO}/output/rulesguru/runs/probe-lookup-topics-hard25/records.jsonl`;
+export const SUITE_RECORDS = `${REPO}/output/practice-suite/runs/probe-lookup-topics-hard25/records.jsonl`;
 export const CORPUS_RECORDS = "/Users/chrismiho/Coding/Projects/TheJudge/PRD/work/probe-prompt-format-tuning/runs/lookup-topics-corpus/records.jsonl";
 export const MAX_USD_TOTAL = 6; // across both record files
 export const MODEL = "gpt-6-luna";

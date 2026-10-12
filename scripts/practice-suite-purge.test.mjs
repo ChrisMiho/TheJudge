@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { purgeSuite } from "./rulesguru-purge.mjs";
+import { purgeSuite } from "./practice-suite-purge.mjs";
 
 function fixture() {
   const base = mkdtempSync(join(tmpdir(), "purge-suite-"));

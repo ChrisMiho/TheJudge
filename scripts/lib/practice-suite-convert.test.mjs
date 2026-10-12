@@ -5,8 +5,8 @@ import { join } from "node:path";
 import test from "node:test";
 
 import { computeSnapshot, loadGoldCases } from "./gold-cases.mjs";
-import { buildCardNameIndex } from "./rulesguru-card-names.mjs";
-import { convertSuite, firstSentence, readRawQuestion } from "./rulesguru-convert.mjs";
+import { buildCardNameIndex } from "./practice-suite-card-names.mjs";
+import { convertSuite, firstSentence, readRawQuestion } from "./practice-suite-convert.mjs";
 
 // Invented cards, rules and questions only.
 const cardNames = buildCardNameIndex({
@@ -61,7 +61,7 @@ function suiteWith(questions) {
 }
 
 const casesOf = (dir) => readdirSync(join(dir, "cases")).sort();
-const readCase = (dir, id) => JSON.parse(readFileSync(join(dir, "cases", `rulesguru-${id}.case.json`), "utf8"));
+const readCase = (dir, id) => JSON.parse(readFileSync(join(dir, "cases", `practice-${id}.case.json`), "utf8"));
 
 test("synthetic raw questions convert to cases that pass the external-mode loader, with the brief's fields", async () => {
   const dir = suiteWith([raw(10, { level: 4, includedCards: [{ name: "grizzled bear" }, { name: "Night Owl" }], citedRules: { "702.16": "t", "613.1a": "t" } })]);
@@ -72,7 +72,7 @@ test("synthetic raw questions convert to cases that pass the external-mode loade
   const loaded = await loadGoldCases(join(dir, "cases"), { external: true });
   assert.equal(loaded.length, 1);
   const c = readCase(dir, 10);
-  assert.equal(c.id, "rulesguru-10");
+  assert.equal(c.id, "practice-10");
   assert.equal(c.formatVersion, 2);
   assert.equal(c.tier, "external");
   assert.deepEqual(c.review, { status: "draft", reviewedOn: null });
@@ -87,7 +87,7 @@ test("synthetic raw questions convert to cases that pass the external-mode loade
   assert.equal(c.expected.answer, "Invented first sentence 10. Invented second sentence.");
   assert.deepEqual(c.expected.decidingRuleIds, ["702.16a", "702.16b", "613.1a"]);
   assert.deepEqual(c.suite, {
-    name: "rulesguru",
+    name: "practice",
     questionId: 10,
     level: "corner",
     complexity: "simple",
@@ -96,7 +96,7 @@ test("synthetic raw questions convert to cases that pass the external-mode loade
     ruleGroups: [["702.16a", "702.16b"], ["613.1a"]],
     excluded: null
   });
-  assert.deepEqual(c.source, { authority: "external-unapproved", publisher: "RulesGuru", license: "used with permission, local only", questionId: 10 });
+  assert.deepEqual(c.source, { authority: "external-unapproved", publisher: "practice suite", license: "local only", questionId: 10 });
   assert.deepEqual(c.layers, { requiredFacts: [], irrelevantFacts: [], variants: [] });
   assert.equal(c.whyHard, "external practice question, level corner, simple");
 });

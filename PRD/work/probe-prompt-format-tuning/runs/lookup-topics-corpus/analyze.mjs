@@ -1,6 +1,6 @@
-// Counts only (no RulesGuru ids or text). Arm L vs arm A baselines.
+// Counts only (no suite ids or text). Arm L vs arm A baselines.
 import { existsSync, readFileSync } from "node:fs";
-const SUITE = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/rulesguru";
+const SUITE = "/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/practice-suite";
 const BACKUPS = "/Users/chrismiho/Coding/Projects/TheJudge-backups/resolution-recipe-2026-10-10";
 const CORPUS = "/Users/chrismiho/Coding/Projects/TheJudge/PRD/work/probe-prompt-format-tuning/runs/lookup-topics-corpus/records.jsonl";
 const ids = JSON.parse(readFileSync(`${SUITE}/reports/pft-hard25-verify.json`, "utf8")).final;

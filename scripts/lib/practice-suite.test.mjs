@@ -13,13 +13,13 @@ import {
   normalizeSuiteFilters,
   resolveInsideSuite,
   selectSuiteCases
-} from "./rulesguru-suite.mjs";
+} from "./practice-suite.mjs";
 
 // The folder-guard test: the only test allowed to name the suite folder path.
 test("the real repo ignores a path inside the suite folder and tracks nothing there", () => {
-  assert.equal(SUITE_IGNORE_LINE, "output/rulesguru/");
-  assert.ok(gitCheckIgnore("output/rulesguru/raw/probe.json"), "git check-ignore matches a path inside the suite folder");
-  const tracked = spawnSync("git", ["ls-files", "output/rulesguru"], { encoding: "utf8" });
+  assert.equal(SUITE_IGNORE_LINE, "output/practice-suite/");
+  assert.ok(gitCheckIgnore("output/practice-suite/raw/probe.json"), "git check-ignore matches a path inside the suite folder");
+  const tracked = spawnSync("git", ["ls-files", "output/practice-suite"], { encoding: "utf8" });
   assert.equal(tracked.status, 0);
   assert.equal(tracked.stdout.trim(), "", "git tracks nothing under the suite folder");
   assert.doesNotThrow(() => assertSuiteIgnored({ suiteDir: SUITE_DIR }));
@@ -28,7 +28,7 @@ test("the real repo ignores a path inside the suite folder and tracks nothing th
 test("the ignore guard refuses when git reports the folder not ignored, naming the .gitignore line", () => {
   assert.throws(
     () => assertSuiteIgnored({ suiteDir: "/tmp/some-suite", checkIgnore: () => false }),
-    (error) => /Refusing/.test(error.message) && error.message.includes('"output/rulesguru/"') && /\.gitignore/.test(error.message)
+    (error) => /Refusing/.test(error.message) && error.message.includes('"output/practice-suite/"') && /\.gitignore/.test(error.message)
   );
   assert.doesNotThrow(() => assertSuiteIgnored({ suiteDir: "/tmp/some-suite", checkIgnore: () => true }));
 });

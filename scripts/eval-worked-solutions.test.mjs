@@ -148,7 +148,7 @@ import {
   summarizeSuite
 } from "./eval-worked-solutions.mjs";
 import { computeSnapshot } from "./lib/gold-cases.mjs";
-import { normalizeSuiteFilters } from "./lib/rulesguru-suite.mjs";
+import { normalizeSuiteFilters } from "./lib/practice-suite.mjs";
 
 function sourcesWith(oracleSuffix = "") {
   const ruleText = (ruleId) => `rule ${ruleId}${oracleSuffix}`;
@@ -166,7 +166,7 @@ function suiteCase(n, { level = 1, complexity = "simple", tags = [], groups = [[
     question: `Invented suite question ${n}?`,
     expected: { outcome: null, shortAnswer: "Short.", answer: `Invented suite answer ${n}.`, decidingRuleIds: [...new Set(groups.flat())] },
     suite: {
-      name: "rulesguru",
+      name: "practice",
       questionId: n,
       level,
       complexity,
@@ -175,7 +175,7 @@ function suiteCase(n, { level = 1, complexity = "simple", tags = [], groups = [[
       ruleGroups: groups,
       excluded
     },
-    source: { authority: "external-unapproved", publisher: "Invented", license: "used with permission, local only", questionId: n },
+    source: { authority: "external-unapproved", publisher: "Invented", license: "local only", questionId: n },
     layers: { requiredFacts: [], irrelevantFacts: [], variants: [] },
     whyHard: "invented"
   };
@@ -262,15 +262,15 @@ test("the retrieval path applies the shared filters and drops excluded, unsuppor
 });
 
 test("parseArgs reads repeatable suite filters, and refuses suite flags without --suite", () => {
-  const args = parseArgs(["--suite", "rulesguru", "--level", "0", "--level", "corner", "--complexity", "simple", "--suite-tag", "Combat", "--include-unsupported"]);
-  assert.equal(args.suite, "rulesguru");
+  const args = parseArgs(["--suite", "practice", "--level", "0", "--level", "corner", "--complexity", "simple", "--suite-tag", "Combat", "--include-unsupported"]);
+  assert.equal(args.suite, "practice");
   assert.deepEqual(args.filters, { levels: ["0", "corner"], complexities: ["simple"], tags: ["Combat"], includeUnsupported: true });
   assert.equal(parseArgs([]).suite, undefined);
-  assert.throws(() => parseArgs(["--level", "0"]), /only applies with --suite rulesguru/);
-  assert.throws(() => parseArgs(["--suite", "other"]), /--suite must be "rulesguru"/);
-  assert.throws(() => parseArgs(["--suite", "rulesguru", "--level", "9"]), /--level/);
+  assert.throws(() => parseArgs(["--level", "0"]), /only applies with --suite practice/);
+  assert.throws(() => parseArgs(["--suite", "other"]), /--suite must be "practice"/);
+  assert.throws(() => parseArgs(["--suite", "practice", "--level", "9"]), /--level/);
   assert.equal(parseArgs(["--help"]).help, true);
-  assert.match(USAGE, /--suite rulesguru/);
+  assert.match(USAGE, /--suite practice/);
 });
 
 test("an --output outside the suite folder is refused; a path inside a temporary suite folder is accepted", () => {
