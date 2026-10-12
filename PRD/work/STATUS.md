@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [follow-ups-keep-their-rules](follow-ups-keep-their-rules/) | Follow-ups reuse the opening question's rule excerpts; answer-quality eval gains a pushback follow-up mode. Mapped: slice A (eval pushback mode), slice B (follow-ups keep their rules) |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| [follow-ups-keep-their-rules](follow-ups-keep-their-rules/) | Follow-ups reuse the opening question's rule excerpts; answer-quality eval gains a pushback follow-up mode. Gate answered (11 accept); ready for gate-qc re-grade and map-out |
 
 ## refining
 

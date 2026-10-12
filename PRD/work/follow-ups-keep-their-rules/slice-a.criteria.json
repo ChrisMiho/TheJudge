@@ -1,0 +1,20 @@
+{
+  "slug": "follow-ups-keep-their-rules",
+  "slice": "A",
+  "criteria": [
+    { "id": "A1", "statement": "Every refusal of --follow-up pushback is tested and names its reason", "value": false, "evidence": { "command": "node --test .*eval-answer-quality\\.test\\.mjs|npm run test:scripts" } },
+    { "id": "A2", "statement": "The pushback text exists once as revision pushback.1 and the identity record stores the revision id", "value": false, "evidence": { "command": "node --test .*(eval-answer-quality|experiment-run)\\.test\\.mjs|npm run test:scripts", "paths": ["scripts/eval-answer-quality.mjs"] } },
+    { "id": "A3", "statement": "Turn 2 request shape and askAiRequestSchema parse are tested; a schema-rejected request is recorded as error and not sent", "value": false, "evidence": { "command": "node --test .*eval-answer-quality\\.test\\.mjs|npm run test:scripts" } },
+    { "id": "A4", "statement": "Turn 2 is embedded from its own query text and the missing-vector and silent-lexical refusals apply to both turns", "value": false, "evidence": { "command": "node --test .*eval-answer-quality\\.test\\.mjs|npm run test:scripts" } },
+    { "id": "A5", "statement": "Each turn is judged alone, records carry the turn, each turn writes its own transcript, and the judge prompt carries no turn or pushback marker", "value": false, "evidence": { "command": "node --test .*eval-answer-quality\\.test\\.mjs|npm run test:scripts" } },
+    { "id": "A6", "statement": "The whole-conversation spending check and resume at turn 2 are tested, and a completed turn is never repeated", "value": false, "evidence": { "command": "node --test .*(eval-answer-quality|experiment-run)\\.test\\.mjs|npm run test:scripts" } },
+    { "id": "A7", "statement": "Every transition is tested and the summary carries turn-2 latency, shared-rule count and Grounding per turn with denominators", "value": false, "evidence": { "command": "node --test .*eval-answer-quality\\.test\\.mjs|npm run test:scripts" } },
+    { "id": "A8", "statement": "The disowning check has pinned positive and negative sentence tests", "value": false, "evidence": { "command": "node --test .*\\.test\\.mjs|npm run test:scripts" } },
+    { "id": "A9", "statement": "--repeat makes each repeat its own conversation and the report lists cases whose repeats land in different transitions", "value": false, "evidence": { "command": "node --test .*eval-answer-quality\\.test\\.mjs|npm run test:scripts" } },
+    { "id": "A10", "statement": "--turn on the paired report selects one turn, defaults to turn 1, and a run without follow-up records works unchanged", "value": false, "evidence": { "command": "node --test .*answer-compare\\.test\\.mjs|npm run test:scripts", "paths": ["scripts/lib/answer-compare.mjs", "scripts/eval-answer-compare.mjs"] } },
+    { "id": "A11", "statement": "Existing script tests pass unchanged and no new test makes a network call", "value": false, "evidence": { "command": "npm run test:scripts" } },
+    { "id": "A12", "statement": "A dry run of --follow-up pushback on the 62-case diagnostic manifest without --confirm-live-calls prints a whole-conversation estimate and makes no paid call (or the reason it cannot run here is recorded)", "value": false, "evidence": { "manual": true } },
+    { "id": "A13", "statement": "functional-requirements.md carries REQ-247 and the REQ-226 and REQ-228 amendments as accepted", "value": false, "evidence": { "paths": ["PRD/sections/functional-requirements.md"] } },
+    { "id": "A14", "statement": "lint, format check and typecheck are green and no runtime file under apps/ changed", "value": false, "evidence": { "command": "npm run (lint|format:check|typecheck)|git diff --stat origin/main HEAD -- apps" } }
+  ]
+}

@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 19` | PASS, attempt 1 of 3: every old and context line of the 11 diffs matches `PRD/sections/functional-requirements.md` at its stated line (scripted exact match, 0 misses); 13 amend rows map to slots; three plain-language lines and blank verdicts in each slot; REQ-246/REQ-247 free on main; numeric targets trace to `evidence/offline-measurement.md`; code references true; no practice-suite data. One non-blocking nit (evidence line cited `askAiRequest.ts:227`, true line 228) fixed by the driver. `README.md` `## Preparation gate` written PASS | 2026-10-12 |
 | 5 | gate-review | sonnet | ok | `0 → 18` | build half run `graph-20261012-152231`: claim commit `1a3ea9a9` on `thejudge-auto/follow-ups-keep-their-rules-work` cut from `origin/main` `67678d05` (docs PR #296 merge; kickoff worktree removed clean); lock taken from the launch root, graph canary `nohup true` denied; `graph-gate-review` commit `997fc929`: 11 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-12 |
 | 6 | gate-qc | sonnet | ok | `0 → 14` | PASS, build-half attempt 1 of 3, re-graded after gate resolution at `origin/main` `67678d05`: all 24 old/context diff lines match `PRD/sections/functional-requirements.md` verbatim at their stated lines; REQ-246/REQ-247 free (REQ-245 last, line 6455); brief code references true (`useAskAiSubmitOrchestration.ts`, `askAiRequest.ts:231-246`, `routes/askAi.ts:106-110`, `gameRulesTopicSelection.ts:142`, `preparation.ts`); brief consistent with 11 accepts, REQ-246 follow-up item out of build scope; `STATUS.refined` only marker; porcelain empty. Non-blocking: `DESIGN-BRIEF.md` line 6 still says the eleven slots are to be decided. `README.md` `## Preparation gate` stands PASS, findings none | 2026-10-12 |
+| 7 | plan | sonnet | ok | `0 → 25` | `GAMEPLAN.md`; `slice-a-eval-pushback-mode.md` + `slice-a.criteria.json` (14 criteria, all `false`, each with evidence; REQ-247, REQ-226, REQ-228; tooling only); `slice-b-follow-ups-keep-rules.md` + `slice-b.criteria.json` (13 criteria, all `false`; REQ-246 + seven amendments + 13 derived-doc rows; ship gates); REQ-246 follow-up item listed out of scope; paid before/after runs listed as owner steps; `STATUS.active` only marker; README `## Slices`; board row moved refined → active | 2026-10-12 |
 
 ## Open gate
 
@@ -217,6 +218,26 @@ Rules:
 - Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
 
 Report back: the slice list with one plain line each, the files you wrote, the final STATUS marker, and `git status --porcelain` of the working directory.
+
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules
+
+You are node 6 (`build`) of graph run `graph-20261012-152231`, attempt 1. Run the `thejudge-implement-all` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules/.claude/skills/thejudge-implement-all/SKILL.md` and every file it points to, in full) on `PRD/work/follow-ups-keep-their-rules/` in orchestrated mode. Shared branch: `thejudge-auto/follow-ups-keep-their-rules-work`, already checked out in the working directory above; work there in place. Create no second worktree and no contributor branch. The README `## Autonomous metadata` names `origin/main` as the base.
+
+Implement slice A, then slice B, as their slice docs and `GAMEPLAN.md` state. Apply the accepted `PRD/sections/` truth by intent from the finalized `GATE-QUESTIONS.md` and `DESIGN-BRIEF.md` against current truth, together with the code, in the slice that names it. A lands as its own commit before B. Use test-driven development. Earn every criterion in `slice-a.criteria.json` and `slice-b.criteria.json` by running its evidence; set a criterion `true` only after its evidence ran and passed. For a `manual` criterion, write a dated observation line naming its id saying what you saw, including when an asset is absent. If B10 (embedder repeatability) fails, stop and report: that decision is the owner's. When both slices are done and verified, open the code PR `thejudge-auto/follow-ups-keep-their-rules-work` into `main` with `gh pr create --base main` (the body opens with the plain-language summary the standard requires and names the post-merge paid before/after runs as owner steps), and set `STATUS.ship-ready` as the skill says.
+
+Rules:
+- Every write stays inside the working directory above; write nothing in `/Users/chrismiho/Coding/Projects/TheJudge` outside `.worktrees/implement-follow-ups-keep-their-rules/`. Report every path you wrote.
+- Use the Write and Edit tools for every file change. Run git as short separate calls (`git add <explicit paths>`, then `git commit`, then `git push -u origin thejudge-auto/follow-ups-keep-their-rules-work`). Never `git add -A` or `git add .`. Never merge or close a PR.
+- No paid or live model calls, and no `--confirm-live-calls`. No `npm run data:refresh`. Never read `.secrets/`. Do not touch `GRAPH-RUN.md` or any `thejudge-*` skill.
+- No practice-suite question, answer, id, card list or per-question result in any committed file.
+- Spawn no subagents or forks. Do not sleep or poll; run long test commands in the foreground.
+- Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
+
+Report back: per slice, the commits and what each criterion's evidence showed; every path you wrote; the PR URL; the final STATUS marker; and `git status --porcelain` of the working directory.
 
 ## Instruction ledger
 
