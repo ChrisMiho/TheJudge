@@ -57,7 +57,9 @@ searched in-process with cosine, with no vector database (REQ-181).
 
 The rule index the corpus is built from excludes the Comprehensive Rules source
 document's table of contents and heading-only entries, so no searchable entry is a
-duplicate or a bare heading (REQ-179).
+duplicate or a bare heading, parses every rule faithfully (no title glued to a rule, no
+real rule dropped, no two-letter rule id merged), and records the rule book's glossary,
+edition, source hash and part titles (REQ-179).
 
 ## Data flow
 

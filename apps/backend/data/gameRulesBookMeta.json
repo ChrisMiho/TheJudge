@@ -1,0 +1,15 @@
+{
+  "edition": "2026-09-25",
+  "sourceSha256": "8d860e451f20f38865b725b42d82feb714c725373dd8f3b32b8652b3eeb070ca",
+  "partTitles": {
+    "1": "Game Concepts",
+    "2": "Parts of a Card",
+    "3": "Card Types",
+    "4": "Zones",
+    "5": "Turn Structure",
+    "6": "Spells, Abilities, and Effects",
+    "7": "Additional Rules",
+    "8": "Multiplayer Rules",
+    "9": "Casual Variants"
+  }
+}

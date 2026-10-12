@@ -77,6 +77,8 @@ output/rules-review/
 # Local practice suite (local only; REQ-232). Never committed: every
 # question, converted case, run and result lives here. Must be ignored before any import.
 output/practice-suite/
+# Rule-search scoring: per-question results and the hard-25 id list (local only, never committed)
+output/rule-search-eval/
 
 # Card-scan fingerprint build logs / pid (transient; the bin ships under public/data/)
 output/cardhash-build/

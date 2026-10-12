@@ -1,6 +1,6 @@
 # Slice A — Fidelity gate and rule data
 
-## Status: planned
+## Status: done
 
 ## Goal
 

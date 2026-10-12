@@ -3537,8 +3537,8 @@
   {
     "ruleId": "123.9",
     "sectionTitle": "Stickers",
-    "text": "123.9. An art sticker on a permanent has no effect on game play other than to act as a marker that other spells and abilities can identify.\n\n2. Parts of a Card",
-    "searchText": "123.9 stickers 123.9. an art sticker on a permanent has no effect on game play other than to act as a marker that other spells and abilities can identify.\n\n2. parts of a card",
+    "text": "123.9. An art sticker on a permanent has no effect on game play other than to act as a marker that other spells and abilities can identify.",
+    "searchText": "123.9 stickers 123.9. an art sticker on a permanent has no effect on game play other than to act as a marker that other spells and abilities can identify.",
     "parentRuleIds": ["123"]
   },
   {
@@ -4356,8 +4356,8 @@
   {
     "ruleId": "213.1g",
     "sectionTitle": "Information Below the Text Box",
-    "text": "213.1g Legal text (the fine print at the bottom or bottom-right of the card) lists the trademark and copyright information.\n\n3. Card Types",
-    "searchText": "213.1g information below the text box 213.1g legal text (the fine print at the bottom or bottom-right of the card) lists the trademark and copyright information.\n\n3. card types",
+    "text": "213.1g Legal text (the fine print at the bottom or bottom-right of the card) lists the trademark and copyright information.",
+    "searchText": "213.1g information below the text box 213.1g legal text (the fine print at the bottom or bottom-right of the card) lists the trademark and copyright information.",
     "parentRuleIds": ["213.1", "213"]
   },
   {
@@ -4687,6 +4687,13 @@
     "sectionTitle": "Enchantments",
     "text": "303.6. Some enchantments have the subtype “Class.” See rule 716 for more information about Class cards.",
     "searchText": "303.6 enchantments 303.6. some enchantments have the subtype “class.” see rule 716 for more information about class cards.",
+    "parentRuleIds": ["303"]
+  },
+  {
+    "ruleId": "303.7",
+    "sectionTitle": "Enchantments",
+    "text": "303.7. Some Aura enchantments also have the subtype “Role.”",
+    "searchText": "303.7 enchantments 303.7. some aura enchantments also have the subtype “role.”",
     "parentRuleIds": ["303"]
   },
   {
@@ -5497,8 +5504,8 @@
   {
     "ruleId": "315.7",
     "sectionTitle": "Conspiracies",
-    "text": "315.7. At any time, you may look at a face-down conspiracy card you control. You can’t look at face-down conspiracy cards controlled by other players.\n\n4. Zones",
-    "searchText": "315.7 conspiracies 315.7. at any time, you may look at a face-down conspiracy card you control. you can’t look at face-down conspiracy cards controlled by other players.\n\n4. zones",
+    "text": "315.7. At any time, you may look at a face-down conspiracy card you control. You can’t look at face-down conspiracy cards controlled by other players.",
+    "searchText": "315.7 conspiracies 315.7. at any time, you may look at a face-down conspiracy card you control. you can’t look at face-down conspiracy cards controlled by other players.",
     "parentRuleIds": ["315"]
   },
   {
@@ -6043,8 +6050,8 @@
   {
     "ruleId": "408.3",
     "sectionTitle": "Command",
-    "text": "408.3. In the Planechase, Vanguard, Commander, Archenemy, and Conspiracy Draft casual variants, nontraditional Magic cards and/or specially designated cards start the game in the command zone. Each variant has its own rules regarding such cards. See section 9, “Casual Variants.”\n \n\n5. Turn Structure",
-    "searchText": "408.3 command 408.3. in the planechase, vanguard, commander, archenemy, and conspiracy draft casual variants, nontraditional magic cards and/or specially designated cards start the game in the command zone. each variant has its own rules regarding such cards. see section 9, “casual variants.”\n \n\n5. turn structure",
+    "text": "408.3. In the Planechase, Vanguard, Commander, Archenemy, and Conspiracy Draft casual variants, nontraditional Magic cards and/or specially designated cards start the game in the command zone. Each variant has its own rules regarding such cards. See section 9, “Casual Variants.”",
+    "searchText": "408.3 command 408.3. in the planechase, vanguard, commander, archenemy, and conspiracy draft casual variants, nontraditional magic cards and/or specially designated cards start the game in the command zone. each variant has its own rules regarding such cards. see section 9, “casual variants.”",
     "parentRuleIds": ["408"]
   },
   {
@@ -7086,8 +7093,8 @@
   {
     "ruleId": "514.3a",
     "sectionTitle": "Cleanup Step",
-    "text": "514.3a At this point, the game checks to see if any state-based actions would be performed and/or any triggered abilities are waiting to be put onto the stack (including those that trigger “at the beginning of the next cleanup step”). If so, those state-based actions are performed, then those triggered abilities are put on the stack, then the active player gets priority. Players may cast spells and activate abilities. Once the stack is empty and all players pass in succession, another cleanup step begins.\n \n\n6. Spells, Abilities, and Effects",
-    "searchText": "514.3a cleanup step 514.3a at this point, the game checks to see if any state-based actions would be performed and/or any triggered abilities are waiting to be put onto the stack (including those that trigger “at the beginning of the next cleanup step”). if so, those state-based actions are performed, then those triggered abilities are put on the stack, then the active player gets priority. players may cast spells and activate abilities. once the stack is empty and all players pass in succession, another cleanup step begins.\n \n\n6. spells, abilities, and effects",
+    "text": "514.3a At this point, the game checks to see if any state-based actions would be performed and/or any triggered abilities are waiting to be put onto the stack (including those that trigger “at the beginning of the next cleanup step”). If so, those state-based actions are performed, then those triggered abilities are put on the stack, then the active player gets priority. Players may cast spells and activate abilities. Once the stack is empty and all players pass in succession, another cleanup step begins.",
+    "searchText": "514.3a cleanup step 514.3a at this point, the game checks to see if any state-based actions would be performed and/or any triggered abilities are waiting to be put onto the stack (including those that trigger “at the beginning of the next cleanup step”). if so, those state-based actions are performed, then those triggered abilities are put on the stack, then the active player gets priority. players may cast spells and activate abilities. once the stack is empty and all players pass in succession, another cleanup step begins.",
     "parentRuleIds": ["514.3", "514"]
   },
   {
@@ -9326,8 +9333,8 @@
   {
     "ruleId": "616.2",
     "sectionTitle": "Interaction of Replacement and/or Prevention Effects",
-    "text": "616.2. A replacement or prevention effect can become applicable to an event as the result of another replacement or prevention effect that modifies the event.\nExample: One effect reads “If you would gain life, draw that many cards instead,” and another reads “If you would draw a card, return a card from your graveyard to your hand instead.” Both effects combine (regardless of the order they came into existence): Instead of gaining 1 life, the player puts a card from their graveyard into their hand.\n \n\n7. Additional Rules",
-    "searchText": "616.2 interaction of replacement and/or prevention effects 616.2. a replacement or prevention effect can become applicable to an event as the result of another replacement or prevention effect that modifies the event.\nexample: one effect reads “if you would gain life, draw that many cards instead,” and another reads “if you would draw a card, return a card from your graveyard to your hand instead.” both effects combine (regardless of the order they came into existence): instead of gaining 1 life, the player puts a card from their graveyard into their hand.\n \n\n7. additional rules",
+    "text": "616.2. A replacement or prevention effect can become applicable to an event as the result of another replacement or prevention effect that modifies the event.\nExample: One effect reads “If you would gain life, draw that many cards instead,” and another reads “If you would draw a card, return a card from your graveyard to your hand instead.” Both effects combine (regardless of the order they came into existence): Instead of gaining 1 life, the player puts a card from their graveyard into their hand.",
+    "searchText": "616.2 interaction of replacement and/or prevention effects 616.2. a replacement or prevention effect can become applicable to an event as the result of another replacement or prevention effect that modifies the event.\nexample: one effect reads “if you would gain life, draw that many cards instead,” and another reads “if you would draw a card, return a card from your graveyard to your hand instead.” both effects combine (regardless of the order they came into existence): instead of gaining 1 life, the player puts a card from their graveyard into their hand.",
     "parentRuleIds": ["616"]
   },
   {
@@ -9559,6 +9566,13 @@
     "sectionTitle": "General",
     "text": "700.14. Some abilities trigger “Whenever you expend N.” A player expends N if they pay a cost to cast a spell and the amount of mana that player spent this turn to cast spells prior to paying that cost was less than N and became at least N after paying that cost.\nExample: A player casts Bark-Knuckle Boxer, which costs {1}{G} and reads “Whenever you expend 4, this creature gains indestructible until end of turn.” After it resolves, that player casts Divination, a spell that costs {2}{U}. Prior to paying the cost to cast Divination, that player has spent two mana to cast spells this turn. After paying the cost, they have spent five mana to cast spells this turn. Since they have now spent at least four mana to cast spells this turn, Bark-Knuckle Boxer’s ability triggers.",
     "searchText": "700.14 general 700.14. some abilities trigger “whenever you expend n.” a player expends n if they pay a cost to cast a spell and the amount of mana that player spent this turn to cast spells prior to paying that cost was less than n and became at least n after paying that cost.\nexample: a player casts bark-knuckle boxer, which costs {1}{g} and reads “whenever you expend 4, this creature gains indestructible until end of turn.” after it resolves, that player casts divination, a spell that costs {2}{u}. prior to paying the cost to cast divination, that player has spent two mana to cast spells this turn. after paying the cost, they have spent five mana to cast spells this turn. since they have now spent at least four mana to cast spells this turn, bark-knuckle boxer’s ability triggers.",
+    "parentRuleIds": ["700"]
+  },
+  {
+    "ruleId": "700.15",
+    "sectionTitle": "General",
+    "text": "700.15. The term enter[s] is short for “enter[s] the battlefield.”",
+    "searchText": "700.15 general 700.15. the term enter[s] is short for “enter[s] the battlefield.”",
     "parentRuleIds": ["700"]
   },
   {
@@ -14532,13 +14546,6 @@
     "parentRuleIds": ["702.162", "702"]
   },
   {
-    "ruleId": "702.163",
-    "sectionTitle": "Keyword Abilities",
-    "text": "702.163. For Mirrodin!",
-    "searchText": "702.163 keyword abilities 702.163. for mirrodin!",
-    "parentRuleIds": ["702"]
-  },
-  {
     "ruleId": "702.163a",
     "sectionTitle": "Keyword Abilities",
     "text": "702.163a For Mirrodin! is a triggered ability. “For Mirrodin!” means “When this Equipment enters, create a 2/2 red Rebel creature token, then attach this Equipment to it.”",
@@ -14929,13 +14936,6 @@
     "text": "702.178b If an ability granted by a max speed ability states which zones it functions from, the max speed ability that grants that ability functions from those zones. (See rule 113.6c.)",
     "searchText": "702.178b keyword abilities 702.178b if an ability granted by a max speed ability states which zones it functions from, the max speed ability that grants that ability functions from those zones. (see rule 113.6c.)",
     "parentRuleIds": ["702.178", "702"]
-  },
-  {
-    "ruleId": "702.179",
-    "sectionTitle": "Keyword Abilities",
-    "text": "702.179. Start Your Engines!",
-    "searchText": "702.179 keyword abilities 702.179. start your engines!",
-    "parentRuleIds": ["702"]
   },
   {
     "ruleId": "702.179a",
@@ -15549,8 +15549,15 @@
   {
     "ruleId": "704.5z",
     "sectionTitle": "State-Based Actions",
-    "text": "704.5z If a permanent has more than one Role controlled by the same player attached to it, each of those Roles except the one with the most recent timestamp is put into its owner’s graveyard.\n \n704.5aa If a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. See rule 702.179, “Start Your Engines!”",
-    "searchText": "704.5z state-based actions 704.5z if a permanent has more than one role controlled by the same player attached to it, each of those roles except the one with the most recent timestamp is put into its owner’s graveyard.\n \n704.5aa if a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. see rule 702.179, “start your engines!”",
+    "text": "704.5z If a permanent has more than one Role controlled by the same player attached to it, each of those Roles except the one with the most recent timestamp is put into its owner’s graveyard.",
+    "searchText": "704.5z state-based actions 704.5z if a permanent has more than one role controlled by the same player attached to it, each of those roles except the one with the most recent timestamp is put into its owner’s graveyard.",
+    "parentRuleIds": ["704.5", "704"]
+  },
+  {
+    "ruleId": "704.5aa",
+    "sectionTitle": "State-Based Actions",
+    "text": "704.5aa If a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. See rule 702.179, “Start Your Engines!”",
+    "searchText": "704.5aa state-based actions 704.5aa if a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. see rule 702.179, “start your engines!”",
     "parentRuleIds": ["704.5", "704"]
   },
   {
@@ -18167,8 +18174,8 @@
   {
     "ruleId": "733.2",
     "sectionTitle": "Handling Illegal Actions",
-    "text": "733.2. When reversing illegal spells and abilities, the player who had priority retains it and may take another action or pass. The player may redo the reversed action in a legal way or take any other action allowed by the rules.\n\n8. Multiplayer Rules",
-    "searchText": "733.2 handling illegal actions 733.2. when reversing illegal spells and abilities, the player who had priority retains it and may take another action or pass. the player may redo the reversed action in a legal way or take any other action allowed by the rules.\n\n8. multiplayer rules",
+    "text": "733.2. When reversing illegal spells and abilities, the player who had priority retains it and may take another action or pass. The player may redo the reversed action in a legal way or take any other action allowed by the rules.",
+    "searchText": "733.2 handling illegal actions 733.2. when reversing illegal spells and abilities, the player who had priority retains it and may take another action or pass. the player may redo the reversed action in a legal way or take any other action allowed by the rules.",
     "parentRuleIds": ["733"]
   },
   {
@@ -19364,8 +19371,8 @@
   {
     "ruleId": "811.5",
     "sectionTitle": "Alternating Teams Variant",
-    "text": "811.5. In the Alternating Teams variant, a team’s resources (cards in hand, mana, and so on) are not shared. Teammates can’t review each other’s hands unless they are sitting next to each other. Teammates may discuss strategies at any time. Teammates can’t manipulate each other’s cards or permanents.\n \n\n9. Casual Variants",
-    "searchText": "811.5 alternating teams variant 811.5. in the alternating teams variant, a team’s resources (cards in hand, mana, and so on) are not shared. teammates can’t review each other’s hands unless they are sitting next to each other. teammates may discuss strategies at any time. teammates can’t manipulate each other’s cards or permanents.\n \n\n9. casual variants",
+    "text": "811.5. In the Alternating Teams variant, a team’s resources (cards in hand, mana, and so on) are not shared. Teammates can’t review each other’s hands unless they are sitting next to each other. Teammates may discuss strategies at any time. Teammates can’t manipulate each other’s cards or permanents.",
+    "searchText": "811.5 alternating teams variant 811.5. in the alternating teams variant, a team’s resources (cards in hand, mana, and so on) are not shared. teammates can’t review each other’s hands unless they are sitting next to each other. teammates may discuss strategies at any time. teammates can’t manipulate each other’s cards or permanents.",
     "parentRuleIds": ["811"]
   },
   {

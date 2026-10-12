@@ -2,14 +2,14 @@
   "slug": "right-rules-in-order",
   "slice": "A",
   "criteria": [
-    { "id": "A1", "statement": "Fidelity run prints 473/159/5/351/305 against unchanged production search, before any other edit", "value": false, "evidence": { "command": "score-rule-search\\.mjs.*--fidelity" } },
-    { "id": "A2", "statement": "Per-question results are only under a git-ignored path and no committed file holds suite text", "value": false, "evidence": { "command": "git check-ignore" } },
-    { "id": "A3", "statement": "privacy-scan has a passing synthetic-fixture test and reports 0 matches over tracked files", "value": false, "evidence": { "command": "privacy-scan" } },
-    { "id": "A4", "statement": "Parser tests cover the eight glued titles, 700.15, 303.7, the two empty rules and 704.5aa vs 704.5z", "value": false, "evidence": { "command": "build-game-rules\\.test" } },
-    { "id": "A5", "statement": "Rule-data diff test passes: only listed pieces change ruleId, sectionTitle or text", "value": false, "evidence": { "command": "build-game-rules\\.test", "paths": ["scripts/build-game-rules.test.mjs"] } },
-    { "id": "A6", "statement": "Rebuilt index carries edition, source hash, part titles and the 741-entry glossary (35 obsolete)", "value": false, "evidence": { "paths": ["apps/backend/data/gameRulesRuleIndex.json"] } },
-    { "id": "A7", "statement": "REQ-179 amended in functional-requirements.md and data parts of game-rules-retrieval.md, by intent", "value": false, "evidence": { "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/system-map/game-rules-retrieval.md"] } },
-    { "id": "A8", "statement": "npm run quality:check passes", "value": false, "evidence": { "command": "npm run quality:check" } },
-    { "id": "A9", "statement": "Evidence log has a dated line with the fidelity numbers and that no edit preceded the run", "value": false, "evidence": { "manual": true } }
+    { "id": "A1", "statement": "Fidelity run prints 473/159/5/351/305 against unchanged production search, before any other edit", "value": true, "evidence": { "command": "score-rule-search\\.mjs.*--fidelity" } },
+    { "id": "A2", "statement": "Per-question results are only under a git-ignored path and no committed file holds suite text", "value": true, "evidence": { "command": "git check-ignore" } },
+    { "id": "A3", "statement": "privacy-scan has a passing synthetic-fixture test and reports 0 matches over tracked files", "value": true, "evidence": { "command": "privacy-scan" } },
+    { "id": "A4", "statement": "Parser tests cover the eight glued titles, 700.15, 303.7, the two empty rules and 704.5aa vs 704.5z", "value": true, "evidence": { "command": "build-game-rules\\.test" } },
+    { "id": "A5", "statement": "Rule-data diff test passes: only listed pieces change ruleId, sectionTitle or text", "value": true, "evidence": { "command": "build-game-rules\\.test", "paths": ["scripts/build-game-rules.test.mjs"] } },
+    { "id": "A6", "statement": "Rebuilt index carries edition, source hash, part titles and the 741-entry glossary (35 obsolete)", "value": true, "evidence": { "paths": ["apps/backend/data/gameRulesRuleIndex.json"] } },
+    { "id": "A7", "statement": "REQ-179 amended in functional-requirements.md and data parts of game-rules-retrieval.md, by intent", "value": true, "evidence": { "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/system-map/game-rules-retrieval.md"] } },
+    { "id": "A8", "statement": "npm run quality:check passes", "value": true, "evidence": { "command": "npm run quality:check" } },
+    { "id": "A9", "statement": "Evidence log has a dated line with the fidelity numbers and that no edit preceded the run", "value": true, "evidence": { "manual": true } }
   ]
 }
