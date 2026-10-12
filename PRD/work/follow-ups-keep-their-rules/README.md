@@ -8,7 +8,7 @@ Refined 2026-10-12: design in `DESIGN-BRIEF.md`; proposed product truth in `GATE
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/follow-ups-keep-their-rules
+- Autonomous base: origin/main
 
 ## Preparation gate
 

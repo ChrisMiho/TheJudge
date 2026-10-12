@@ -1,13 +1,13 @@
 # Graph run — follow-ups-keep-their-rules
 
-- Run ID: `graph-20261012-195753`
+- Run ID: `graph-20261012-152231` (build half; spec-forming half was `graph-20261012-195753`)
 - Profile: `unverified`
 - Canary: `denied — hook live (nohup true)`
-- Autonomous base: `origin/thejudge-auto/follow-ups-keep-their-rules`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-follow-ups-keep-their-rules`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261012-195753/`
-- Current node: `owner-action` (parked at gate-qc PASS)
-- Next action: owner answers `GATE-QUESTIONS.md` in the docs PR and merges it; then `/graph-implement PRD/work/follow-ups-keep-their-rules/`
+- Current node: `gate-review` (build half claimed)
+- Next action: `/graph-implement PRD/work/follow-ups-keep-their-rules/`
 
 ## Node ledger
 
