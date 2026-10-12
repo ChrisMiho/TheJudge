@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
-- Current node: `gate-qc`
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/right-rules-in-order/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 95` | `PRD/work/right-rules-in-order/DESIGN-BRIEF.md` (363 lines, 12 acceptance targets, 23 assumptions), `PRD/work/right-rules-in-order/GATE-QUESTIONS.md` (39 slots, 39 blank verdicts: new REQ-233–245; amended REQ-022, 024, 030, 074, 167, 176, 178, 179, 180, 181, 182, 183, 184, 190, 220, 232, NFR-017, FLOW-011, FLOW-023; 7 section docs), `evidence/amendment-grep.md` (100 hits = 70 amend / 5 build / 25 no change); no blocker questions; `STATUS.refined` only marker, board row under refined; commit `09467219` pushed; node-reported diff check 206 removed + 138 context lines exact; `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` empty; no paid or network calls | 2026-10-11 |
 | 4 | gate-qc | sonnet | ok | `0 → 24` | PASS attempt 1, findings none — `PRD/work/right-rules-in-order/QUALITY-CHECK.md`, commit `abb4ed8b` pushed; 344 removed/context diff lines exact over 39 slots; amendment grep re-run 100 hits = 100 rows; REQ-233–245 unused on `origin/main`; privacy scan 0 matches; `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action` (marker and board row moved, commit `c65cb5bf`); docs PR https://github.com/ChrisMiho/TheJudge/pull/291 | 2026-10-11 |
 | 5 | gate-review | sonnet | ok | `0 → 12` | build half run `graph-20261011-190751`: claim commit `67f75ba8` on `thejudge-auto/right-rules-in-order-work` cut from `origin/main` `9776e936` (docs PR #291 merge; kickoff worktree removed clean); `graph-gate-review` commit `6ec5730b`: 39 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; worktree porcelain empty | 2026-10-11 |
+| 6 | gate-qc | sonnet | ok | `0 → 26` | PASS build-half re-grade attempt 1, findings none — `PRD/work/right-rules-in-order/QUALITY-CHECK.md`, commit `ef9d5398`; 341 non-blank removed/context diff lines exact over 39 slots at `9776e936`; amendment grep re-run 100 hits = 100 rows, no drift; 39/39 accept consistent with the brief; REQ-233–245 unused; privacy scan 0 matches, source name in 0 files, no tracked weights; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; `STATUS.refined`; README `## Preparation gate` PASS (unchanged, re-confirmed by the driver) | 2026-10-11 |
 
 ## Open gate
 
@@ -198,6 +199,32 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 Verify directly. Spawn no subagents or forks; no sleeping or polling. Stay well under 60 tool calls — aim for 40; if you near 45, write the verdict with what you have and report. Copy the Working directory line above unchanged into any prompt you write.
 
 Report back: PASS or FAIL, the complete finding list, the commit SHA and push result, and the marker left in place.
+
+### plan
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order
+
+You are node 5 (`plan`) of build-half graph run `graph-20261011-190751`, attempt 1. Invoke the `thejudge-map-out` skill and follow it in its graph-controlled mode (`graph is controlling`: no questions to the user, no approval pauses). Package: `PRD/work/right-rules-in-order/` inside the working directory above, on branch `thejudge-auto/right-rules-in-order-work`. First verify `Quality-check: PASS` in the package README `## Preparation gate`; you cannot self-certify one.
+
+Inputs: `DESIGN-BRIEF.md` (scope A rule data, B search, C trained model, D prompt building; order A then B then C, D may follow A; 12 acceptance targets; 23 material assumptions), the finalized `GATE-QUESTIONS.md` (39 slots, all accept), `evidence/amendment-grep.md`, `intake/GRAPH-BRIEF-search-and-prompt.md`.
+
+Planning facts the slices must carry:
+- Product truth: the build applies every accepted `GATE-QUESTIONS.md` diff to `PRD/sections/` by intent, together with the code, in the slice that implements it (or one final PRD-apply slice that re-derives each edit against current truth). Never blind-replay.
+- The probe implementation to port is tracked on main at `PRD/work/probe-prompt-format-tuning/runs/search-trained-embedder/` (`train.py`, `export-training.mjs`, `score-trained.mjs`, `leak-check.mjs`, `latency-q8check.mjs` and their recorded outputs). The build may read and port them; the committed result lives under `scripts/` and `apps/backend/`, never `PRD/work/`.
+- Local git-ignored inputs live in the launch checkout, read-only: the raw rule book `/Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/cr/source.txt`, the practice suite `/Users/chrismiho/Coding/Projects/TheJudge/output/practice-suite/`, the stock local embedder `/Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/models/` (a fresh worktree lacks it; copy it into the worktree's own git-ignored path or semantic search silently falls back to lexical), and the probe's model caches including the public base model under `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/probe-pft/output/models-probe/` (git-ignored). Training uses `uv` (installed at `/opt/homebrew/bin/uv`) to provision Python 3.12; dev-only.
+- Every deliverable — code, scripts, committed vectors, manifests, tests, docs — lands outside `PRD/work/`, because `close` deletes the package folder on this branch before the merge. Training pairs, checkpoints, the trained model folder and per-question results go only under git-ignored folders.
+- Privacy is a hard constraint (brief target 12): no practice-suite question, answer, card list, id or per-question result in any committed file; no model weights tracked; a committed test asserts the weights rule.
+- No network writes and nothing outward-facing in the build: no S3 upload, no AWS bootstrap, no deploy, no paid model calls, no `npm run data:refresh`. The owner uploads the model before merging; the build writes the exact upload commands for the PR body. Packaging and the fetch script must be testable offline (for example against a local directory) without the S3 copy existing.
+- Acceptance target 1 (fidelity) is a stop gate: a mismatch stops the build before any change. Target 6's benchmark floors and labelled checks, and assumption 4's hard-25 reproduction, park the build for the owner when they miss — say so in the relevant slice as a stop condition, not a workaround.
+- Give each slice a `slice-<letter>.criteria.json` per the skill, every criterion `false`, each with real evidence (command, path, or manual).
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit only explicit paths (`git add <path>`, then `git commit`, then `git push origin thejudge-auto/right-rules-in-order-work`, as separate short calls; never `git add -A` or `git add .`). End every commit message with this line:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Leave the `## Node ledger`, `## Dispatch prompts` and `## Preparation gate` alone. Set `STATUS.active` as the only marker and move the `PRD/work/STATUS.md` board row fully (remove from refined, add to active). Verify directly. Spawn no subagents or forks; no sleeping or polling. Stay well under 120 tool calls. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: the slice list (letter, title, criteria count, any manual criteria), where each deliverable lands, the commit SHA and push result, `git status --porcelain` (must be empty), and `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` (must be empty).
 
 ## Instruction ledger
 
