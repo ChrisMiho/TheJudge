@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 19` | commit `d9f2bb2d` pushed: `PRD/work/follow-ups-keep-their-rules/` with `IDEA.md` (8 `## Prior run` lines), `README.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md` and `intake/DRIVER-NOTE-changes-since-the-brief.md` (driver `cmp`: byte-identical to staging), board row under `## ideation`; staged copy left (removal under `.worktrees/` is denied) | 2026-10-12 |
 | 3 | define | opus | ok | `0 → 101` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (11 slots, all verdicts blank: new REQ-246, REQ-247; amended REQ-022, REQ-024, REQ-027, REQ-074, REQ-178, REQ-226, REQ-228, REQ-238, REQ-242; no blocker), `evidence/amendment-grep.md` (268 hits = 13 amend / 13 build / 242 no change), `evidence/offline-measurement.md` (62-case diagnostic manifest at `0461969f`: carried excerpts 62/62, In-Depth curated topics 9/9, lookup step guidance 53/53; today 6 of 9 In-Depth follow-ups change topics); `STATUS.refined` only marker, board row under `## refined`; driver `git diff --stat HEAD -- PRD/sections apps scripts` empty. Deviation: node wrote the first README/board/grep drafts with short python scripts and renamed markers with `mv` (no denial) | 2026-10-12 |
 | 4 | gate-qc | sonnet | ok | `0 → 19` | PASS, attempt 1 of 3: every old and context line of the 11 diffs matches `PRD/sections/functional-requirements.md` at its stated line (scripted exact match, 0 misses); 13 amend rows map to slots; three plain-language lines and blank verdicts in each slot; REQ-246/REQ-247 free on main; numeric targets trace to `evidence/offline-measurement.md`; code references true; no practice-suite data. One non-blocking nit (evidence line cited `askAiRequest.ts:227`, true line 228) fixed by the driver. `README.md` `## Preparation gate` written PASS | 2026-10-12 |
+| 5 | gate-review | sonnet | ok | `0 → 18` | build half run `graph-20261012-152231`: claim commit `1a3ea9a9` on `thejudge-auto/follow-ups-keep-their-rules-work` cut from `origin/main` `67678d05` (docs PR #296 merge; kickoff worktree removed clean); lock taken from the launch root, graph canary `nohup true` denied; `graph-gate-review` commit `997fc929`: 11 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-12 |
 
 ## Open gate
 
@@ -172,6 +173,30 @@ Rules:
 - Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
 
 Report back: the verdict tally, the `### Brief reconciliation` list, the commit sha, the final STATUS marker, and `git status --porcelain` of the working directory.
+
+### gate-qc (build half)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules
+
+You are node 4 (`gate-qc`) of graph run `graph-20261012-152231` (build half), attempt 1, re-entered after gate resolution, on branch `thejudge-auto/follow-ups-keep-their-rules-work`. Run the `thejudge-quality-check` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules/.claude/skills/thejudge-quality-check/SKILL.md` and `PRD/instructions/preparation-contract.md`) on `PRD/work/follow-ups-keep-their-rules/` in the working directory above, in orchestrated mode.
+
+The owner accepted all 11 slots with no edit or reject, and gate review reconciled nothing. Re-grade the finalized package against current truth on this branch (cut from `origin/main` at `67678d05`): `DESIGN-BRIEF.md` and the finalized `GATE-QUESTIONS.md`. In particular check:
+- every old and context line in each `GATE-QUESTIONS.md` diff still matches the current `PRD/sections/` text verbatim (main may have moved since the spec-forming half graded it at `0461969f`);
+- REQ-246 and REQ-247 still collide with nothing in `PRD/sections/`;
+- the brief's code references (file and line) are still true in this working directory;
+- the brief is consistent with every verdict in `## Gate verdicts` of `GRAPH-RUN.md`, and the REQ-246 follow-up item recorded there is not in the brief's build scope.
+
+Emit an explicit PASS or FAIL. On FAIL, list every issue completely, each with file, line and the fix needed; set the status markers as the skill says and fix nothing else. On PASS, leave the package at `STATUS.refined`.
+
+Rules:
+- Verify directly by reading files and running short greps. Spawn no subagents or forks, do not sleep or poll, and stay well under 60 tool calls.
+- Write nothing except what the skill requires on FAIL (status marker, README status line, board row). Use the Write and Edit tools for any file change. Do not commit or push. Do not touch `GRAPH-RUN.md`.
+- No paid or network calls. Do not run the package's measurement scripts; read their recorded output.
+- Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
+
+Report back: PASS or FAIL, the complete issue list on FAIL, and `git status --porcelain` of the working directory.
 
 ## Instruction ledger
 
