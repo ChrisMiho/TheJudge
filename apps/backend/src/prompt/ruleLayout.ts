@@ -18,9 +18,6 @@ export const MAX_RESOLVED_POINTERS = 10;
 /** REQ-244: each attached first sentence is capped at this many characters. */
 export const POINTER_SENTENCE_MAX_CHARS = 250;
 
-export const SUPPLEMENTAL_RULES_DISCLAIMER =
-  "Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.";
-
 export type RuleLayoutStats = {
   /** REQ-240: list items added after a delivered lead-in, and their characters. */
   listItemsAdded: number;
@@ -313,6 +310,6 @@ export function layoutPromptRuleSections(input: RuleLayoutInput): PromptRuleSect
   const supplementalRulesSection =
     groups.length === 0
       ? ""
-      : ["ADDITIONAL RELEVANT RULE EXCERPTS", SUPPLEMENTAL_RULES_DISCLAIMER, "", groups.join("\n\n")].join("\n");
+      : ["ADDITIONAL RELEVANT RULE EXCERPTS", groups.join("\n\n")].join("\n");
   return { gameRulesSection: formatGameRulesSection(resolvedTopics), supplementalRulesSection, stats };
 }

@@ -175,9 +175,9 @@ function checkFinalQuestionBehavior(fixture: EvaluationFixture, context: PromptI
 
 function checkLookupGuardrails(promptText: string): EvaluationCheckResult {
   const required = [
-    "quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections",
+    "quote rule text only from the rules sections of this prompt",
     "not found in the rules corpus",
-    "never answer the off-domain question directly",
+    "never answer an off-domain question directly",
     // REQ-168: common Magic-adjacent phrasing is carved out as in-domain,
     // ahead of the off-domain refusal — present on every lookup path
     // (DEC-108), so this check applies universally like the others above.
@@ -226,17 +226,20 @@ function checkLookupCardEnrichment(
   const expectsCards =
     fixture.request.mode === "lookup" && (fixture.request.cards?.length ?? 0) > 0;
   const hasCardSection = promptText.includes("CARD (looked up)");
-  const hasOfficialRulings = promptText.includes("OFFICIAL RULINGS");
+  // REQ-241: the rulings follow each card's block; there is no standalone section.
+  const hasOfficialRulings = promptText.includes("Rulings for ") && !promptText.includes("OFFICIAL RULINGS");
   const cardMetadataPresent =
     !expectsCards ||
     (context.cards !== undefined &&
       context.cards.length > 0 &&
       context.cards.every(
-        (card) => promptText.includes(`name: ${card.name}`) && promptText.includes(`oracleText: ${card.oracleText}`)
+        (card) =>
+          promptText.includes(`name: ${card.name}`) &&
+          promptText.includes(`oracleText: ${card.oracleTextDisplay ?? card.oracleText}`)
       ));
   const passed = expectsCards
     ? hasCardSection && hasOfficialRulings && cardMetadataPresent
-    : !hasCardSection && !hasOfficialRulings;
+    : !hasCardSection && !promptText.includes("Rulings for ");
   return {
     id: "lookup-card-enrichment",
     passed,
@@ -416,25 +419,25 @@ function checkGameRulesSectionPresent(promptText: string): EvaluationCheckResult
   };
 }
 
+// REQ-241: rulings sit under their card, so no standalone rulings section exists to order against.
 function checkGameRulesBeforeRulings(promptText: string): EvaluationCheckResult {
-  const gameRulesIndex = promptText.indexOf("GAME RULES (reference)");
-  const officialRulingsIndex = promptText.indexOf("OFFICIAL RULINGS");
-  const hasGameRules = gameRulesIndex !== -1;
-  const hasOfficialRulings = officialRulingsIndex !== -1;
-  const passed = hasGameRules && (!hasOfficialRulings || gameRulesIndex < officialRulingsIndex);
+  const hasGameRules = promptText.includes("GAME RULES (reference)");
+  const hasStandaloneRulings = promptText.includes("OFFICIAL RULINGS");
+  const passed = hasGameRules && !hasStandaloneRulings;
 
   return {
     id: "game-rules-before-rulings",
     passed,
     details: passed
-      ? "GAME RULES (reference) appears before OFFICIAL RULINGS (or no OFFICIAL RULINGS present)."
-      : "GAME RULES (reference) is absent or appears after OFFICIAL RULINGS."
+      ? "GAME RULES (reference) is present and no standalone OFFICIAL RULINGS section exists (rulings sit under their card)."
+      : "GAME RULES (reference) is absent, or a standalone OFFICIAL RULINGS section is present."
   };
 }
 
 function checkSupplementalRulesSectionPresent(promptText: string): EvaluationCheckResult {
   const hasSupplemental = promptText.includes("\nADDITIONAL RELEVANT RULE EXCERPTS\n");
-  const disclaimerOk = !hasSupplemental || promptText.includes("Use these additional official rule excerpts");
+  // REQ-243: the section carries no per-section disclaimer; its rules open straight after the heading.
+  const disclaimerOk = !hasSupplemental || !promptText.includes("Use these additional official rule excerpts");
   const passed = disclaimerOk;
 
   return {

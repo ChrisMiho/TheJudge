@@ -38,11 +38,8 @@
   "expected": {
     "expectedSystem2TopicIds": [
       "abilities-trigger-basics",
-      "copying-spells-abilities",
       "effects-resolution-targets",
-      "effects-source-impossible",
       "spell-casting-choices",
-      "spell-casting-costs",
       "stack-and-priority",
       "targets-basics",
       "zones-basics"

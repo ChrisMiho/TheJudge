@@ -17,18 +17,19 @@ the full metadata block in every zone: oracle text, mana cost and value, type li
 colors, supertypes, subtypes, targets, per-card notes, plus owner for non-stack zones
 and caster/mana spent for stack items.
 
-The prompt starts with role and instruction framing, then the static
-`MTG_PROMPT_REFERENCE` block. After that framing, the behavior-level section order is:
+The prompt starts with role and instruction framing, then the
+MTG reference block for the prompt's mode (REQ-243). After that framing, the behavior-level section order is:
 `GENERAL GAME CONTEXT` -> `ADDITIONAL GAME STATE` (planned, DEC-043) ->
 `PHASE GUIDANCE` (DEC-036) -> populated zone sections with full card metadata in all
-zones (DEC-042) -> `GAME RULES (reference)` / System 2 ->
-`ADDITIONAL RELEVANT RULE EXCERPTS` / System 3 (rule-book order, grouped and labelled, REQ-239; keyword sets and lead-in lists included, REQ-235, REQ-240) -> `OFFICIAL RULINGS` / System 1 ->
+zones (DEC-042), each card followed by its System 1 rulings (REQ-241) ->
+`GAME RULES (reference)` / System 2 ->
+`ADDITIONAL RELEVANT RULE EXCERPTS` / System 3 (rule-book order, grouped and labelled, REQ-239; keyword sets and lead-in lists included, REQ-235, REQ-240) ->
 `SCOPE` -> `QUESTION`. When conversation history is present, it is inserted before
 `QUESTION` and the instructions tell the model to treat follow-ups as refinements
 against the frozen game state and prior answers.
 
-System 2, System 3, and System 1 are reference context, not authority to rewrite the
-submitted state. System 2 provides the curated game-rules baseline, System 3 provides
+The rules excerpts are framed once, in the instructions, as the binding rules of the game, and
+rulings as card-specific; neither is authority to rewrite the submitted state. System 2 provides the curated game-rules baseline, System 3 provides
 supplemental relevant rule excerpts, and System 1 provides WotC Oracle rulings for
 submitted cards. Their retrieval mechanics are covered in
 `system-map/game-rules-retrieval.md`; prompt assembly consumes their selected output
@@ -72,11 +73,11 @@ records the stack with item 1 as bottom and the last item as top, attaches each 
 oracle text and metadata, and selects combat-aware phase guidance for the declare
 blockers step.
 
-The rendered prompt begins with TheJudge's role/instruction framing and the static MTG
+The rendered prompt begins with TheJudge's role/instruction framing and the game-mode MTG
 reference. It then prints `GENERAL GAME CONTEXT`, the planned `ADDITIONAL GAME STATE`
 slot when that field exists, `PHASE GUIDANCE`, `ZONE: STACK (BOTTOM TO TOP)`, and the
-populated non-stack zones. It adds curated rules, supplemental excerpts, and official
-rulings when available, then the `SCOPE` sentence listing zones with no cards or not
+populated non-stack zones, each card followed by its official rulings when it has any.
+It adds curated rules and supplemental excerpts, then the `SCOPE` sentence listing zones with no cards or not
 included. If this is a follow-up turn, `CONVERSATION HISTORY` appears before the final
 `QUESTION`.
 
@@ -90,7 +91,8 @@ included. If this is a follow-up turn, `CONVERSATION HISTORY` appears before the
   diagnostics remain in place rather than silencing size concerns.
 - The static MTG reference and merged scope sentence frame the answer, but they do not
   add hidden state or a rules engine (canonical rule: `goals-and-non-goals.md` Scope Notes).
-- Rules and rulings blocks are reference context. They do not override submitted stack
+- The rules excerpts are framed once, in the instructions, as the binding rules of the game, and
+  rulings as card-specific; neither overrides submitted stack
   order, zones, targets, notes, or stated game state.
 - The enrichment-debug sidecar is mock-only diagnostic output and is not part of the
   live provider-facing answer contract.

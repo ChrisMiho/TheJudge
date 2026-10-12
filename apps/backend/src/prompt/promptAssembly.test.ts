@@ -348,7 +348,7 @@ describe("Backend - Ask AI", () => {
       expect(prompt.lastIndexOf("QUESTION")).toBe(questionIdx);
     });
 
-    it("places GAME RULES section after zones and before OFFICIAL RULINGS", () => {
+    it("places GAME RULES section after the zones and before the excerpts, with no separate rulings section (REQ-241)", () => {
       const prompt = buildPromptText(baseContext, {
         gameRulesTopics: sampleGameRulesTopics,
         rulings: {
@@ -366,10 +366,13 @@ describe("Backend - Ask AI", () => {
       expect(prompt).toContain("GAME RULES (reference)");
       expect(prompt).toContain("The Stack");
       expect(prompt).toContain("405.1. When a spell is cast");
-      expect(prompt).toContain("Use these general Magic rules as shared vocabulary.");
+      expect(prompt).not.toContain("shared vocabulary");
+      expect(prompt).not.toContain("OFFICIAL RULINGS");
       expect(prompt.indexOf("ZONE: BATTLEFIELD")).toBeLessThan(prompt.indexOf("GAME RULES (reference)"));
-      expect(prompt.indexOf("GAME RULES (reference)")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
-      expect(prompt.indexOf("OFFICIAL RULINGS")).toBeLessThan(prompt.indexOf("SCOPE"));
+      expect(prompt.indexOf("GAME RULES (reference)")).toBeLessThan(prompt.indexOf("SCOPE"));
+      // The rulings sit under their card, framed as situation-specific.
+      expect(prompt.indexOf("name: Rhystic Study")).toBeLessThan(prompt.indexOf("Rulings for Rhystic Study"));
+      expect(prompt.indexOf("Rulings for Rhystic Study")).toBeLessThan(prompt.indexOf("GAME RULES (reference)"));
     });
 
     it("carries the replacement-and-prevention interaction topic's title and rules when it is selected, and not otherwise (REQ-220)", () => {
@@ -392,7 +395,7 @@ describe("Backend - Ask AI", () => {
       expect(prompt).not.toContain("GAME RULES (reference)");
     });
 
-    it("inserts official rulings between zones and scope when provided", () => {
+    it("prints a card's rulings under that card's block, framed as situation-specific (REQ-241)", () => {
       const prompt = buildPromptText(baseContext, {
         rulings: {
           sectionChars: 74,
@@ -411,15 +414,36 @@ describe("Backend - Ask AI", () => {
         }
       });
 
-      expect(prompt).toContain("OFFICIAL RULINGS (WotC reference)");
-      expect(prompt).toContain("Rhystic Study\n- 2020-04-17: If an opponent casts a spell");
-      expect(prompt.indexOf("ZONE: BATTLEFIELD")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
-      expect(prompt.indexOf("OFFICIAL RULINGS")).toBeLessThan(prompt.indexOf("SCOPE"));
+      expect(prompt).not.toContain("OFFICIAL RULINGS");
+      expect(prompt).toContain(
+        "Rulings for Rhystic Study (published by Wizards of the Coast; apply one only when the situation matches it):\n- 2020-04-17: If an opponent casts a spell"
+      );
+      expect(prompt.indexOf("ZONE: BATTLEFIELD")).toBeLessThan(prompt.indexOf("Rulings for Rhystic Study"));
+      expect(prompt.indexOf("Rulings for Rhystic Study")).toBeLessThan(prompt.indexOf("SCOPE"));
       expect(prompt).not.toContain("rhystic-study");
     });
 
-    it("omits official rulings section when no rulings are resolved", () => {
+    it("prints a card shown more than once with its rulings once, under its first appearance (REQ-241)", () => {
+      const twice: PromptContext = {
+        ...baseContext,
+        populatedZones: [
+          ...baseContext.populatedZones,
+          { zoneId: "graveyard", items: [{ ...baseContext.populatedZones[0]!.items[0]!, name: "Rhystic Study" }] }
+        ]
+      };
+      const prompt = buildPromptText(twice, {
+        rulings: {
+          sectionChars: 10,
+          cards: [{ cardId: "rhystic-study", name: "Rhystic Study", rulings: [{ publishedAt: "2020-04-17", comment: "Once." }] }]
+        }
+      });
+      expect(prompt.match(/Rulings for Rhystic Study/g)).toHaveLength(1);
+      expect(prompt.indexOf("Rulings for Rhystic Study")).toBeLessThan(prompt.indexOf("ZONE: GRAVEYARD"));
+    });
+
+    it("prints no rulings lines when none are resolved", () => {
       const prompt = buildPromptText(baseContext, { rulings: { sectionChars: 0, cards: [] } });
+      expect(prompt).not.toContain("Rulings for");
       expect(prompt).not.toContain("OFFICIAL RULINGS");
     });
 
@@ -536,7 +560,7 @@ describe("Backend - Ask AI", () => {
       { ruleId: "116.1", sectionTitle: "Timing", text: "Unless a spell or ability has a timing restriction.", score: 10 }
     ];
 
-    it("places ADDITIONAL RELEVANT RULE EXCERPTS after GAME RULES and before OFFICIAL RULINGS", () => {
+    it("places ADDITIONAL RELEVANT RULE EXCERPTS directly after GAME RULES and before SCOPE", () => {
       const prompt = buildPromptText(baseContext, {
         gameRulesTopics: sampleGameRulesTopics,
         supplementalRules: sampleSupplementalRules,
@@ -554,8 +578,8 @@ describe("Backend - Ask AI", () => {
 
       expect(prompt).toContain("ADDITIONAL RELEVANT RULE EXCERPTS");
       expect(prompt.indexOf("GAME RULES (reference)")).toBeLessThan(prompt.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS"));
-      expect(prompt.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
-      expect(prompt.indexOf("OFFICIAL RULINGS")).toBeLessThan(prompt.indexOf("SCOPE"));
+      expect(prompt.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS")).toBeLessThan(prompt.indexOf("SCOPE"));
+      expect(prompt).not.toContain("OFFICIAL RULINGS");
     });
 
     it("omits ADDITIONAL RELEVANT RULE EXCERPTS section when supplemental rules array is empty", () => {
@@ -683,9 +707,10 @@ describe("Backend - Ask AI", () => {
       for (let index = 1; index < headers.length; index++) {
         expect(prompt.indexOf(headers[index - 1]!)).toBeLessThan(prompt.indexOf(headers[index]!));
       }
-      expect(prompt).toContain("quote rule text only from the provided GAME RULES");
+      expect(prompt).toContain("quote rule text only from the rules sections of this prompt");
       expect(prompt).toContain("not found in the rules corpus");
-      expect(prompt).toContain("never answer the off-domain question directly");
+      expect(prompt).toContain("never answer an off-domain question directly");
+      expect(prompt).not.toContain("phrasing glossary");
       // REQ-168: common Magic-adjacent phrasing is carved out as in-domain,
       // ahead of the off-domain refusal persona.
       expect(prompt).toContain("as in-domain and answer it normally");
@@ -696,9 +721,11 @@ describe("Backend - Ask AI", () => {
       expect(prompt).not.toContain("\nSCOPE\n");
       expect(prompt).not.toContain("CARD (looked up)");
       expect(prompt).not.toContain("OFFICIAL RULINGS");
+      expect(prompt).not.toContain("stack[0]");
+      expect(prompt).not.toContain("Stack item 1 is the bottom");
     });
 
-    it("adds normalized card metadata and official rulings only for an attached card", () => {
+    it("adds normalized card metadata and, under the card, its rulings only for an attached card", () => {
       const prompt = buildLookupPromptText(
         {
           ...lookupContext,
@@ -739,7 +766,9 @@ describe("Backend - Ask AI", () => {
       expect(prompt).toContain("oracleText: Vigilance, deathtouch, haste");
       expect(prompt).not.toContain("targets:");
       expect(prompt).not.toContain("contextNotes:");
-      expect(prompt.indexOf("CARD (looked up)")).toBeLessThan(prompt.indexOf("OFFICIAL RULINGS"));
+      expect(prompt).not.toContain("OFFICIAL RULINGS");
+      expect(prompt.indexOf("oracleText: Vigilance, deathtouch, haste")).toBeLessThan(prompt.indexOf("Rulings for Questing Beast"));
+      expect(prompt).toContain("- 2019-10-04: Combat damage can't be prevented.");
     });
 
     it("renders one CARD (looked up) heading with one block per attached card (REQ-167)", () => {
@@ -792,8 +821,10 @@ describe("Backend - Ask AI", () => {
       expect(prompt).toContain("name: Card Two");
       expect(prompt).toContain("oracleText: Card one text");
       expect(prompt).toContain("oracleText: Card two text");
-      expect(prompt).toContain("Card One\n- 2020-01-01: Ruling one.");
-      expect(prompt).toContain("Card Two\n- 2020-01-02: Ruling two.");
+      expect(prompt).toContain("Rulings for Card One (published by Wizards of the Coast; apply one only when the situation matches it):\n- 2020-01-01: Ruling one.");
+      expect(prompt).toContain("Rulings for Card Two (published by Wizards of the Coast; apply one only when the situation matches it):\n- 2020-01-02: Ruling two.");
+      expect(prompt.indexOf("oracleText: Card one text")).toBeLessThan(prompt.indexOf("Ruling one."));
+      expect(prompt.indexOf("Ruling one.")).toBeLessThan(prompt.indexOf("name: Card Two"));
     });
 
     it("places conversation history immediately before the lookup question", () => {

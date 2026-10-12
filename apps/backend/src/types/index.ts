@@ -61,6 +61,12 @@ export type PromptContextZoneItem = {
   subtypes: string[];
   /** REQ-180: Scryfall keywords, resolved server-side; feeds System 3's keyword signal. */
   keywords?: string[];
+  /** REQ-245: power, toughness and loyalty, resolved server-side; printed in the card block when present. */
+  power?: string;
+  toughness?: string;
+  loyalty?: string;
+  /** REQ-245: the oracle text with its line breaks kept, for the card block; `oracleText` stays one line for retrieval. */
+  oracleTextDisplay?: string;
   owner?: PlayerLabel;
   targets: PromptContextStackTarget[];
   contextNotes?: string;
@@ -84,6 +90,11 @@ export type PromptContextStackItem = {
   subtypes: string[];
   /** REQ-180: Scryfall keywords, resolved server-side; feeds System 3's keyword signal. */
   keywords?: string[];
+  /** REQ-245: see PromptContextZoneItem. */
+  power?: string;
+  toughness?: string;
+  loyalty?: string;
+  oracleTextDisplay?: string;
   caster: PlayerLabel;
   targets: PromptContextStackTarget[];
   contextNotes?: string;

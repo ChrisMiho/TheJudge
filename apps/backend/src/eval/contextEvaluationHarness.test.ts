@@ -40,7 +40,7 @@ const ruleIndex: GameRulesRuleIndexEntry[] = loadGameRulesRuleIndex(ruleIndexPat
 const fixtureRulings = new Map([
   ["003e5dc6-8b26-4a0a-a50b-5f0806a7bacd", [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]],
   // The lookup combo fixtures attach these cards; `lookup-card-enrichment`
-  // requires an OFFICIAL RULINGS section for any attached card.
+  // requires each attached card's rulings under the card (REQ-241).
   ["eval-oracle-a", [{ publishedAt: "2020-01-10", comment: "Its ability triggers once per turn." }]],
   ["eval-oracle-b", [{ publishedAt: "2020-01-24", comment: "You may name a card that is not in your library." }]],
   ["eval-oracle-c", [{ publishedAt: "2020-02-05", comment: "It returns only creature cards." }]],
@@ -173,7 +173,12 @@ function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = 
   const comboCandidates = resolveGameComboCandidates(gameRequest, context, { comboCatalog });
   return {
     context,
-    promptText: buildPromptText(context, { gameRulesTopics: selectedTopics, supplementalRules, comboCandidates }),
+    promptText: buildPromptText(context, {
+      gameRulesTopics: selectedTopics,
+      supplementalRules,
+      gameRulesRuleIndex: ruleIndex,
+      comboCandidates
+    }),
     relevance: { selectedTopics, supplementalRules }
   };
 }

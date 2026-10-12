@@ -63,7 +63,7 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Game rules retrieval
 
 - Status: shipped
-- Summary: Retrieves card rulings, a curated game-rules baseline (gated by game state, plus one card-wording gate for replacement-effect interactions), and relevance-scored supplemental rules text to ground prompt reasoning; System 2 (curated) and System 3 (supplemental) are tuned and measured together.
+- Summary: Retrieves card rulings, a curated game-rules baseline (gated by turn phase and combat step, in In-Depth by the cards' wording and the question, plus one card-wording gate for replacement-effect interactions), and relevance-scored supplemental rules text to ground prompt reasoning; System 2 (curated) and System 3 (supplemental) are tuned and measured together.
 - Lives in: `apps/backend/src/cardRulings.ts`, `gameRules.ts`, `gameRulesTopicSelection.ts`, `gameRulesRetrieval.ts`
 - Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-220
 - Details: `system-map/game-rules-retrieval.md`
@@ -78,16 +78,16 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Curated game rules (System 2)
 
 - Status: shipped
-- Summary: Selects an always-on core plus game-state-gated conditional topics (`turnPhase`, `combatStep`, populated zones) per request, plus the replacement-effect interaction topic when two or more cards carry replacement or prevention wording (REQ-220), replacing the prior "all topics every request" baseline.
+- Summary: Selects an always-on core plus conditional topics gated on `turnPhase` and `combatStep`, in In-Depth the topics the cards' wording (through the fixed concept map) or the question match in a fixed trigger table (REQ-242), plus the replacement-effect interaction topic when two or more cards carry replacement or prevention wording (REQ-220), replacing the prior "all topics every request" baseline. A topic rule that introduces a list carries its list (REQ-240).
 - Lives in: `apps/backend/src/gameRulesTopicSelection.ts`, `gameRules.ts`
-- Backed by: DEC-030, DEC-045, REQ-022, REQ-220
+- Backed by: DEC-030, DEC-045, REQ-022, REQ-220, REQ-240, REQ-242
 
 ### Supplemental retrieval (System 3)
 
 - Status: shipped
-- Summary: Selects up to 15 supplemental rule excerpts per request (raised from 5 to 10 on 2026-09-09 and to up-to-15 with a 0.6 relevance cutoff on 2026-10-12, REQ-190), then adds each attached card's keyword rules as whole sets beside them (REQ-235). The query is the player's question plus a compact per-card signal (name, type line, keywords), not raw card oracle text. Ranking is a hybrid score — normalised cosine over committed per-rule embeddings blended with normalised lexical IDF overlap — with the exact-rule-id boost merged in; lexical scoring alone is retained as the mock/offline default and the failure fallback. Deduplicated against the System 2 selection by exact rule number: only the rules the selected topics list are excluded.
-- Lives in: `apps/backend/src/gameRulesRetrieval.ts`, `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed per-rule embeddings artifact
-- Backed by: DEC-032, DEC-046, REQ-178, REQ-179, REQ-180, REQ-181, REQ-182, REQ-183, REQ-184
+- Summary: Selects up to 15 supplemental rule excerpts per request (raised from 5 to 10 on 2026-09-09 and to up-to-15 with a 0.6 relevance cutoff on 2026-10-12, REQ-190), then adds each attached card's keyword rules as whole sets beside them (REQ-235). The main query is the player's question plus a compact per-card signal (name, type line, keywords) and the fixed concept map's terms for each card's wording, plus the turn step in In-Depth — not raw card oracle text; each card's own text gets a separate search for two reserved slots (REQ-235). Ranking is a hybrid score — normalised cosine over committed per-rule embeddings from the Magic-trained search model blended 0.65 / 0.35 with normalised, stemmed lexical IDF overlap — with the exact-rule-id boost merged in; lexical scoring alone is retained as the mock/offline default and the failure fallback. Deduplicated against the System 2 selection by exact rule number: only the rules the selected topics list are excluded. Printed in rule-book order under path labels, with lead-in lists (REQ-239, REQ-240).
+- Lives in: `apps/backend/src/gameRulesRetrieval.ts`, the concept map module, `apps/backend/src/prompt/ruleLayout.ts`, `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed per-rule embeddings artifact, the committed search-model manifest, and the owner-run training pipeline under `scripts/`
+- Backed by: DEC-032, DEC-046, REQ-178, REQ-179, REQ-180, REQ-181, REQ-182, REQ-183, REQ-184, REQ-190, REQ-233, REQ-234, REQ-235, REQ-236, REQ-237, REQ-239, REQ-240, REQ-244
 
 ## Provider boundary
 

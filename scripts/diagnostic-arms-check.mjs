@@ -121,7 +121,7 @@ export async function checkDiagnosticArms({ cases, manifest, resources, prepare,
     const unitsC = unitMultiset(evidenceUnits(parsedC));
     const added = unitsC.filter((unit) => !unitsA.includes(unit));
     const bundle = new Set(decidingRuleBundle({ decidingRuleIds, ruleIndex: resources.gameRulesRuleIndex }));
-    const addedIds = added.map((unit) => /^(\d+\.\d+[a-z]*)\. /.exec(unit.split("\u0000")[1])?.[1]);
+    const addedIds = added.map((unit) => /^(\d+\.\d+[a-z]*)(?:\.|\s)/.exec(unit.split("\u0000")[1])?.[1]);
     if (unitsC.length !== unitsA.length + added.length || addedIds.some((id) => !id || !bundle.has(id))) {
       problems.push(`${entry.id}: arm C added something other than bundle rules`);
     }

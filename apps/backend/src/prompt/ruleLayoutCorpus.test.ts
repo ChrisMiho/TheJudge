@@ -117,3 +117,38 @@ describe("rules layout over the committed corpus", () => {
     console.info(`pointers resolved over the corpus prompts: ${resolved} of ${found} (${((100 * resolved) / found).toFixed(1)}%)`);
   });
 });
+
+describe("REQ-243 over the committed corpus", () => {
+  const HEADINGS = ["GENERAL GAME CONTEXT", "PHASE GUIDANCE", "GAME RULES (reference)", "ADDITIONAL RELEVANT RULE EXCERPTS", "CARD (looked up)", "OFFICIAL RULINGS", "SCOPE", "CONVERSATION HISTORY"];
+
+  it("no preamble, instruction or reference line refers to a section absent from the prompt's mode", () => {
+    const failures: string[] = [];
+    for (const { id, kind, promptText } of built) {
+      const firstSection = ["\nGENERAL GAME CONTEXT\n", "\nPHASE GUIDANCE\n", "\nGAME RULES (reference)\n", "\nZONE:", "\nCARD (looked up)\n", "\nQUESTION\n"]
+        .map((heading) => promptText.indexOf(heading))
+        .filter((at) => at >= 0)
+        .reduce((min, at) => Math.min(min, at), Number.MAX_SAFE_INTEGER);
+      const head = promptText.slice(0, firstSection);
+      for (const heading of HEADINGS) {
+        if (head.includes(heading) && !promptText.includes(`\n${heading}\n`)) failures.push(`${id} (${kind}): the framing names ${heading}`);
+      }
+      if (kind === "lookup") {
+        for (const absent of ["turnPhase", "scope note", "Zones (app model)", "Stack item", "stack[0]", "phrasing glossary"]) {
+          if (head.includes(absent)) failures.push(`${id} (${kind}): the framing mentions "${absent}"`);
+        }
+      }
+      if (promptText.includes("stack[0]")) failures.push(`${id} (${kind}): stack[0] wording`);
+      if (promptText.includes("OFFICIAL RULINGS")) failures.push(`${id} (${kind}): a standalone rulings section`);
+    }
+    expect(failures).toEqual([]);
+  });
+
+  it("rulings print once per card and only under a card", () => {
+    const failures: string[] = [];
+    for (const { id, kind, promptText } of built) {
+      const frames = [...promptText.matchAll(/^Rulings for (.+) \(published by Wizards of the Coast;/gm)].map((m) => m[1]!);
+      if (new Set(frames).size !== frames.length) failures.push(`${id} (${kind}): rulings printed twice for one card`);
+    }
+    expect(failures).toEqual([]);
+  });
+});

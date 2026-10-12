@@ -48,6 +48,7 @@
           "supertypes": [],
           "subtypes": [],
           "keywords": [],
+          "oracleTextDisplay": "Whenever Blood Artist or another creature dies, target player loses 1 life and you gain 1 life.",
           "targets": [
             {
               "kind": "none"

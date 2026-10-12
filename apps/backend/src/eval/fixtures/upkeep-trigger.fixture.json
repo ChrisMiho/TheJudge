@@ -28,12 +28,6 @@
     "expectedSystem2TopicIds": [
       "abilities-delayed-triggers",
       "abilities-trigger-basics",
-      "abilities-zone-change-triggers",
-      "layers-order",
-      "layers-power-toughness",
-      "layers-timestamps-dependencies",
-      "replacement-effects-basics",
-      "replacement-etb-effects",
       "stack-and-priority",
       "targets-basics",
       "zones-basics"

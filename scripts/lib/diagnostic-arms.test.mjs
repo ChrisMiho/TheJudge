@@ -31,31 +31,28 @@ const execFileAsync = promisify(execFile);
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 // A synthetic lookup prompt in the exact shape promptAssembly.ts prints, small enough to read.
-const TOPIC_DISCLAIMER = "Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state.";
-const EXCERPT_DISCLAIMER = "Use these additional official rule excerpts as reference. They do not override the user's submitted game state.";
-const RULING_DISCLAIMER = "Use these published Oracle rulings as reference for how each card works.";
+// REQ-241 / REQ-243: no per-section disclaimers, no standalone rulings section; rulings sit under their card.
+const RULING_FRAME = (name) => `Rulings for ${name} (published by Wizards of the Coast; apply one only when the situation matches it):`;
 
 const TOPIC_BLOCKS = [
   "Cleanup Basics\n514.1. First, discard to hand size.\n514.3. Normally no player receives priority.",
   "Stack and Priority\n117.1. Priority is determined by a system.\nExample: A player casts a spell.\n117.4. If all players pass in succession, the top resolves."
 ];
 const EXCERPT_BLOCKS = [
-  "703.4n. 703.4n Immediately after the cleanup step begins, discard.",
-  "514.3a. 514.3a If a state-based action is performed, players receive priority.",
-  "616.1. 616.1. If two or more replacement effects apply, the affected player chooses.\nExample: Two effects apply.\n\nExample: A second paragraph of the example."
+  "Additional Rules \u203a Turn-Based Actions\n703.4n Immediately after the cleanup step begins, discard.",
+  "Turn Structure \u203a Cleanup Step\n514.3a If a state-based action is performed, players receive priority.",
+  "Spells, Abilities, and Effects \u203a Replacement Effects\n616.1. If two or more replacement effects apply, the affected player chooses.\nExample: Two effects apply.\n\nExample: A second paragraph of the example."
 ];
-const CARD_BLOCKS = ["name: Necropotence\nmanaCost: {B}{B}{B}\noracleText: Skip your draw step.", "name: Silence\nmanaCost: {W}\noracleText: Your opponents can't cast spells this turn."];
-const RULING_BLOCKS = [
-  "Necropotence\n- 2017-11-17: You can't look at the exiled cards.\n- 2017-11-17: Madness works differently.",
-  "Silence\n- 2021-03-19: Silence won't affect spells already on the stack."
+const CARD_BLOCKS = [
+  `name: Necropotence\nmanaCost: {B}{B}{B}\noracleText: Skip your draw step.\n${RULING_FRAME("Necropotence")}\n- 2017-11-17: You can't look at the exiled cards.\n- 2017-11-17: Madness works differently.`,
+  `name: Silence\nmanaCost: {W}\noracleText: Your opponents can't cast spells this turn.\n${RULING_FRAME("Silence")}\n- 2021-03-19: Silence won't affect spells already on the stack.`
 ];
 
-function makePrompt({ topics = TOPIC_BLOCKS, excerpts = EXCERPT_BLOCKS, cards = CARD_BLOCKS, rulings = RULING_BLOCKS, combo = null } = {}) {
+function makePrompt({ topics = TOPIC_BLOCKS, excerpts = EXCERPT_BLOCKS, cards = CARD_BLOCKS, combo = null } = {}) {
   const sections = ["SYSTEM ROLE PREAMBLE\nYou are TheJudge assistant.\n\nINSTRUCTIONS\n- Explain.\n\nMTG REFERENCE\nTurns proceed in order.\n\nContinuous effects and state-based actions use a layer system."];
-  if (topics.length) sections.push(["GAME RULES (reference)", TOPIC_DISCLAIMER, "", topics.join("\n\n")].join("\n"));
-  if (excerpts.length) sections.push(["ADDITIONAL RELEVANT RULE EXCERPTS", EXCERPT_DISCLAIMER, "", excerpts.join("\n\n")].join("\n"));
+  if (topics.length) sections.push(["GAME RULES (reference)", topics.join("\n\n")].join("\n"));
+  if (excerpts.length) sections.push(["ADDITIONAL RELEVANT RULE EXCERPTS", excerpts.join("\n\n")].join("\n"));
   if (cards.length) sections.push(["CARD (looked up)", cards.join("\n\n")].join("\n"));
-  if (rulings.length) sections.push(["OFFICIAL RULINGS (WotC reference)", RULING_DISCLAIMER, "", rulings.join("\n\n")].join("\n"));
   if (combo) sections.push(`COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED\n${combo}`);
   sections.push("QUESTION\nCan I cast it in the cleanup step?");
   return sections.join("\n\n");
@@ -72,13 +69,13 @@ const RULE_INDEX = [
   { ruleId: "701.21a", text: "701.21a To destroy a permanent." }
 ];
 
-const A_HEADINGS = ["GAME RULES (reference)", "ADDITIONAL RELEVANT RULE EXCERPTS", "CARD (looked up)", "OFFICIAL RULINGS (WotC reference)"];
+const A_HEADINGS = ["GAME RULES (reference)", "ADDITIONAL RELEVANT RULE EXCERPTS", "CARD (looked up)"];
 const ARM_B_HEADING_LIST = Object.values(ARM_B_HEADINGS);
 
 // Parsing ------------------------------------------------------------------
 
 test("parse then render reproduces the production lookup prompt exactly, with and without a combo section", () => {
-  for (const prompt of [makePrompt(), makePrompt({ combo: "A combo section.\n\n1. Some combo" }), makePrompt({ excerpts: [] }), makePrompt({ cards: [], rulings: [] })]) {
+  for (const prompt of [makePrompt(), makePrompt({ combo: "A combo section.\n\n1. Some combo" }), makePrompt({ excerpts: [] }), makePrompt({ cards: [] })]) {
     assert.equal(renderOriginal(parseLookupPrompt(prompt)), prompt);
   }
 });
@@ -90,7 +87,7 @@ test("blocks keep their blank-line paragraphs: an Example paragraph stays with i
   assert.equal(parsed.topics.blocks.length, 2);
   assert.ok(parsed.topics.blocks[1].includes("Example: A player casts a spell."));
   assert.equal(parsed.cards.blocks.length, 2);
-  assert.equal(parsed.rulings.blocks.length, 2);
+  assert.equal(parsed.rulings, null);
   assert.deepEqual(splitBlocks("excerpts", ""), []);
 });
 
@@ -101,7 +98,7 @@ test("an In-Depth prompt or an unrecognised shape is refused, not guessed at", (
   assert.throws(() => buildArmPrompt({ arm: "B", promptText: "garbage", ruleIndex: [] }), /lookup prompt/);
 });
 
-test("evidence units are the topic blocks, excerpt blocks, card blocks and one per ruling line", () => {
+test("evidence units are the topic blocks, excerpt blocks, card blocks (without their rulings) and one per ruling line", () => {
   const units = evidenceUnits(parseLookupPrompt(makePrompt()));
   const kinds = units.map((unit) => unit.kind);
   assert.equal(kinds.filter((k) => k === "topic").length, 2);
@@ -131,10 +128,10 @@ test("arm B holds exactly arm A's evidence units, regrouped, reordered and heade
   }
 
   // Reordered: a rule sits beside its lettered exception, ascending; each card is followed by its own rulings.
-  assert.ok(b.indexOf("514.3a. 514.3a") < b.indexOf("616.1. 616.1."));
-  assert.ok(b.indexOf("514.3a. 514.3a") < b.indexOf("703.4n. 703.4n"));
-  assert.ok(b.indexOf("name: Necropotence") < b.indexOf("Necropotence\n- 2017-11-17") && b.indexOf("Necropotence\n- 2017-11-17") < b.indexOf("name: Silence"));
-  assert.ok(b.indexOf("Silence\n- 2021-03-19") > b.indexOf("name: Silence"));
+  assert.ok(b.indexOf("514.3a If a state") < b.indexOf("616.1. If two"));
+  assert.ok(b.indexOf("514.3a If a state") < b.indexOf("703.4n Immediately"));
+  assert.ok(b.indexOf("name: Necropotence") < b.indexOf(RULING_FRAME("Necropotence")) && b.indexOf(RULING_FRAME("Necropotence")) < b.indexOf("name: Silence"));
+  assert.ok(b.indexOf(RULING_FRAME("Silence")) > b.indexOf("name: Silence"));
   // The preamble and the question are untouched, the question last.
   assert.ok(b.startsWith(a.slice(0, a.indexOf("\n\nGAME RULES"))));
   assert.ok(b.endsWith("QUESTION\nCan I cast it in the cleanup step?"));
@@ -168,9 +165,9 @@ test("arm C is arm A plus only the bundle rules A does not already carry, in A's
   const unitsA = unitMultiset(evidenceUnits(parsedA));
   const unitsC = unitMultiset(evidenceUnits(parseLookupPrompt(c.promptText)));
   const added = unitsC.filter((unit) => !unitsA.includes(unit));
-  assert.deepEqual(added, ["excerpt\u0000514.3b. 514.3b Another exception.", "excerpt\u0000616.1e. 616.1e Any of the applicable replacement effects may be chosen."]);
+  assert.deepEqual(added, ["excerpt\u0000514.3b Another exception.", "excerpt\u0000616.1e Any of the applicable replacement effects may be chosen."]);
   assert.equal(unitsC.length, unitsA.length + 2);
-  assert.deepEqual(lineBagExtra(lineBag(c.promptText, []), lineBag(a, [])), ["514.3b. 514.3b Another exception.", "616.1e. 616.1e Any of the applicable replacement effects may be chosen."].sort());
+  assert.deepEqual(lineBagExtra(lineBag(c.promptText, []), lineBag(a, [])), ["514.3b Another exception.", "616.1e Any of the applicable replacement effects may be chosen."].sort());
 
   // Nothing missing from the bundle: C is A, byte for byte.
   const same = buildArmPrompt({ arm: "C", promptText: a, ruleIndex: RULE_INDEX, decidingRuleIds: ["514.1"] });
@@ -181,10 +178,9 @@ test("arm C is arm A plus only the bundle rules A does not already carry, in A's
 test("arm C builds the excerpts section when the prompt had none", () => {
   const a = makePrompt({ excerpts: [] });
   const c = buildArmPrompt({ arm: "C", promptText: a, ruleIndex: RULE_INDEX, decidingRuleIds: ["701.21a"] });
-  assert.ok(c.promptText.includes("ADDITIONAL RELEVANT RULE EXCERPTS\nUse these additional official rule excerpts as reference."));
+  assert.ok(c.promptText.includes("ADDITIONAL RELEVANT RULE EXCERPTS\n701.21a To destroy a permanent."));
   assert.ok(c.promptText.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS") > c.promptText.indexOf("GAME RULES (reference)"));
   assert.ok(c.promptText.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS") < c.promptText.indexOf("CARD (looked up)"));
-  assert.ok(c.promptText.includes("701.21a. 701.21a To destroy a permanent."));
 });
 
 // Arm D --------------------------------------------------------------------
@@ -199,8 +195,8 @@ test("arm D holds arm C's evidence units in arm B's presentation", () => {
   const parsedCwith = addBundleToParsed(parseLookupPrompt(a), args).parsed;
   assert.deepEqual(unitMultiset(evidenceUnits(parseLookupPrompt(c.promptText))), unitMultiset(evidenceUnits(parsedCwith)));
   // B's order: the new 514.3b follows 514.3a; 616.1e follows 616.1.
-  assert.ok(d.promptText.indexOf("514.3a. 514.3a") < d.promptText.indexOf("514.3b. 514.3b"));
-  assert.ok(d.promptText.indexOf("616.1. 616.1.") < d.promptText.indexOf("616.1e. 616.1e"));
+  assert.ok(d.promptText.indexOf("514.3a If a state") < d.promptText.indexOf("514.3b Another"));
+  assert.ok(d.promptText.indexOf("616.1. If two") < d.promptText.indexOf("616.1e Any"));
 });
 
 // No arm sees the reference answer -----------------------------------------

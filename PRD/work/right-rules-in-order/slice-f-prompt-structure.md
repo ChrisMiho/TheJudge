@@ -1,6 +1,6 @@
 # Slice F — Prompt structure
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -22,15 +22,15 @@ Each prompt reads in one clear order: one instruction list, a reference block pe
 
 ## Acceptance criteria
 
-- [ ] Prompt tests for both modes assert the section orders in requirement 5
-- [ ] No separate rulings section exists; rulings follow their card once, first appearance only
-- [ ] In-Depth topic tests: words from the topic title and section titles trigger it; zone alone does not; Quick Lookup keeps its four always-on topics plus REQ-220
-- [ ] In-Depth keeps at least 17 of 30 deciding rules on the 9 shared corpus cases
-- [ ] Instruction tests: one list, one stack numbering, no reference to an absent section in either mode
-- [ ] Card-block tests: power, toughness, loyalty, " // " for multi-face, line breaks kept; the card-detail route and frontend payload are unchanged (contract tests pass)
-- [ ] Gate slots REQ-241, 242, 243, 245, 030, 074, 176, 220, FLOW-011, FLOW-023 and the five section docs are applied by intent
-- [ ] Golden prompt changes are each reviewed and listed in the evidence log
-- [ ] `npm run quality:check` passes
+- [x] Prompt tests for both modes assert the section orders in requirement 5
+- [x] No separate rulings section exists; rulings follow their card once, first appearance only
+- [x] In-Depth topic tests: words from the topic title and section titles trigger it; zone alone does not; Quick Lookup keeps its four always-on topics plus REQ-220
+- [x] In-Depth keeps at least 17 of 30 deciding rules on the 9 shared corpus cases
+- [x] Instruction tests: one list, one stack numbering, no reference to an absent section in either mode
+- [x] Card-block tests: power, toughness, loyalty, " // " for multi-face, line breaks kept; the card-detail route and frontend payload are unchanged (contract tests pass)
+- [x] Gate slots REQ-241, 242, 243, 245, 030, 074, 176, 220, FLOW-011, FLOW-023 and the five section docs are applied by intent
+- [x] Golden prompt changes are each reviewed and listed in the evidence log
+- [x] `npm run quality:check` passes
 
 ## Verification
 

@@ -1,14 +1,17 @@
 import type { GameRulesTopic } from "./gameRules.js";
+import { conceptTermsForCards } from "./gameRulesConceptMap.js";
+import { tokenizeSearchText } from "./gameRulesStemmer.js";
 import type { PromptContext } from "./types/index.js";
 
 /**
  * System 2 (curated general rules) topic selection — DEC-045.
  *
- * Selection reads game state — `turnPhase`, `combatStep`, and populated-zone
- * presence — plus one card-wording gate (REQ-220): when two or more cards carry
- * the whole word "instead" or "prevent" in their oracle text, the
- * replacement-and-prevention interaction topic is added. No card names or
- * keywords influence this selection (those are System 3's job, DEC-046).
+ * Selection reads game state — `turnPhase` and `combatStep` — plus card wording in two fixed forms:
+ * the REQ-220 gate (when two or more cards carry the whole word "instead" or "prevent" in their
+ * oracle text, the replacement-and-prevention interaction topic is added) and, in In-Depth only, the
+ * REQ-242 trigger table (the topics that populated zones used to select are chosen by the cards'
+ * concept terms and the question's words). No card names or keywords influence this selection (those
+ * are System 3's job, DEC-046).
  */
 
 /** Always included on every prompt regardless of game state. */
@@ -19,24 +22,42 @@ export const ALWAYS_ON_TOPIC_IDS = [
   "abilities-trigger-basics"
 ] as const;
 
-/** Added when the stack zone is non-empty. */
-const STACK_TOPIC_IDS = [
-  "spell-casting-choices",
-  "spell-casting-costs",
-  "effects-resolution-targets",
-  "copying-spells-abilities",
-  "effects-source-impossible"
-] as const;
+/**
+ * REQ-242: the topics that a populated stack (five) or battlefield (six) used to add in In-Depth, now
+ * chosen by wording. Each topic's trigger words are words of the topic's own title or of the section
+ * titles of the rules it lists (the rule book's own words, never a keyword or a card name); a test
+ * asserts that, and that every trigger word appears in the committed rule index. A topic is selected
+ * when any trigger word matches (after the same stemming System 3 uses, REQ-233) a word of the
+ * question or of a card's concept terms (REQ-234).
+ */
+export const IN_DEPTH_TOPIC_TRIGGERS: Readonly<Record<string, readonly string[]>> = {
+  // formerly selected when the stack held cards
+  "spell-casting-choices": ["casting", "choices", "targets"],
+  "spell-casting-costs": ["casting", "costs", "completion"],
+  "effects-resolution-targets": ["resolving", "targeted"],
+  "copying-spells-abilities": ["copying"],
+  "effects-source-impossible": ["impossible", "sources"],
+  // formerly selected when the battlefield held cards
+  "replacement-effects-basics": ["replacement"],
+  "replacement-etb-effects": ["replacement", "enter"],
+  "layers-order": ["layer", "continuous"],
+  "layers-power-toughness": ["power", "toughness", "layers"],
+  "layers-timestamps-dependencies": ["timestamps", "dependency", "continuous"],
+  "abilities-zone-change-triggers": ["zone"]
+};
 
-/** Added when the battlefield zone is populated. */
-const BATTLEFIELD_TOPIC_IDS = [
-  "replacement-effects-basics",
-  "replacement-etb-effects",
-  "layers-order",
-  "layers-power-toughness",
-  "layers-timestamps-dependencies",
-  "abilities-zone-change-triggers"
-] as const;
+const STEMMED_TRIGGERS: ReadonlyArray<readonly [string, ReadonlySet<string>]> = Object.entries(IN_DEPTH_TOPIC_TRIGGERS).map(
+  ([id, words]) => [id, new Set(words.flatMap((word) => tokenizeSearchText(word)))] as const
+);
+
+/** REQ-242: the trigger-table topics the question's words and the cards' concept terms select. */
+export function selectTriggeredTopicIds(
+  questionText: string,
+  cards: ReadonlyArray<{ name: string; typeLine: string; oracleText: string }>
+): string[] {
+  const words = new Set(tokenizeSearchText([questionText, ...conceptTermsForCards(cards)].join(" ")));
+  return STEMMED_TRIGGERS.filter(([, triggers]) => [...triggers].some((trigger) => words.has(trigger))).map(([id]) => id);
+}
 
 const COMBAT_STRUCTURE_TOPIC_ID = "combat-phase-structure";
 const COMBAT_DECLARE_ATTACKERS_TOPIC_ID = "combat-declare-attackers";
@@ -81,18 +102,8 @@ export function selectCardWordingTopicIds(cards: ReadonlyArray<{ oracleText: str
 }
 
 /** Every card on the stack and in any populated zone — the set System 3 reads. */
-function collectContextCards(context: PromptContext): Array<{ oracleText: string }> {
+function collectContextCards(context: PromptContext): Array<{ name: string; typeLine: string; oracleText: string }> {
   return [...context.orderedStack, ...context.populatedZones.flatMap((zone) => zone.items)];
-}
-
-function isStackPopulated(context: PromptContext): boolean {
-  return context.orderedStack.length > 0;
-}
-
-function isBattlefieldPopulated(context: PromptContext): boolean {
-  return context.populatedZones.some(
-    (zone) => zone.zoneId === "battlefield" && zone.items.length > 0
-  );
 }
 
 function collectCombatTopicIds(context: PromptContext): string[] {
@@ -127,13 +138,8 @@ export function selectGameRulesTopics(
 ): GameRulesTopic[] {
   const selectedIds = new Set<string>(ALWAYS_ON_TOPIC_IDS);
 
-  if (isStackPopulated(context)) {
-    for (const id of STACK_TOPIC_IDS) selectedIds.add(id);
-  }
-
-  if (isBattlefieldPopulated(context)) {
-    for (const id of BATTLEFIELD_TOPIC_IDS) selectedIds.add(id);
-  }
+  // REQ-242: no zone-presence triggers; the cards' wording and the question choose these topics.
+  for (const id of selectTriggeredTopicIds(context.finalQuestion, collectContextCards(context))) selectedIds.add(id);
 
   if (context.gameContext.turnPhase === "combat") {
     for (const id of collectCombatTopicIds(context)) selectedIds.add(id);

@@ -77,12 +77,11 @@ describe("Backend - Game Rules", () => {
       expect(formatGameRulesSection([])).toBe("");
     });
 
-    it("includes GAME RULES header and disclaimer", () => {
+    it("includes the GAME RULES header and no per-section disclaimer (REQ-243)", () => {
       const section = formatGameRulesSection(sampleTopics);
-      expect(section).toContain("GAME RULES (reference)");
-      expect(section).toContain(
-        "Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text."
-      );
+      expect(section.startsWith("GAME RULES (reference)\nThe Stack\n")).toBe(true);
+      expect(section).not.toContain("shared vocabulary");
+      expect(section).not.toContain("do not override");
     });
 
     it("includes all topic titles and excerpts", () => {

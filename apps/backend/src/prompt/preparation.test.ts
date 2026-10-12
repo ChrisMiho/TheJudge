@@ -189,7 +189,9 @@ describe("Backend - Ask AI", () => {
         { cardId: "questing-beast", name: "Questing Beast" }
       ]);
       expect(prepared.promptText).toContain("CARD (looked up)");
-      expect(prepared.promptText).toContain("OFFICIAL RULINGS (WotC reference)");
+      expect(prepared.promptText).not.toContain("OFFICIAL RULINGS");
+      expect(prepared.promptText).toContain("Rulings for Questing Beast");
+      expect(prepared.promptText).toContain("- 2019-10-04: Combat damage can't be prevented.");
     });
 
     it("scores supplemental rules and rulings from every attached card, in order (REQ-167)", () => {

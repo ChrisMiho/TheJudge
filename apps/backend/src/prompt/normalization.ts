@@ -41,6 +41,18 @@ export function normalizeCardText(value: string): string {
   return truncateOracleText(normalizeWhitespace(value));
 }
 
+/**
+ * REQ-245: oracle text for the card block -- each ability stays on its own line; spaces within a line
+ * are normalised as `normalizeCardText` does, and blank lines are dropped.
+ */
+export function normalizeCardTextKeepingLines(value: string): string {
+  const lines = value
+    .split(/\r?\n/)
+    .map((line) => normalizeWhitespace(line))
+    .filter((line) => line.length > 0);
+  return truncateOracleText(lines.join("\n"));
+}
+
 export function truncateConversationHistory(turns: ConversationTurn[], budget: number): ConversationTurn[] {
   let total = turns.reduce((sum, t) => sum + t.content.length, 0);
   if (total <= budget) return turns;

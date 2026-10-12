@@ -3,16 +3,20 @@ import {
   truncateConversationHistory
 } from "./normalization.js";
 import {
+  GAME_FOLLOW_UP_INSTRUCTION,
+  LOOKUP_OFF_DOMAIN_INSTRUCTION,
+  LOOKUP_ROLE_PREAMBLE_LINES,
+  SHARED_INSTRUCTION_LINES,
   SYSTEM_ROLE_PREAMBLE_LINES,
   buildZoneScopeSentence,
+  createRulingsPlacement,
   formatConversationHistorySection,
   formatGameContext,
   formatNonStackZoneSections,
-  formatOfficialRulingsSection,
   formatStackSection,
   formatZoneCardMetadataLines
 } from "./promptFormatting.js";
-import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
+import { MTG_LOOKUP_REFERENCE, MTG_PROMPT_REFERENCE } from "./mtgReference.js";
 import { describeTurnSteps, getPhaseGuidance, type TurnStepKey } from "./phaseGuidance.js";
 import { layoutPromptRuleSections, type PromptRuleSections } from "./ruleLayout.js";
 import type { ResolvedRulings } from "../cardRulings.js";
@@ -55,10 +59,11 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
 
   const scopeSentence = buildZoneScopeSentence(context.gameContext.selectedZones, populatedZoneIds);
 
-  const stackSection = formatStackSection(context);
-  const nonStackSections = formatNonStackZoneSections(context);
+  // REQ-241: each card's rulings print under the card's first appearance (stack bottom to top, then the zones).
+  const rulingsPlacement = createRulingsPlacement(options.rulings);
+  const stackSection = formatStackSection(context, rulingsPlacement);
+  const nonStackSections = formatNonStackZoneSections(context, rulingsPlacement);
   const { gameRulesSection, supplementalRulesSection } = ruleSectionsFor(options);
-  const officialRulingsSection = formatOfficialRulingsSection(options.rulings);
   const comboSection = formatComboSection(options.comboCandidates ?? []);
 
   const conversationHistory = options.conversationHistory ?? [];
@@ -74,12 +79,8 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
     ...SYSTEM_ROLE_PREAMBLE_LINES,
     "",
     "INSTRUCTIONS",
-    "- Explain reasoning clearly and concisely.",
-    "- State uncertainty when context is incomplete.",
-    "- Do not invent hidden state, targets, or board conditions.",
-    ...(conversationHistory.length > 0
-      ? ["- Treat follow-up questions as refinements or clarifications against the frozen game state and prior answers."]
-      : []),
+    ...SHARED_INSTRUCTION_LINES,
+    ...(conversationHistory.length > 0 ? [GAME_FOLLOW_UP_INSTRUCTION] : []),
     "",
     "MTG REFERENCE",
     MTG_PROMPT_REFERENCE,
@@ -103,11 +104,7 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
     sections.push("", supplementalRulesSection);
   }
 
-  if (officialRulingsSection.length > 0) {
-    sections.push("", officialRulingsSection);
-  }
-
-  // Immediately after rulings and before SCOPE, keeping all enrichment contiguous.
+  // After the rules sections and before SCOPE, keeping all enrichment contiguous.
   if (comboSection.length > 0) {
     sections.push("", comboSection);
   }
@@ -131,17 +128,19 @@ export function buildLookupPromptText(
   // REQ-167: one heading, one block per attached card (max 5) — matches
   // OFFICIAL RULINGS's existing one-heading/many-blocks convention below, so
   // exactly one card renders byte-identical to the prior single-card section.
+  // REQ-241: each attached card's rulings follow its block.
+  const rulingsPlacement = createRulingsPlacement(options.rulings);
   const cardBlocks = (context.cards ?? []).map((card) =>
     [
       `name: ${card.name}`,
       ...formatZoneCardMetadataLines(
         { ...card, targets: [] },
         {} as Record<PlayerLabel, string | undefined>
-      ).filter((line) => !line.startsWith("targets:") && !line.startsWith("contextNotes:"))
+      ).filter((line) => !line.startsWith("targets:") && !line.startsWith("contextNotes:")),
+      ...rulingsPlacement.take(card.cardId, card.name)
     ].join("\n")
   );
   const cardSection = cardBlocks.length > 0 ? ["CARD (looked up)", cardBlocks.join("\n\n")].join("\n") : "";
-  const officialRulingsSection = (context.cards?.length ?? 0) > 0 ? formatOfficialRulingsSection(options.rulings) : "";
   const comboSection = formatComboSection(options.comboCandidates ?? []);
   const conversationHistory = context.conversationHistory ?? [];
   const conversationHistorySection = formatConversationHistorySection(
@@ -150,21 +149,17 @@ export function buildLookupPromptText(
 
   const sections = [
     "SYSTEM ROLE PREAMBLE",
-    ...SYSTEM_ROLE_PREAMBLE_LINES,
+    ...LOOKUP_ROLE_PREAMBLE_LINES,
     "",
     "INSTRUCTIONS",
-    "- Explain reasoning clearly and concisely.",
-    "- State uncertainty when context is incomplete.",
-    "- Do not invent hidden state, targets, or board conditions.",
-    "- For verbatim fidelity, quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections; present genuinely relevant excerpts verbatim with an explanation; never invent rule numbers or text.",
-    // REQ-168: common Magic-adjacent community phrasing (see the phrasing
-    // glossary) is in-domain and must be answered; the refusal persona is
-    // reserved for input genuinely unrelated to Magic. One instruction line —
-    // no classifier, validator, or detection branch.
-    "- Treat common Magic-adjacent phrasing (combo, infinite combo, aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet, and similar community terms — see the phrasing glossary) as in-domain and answer it normally; reserve not found in the rules corpus for input that is genuinely not about Magic — ask the user to check spelling or rephrase toward a Magic term; never answer the off-domain question directly.",
+    ...SHARED_INSTRUCTION_LINES,
+    // REQ-168: common Magic-adjacent community phrasing is in-domain and must be answered; the refusal
+    // persona is reserved for input genuinely unrelated to Magic. One instruction line -- no
+    // classifier, validator, or detection branch.
+    LOOKUP_OFF_DOMAIN_INSTRUCTION,
     "",
     "MTG REFERENCE",
-    MTG_PROMPT_REFERENCE
+    MTG_LOOKUP_REFERENCE
   ];
 
   // REQ-238: right after MTG REFERENCE, a description of each turn step the question names.
@@ -177,7 +172,6 @@ export function buildLookupPromptText(
     gameRulesSection,
     supplementalRulesSection,
     cardSection,
-    officialRulingsSection,
     comboSection,
     conversationHistorySection
   ]) {

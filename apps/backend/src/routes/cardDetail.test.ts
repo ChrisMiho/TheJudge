@@ -23,6 +23,19 @@ describe("Backend - GET /api/cards/:oracleId", () => {
     expect(response.body).toEqual(URZA_DETAIL);
   });
 
+  it("REQ-245: serves the same block as before -- power, toughness and loyalty stay backend-only", async () => {
+    const withStats: CardDetailEntry = { ...URZA_DETAIL, keywords: [], power: "2", toughness: "4", loyalty: "3" };
+    const app = createApp({ cardDetailIndex: new Map([["urza-oracle-id", withStats]]) });
+
+    const response = await request(app).get("/api/cards/urza-oracle-id");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ...URZA_DETAIL, keywords: [] });
+    expect(response.body).not.toHaveProperty("power");
+    expect(response.body).not.toHaveProperty("toughness");
+    expect(response.body).not.toHaveProperty("loyalty");
+  });
+
   it("returns a not-found response for an unknown oracle id", async () => {
     const app = createApp({ cardDetailIndex: new Map([["urza-oracle-id", URZA_DETAIL]]) });
 

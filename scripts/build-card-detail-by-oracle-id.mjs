@@ -56,9 +56,27 @@ function brotliCompress(buffer) {
   });
 }
 
+/**
+ * REQ-245: a card's power, toughness or loyalty as Scryfall prints it ("2", "*", "3"), or undefined
+ * when the card has none. A multi-face card's value is its faces' values joined with " // " (only
+ * faces that have one).
+ */
+export function getCombatStat(card, field) {
+  const own = card?.[field];
+  if (typeof own === "string" && own.trim().length > 0) return own.trim();
+  const faces = Array.isArray(card?.card_faces) ? card.card_faces : [];
+  const values = faces
+    .map((face) => (typeof face?.[field] === "string" ? face[field].trim() : ""))
+    .filter((value) => value.length > 0);
+  return values.length > 0 ? values.join(" // ") : undefined;
+}
+
 export function buildDetailEntry(card) {
   const typeLine = getTypeLine(card);
   const { supertypes, subtypes } = parseTypeLine(typeLine);
+  const power = getCombatStat(card, "power");
+  const toughness = getCombatStat(card, "toughness");
+  const loyalty = getCombatStat(card, "loyalty");
 
   return {
     oracleText: getOracleText(card),
@@ -70,7 +88,11 @@ export function buildDetailEntry(card) {
     subtypes,
     // REQ-180: Scryfall's keyword list, feeds System 3's keyword signal;
     // never reaches the up-front frontend card list.
-    keywords: getKeywords(card)
+    keywords: getKeywords(card),
+    // REQ-245: power, toughness and loyalty, backend-only like `keywords`; omitted when the card has none.
+    ...(power !== undefined ? { power } : {}),
+    ...(toughness !== undefined ? { toughness } : {}),
+    ...(loyalty !== undefined ? { loyalty } : {})
   };
 }
 

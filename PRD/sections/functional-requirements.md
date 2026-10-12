@@ -563,7 +563,7 @@
 - Priority: high
 - Description: The backend must include full card metadata — including oracle text — for every card in every populated zone section of the assembled LLM prompt, not only stack items.
 - Acceptance Criteria:
-  - every card in every populated zone section includes `oracleText`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`, `targets`, and `contextNotes` lines in the assembled prompt
+  - every card in every populated zone section includes `oracleText`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`, `targets`, and `contextNotes` lines in the assembled prompt, plus `power`, `toughness` and `loyalty` lines when the card has them (REQ-245); `oracleText` keeps the card's line breaks (REQ-245); the card's WotC rulings follow its block at its first appearance (REQ-241)
   - empty oracle text after whitespace trim emits `oracleText: (none) — no oracle text recorded for this card`
   - stack section retains stack-specific fields (`stackRole`, `caster`, `manaSpent`)
   - non-stack sections use `owner` and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is not emitted for non-stack items
@@ -1780,9 +1780,9 @@
 - Priority: high
 - Description: For `mode: "lookup"`, the backend must assemble one prompt that always runs question-driven rules retrieval, layers in per-card enrichment when a card is attached, omits game-state-only sections, and guards against off-domain questions.
 - Acceptance Criteria:
-  - the assembled prompt always includes the static MTG reference block (DEC-025), the always-on core game-rules topics (DEC-045 core set), and question-scored System 3 supplemental rules (DEC-046 / REQ-022)
-  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings (DEC-029), and System 3 scored against the question plus a compact signal for each attached card — name, type line, and keyword list — rather than the card's full oracle text (REQ-178)
-  - the assembled prompt omits zone sections, `PHASE GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state
+  - the assembled prompt always includes Quick Lookup's own MTG reference block, which describes only sections this mode contains (DEC-025, REQ-243), the always-on core game-rules topics (DEC-045 core set), and question-scored System 3 supplemental rules (DEC-046 / REQ-022)
+  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings directly under its block (DEC-029, REQ-241), and System 3 scored against the question plus a compact signal for each attached card — name, type line, and keyword list — plus the concept terms of its wording (REQ-234), rather than the card's full oracle text (REQ-178); each attached card's own text is searched separately for the two reserved per-card slots (REQ-235)
+  - the assembled prompt omits zone sections, System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state; it includes `PHASE GUIDANCE` only for turn steps the question names or an attached card's concept terms name (REQ-024, REQ-238)
   - the prompt instructs the model to quote only from the provided rule excerpts and to present the relevant ones verbatim plus an explanation
   - the prompt instructs the model to respond to off-domain / non-MTG questions in the "confused rules lookup" persona (DEC-108) rather than a direct answer or a generic capability refusal
   - the assembled prompt includes the user `QUESTION` and, when present, the `CONVERSATION HISTORY` section (REQ-027) using the existing placement rules
@@ -4152,7 +4152,7 @@
 - Description: The ask-ai prompt assembler resolves each submitted card's descriptive block by `cardId` (oracle id) from the backend card-detail artifact (REQ-175) instead of reading it from the client-sent `gameContext.zones` payload. The client stops sending the descriptive block; the assembled prompt/context stays byte-identical to today's.
 - Acceptance Criteria:
   - an equivalence test against the eval fixtures (`apps/backend/src/eval/`, `npm run test:eval`) proves the assembled prompt/context is byte-identical before and after the change, for both game and lookup modes
-  - the backend resolves `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes` server-side by `cardId`; an empty/absent oracle still emits `(none) — no oracle text recorded for this card`
+  - the backend resolves `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes` server-side by `cardId`, and the backend-only `power`, `toughness` and `loyalty` when the card has them (REQ-245); an empty/absent oracle still emits `(none) — no oracle text recorded for this card`
   - the client-sent `ZoneCardItem` (and lookup-mode card) carries only identity and user-entered fields; it no longer carries the descriptive block
   - mock-default local dev (`ASK_AI_PROVIDER=mock`) works unchanged; the resolution reads the committed artifact with no runtime network call
   - the provider/route boundary is intact; `POST /api/ask-ai` response shape is unchanged
@@ -6384,3 +6384,91 @@
 - Notes:
   - measured at intake (cited): 73% of "see rule X" pointers point at text that is not in the prompt
   - measured at build, 2026-10-12: over the corpus prompts (Quick Lookup for every case, In-Depth where a game state exists) 4,056 of the 4,523 pointers to absent text were resolved (89.7%); the rest hit the ten-per-prompt cap
+
+### REQ-241
+- Title: Wizards rulings sit under their card, framed as situation-specific
+- Priority: medium
+- Description: Each card's published Wizards (WotC) rulings print directly under that card's block, introduced as rulings for that card to apply only when the situation matches, instead of in a separate section after the rules (In-Depth) or after the cards (Quick Lookup).
+- Acceptance Criteria:
+  - In-Depth: each card's rulings follow its block in its zone section; a card shown more than once (copies, or several zones) carries its rulings once, under its first appearance (stack bottom to top, then zones in canonical order)
+  - Quick Lookup: each attached card's rulings follow its block in `CARD (looked up)`
+  - the standalone `OFFICIAL RULINGS (WotC reference)` section is retired; each card's rulings open with one line, "Rulings for <card> (published by Wizards of the Coast; apply one only when the situation matches it):", then one `- <date>: <comment>` line per ruling
+  - which rulings are selected, their per-card and section limits, and the WotC-only filter are unchanged; the rules gate's card check (REQ-222) still finds every ruling
+- Constraints:
+  - no request, response or frontend change
+- Dependencies:
+  - REQ-022 (section order, amended)
+  - REQ-074, REQ-167 (Quick Lookup per-card enrichment)
+  - REQ-222 (the card check)
+- Notes:
+  - located at intake (cited): `normalization.ts:9-11`, `promptFormatting.ts:280-285`
+  - built in `apps/backend/src/prompt/promptFormatting.ts` (`createRulingsPlacement`) and `promptAssembly.ts`; `apps/backend/src/prompt/promptStructure.test.ts` and `ruleLayoutCorpus.test.ts` assert the placement, the single appearance and the absent section over the whole corpus
+
+### REQ-242
+- Title: In-Depth chooses curated topics by card wording and question, not by zone presence
+- Priority: medium
+- Description: In In-Depth, the curated topics that used to be added because the stack or the battlefield held cards are instead added when the cards' wording (through the concept map, REQ-234) or the question's words match the topic. The always-on core, the turn-phase and combat-step topics, the delayed-trigger topic and REQ-220's replacement-interaction gate are unchanged. Quick Lookup is unchanged.
+- Acceptance Criteria:
+  - the stack-populated trigger (5 topics) and the battlefield-populated trigger (6 topics) are removed; each of those 11 topics is selected when a concept term from any card or a stemmed question word (REQ-233) matches one of the topic's trigger words
+  - trigger words live in one fixed committed table (`IN_DEPTH_TOPIC_TRIGGERS` in `apps/backend/src/gameRulesTopicSelection.ts`), built only from words of the topic's own title and its listed rules' section titles in the rule book; a test asserts that and that every trigger word appears in the committed rule index
+  - the always-on core, turn-phase and combat-step triggers, the delayed-trigger phase trigger and REQ-220's gate are unchanged
+  - Quick Lookup's selection is unchanged: four always-on topics plus REQ-220
+  - one shared selection function still serves both modes (REQ-220)
+  - acceptance: on the 9 corpus cases that exist in both versions, In-Depth keeps at least 17 of their 30 deciding rules in the prompt (measured at build, 2026-10-12: 27 of 30; `inDepthTopicGuard.test.ts`)
+- Constraints:
+  - card names and keywords never select a topic; card wording does, through the fixed concept map only
+  - no model call selects topics
+- Dependencies:
+  - REQ-022 (System 2 selection, amended)
+  - REQ-220 (the card-wording gate, amended)
+  - REQ-234 (the concept terms)
+- Notes:
+  - measured at intake (cited): across the 9 paired corpus cases, In-Depth delivered 17 of 30 deciding rules against Quick Lookup's 6 of 30, mostly through its zone-triggered layer topics
+  - located at intake: `gameRulesTopicSelection.ts:32-39, 134-136`
+  - consequence measured at build: two In-Depth layer cases (`layers-blood-moon-urborg-dependency-in-depth`, `layers-mycosynth-lattice-march-dependency-in-depth`) no longer carry rule 613.1d through the `layers-order` topic, because neither the question nor the cards' concept terms use a layer word; the rules gate baseline was raised, with the loss accepted, for exactly those two hits
+
+### REQ-243
+- Title: One instruction list, a reference block per mode, one stack numbering, and rules framed as binding
+- Priority: medium
+- Description: Both modes build their instructions from one shared list; each mode gets its own reference block that describes only sections that mode contains; the prompt numbers the stack one way; and the rules are framed once as the binding rules of the game, with a single statement that they never override the submitted game state or a card's oracle text.
+- Acceptance Criteria:
+  - one shared instruction list in code (`SHARED_INSTRUCTION_LINES`) serves both modes: explain reasoning, state uncertainty, never invent hidden state, quote rule text verbatim only from the rules sections of the prompt, and the rules-framing lines below; mode additions only: Quick Lookup's off-domain line (REQ-168) and In-Depth's follow-up line
+  - the off-domain line keeps REQ-168's meaning — common Magic-adjacent phrasing is in-domain; the "not found in the rules corpus" reply is reserved for input genuinely not about Magic, with a request to check spelling or rephrase — and drops its pointer to a phrasing glossary the prompt does not contain, and its garbled clause
+  - In-Depth's reference block keeps today's content; Quick Lookup's block keeps the turn order, the stack's resolution order and the layer list, and omits the app's turn-phase field, the zone model, the scope note and any mention of a section Quick Lookup lacks
+  - the prompt numbers the stack one way, 1-based to match the stack section's `Stack item N` labels, with item 1 the bottom; the preamble's `stack[0]` wording goes, and the stack-order line appears only in In-Depth; bottom-to-top meaning is unchanged
+  - rules framing: one instruction says the provided Comprehensive Rules excerpts are the binding rules of the game; one instruction says rules and rulings never override the submitted game state (stack order, zones, targets, notes) or a card's oracle text; the per-section disclaimers on `GAME RULES (reference)`, the excerpt section and the rulings are removed, and the reference block's "use layers as shared vocabulary" sentence goes
+  - unchanged, pending a later paid test: the preamble's "use only the provided context" line, and the single user-message channel
+  - acceptance: over every committed corpus case's built prompts (REQ-240's set), 0 references to a section absent from that prompt's mode (`ruleLayoutCorpus.test.ts`)
+- Constraints:
+  - prompt text only; no request, response or frontend change
+  - bottom-to-top stack semantics preserved (`technical-design-rules.md`)
+- Dependencies:
+  - REQ-022 (the rules section disclaimer, amended)
+  - REQ-074 (Quick Lookup assembly, amended)
+  - REQ-168 (the off-domain line)
+  - REQ-024 (phase guidance)
+- Notes:
+  - located at intake (cited): `mtgReference.ts:7, 18`; stack numbering 0-based at `promptFormatting.ts:15`, 1-based at `:225`; the glossary pointer at `promptAssembly.ts:149`; the disclaimers at `gameRules.ts:15-16`
+  - the arm-R recipe file (`apps/backend/src/eval/answer-quality/arm-r-recipe.json`) names the layers paragraph it replaces; its `replaces` text lost the "use layers as shared vocabulary" sentence here, with the recipe text and its approval date unchanged
+
+### REQ-245
+- Title: Card blocks in the prompt carry power, toughness and loyalty, and keep oracle line breaks
+- Priority: medium
+- Description: The backend card-detail artifact carries each card's power, toughness and loyalty, and every card block in the prompt prints them when the card has them; oracle text keeps its line breaks, so each ability reads on its own line.
+- Acceptance Criteria:
+  - the card-detail build writes `power`, `toughness` and `loyalty` from the Scryfall bulk record, omitted when the card has none; a multi-face card's values are its faces' values joined with " // " (only faces that have one)
+  - the fields are backend-only, like `keywords` (REQ-180): the `GET /api/cards/:oracleId` block and the frontend's up-front card data are unchanged (the route leaves the three fields out, with a test)
+  - every card block in both modes prints `power:`, `toughness:` and `loyalty:` lines when present, right after `subtypes:`, and no line when absent
+  - oracle text keeps its line breaks in the prompt; other whitespace is normalised as today; the one-line oracle text still feeds retrieval, so search texts and their frozen vectors are unchanged
+  - NFR-017's package budget test passes; the artifact's size change is recorded
+- Constraints:
+  - no request, response or frontend change; no new runtime fetch
+- Dependencies:
+  - REQ-030 (per-card prompt fields, amended)
+  - REQ-176 (server-side card resolution, amended)
+  - REQ-180 (the backend-only field precedent)
+  - NFR-017 (package budget)
+- Notes:
+  - REQ-180's notes recorded this as card-data work outside the RAG gameplan; this requirement takes it up
+  - located at intake (cited): `cardDetail.ts:11-22`, `normalization.ts:15-16, 40-41`
+  - measured at build, 2026-10-12 (`node scripts/build-card-detail-by-oracle-id.mjs` over the committed-source Scryfall bulk, 37,854 cards): power on 19,853 cards, loyalty on 339, 237 multi-face values; no other field of any card changed; the artifact grew from 1,701,595 to 1,735,902 bytes (+34,307); the prices artifact was byte-identical

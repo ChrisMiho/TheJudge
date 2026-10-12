@@ -74,16 +74,17 @@ describe("Backend - Ask AI", () => {
       expect(formatSupplementalRulesSection([])).toBe("");
     });
 
-    it("renders header, disclaimer, and rule entries", () => {
+    it("renders the header, then the rules in rule-book order under a path label, with no disclaimer (REQ-239, REQ-243)", () => {
       const rules: RetrievedGameRule[] = [
         { ruleId: "116.1", sectionTitle: "Timing", text: "Unless a spell or ability has a timing restriction.", score: 10 },
         { ruleId: "116.2a", sectionTitle: "Timing", text: "A player may cast an instant spell any time.", score: 5 }
       ];
       const section = formatSupplementalRulesSection(rules);
-      expect(section).toContain("ADDITIONAL RELEVANT RULE EXCERPTS");
-      expect(section).toContain("They do not override the user's submitted game state");
+      expect(section.startsWith("ADDITIONAL RELEVANT RULE EXCERPTS\nGame Concepts \u203a Timing\n")).toBe(true);
+      expect(section).not.toContain("They do not override");
       expect(section).toContain("116.1. Unless a spell or ability has a timing restriction.");
       expect(section).toContain("116.2a. A player may cast an instant spell any time.");
+      expect(section.indexOf("116.1.")).toBeLessThan(section.indexOf("116.2a."));
     });
   });
 

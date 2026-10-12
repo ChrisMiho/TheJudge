@@ -1,5 +1,6 @@
 /**
- * Static MTG rules reference block included in every ask-ai prompt.
+ * The MTG reference block of an In-Depth prompt (REQ-243). It also describes the app's turn-phase field,
+ * the zone model and the scope note, which only an In-Depth prompt carries.
  * Kept under 2500 characters for token budget compliance.
  */
 export const MTG_PROMPT_REFERENCE = `Magic: The Gathering turns proceed in this order: beginning phase (untap, upkeep, draw), pre-combat main phase, combat phase, post-combat main phase, ending phase (end step, cleanup). The stack is a zone where spells and abilities wait to resolve; items resolve top to bottom.
@@ -17,4 +18,12 @@ Zones (app model):
 
 Only zones with cards appear in the user payload. A separate scope note lists empty or omitted zones.
 
-Continuous effects use a layer system (rule 613); state-based actions are not part of it and are checked separately whenever a player would receive priority (rule 704). When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially; use layers as shared vocabulary when explaining interactions.`;
+Continuous effects use a layer system (rule 613); state-based actions are not part of it and are checked separately whenever a player would receive priority (rule 704). When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially.`;
+
+/**
+ * The MTG reference block of a Quick Lookup prompt (REQ-243): the turn order, the stack's resolution
+ * order and the layer list, and nothing about a section, field or note a lookup prompt does not contain.
+ */
+export const MTG_LOOKUP_REFERENCE = `Magic: The Gathering turns proceed in this order: beginning phase (untap, upkeep, draw), pre-combat main phase, combat phase, post-combat main phase, ending phase (end step, cleanup). The stack is a zone where spells and abilities wait to resolve; items resolve top to bottom.
+
+Continuous effects use a layer system (rule 613); state-based actions are not part of it and are checked separately whenever a player would receive priority (rule 704). When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially.`;

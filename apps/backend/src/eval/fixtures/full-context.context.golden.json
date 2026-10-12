@@ -42,6 +42,7 @@
           "supertypes": [],
           "subtypes": [],
           "keywords": [],
+          "oracleTextDisplay": "Whenever a player casts a spell, unless that player pays {1}, you draw a card.",
           "targets": [
             {
               "kind": "none"
@@ -65,6 +66,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Draw three cards, then put two cards from your hand on top of your library in any order.",
       "caster": "Player 1",
       "targets": [],
       "manaSpent": 1,
@@ -83,6 +85,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Copy target instant or sorcery spell, then return it to its owner's hand. You may choose new targets for the copy.",
       "caster": "Player 2",
       "targets": [
         {

@@ -40,17 +40,7 @@
   "expected": {
     "expectedSystem2TopicIds": [
       "abilities-trigger-basics",
-      "abilities-zone-change-triggers",
-      "copying-spells-abilities",
       "effects-resolution-targets",
-      "effects-source-impossible",
-      "layers-order",
-      "layers-power-toughness",
-      "layers-timestamps-dependencies",
-      "replacement-effects-basics",
-      "replacement-etb-effects",
-      "spell-casting-choices",
-      "spell-casting-costs",
       "stack-and-priority",
       "targets-basics",
       "zones-basics"
