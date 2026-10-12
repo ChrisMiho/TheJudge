@@ -269,7 +269,7 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
         // topic carries (18); REQ-242 (topics chosen by wording, not zone presence) keeps the layers-order topic for the
         // two layer twins through the type-setting concept-map entry (REQ-234), so the count stays 18.
         expect(withTopic.length).toBe(18);
-        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(377);
+        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(378);
       });
     });
 

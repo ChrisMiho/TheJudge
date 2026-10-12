@@ -13,6 +13,7 @@
 //              every-rule cases, bench@5 >= 118, and the Necropotence rules in the top ten (both versions).
 //              Not an honest generalisation number (it saw the questions); the acceptance floors are the
 //              intake's own. Writes `percase-final.json`.
+// --fold-prefix / --final-name  Score other model folders (default F-fold and F-foldall).
 // --ranks      "caseId:ruleId,..." Also prints each corpus case's deciding rule's rank in the ordering.
 // --sets       suite,corpus,bench (default). `bench` is the 156-question benchmark with three unrelated
 //              cards attached, counted as exact-id hits in the top five (the intake's "bench@5").
@@ -39,6 +40,9 @@ const CASES_FILE = arg("--cases", join(MODELS, "data/cases.jsonl"));
 const MODE = args.includes("--cv") ? "cv" : args.includes("--final") ? "final" : "shipped";
 const SETS = arg("--sets", MODE === "final" ? "corpus,bench" : MODE === "cv" ? "suite,corpus,bench" : "suite,corpus").split(",");
 const RANK_CASES = (arg("--ranks", "") || "").split(",").filter(Boolean).map((pair) => pair.split(":"));
+// Model folder names under output/rule-search-model/onnx (a retrain goes into new folders, e.g. F-v2-fold0..4 and F-v2-foldall).
+const FOLD_PREFIX = arg("--fold-prefix", "F-fold");
+const FINAL_NAME = arg("--final-name", "F-foldall");
 const NECRO = ["necropotence-silence-borne-upon-a-wind-cleanup", "necropotence-silence-borne-upon-a-wind-cleanup-in-depth"];
 
 mkdirSync(OUT, { recursive: true });
@@ -188,7 +192,7 @@ const rankLines = [];
 const textLen = new Map(index.map((e) => [e.ruleId, e.text.length]));
 const scorers = new Map();
 async function scorerFor(c) {
-  const name = MODE === "cv" ? `F-fold${c.fold}` : "F-foldall";
+  const name = MODE === "cv" ? `${FOLD_PREFIX}${c.fold}` : FINAL_NAME;
   if (!scorers.has(name)) scorers.set(name, await modelScorer(name));
   return scorers.get(name);
 }

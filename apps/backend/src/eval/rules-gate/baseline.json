@@ -195,8 +195,8 @@
       "miss": []
     },
     "combat-quest-for-pure-flame-divided-damage": {
-      "hit": ["601.2d", "614.1a"],
-      "miss": []
+      "hit": ["601.2d"],
+      "miss": ["614.1a"]
     },
     "combat-torch-the-witness-deathtouch-excess": {
       "hit": ["702.2b", "120.4a"],
@@ -240,8 +240,8 @@
       "miss": []
     },
     "commander-devoid-color-identity": {
-      "hit": ["702.114a"],
-      "miss": ["903.4"]
+      "hit": ["903.4", "702.114a"],
+      "miss": []
     },
     "commander-scorched-geyser-basic-land-types": {
       "hit": ["305.6", "205.3i"],
@@ -336,8 +336,8 @@
       "miss": []
     },
     "copies-morphic-tide-and-sakashimas-student": {
-      "hit": ["614.12"],
-      "miss": ["707.2"]
+      "hit": ["614.12", "707.2"],
+      "miss": []
     },
     "copies-null-profusion-and-isochron-scepter": {
       "hit": ["707.12"],
@@ -353,8 +353,8 @@
       "miss": []
     },
     "copies-shattering-spree-replicate-countered": {
-      "hit": ["702.56a"],
-      "miss": ["707.10"]
+      "hit": ["702.56a", "707.10"],
+      "miss": []
     },
     "copies-token-copy-of-clone-not-double-faced": {
       "hit": ["707.8a"],
@@ -457,8 +457,8 @@
       "miss": []
     },
     "dfc-modal-double-faced-card-legality": {
-      "hit": ["712.8f", "712.12"],
-      "miss": []
+      "hit": ["712.12"],
+      "miss": ["712.8f"]
     },
     "dfc-sever-the-bloodline-double-faced-name": {
       "hit": [],
@@ -585,8 +585,8 @@
       "miss": []
     },
     "exchange-arcanum-wings": {
-      "hit": [],
-      "miss": ["701.12a"]
+      "hit": ["701.12a"],
+      "miss": []
     },
     "exert-ahn-crop-champion": {
       "hit": ["701.43a"],
@@ -827,8 +827,8 @@
       "inTopic": ["613.1a"]
     },
     "layers-hand-size-timestamp-praetors-counsel": {
-      "hit": ["613.7", "402.2"],
-      "miss": []
+      "hit": ["402.2"],
+      "miss": ["613.7"]
     },
     "layers-hand-size-timestamp-thought-eater": {
       "hit": ["613.7", "402.2"],
@@ -839,8 +839,8 @@
       "miss": []
     },
     "layers-humility-then-opalescence": {
-      "hit": ["613.1d", "613.1f", "613.4b", "613.6"],
-      "miss": ["613.7"]
+      "hit": ["613.1d", "613.1f", "613.4b", "613.6", "613.7"],
+      "miss": []
     },
     "layers-humility-then-opalescence-in-depth": {
       "hit": ["613.6"],
@@ -852,8 +852,8 @@
       "miss": []
     },
     "layers-mycosynth-lattice-march-dependency": {
-      "hit": ["613.1d", "613.8a", "613.8b"],
-      "miss": ["704.5f"]
+      "hit": ["613.8a", "613.8b"],
+      "miss": ["613.1d", "704.5f"]
     },
     "layers-mycosynth-lattice-march-dependency-in-depth": {
       "hit": [],
@@ -1172,8 +1172,8 @@
       "inTopic": ["616.1", "616.1f"]
     },
     "replacement-byrke-and-branching-evolution": {
-      "hit": ["614.1a", "122.6"],
-      "miss": []
+      "hit": ["614.1a"],
+      "miss": ["122.6"]
     },
     "replacement-crafty-cutpurse-anointed-procession": {
       "hit": ["614.12"],
@@ -1181,8 +1181,8 @@
       "inTopic": ["616.1"]
     },
     "replacement-damia-thought-reflection-draw": {
-      "hit": ["614.1a", "614.11"],
-      "miss": []
+      "hit": ["614.1a"],
+      "miss": ["614.11"]
     },
     "replacement-daunting-defender-and-pyroclasm": {
       "hit": ["615.10"],
@@ -1292,8 +1292,8 @@
       "miss": []
     },
     "resolution-intellect-devourer-leaves-before-resolving": {
-      "hit": [],
-      "miss": ["610.3b"]
+      "hit": ["610.3b"],
+      "miss": []
     },
     "resolution-scroll-of-isildur-illegal-target": {
       "hit": ["608.2b"],
@@ -1525,12 +1525,12 @@
       "miss": []
     },
     "triggers-apnap-blood-artists-at-one-life": {
-      "hit": ["704.3", "704.5a"],
-      "miss": ["603.3b"]
-    },
-    "triggers-apnap-blood-artists-at-one-life-in-depth": {
       "hit": ["603.3b", "704.3", "704.5a"],
       "miss": []
+    },
+    "triggers-apnap-blood-artists-at-one-life-in-depth": {
+      "hit": ["603.3b", "704.3"],
+      "miss": ["704.5a"]
     },
     "triggers-becomes-tapped-not-entering-tapped": {
       "hit": ["603.2e"],
