@@ -24,6 +24,7 @@
 - Question: answer `PRD/work/right-rules-in-order/GATE-QUESTIONS.md` — 39 slots (new REQ-233–245; 19 amended REQ/NFR/FLOW entries; 7 section docs), each `accept`, `edit` or `reject`, with a reason for edit or reject. Two slots need a deliberate yes: REQ-232 (may the shipped search model train on the local practice suite) and REQ-234 (the concept map reverses REQ-220's recorded rejection of card-wording terms).
 - Evidence: `PRD/work/right-rules-in-order/QUALITY-CHECK.md` (PASS, no findings); `PRD/work/right-rules-in-order/DESIGN-BRIEF.md`.
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/291
+- Answered 2026-10-11: all 39 slots `accept` (see `## Instruction ledger`). Remaining step: merge the docs PR.
 - Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` picks it up, or run `/graph-implement PRD/work/right-rules-in-order/`.
 
 ## Dispatch prompts
@@ -141,3 +142,5 @@ Report back: PASS or FAIL, the complete finding list, the commit SHA and push re
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Luna gets the right rules in an order she can follow: trained search model, search fixes, prompt fixes" (owner launch request, 2026-10-11, with the staged graph brief) | answered-once | shape | — |
+| "Accept all recommended, ask for input on ones that you need input from me for" (owner's answer to the 39 GATE-QUESTIONS.md slots, given in session 2026-10-11; 38 filled accept by the driver at the owner's request, REQ-232 asked separately) | answered-once | define | — |
+| "yes it does" (owner's answer, in session 2026-10-11, to whether the practice-suite permission covers training the shipped search model; REQ-232 filled accept by the driver) | answered-once | define | — |

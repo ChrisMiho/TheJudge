@@ -81,7 +81,7 @@ longer apply as measured.
 +  - measured at intake (`right-rules-in-order` intake, probe session 4, 2026-10-11, cited, not re-derived): card keywords plus dot stripping together moved check-half citations 223 → 252 on today's model; a "can't" → "cannot" mapping measured zero; stemming cost the three cases above a few ranks before training
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -138,7 +138,7 @@ intake measured the recipe without the map at 432 check-half citations instead o
 +  - REQ-220's 2026-10-07 measurement rejected adding "replacement effect" / "prevention effect" from card wording on the then-shipped stock model; this requirement adds a broader, fixed map on the trained model and is held to bench@5 ≥ 118 (REQ-236)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -187,7 +187,7 @@ instead of 449.
 +  - measured at intake (cited): the recipe without per-card search scored 441 check-half citations against 449 and bench@5 127 against 125; one extra embedding costs about 4.5 ms per card on a Mac; the post-deploy live timing records the Lambda figure
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -258,7 +258,7 @@ citations) rather than about 449.
 +  - about 7–8 minutes to train the 100% model on an Apple GPU
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -314,7 +314,7 @@ model, so REQ-236 cannot ship; search stays on the stock model.
 +  - storage design per the `right-rules-in-order` intake (C.5, C.6), cited
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -365,7 +365,7 @@ gets step summaries.
 +  - measured at intake on the saved prompts of the paid runs (cited): In-Depth answered `necropotence-silence-borne-upon-a-wind-cleanup` right 10 of 12 times, Quick Lookup 6 of 12; Quick Lookup's prompt had 703.4p fifth, after the priority rules, 514.3 without 514.3a, and no step guidance; in 5 of 6 Quick Lookup misses Luna found the priority window and still ruled that Silence applies (pooled p ≈ 0.04, a consistent mechanism, not yet proven — the post-merge paid run is the proof)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -413,7 +413,7 @@ the doubled numbers.
 +  - measured at intake (cited): 370 index pieces (13%) need their parent's lead-in to make sense
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -467,7 +467,7 @@ the three topics stay as they are.
 +  - takes up the follow-up REQ-179's notes recorded as out of scope on 2026-10-07 (expanding a rule that ends "the following rules:" into its sub-rules)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -508,7 +508,7 @@ rules, framed as general reference.
 +  - located at intake (cited): `normalization.ts:9-11`, `promptFormatting.ts:280-285`
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -556,7 +556,7 @@ zones are populated.
 +  - located at intake: `gameRulesTopicSelection.ts:32-39, 134-136`
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -609,7 +609,7 @@ they are, including the references to absent sections.
 +  - located at intake (cited): `mtgReference.ts:7, 18`; stack numbering 0-based at `promptFormatting.ts:15`, 1-based at `:225`; the glossary pointer at `promptAssembly.ts:149`; the disclaimers at `gameRules.ts:15-16`
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -648,7 +648,7 @@ text Luna doesn't have.
 +  - measured at intake (cited): 73% of "see rule X" pointers point at text that is not in the prompt
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -692,7 +692,7 @@ loyalty, with abilities run together.
 +  - located at intake (cited): `cardDetail.ts:11-22`, `normalization.ts:15-16, 40-41`
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -749,7 +749,7 @@ requirements; accept or edit it to match whatever you accepted above.
 +  - System 3 owns all relevance-scored card/question-driven retrieval including oracle-keyword signals; REQ-220's wording gate and REQ-242's trigger table are fixed matching, not scoring
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -782,7 +782,7 @@ corrected version, pinned by a test to the rules it summarises.
 +  - a Quick Lookup prompt carries `PHASE GUIDANCE` right after `MTG REFERENCE` when its question names a turn step or an attached card's concept terms do, with one summary per named step, at most three, from the same strings (REQ-238)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -806,7 +806,7 @@ REQ-241 if those are accepted.
 +  - every card in every populated zone section includes `oracleText`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`, `targets`, and `contextNotes` lines in the assembled prompt, plus `power`, `toughness` and `loyalty` lines when the card has them (REQ-245); `oracleText` keeps the card's line breaks (REQ-245); the card's WotC rulings follow its block at its first appearance (REQ-241)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -837,7 +837,7 @@ requirements.
 +  - the assembled prompt omits zone sections, System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state; it includes `PHASE GUIDANCE` only for turn steps the question names or an attached card's concept terms name (REQ-024, REQ-238)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -861,7 +861,7 @@ search for the two reserved slots — still never merged into the main query.
 +  - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings directly under it (DEC-029, REQ-241) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus a compact signal for every attached card — name, type line, and keyword list — plus the concept terms of its wording (REQ-234). The main query never carries each card's full oracle text, which was measured to drop supplemental recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178); each card's text is searched on its own, separately, for the two reserved per-card slots (REQ-235).
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -884,7 +884,7 @@ accepted.
 +  - the backend resolves `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes` server-side by `cardId`, and the backend-only `power`, `toughness` and `loyalty` when the card has them (REQ-245); an empty/absent oracle still emits `(none) — no oracle text recorded for this card`
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -920,7 +920,7 @@ and keywords; REQ-234 and the turn-step addition can't ship as designed.
 +  - amended by `right-rules-in-order`: the ban on raw card text, context notes and zone ids stands; fixed rule-book terms join the query — concept terms (REQ-234) and the In-Depth turn step. Measured at intake (cited): the turn step moved Necropotence's 514.3a from 17th to 8th in In-Depth on the stock model; raw card text in the embedding dropped bench@5 from 118 to 96, confirming this requirement's concern
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -961,7 +961,7 @@ two rules stay missing, and the labels and glossary have no data.
 +  - amended by `right-rules-in-order` (2026-10-11): the parser fixes above were found at intake (cited, not re-derived); the follow-up recorded above as out of scope — expanding a rule that ends "the following rules:" into its sub-rules, including 117.3a–d — is taken up by REQ-240, which adds lists to search excerpts and to curated topics through the manifest, so this requirement's exact-number exclusion and its topic data test hold unchanged
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -994,7 +994,7 @@ the hand-made list.
 +  - the power, toughness and loyalty fields noted above as out of this gameplan's scope are taken up by REQ-245
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1031,7 +1031,7 @@ OpenAI mismatch stays silent.
 +  - amended by `right-rules-in-order`: the shipped model became the Magic-trained MiniLM (REQ-236), exported as per-channel, reduced-range int8 to match the stock model's layout (a per-tensor export lost 23 citations at intake, cited); the embedding text `sectionTitle: text` is unchanged — labelled rule text inside the vectors measured −17 check-half citations at intake, so labels go in the prompt (REQ-239), not the vectors
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1061,7 +1061,7 @@ at a weight it was not tuned for.
 +  - amended by `right-rules-in-order` (2026-10-11): `alpha` moves to 0.65 with the Magic-trained model (REQ-236), chosen on the practice suite's tuning half at intake (cited, not re-derived), inside the accepted `[0.50, 0.70]` band; the benchmark floors and the 12 labelled checks above remain gates for that change. Ties now fall back to rule-book order (REQ-233)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1088,7 +1088,7 @@ can't ship.
 +  - the local embedding model is never fetched at cold start or per request. Because the Magic-trained model (REQ-236) cannot be committed to the public repository, it is stored in the project's private S3 bucket and fetched only when the deploy package is built (REQ-237), which adds no runtime external integration; this relieves neither budget — the model stays in the non-data reserve at about the same size
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1113,7 +1113,7 @@ which would no longer be the one in use.
 +  - the deploy fails, rather than silently degrading, when the packaged model cache is absent or unverified: the packaging script fills `apps/backend/data/models/<model-id>/` from the private S3 bucket (REQ-237), refuses without `apps/backend/data/models/<model-id>/onnx/model_quantized.onnx` whose files all match the committed manifest's hashes, and refuses when the committed rule embeddings name a different model; each refusal is asserted
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1138,7 +1138,7 @@ reserved slots if REQ-235 is accepted.
 +  - with per-card search (REQ-235), the reserved per-card slots stay two at every cap and the added slots come from the main ranking's `runnerUp`, so a larger-cap call's selected set contains the smaller-cap call's set — proven in `preparation.test.ts`
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1169,7 +1169,7 @@ requirements.
 +  - this gate selects this one topic only; elsewhere card wording selects topics only through REQ-242's fixed trigger table, in In-Depth; card names and keywords never select a System 2 topic
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1204,7 +1204,7 @@ of 449.
 +  - the trained model's suite scores are a one-time acceptance measurement taken locally at build, reported as counts, never a standing gate in `npm test`, `npm run quality:check` or CI
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1228,7 +1228,7 @@ comes from; nothing about the budget changes.
 +  - amended by `right-rules-in-order` (2026-10-11): the bundled model is now the Magic-trained MiniLM (REQ-236), fetched from the project's private S3 bucket when the deploy package is built rather than from Hugging Face (REQ-237); it is never fetched at cold start, so the runtime gains no external dependency. Its size is unchanged (about 23 MB, inside the non-data reserve); `node --test scripts/lambda-package-budget.test.mjs` passes with it and with the rebuilt rule-embeddings artifact, and the measured figures are recorded at build
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1253,7 +1253,7 @@ not from game state).
 +  7. Backend assembles one lookup-mode prompt: question-driven rules retrieval (Quick Lookup's MTG reference block, always-on core game-rules topics, System 3 supplemental) always runs, with a step summary when the question names a turn step (REQ-238); when a card is attached, per-card enrichment (full metadata incl. oracle text with its WotC rulings directly under it, REQ-241, and a System 3 query extended with that card's name, type line, keywords and concept terms — not its oracle text, REQ-178, REQ-234 — plus a separate search of the card's own text for the two reserved slots, REQ-235) layers in; game-state-only sections are always omitted. Off-domain questions get the "confused rules lookup" persona response rather than a direct answer. Backend returns a plain-text answer.
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1274,7 +1274,7 @@ attached.
 +  5. Backend assembles one lookup-mode prompt: per-card full metadata with each card's WotC rulings directly under it (REQ-241) for every attached card, System 3 supplemental retrieval scored over the question plus each attached card's name, type line, keywords and concept terms — not its full oracle text (REQ-178, REQ-234) — plus a separate search of each card's own text for the two reserved slots (REQ-235), a step summary when the question names a turn step (REQ-238), and combo enrichment over the card set when explicit combo intent is present; game-state-only sections stay omitted (REQ-167 / DEC-107).
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1492,7 +1492,7 @@ edit it to match what you accepted above.
 +  model call produces search terms or selects topics at request time (REQ-234, REQ-242).
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1606,7 +1606,7 @@ the expected result.
 preview output shows; a mismatch with this expected record is a build finding,
 not a silent rewrite.)
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1657,7 +1657,7 @@ game state.
 +  targets, notes, stated game state, or a card's oracle text (REQ-243).
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1785,7 +1785,7 @@ rewritten to match the accepted requirements.
 +  bounded ≤2500-char constant. (DEC-045, DEC-025, REQ-243)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1898,7 +1898,7 @@ rewritten to match the accepted requirements.
 +  12,000-character budget per prompt. (DEC-046, REQ-022, REQ-235, REQ-240)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1973,7 +1973,7 @@ prompt rules; the retraining step is written nowhere durable.
 list headed by the backend's framing rules; both sit together in the current
 file, directly after the player-display-names bullet.)
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -2006,5 +2006,5 @@ behaviour.
 +- Backed by: DEC-032, DEC-046, REQ-178, REQ-179, REQ-180, REQ-181, REQ-182, REQ-183, REQ-184, REQ-233, REQ-234, REQ-235, REQ-236, REQ-237, REQ-239, REQ-240
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
