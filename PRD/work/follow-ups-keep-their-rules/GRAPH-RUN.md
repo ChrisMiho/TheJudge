@@ -21,6 +21,7 @@
 ## Open gate
 
 - Question: answer the 11 verdict slots in `PRD/work/follow-ups-keep-their-rules/GATE-QUESTIONS.md` (accept, edit with a reason, or reject with a reason), then merge the docs PR to build.
+- PR: https://github.com/ChrisMiho/TheJudge/pull/296 (docs-only, `thejudge-auto/follow-ups-keep-their-rules → main`)
 - Evidence: gate-qc PASS (row 4); `DESIGN-BRIEF.md`; `evidence/offline-measurement.md`.
 - Resume: after the merge, `/graph-implement PRD/work/follow-ups-keep-their-rules/`.
 
