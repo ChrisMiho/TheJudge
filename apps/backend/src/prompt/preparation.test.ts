@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { assertVectorsMatchRuntimeModel } from "../embeddingModel.js";
 import { loadGameRulesTopics, type GameRulesTopic } from "../gameRules.js";
 import { loadGameRulesRuleIndex, type GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { CardDetailEntry } from "../cardDetail.js";
@@ -188,7 +189,9 @@ describe("Backend - Ask AI", () => {
         { cardId: "questing-beast", name: "Questing Beast" }
       ]);
       expect(prepared.promptText).toContain("CARD (looked up)");
-      expect(prepared.promptText).toContain("OFFICIAL RULINGS (WotC reference)");
+      expect(prepared.promptText).not.toContain("OFFICIAL RULINGS");
+      expect(prepared.promptText).toContain("Rulings for Questing Beast");
+      expect(prepared.promptText).toContain("- 2019-10-04: Combat damage can't be prevented.");
     });
 
     it("scores supplemental rules and rulings from every attached card, in order (REQ-167)", () => {
@@ -275,7 +278,9 @@ describe("Backend - Ask AI", () => {
     );
     const frozen = JSON.parse(
       readFileSync(path.join(currentDir, "preparation.crossReferenceQueryEmbedding.json"), "utf8")
-    ) as { question: string; vector: number[] };
+    ) as { model: string; question: string; vector: number[] };
+    // REQ-237: a frozen vector made by another model than the running one is refused.
+    assertVectorsMatchRuntimeModel("The cross-reference regression test's frozen query embedding", frozen.model);
 
     // `usedSemantic` rides through `enrichmentDebug.supplemental` at runtime
     // (preparation.ts passes the debug object through by reference) but isn't
@@ -365,10 +370,9 @@ describe("Backend - Ask AI", () => {
       expect(usedSemanticOf(first)).toBe(false);
       expect(first.promptText).toBe(second.promptText);
       expect(first.enrichmentDebug?.supplemental.selected).toEqual(second.enrichmentDebug?.supplemental.selected);
-      // The lexical result is a genuinely different ranking (no embedding to
-      // rank by) — 701.8b is not among its top 5, proving the two paths are
-      // actually independent, not coincidentally identical.
-      expect(first.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId)).not.toContain("701.8b");
+      // (Before the REQ-233 token fixes this test also asserted that 701.8b was not among the
+      // lexical top ten. Stemmed words now bring the rule into the lexical ranking too, so that
+      // assertion no longer separates the two paths; `usedSemantic === false` above is the proof.)
     });
   });
 
@@ -398,12 +402,12 @@ describe("Backend - Ask AI", () => {
       return parsed.question;
     }
 
-    it("DEFAULT_SUPPLEMENTAL_RULE_CAP is 10 — production's current cap", () => {
-      expect(DEFAULT_SUPPLEMENTAL_RULE_CAP).toBe(10);
+    it("DEFAULT_SUPPLEMENTAL_RULE_CAP is 15 — production's current cap (REQ-190)", () => {
+      expect(DEFAULT_SUPPLEMENTAL_RULE_CAP).toBe(15);
     });
 
     it.each(SIX_GOLD_CASE_IDS)(
-      "with no cap override, %s's assembled prompt is byte-identical to an explicit cap of 10 (the default)",
+      "with no cap override, %s's assembled prompt is byte-identical to an explicit cap of 15 (the default)",
       (caseId) => {
         const request: LookupAskAiRequest = { mode: "lookup", question: loadGoldQuestion(caseId) };
 
@@ -413,20 +417,20 @@ describe("Backend - Ask AI", () => {
           collectEnrichmentDebug: true,
           queryEmbedding: null
         });
-        const withExplicitTen = preparePromptInput(request, {
+        const withExplicitDefault = preparePromptInput(request, {
           gameRulesTopics: realGameRulesTopics,
           gameRulesRuleIndex: realRuleIndex,
           collectEnrichmentDebug: true,
           queryEmbedding: null,
-          supplementalRuleCap: 10
+          supplementalRuleCap: 15
         });
 
-        expect(withDefault.promptText).toBe(withExplicitTen.promptText);
-        expect(withDefault.enrichmentDebug?.supplemental.selected.length).toBeLessThanOrEqual(10);
+        expect(withDefault.promptText).toBe(withExplicitDefault.promptText);
+        expect(withDefault.enrichmentDebug?.supplemental.selected.length).toBeLessThanOrEqual(15);
       }
     );
 
-    it("a cap-15 override extends the same ranking's runnerUp without changing the top 10", () => {
+    it("a cap-10 override is a prefix of the default ranking, which continues into the cap-10 runnerUp", () => {
       const request: LookupAskAiRequest = {
         mode: "lookup",
         question: loadGoldQuestion("illegal-target-partial-resolution")
@@ -436,14 +440,14 @@ describe("Backend - Ask AI", () => {
         gameRulesTopics: realGameRulesTopics,
         gameRulesRuleIndex: realRuleIndex,
         collectEnrichmentDebug: true,
-        queryEmbedding: null
+        queryEmbedding: null,
+        supplementalRuleCap: 10
       });
       const atFifteen = preparePromptInput(request, {
         gameRulesTopics: realGameRulesTopics,
         gameRulesRuleIndex: realRuleIndex,
         collectEnrichmentDebug: true,
-        queryEmbedding: null,
-        supplementalRuleCap: 15
+        queryEmbedding: null
       });
 
       const tenIds = atTen.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId) ?? [];

@@ -16,7 +16,7 @@ import {
   BENCHMARK_PATH,
   CARD_DETAIL_PATH,
   RULE_INDEX_PATH,
-  buildPollutionText,
+  buildPollutionCards,
   loadBenchmarkCorpus,
   runBenchmark,
   scoreBenchmarkSemantic
@@ -37,7 +37,7 @@ async function main() {
     ? await scoreBenchmarkSemantic(
         loadBenchmarkCorpus(BENCHMARK_PATH),
         loadGameRulesRuleIndex(RULE_INDEX_PATH),
-        buildPollutionText(loadCardDetailIndex(CARD_DETAIL_PATH)),
+        buildPollutionCards(loadCardDetailIndex(CARD_DETAIL_PATH)),
         (text) => localEmbeddingProvider.embed(text)
       )
     : runBenchmark();

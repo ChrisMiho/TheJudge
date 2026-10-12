@@ -257,6 +257,7 @@ async function runSuiteLive({ filters, outputPath }) {
     const prepared = preparePromptInput(buildCaseRequest(caseEntry), {
       ...resources,
       queryEmbedding: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
+      cardEmbeddings: queryEmbeddingByCaseId.cardEmbeddingsByCaseId?.get(caseEntry.id),
       collectEnrichmentDebug: true
     });
     const retrieval = describeRetrieval(prepared.enrichmentDebug?.supplemental, caseEntry.expected.decidingRuleIds, {
@@ -289,6 +290,7 @@ async function runLive() {
     const prepared = preparePromptInput(buildCaseRequest(caseEntry), {
       ...resources,
       queryEmbedding: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
+      cardEmbeddings: queryEmbeddingByCaseId.cardEmbeddingsByCaseId?.get(caseEntry.id),
       collectEnrichmentDebug: true
     });
     const retrieval = describeRetrieval(prepared.enrichmentDebug?.supplemental, caseEntry.expected?.decidingRuleIds, {

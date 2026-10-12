@@ -11,6 +11,7 @@ import {
   loadPromptResources,
   type PromptResources
 } from "../../../../../scripts/lib/prompt-fidelity.mjs";
+import { runtimeEmbeddingModelId } from "../../embeddingModel.js";
 import { preparePromptInput } from "../../prompt/preparation.js";
 import { askAiRequestSchema } from "../../validation/askAiRequest.js";
 import { BASELINE_PATH, loadBaseline } from "./baseline.js";
@@ -130,6 +131,8 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
       const hits = recorded.filter((caseEntry) => baseline.cases[caseEntry.id].miss.length === 0);
       const misses = recorded.filter((caseEntry) => baseline.cases[caseEntry.id].miss.length > 0).map((c) => c.id);
       expect(hits.length).toBe(16);
+      // right-rules-in-order, slice D (trained model, cap 15 with the relevance cutoff and keyword sets): the
+      // combat-damage-assignment case (510.1c) is back among the first-ship hits.
       expect(misses.sort()).toEqual([
         "panharmonicon-controller-not-entering-permanent",
         "restoration-angel-blink-resets-counters"
@@ -262,9 +265,11 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
       it("records the Manufactor + Esix case's four deciding rules as inTopic in the committed baseline (REQ-220)", () => {
         expect(baseline.cases["academy-manufactor-esix-treasure"].inTopic).toEqual(["614.1a", "616.1", "616.1e", "616.1f"]);
         const withTopic = Object.values(baseline.cases).filter((entry) => (entry.inTopic?.length ?? 0) > 0);
-        // 11 before the resolution-recipe-eval hard cases; the 16 new cases add seven In-Depth twins whose rules a curated topic carries.
+        // 11 before the resolution-recipe-eval hard cases; the 16 new cases add seven In-Depth twins whose rules a curated
+        // topic carries (18); REQ-242 (topics chosen by wording, not zone presence) keeps the layers-order topic for the
+        // two layer twins through the type-setting concept-map entry (REQ-234), so the count stays 18.
         expect(withTopic.length).toBe(18);
-        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(297);
+        expect(Object.values(baseline.cases).filter((entry) => entry.miss.length === 0).length).toBe(378);
       });
     });
 
@@ -427,7 +432,10 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
     });
 
     it("stores a SHA-256 of the query text beside every committed vector (the re-freeze hash)", () => {
-      const committed = JSON.parse(readFileSync(FROZEN_VECTORS_PATH, "utf8")) as FrozenVectorFile;
+      const file = JSON.parse(readFileSync(FROZEN_VECTORS_PATH, "utf8")) as { model: string; vectors: FrozenVectorFile };
+      // REQ-237: the file records the embedding model that made its vectors.
+      expect(file.model).toBe(runtimeEmbeddingModelId());
+      const committed = file.vectors;
       expect(Object.keys(committed).length).toBeGreaterThanOrEqual(18);
       for (const [id, entry] of Object.entries(committed)) {
         expect(entry.queryTextHash, id).toMatch(/^[0-9a-f]{64}$/);

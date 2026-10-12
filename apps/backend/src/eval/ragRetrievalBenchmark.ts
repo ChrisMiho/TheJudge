@@ -20,16 +20,23 @@ import { fileURLToPath } from "node:url";
 import {
   buildCompactCardSignal,
   buildQueryTokensFromParts,
+  buildRetrievalQuery,
+  loadGameRulesRuleEmbeddings,
   loadGameRulesRuleIndex,
   retrieveRulesForQuery,
-  type GameRulesRuleIndexEntry
+  type GameRulesRuleIndexEntry,
+  type PerCardSearchText,
+  type PerCardVector,
+  type RetrievalCard
 } from "../gameRulesRetrieval.js";
 import { loadCardDetailIndex, type CardDetailEntry } from "../cardDetail.js";
+import { assertVectorsMatchRuntimeModel, runtimeEmbeddingModelId } from "../embeddingModel.js";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 
 export const BENCHMARK_PATH = resolve(currentDir, "benchmark/rag-retrieval-benchmark.json");
 export const RULE_INDEX_PATH = resolve(currentDir, "../../data/gameRulesRuleIndex.json");
+export const RULE_EMBEDDINGS_PATH = resolve(currentDir, "../../data/gameRulesRuleEmbeddings.json");
 export const CARD_DETAIL_PATH = resolve(currentDir, "../../data/cardDetailByOracleId.json.br");
 /**
  * REQ-178/REQ-180 (review loop 1, B4/D5/E9): `cardDetailByOracleId.json.br` is
@@ -138,6 +145,53 @@ export function buildPollutionText(
     .join(" ");
 }
 
+/**
+ * REQ-178 / REQ-182: the same three fixed unrelated cards as `buildPollutionText`, as the cards
+ * production would carry -- name, type line and Scryfall keywords -- so the polluted condition runs
+ * the shipped query builder. By default the cards carry no oracle text, which is the condition the
+ * standing floors (REQ-182: 0.8526 clean, 0.8333 polluted) were set on: the main query never holds
+ * card text. `withOracleText` adds each card's oracle text too, so the concept map and per-card
+ * search (REQ-234, REQ-235) also run on the three unrelated cards -- the "bench" guard of
+ * `right-rules-in-order` against card text pulling search off course.
+ */
+export function buildPollutionCards(
+  cardDetailIndex: Map<string, CardDetailEntry>,
+  { withOracleText = false, cardNameIndex = loadCardNameByOracleId() }: { withOracleText?: boolean; cardNameIndex?: Map<string, string> } = {}
+): RetrievalCard[] {
+  const oracleIds = [...cardDetailIndex.keys()].sort();
+  return POLLUTION_ORACLE_INDEXES.map((index) => oracleIds[index % oracleIds.length])
+    .filter((id): id is string => typeof id === "string")
+    .flatMap((oracleId) => {
+      const entry = cardDetailIndex.get(oracleId);
+      return entry
+        ? [
+            {
+              cardId: oracleId,
+              name: cardNameIndex.get(oracleId) ?? "",
+              typeLine: entry.typeLine,
+              keywords: entry.keywords ?? [],
+              oracleText: withOracleText ? entry.oracleText : ""
+            }
+          ]
+        : [];
+    });
+}
+
+/**
+ * The polluted condition: either the old signal text (name, type line, keywords as one string) or
+ * the shipped shape, a list of cards.
+ */
+export type Pollution = string | readonly RetrievalCard[];
+
+function pollutedQuery(question: string, pollution: Pollution): ReturnType<typeof buildQueryTokensFromParts> & {
+  perCardTexts: PerCardSearchText[];
+} {
+  if (typeof pollution === "string") {
+    return { ...buildQueryTokensFromParts({ questionText: question, oracleText: pollution }), perCardTexts: [] };
+  }
+  return buildRetrievalQuery({ questionText: question, cards: pollution });
+}
+
 export type ConditionScore = { recall5: number; mrr: number };
 
 export type BenchmarkScoreResult = {
@@ -155,19 +209,19 @@ export type BenchmarkScoreResult = {
 export function scoreBenchmark(
   corpus: BenchmarkCorpus,
   ruleIndex: GameRulesRuleIndexEntry[],
-  pollutionText: string
+  pollution: Pollution
 ): BenchmarkScoreResult {
   const cleanRanks: number[] = [];
   const pollutedRanks: number[] = [];
 
   for (const item of corpus.items) {
-    const clean = buildQueryTokensFromParts({ questionText: item.question, oracleText: "" });
+    const clean = buildRetrievalQuery({ questionText: item.question, cards: [] });
     const cleanHits = retrieveRulesForQuery(clean.tokens, clean.queryRuleIds, ruleIndex, new Set(), 5).map(
       (rule) => rule.ruleId
     );
     cleanRanks.push(rankOf(cleanHits, item.expectedRuleId));
 
-    const polluted = buildQueryTokensFromParts({ questionText: item.question, oracleText: pollutionText });
+    const polluted = pollutedQuery(item.question, pollution);
     const pollutedHits = retrieveRulesForQuery(
       polluted.tokens,
       polluted.queryRuleIds,
@@ -191,8 +245,7 @@ export function runBenchmark(): BenchmarkScoreResult {
   const corpus = loadBenchmarkCorpus();
   const ruleIndex = loadGameRulesRuleIndex(RULE_INDEX_PATH);
   const cardDetailIndex = loadCardDetailIndex(CARD_DETAIL_PATH);
-  const pollutionText = buildPollutionText(cardDetailIndex);
-  return scoreBenchmark(corpus, ruleIndex, pollutionText);
+  return scoreBenchmark(corpus, ruleIndex, buildPollutionCards(cardDetailIndex));
 }
 
 /**
@@ -236,15 +289,21 @@ export class EmbedderUnavailableError extends Error {
 export async function scoreBenchmarkSemantic(
   corpus: BenchmarkCorpus,
   ruleIndex: GameRulesRuleIndexEntry[],
-  pollutionText: string,
-  embed: (text: string) => Promise<number[] | null>
+  pollution: Pollution,
+  embed: (text: string) => Promise<number[] | null>,
+  { runningModelId = runtimeEmbeddingModelId() }: { runningModelId?: string } = {}
 ): Promise<BenchmarkScoreResult> {
   const cleanRanks: number[] = [];
   const pollutedRanks: number[] = [];
 
+  // REQ-237: refuse outright when the committed rule vectors were built by another model than the
+  // one that embeds the queries; a mixed ranking would be reported under a semantic label.
+  const committedVectors = loadGameRulesRuleEmbeddings(RULE_EMBEDDINGS_PATH);
+  if (committedVectors) assertVectorsMatchRuntimeModel("The committed rule vectors", committedVectors.model, runningModelId);
+
   for (const item of corpus.items) {
-    const clean = buildQueryTokensFromParts({ questionText: item.question, oracleText: "" });
-    const cleanVector = await embed(item.question);
+    const clean = buildRetrievalQuery({ questionText: item.question, cards: [] });
+    const cleanVector = await embed(clean.queryText);
     if (cleanVector === null) throw new EmbedderUnavailableError(item.question);
     const cleanHits = retrieveRulesForQuery(
       clean.tokens,
@@ -258,10 +317,16 @@ export async function scoreBenchmarkSemantic(
     ).map((rule) => rule.ruleId);
     cleanRanks.push(rankOf(cleanHits, item.expectedRuleId));
 
-    const polluted = buildQueryTokensFromParts({ questionText: item.question, oracleText: pollutionText });
-    const pollutedQuestion = `${item.question} ${pollutionText}`;
-    const pollutedVector = await embed(pollutedQuestion);
-    if (pollutedVector === null) throw new EmbedderUnavailableError(pollutedQuestion);
+    const polluted = pollutedQuery(item.question, pollution);
+    const pollutedVector = await embed(polluted.queryText);
+    if (pollutedVector === null) throw new EmbedderUnavailableError(polluted.queryText);
+    // REQ-235: each polluting card is searched on its own, exactly as the route does.
+    const cardVectors: PerCardVector[] = [];
+    for (const card of polluted.perCardTexts) {
+      const vector = await embed(card.text);
+      if (vector === null) throw new EmbedderUnavailableError(card.text);
+      cardVectors.push({ cardName: card.cardName, vector });
+    }
     const pollutedHits = retrieveRulesForQuery(
       polluted.tokens,
       polluted.queryRuleIds,
@@ -270,7 +335,8 @@ export async function scoreBenchmarkSemantic(
       5,
       undefined,
       pollutedVector,
-      polluted.questionRuleIds
+      polluted.questionRuleIds,
+      cardVectors
     ).map((rule) => rule.ruleId);
     pollutedRanks.push(rankOf(pollutedHits, item.expectedRuleId));
   }

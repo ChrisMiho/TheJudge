@@ -32,7 +32,6 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 import { format as prettierFormat } from "prettier";
-import { LOCAL_MODEL_CACHE_DIR, LOCAL_MODEL_ID } from "../apps/backend/src/providers/localEmbeddingProvider.ts";
 
 /** Matches production's committed-embedding text shape exactly (no shaping — see note above). */
 export function buildEmbeddingText(entry) {
@@ -95,6 +94,9 @@ export function hashRuleIndex(rawIndexJson) {
 }
 
 async function main() {
+  // Imported here, not at the top: the tests import this module's pure functions under plain `node`,
+  // which cannot load the provider's `.js`-specifier imports (the build itself runs through `tsx`).
+  const { LOCAL_MODEL_ID, createLocalExtractor } = await import("../apps/backend/src/providers/localEmbeddingProvider.ts");
   if (!fs.existsSync(indexPath)) {
     console.warn(`Rule index not found; nothing to embed: ${indexPath}`);
     return;
@@ -111,8 +113,8 @@ async function main() {
   if (fs.existsSync(outputPath)) {
     try {
       const existing = JSON.parse(fs.readFileSync(outputPath, "utf8"));
-      if (existing.ruleIndexHash === ruleIndexHash && existing.encoding === ENCODING) {
-        console.log(`Rule index unchanged (sha256 ${ruleIndexHash.slice(0, 12)}...) and encoding already ${ENCODING}; skipping rebuild: ${outputPath}`);
+      if (existing.ruleIndexHash === ruleIndexHash && existing.encoding === ENCODING && existing.model === LOCAL_MODEL_ID) {
+        console.log(`Rule index unchanged (sha256 ${ruleIndexHash.slice(0, 12)}...), encoding already ${ENCODING} and built by ${LOCAL_MODEL_ID}; skipping rebuild: ${outputPath}`);
         return;
       }
     } catch {
@@ -122,11 +124,9 @@ async function main() {
 
   const embeddingTexts = entries.map((entry) => ({ ruleId: entry.ruleId, embeddingText: buildEmbeddingText(entry) }));
 
-  const { env, pipeline } = await import("@huggingface/transformers");
-  // Build-time only: allowed to fetch the model into the local cache once.
-  env.allowRemoteModels = true;
-  env.cacheDir = LOCAL_MODEL_CACHE_DIR;
-  const extractor = await pipeline("feature-extraction", LOCAL_MODEL_ID, { dtype: "q8" });
+  // Build-time only: the stock model may be fetched into the local cache once; the trained model
+  // (REQ-236) is a local folder that `scripts/fetch-embedding-model.mjs` placed and verified.
+  const extractor = await createLocalExtractor({ allowRemoteModels: true });
 
   const ruleIds = [];
   const allValues = [];

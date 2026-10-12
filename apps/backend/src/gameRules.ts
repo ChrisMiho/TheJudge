@@ -12,9 +12,6 @@ export type GameRulesSection = {
   sectionChars: number;
 };
 
-const DISCLAIMER =
-  "Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.";
-
 const warnedLoadFailures = new Set<string>();
 
 function isGameRulesTopic(value: unknown): value is GameRulesTopic {
@@ -63,10 +60,6 @@ export function formatGameRulesSection(topics: GameRulesTopic[]): string {
 
   const topicBlocks = topics.map((topic) => [`${topic.title}`, topic.excerpt].join("\n"));
 
-  return [
-    "GAME RULES (reference)",
-    DISCLAIMER,
-    "",
-    topicBlocks.join("\n\n")
-  ].join("\n");
+  // REQ-243: no per-section disclaimer; the instructions frame the rules once as binding.
+  return ["GAME RULES (reference)", topicBlocks.join("\n\n")].join("\n");
 }

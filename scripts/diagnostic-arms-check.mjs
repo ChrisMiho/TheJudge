@@ -86,7 +86,12 @@ export async function checkDiagnosticArms({ cases, manifest, resources, prepare,
     }
     const request = await parseRequest(caseEntry);
     const freeze = freezeCheck(caseEntry.id, request);
-    const prepared = prepare(request, { ...resources, queryEmbedding: freeze.state === "fresh" ? freeze.vector : null, supplementalRuleCap: 10 });
+    const prepared = prepare(request, {
+      ...resources,
+      queryEmbedding: freeze.state === "fresh" ? freeze.vector : null,
+      cardEmbeddings: freeze.state === "fresh" ? freeze.cardEmbeddings : undefined,
+      supplementalRuleCap: 10
+    });
     const a = prepared.promptText;
 
     // R (REQ-230) substitutes without parsing, so it is checked on every case, In-Depth game cases included:
@@ -116,7 +121,7 @@ export async function checkDiagnosticArms({ cases, manifest, resources, prepare,
     const unitsC = unitMultiset(evidenceUnits(parsedC));
     const added = unitsC.filter((unit) => !unitsA.includes(unit));
     const bundle = new Set(decidingRuleBundle({ decidingRuleIds, ruleIndex: resources.gameRulesRuleIndex }));
-    const addedIds = added.map((unit) => /^(\d+\.\d+[a-z]*)\. /.exec(unit.split("\u0000")[1])?.[1]);
+    const addedIds = added.map((unit) => /^(\d+\.\d+[a-z]*)(?:\.|\s)/.exec(unit.split("\u0000")[1])?.[1]);
     if (unitsC.length !== unitsA.length + added.length || addedIds.some((id) => !id || !bundle.has(id))) {
       problems.push(`${entry.id}: arm C added something other than bundle rules`);
     }
@@ -265,7 +270,14 @@ async function main() {
       const caseEntry = casesById.get(entry.id);
       const request = await parseCaseRequest(caseEntry);
       const freeze = checkReFreeze(caseEntry.id, request, resources.cardDetailIndex, vectors);
-      prompts.push(preparePromptInput(request, { ...resources, queryEmbedding: freeze.state === "fresh" ? freeze.vector : null, supplementalRuleCap: 10 }).promptText);
+      prompts.push(
+        preparePromptInput(request, {
+          ...resources,
+          queryEmbedding: freeze.state === "fresh" ? freeze.vector : null,
+          cardEmbeddings: freeze.state === "fresh" ? freeze.cardEmbeddings : undefined,
+          supplementalRuleCap: 10
+        }).promptText
+      );
     }
     console.log(JSON.stringify(observeArmAPrompts(prompts), null, 2));
     return;

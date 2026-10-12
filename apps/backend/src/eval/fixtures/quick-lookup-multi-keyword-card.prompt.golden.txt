@@ -1,7 +1,6 @@
 SYSTEM ROLE PREAMBLE
 You are TheJudge assistant for Magic: The Gathering stack-resolution support.
 Use only the provided context to explain likely interactions and resolution order.
-Treat ordered stack semantics as authoritative: stack[0] is the bottom spell and the last entry is the top spell.
 State assumptions when context is incomplete.
 Do not claim hidden state, private-zone information, or unseen effects.
 Do not present output as an official tournament ruling.
@@ -10,30 +9,20 @@ INSTRUCTIONS
 - Explain reasoning clearly and concisely.
 - State uncertainty when context is incomplete.
 - Do not invent hidden state, targets, or board conditions.
-- For verbatim fidelity, quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections; present genuinely relevant excerpts verbatim with an explanation; never invent rule numbers or text.
-- Treat common Magic-adjacent phrasing (combo, infinite combo, aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet, and similar community terms — see the phrasing glossary) as in-domain and answer it normally; reserve not found in the rules corpus for input that is genuinely not about Magic — ask the user to check spelling or rephrase toward a Magic term; never answer the off-domain question directly.
+- For verbatim fidelity, quote rule text only from the rules sections of this prompt; present genuinely relevant excerpts verbatim with an explanation; never invent rule numbers or text.
+- The Comprehensive Rules excerpts in this prompt are the binding rules of the game.
+- Rules and rulings never override the submitted game state (stack order, zones, targets, notes) or a card's oracle text.
+- Treat common Magic-adjacent phrasing (combo, infinite combo, aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet, and similar community terms) as in-domain and answer it normally; reserve the "not found in the rules corpus" reply for input that is genuinely not about Magic, and then ask the player to check spelling or rephrase toward a Magic term; never answer an off-domain question directly.
 
 MTG REFERENCE
 Magic: The Gathering turns proceed in this order: beginning phase (untap, upkeep, draw), pre-combat main phase, combat phase, post-combat main phase, ending phase (end step, cleanup). The stack is a zone where spells and abilities wait to resolve; items resolve top to bottom.
 
-This app records turn phase as one of: untap, upkeep, draw, main_1, combat, main_2, end_step, cleanup. Combat is a single combined phase; the active combat sub-step (if provided) appears in the phase guidance section below.
+Continuous effects use a layer system (rule 613); state-based actions are not part of it and are checked separately whenever a player would receive priority (rule 704). When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially.
 
-Zones (app model):
-- stack — Spells and abilities pending resolution; ordered bottom (first) to top (last).
-- battlefield — Permanents in play.
-- hand — Hidden cards a player may cast or activate.
-- graveyard — Used cards and destroyed permanents.
-- exile — Cards removed from the game.
-- library — Deck; top matters for draw and search effects.
-- command — Command zone (commanders, some other cards).
-
-Only zones with cards appear in the user payload. A separate scope note lists empty or omitted zones.
-
-Continuous effects use a layer system (rule 613); state-based actions are not part of it and are checked separately whenever a player would receive priority (rule 704). When effects conflict, apply in order: (1) Copy effects, (2) Control-changing effects, (3) Text-changing effects, (4) Type-changing effects, (5) Color-changing effects, (6) Ability-adding/removing effects, (7) Power- and toughness-changing effects. Within a layer, timestamp and dependency rules apply. This assistant does not adjudicate officially; use layers as shared vocabulary when explaining interactions.
+PHASE GUIDANCE
+Combat damage step: Creatures deal their power as combat damage simultaneously (unless first strike or double strike applies a separate first-strike damage step). State-based actions are checked after damage is dealt.
 
 GAME RULES (reference)
-Use these general Magic rules as shared vocabulary. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
-
 Triggered Ability Basics
 603.1. Triggered abilities have a trigger condition and an effect. They are written as “[When/Whenever/At] [trigger condition or event], [effect]. [Instructions (if any).]”
 603.2. Whenever a game event or game state matches a triggered ability’s trigger event, that ability automatically triggers. The ability doesn’t do anything at this point.
@@ -42,44 +31,98 @@ Triggered Ability Basics
 Stack and Priority
 117.1. Unless a spell or ability is instructing a player to take an action, which player can take actions at any given time is determined by a system of priority. The player with priority may cast spells, activate abilities, and take special actions.
 117.3. Which player has priority is determined by the following rules:
+117.3a The active player receives priority at the beginning of most steps and phases, after any turn-based actions (such as drawing a card during the draw step; see rule 703 [Turn-Based Actions]) have been dealt with and abilities that trigger at the beginning of that phase or step have been put on the stack. No player receives priority during the untap step. Players usually don’t get priority during the cleanup step (see rule 514.3 [Normally, no player receives priority during the cleanup step, so no spells can be cast and no abilities can be activated.]).
+117.3b The active player receives priority after a spell or ability (other than a mana ability) resolves.
+117.3c If a player has priority when they cast a spell, activate an ability, or take a special action, that player receives priority afterward.
+117.3d If a player has priority and chooses not to take any actions, that player passes. If any mana is in that player’s mana pool, they announce what mana is there. Then the next player in turn order receives priority.
 117.4. If all players pass in succession (that is, if all players pass without taking any actions in between passing), the spell or ability on top of the stack resolves or, if the stack is empty, the phase or step ends.
 117.7. If a player with priority casts a spell or activates an activated ability while another spell or ability is already on the stack, the new spell or ability has been cast or activated “in response to” the earlier spell or ability. The new spell or ability will resolve first. See rule 608, “Resolving Spells and Abilities.”
-405.1. When a spell is cast, the physical card is put on the stack (see rule 601.2a). When an ability is activated or triggers, it goes on top of the stack without any card associated with it (see rules 602.2a and 603.3).
+405.1. When a spell is cast, the physical card is put on the stack (see rule 601.2a [To propose the casting of a spell, a player first moves that card (or that copy of a card) from where it is to the stack.]). When an ability is activated or triggers, it goes on top of the stack without any card associated with it (see rules 602.2a [The player announces that they are activating the ability.] and 603.3).
 405.2. The stack keeps track of the order that spells and/or abilities were added to it. Each time an object is put on the stack, it’s put on top of all objects already there.
 
 Targets
 115.1. Some spells and abilities require their controller to choose one or more targets for them. The targets are object(s) and/or player(s) the spell or ability will affect. These targets are declared as part of the process of putting the spell or ability on the stack. The targets can’t be changed except by another spell or ability that explicitly says it can do so.
-115.2. Only permanents are legal targets for spells and abilities, unless a spell or ability (a) specifies that it can target an object in another zone or a player, or (b) targets an object that can’t exist on the battlefield, such as a spell or ability. See also rule 115.4.
+115.2. Only permanents are legal targets for spells and abilities, unless a spell or ability (a) specifies that it can target an object in another zone or a player, or (b) targets an object that can’t exist on the battlefield, such as a spell or ability. See also rule 115.4 [Some spells and abilities that refer to damage require “any target,” “another target,” “two targets,” or similar rather than “target [something].].
 115.10. Spells and abilities can affect objects and players they don’t target. In general, those objects and players aren’t chosen until the spell or ability resolves. See rule 608, “Resolving Spells and Abilities.”
 
 Zones and Zone Changes
 400.1. A zone is a place where objects can be during a game. There are normally seven zones: library, hand, battlefield, graveyard, stack, exile, and command. Some older cards also use the ante zone. Each player has their own library, hand, and graveyard. The other zones are shared by all players.
 400.2. Public zones are zones in which all players can see the cards’ faces, except for those cards that some rule or effect specifically allow to be face down. Graveyard, battlefield, stack, exile, ante, and command are public zones. Hidden zones are zones in which not all players can be expected to see the cards’ faces. Library and hand are hidden zones, even if all the cards in one such zone happen to be revealed.
 400.7. An object that moves from one zone to another becomes a new object with no memory of, or relation to, its previous existence. This rule has the following exceptions.
+400.7a Effects from spells, activated abilities, and triggered abilities that change the characteristics or controller of a permanent spell on the stack continue to apply to the permanent that spell becomes.
+400.7b Effects from static abilities that grant an ability to a permanent spell that functions on the battlefield continue to apply to the permanent that spell becomes (see rule 611.3d [Continuous effects from static abilities may allow a player to play a land or cast a permanent spell, or may grant an ability to a permanent spell or card that allows it to be cast.]).
+400.7c Prevention effects that apply to damage from a permanent spell on the stack continue to apply to damage from the permanent that spell becomes.
+400.7d An ability of a permanent can reference information about the spell that became that permanent as it resolved, including what costs were paid to cast that spell or what mana was spent to pay those costs.
+400.7e Abilities that trigger when an object moves from one zone to another (for example, “When this Aura is put into a graveyard from the battlefield”) can find the new object that it became in the zone it moved to when the ability triggered, if that zone is a public zone.
+400.7f Abilities that trigger when an enchanted permanent leaves the battlefield can find the new object that each Aura enchanting that permanent became in its owner’s graveyard if it was put into that graveyard at the same time the enchanted permanent left the battlefield. It can also find the new object that each Aura enchanting it became in its owner’s graveyard as a result of being put there as a state-based action for not being attached to a permanent. (See rule 704.5m [If an Aura is attached to an illegal object or player, or is not attached to an object or player, that Aura is put into its owner’s graveyard.].)
+400.7g If an effect grants a nonland card an ability that allows it to be cast, that ability will continue to apply to the new object that card became after it moved to the stack as a result of being cast this way.
+400.7h If an effect allows a nonland card to be cast, other parts of that effect can find the new object that card becomes after it moves to the stack as a result of being cast this way.
+400.7i If an effect allows a land card to be played, other parts of that effect can find the new object that land card becomes after it moves to the battlefield as a result of being played this way.
+400.7j If an effect causes an object to move to a public zone, other parts of that effect can find that object. If the cost of a spell or ability causes an object to move to a public zone, that spell or ability’s effects can find that object.
+400.7k After resolving a madness triggered ability (see rule 702.35 [Madness]), if the exiled card wasn’t cast and was moved to a public zone, effects referencing the discarded card can find that object.
+400.7m Stickers on an object in a public zone are retained as it moves to another public zone (see rule 123.5 [Stickers on an object are not retained as that object moves to a hidden zone.]). Any effects from stickers continue to apply to the new object it becomes in that zone.
 
 ADDITIONAL RELEVANT RULE EXCERPTS
-Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.
+Game Concepts › Tokens
+111.4. A spell or ability that creates a token sets both its name and its subtype(s). If the spell or ability doesn’t specify the name of the token, its name is the same as its subtype(s) plus the word “Token.” Once a token is on the battlefield, changing its name doesn’t change its subtype(s), and vice versa.
+Example: Dwarven Reinforcements is a sorcery that says, in part, “Create two 2/1 red Dwarf Berserker creature tokens.” The tokens created as it resolves are each named Dwarf Berserker Token and each have the creature types Dwarf and Berserker.
+Example: Minsc, Beloved Ranger says, in part, “When Minsc enters, create Boo, a legendary 1/1 red Hamster creature token with trample and haste.” That token’s subtype is Hamster, but because Minsc specifies that the token’s name is Boo, neither “Hamster” nor “Token” are part of its name.
+Example: Spitting Image is a sorcery that says, in part, “Create a token that’s a copy of target creature.” All of that token’s characteristics will match the copiable characteristics of the creature targeted by that spell. If Spitting Image targets Doomed Dissenter, a Human creature, the name of the token the spell creates will be Doomed Dissenter, not Human Token or Doomed Dissenter Token.
 
-122.1b. 122.1b A keyword counter on a permanent or on a card in a zone other than the battlefield causes that object to gain that keyword. The keywords that a keyword counter can be are flying, first strike, double strike, deathtouch, decayed, exalted, haste, hexproof, indestructible, lifelink, menace, reach, shadow, trample, and vigilance, as well as any variants of those keywords. See rule 613.1f.
+Game Concepts › Damage
+120.4 … Damage is processed in a four-part sequence.
+120.4a First, if an effect that’s causing damage to be dealt states that excess damage that would be dealt to a permanent is dealt to another permanent or player instead, the damage event is modified accordingly. If the first permanent is a creature, the excess damage is the amount of damage in excess of what would be lethal damage, taking into account damage already marked on the creature and damage from other sources that would be dealt at the same time. (See rule 120.6 [Damage marked on a creature remains until the cleanup step, even if that permanent stops being a creature.].) Any amount of damage greater than 1 is excess damage if the source dealing that damage to a creature has deathtouch. (See rule 702.2.) If the first permanent is a planeswalker, the excess damage is the amount of damage in excess of that planeswalker’s loyalty, taking into account damage from other sources that would be dealt at the same time. If the first permanent is a battle, the excess damage is the amount of damage in excess of that battle’s defense, taking into account damage from other sources that would be dealt at the same time. If the first permanent has multiple card types from among the list of creature, planeswalker, and battle, the excess damage is the greatest of the calculated amounts for each of the card types it has.
 
-702.154a. 702.154a Enlist represents a static ability and a triggered ability. Enlist means “As this creature attacks, you may tap up to one untapped creature you control that you didn’t choose to attack with and that either has haste or has been under your control continuously since this turn began. When you do, this creature gets +X/+0 until end of turn, where X is the tapped creature’s power.”
+Game Concepts › Counters
+122.1b A keyword counter on a permanent or on a card in a zone other than the battlefield causes that object to gain that keyword. The keywords that a keyword counter can be are flying, first strike, double strike, deathtouch, decayed, exalted, haste, hexproof, indestructible, lifelink, menace, reach, shadow, trample, and vigilance, as well as any variants of those keywords. See rule 613.1f.
 
-602.5a. 602.5a A creature’s activated ability with the tap symbol ({T}) or the untap symbol ({Q}) in its activation cost can’t be activated unless the creature has been under its controller’s control since the start of their most recent turn. Ignore this rule for creatures with haste (see rule 702.10).
+Turn Structure › Combat Phase
+506.4b Tapping or untapping a creature that’s already been declared as an attacker or blocker doesn’t remove it from combat and doesn’t prevent its combat damage.
 
-702.10c. 702.10c If a creature has haste, its controller can activate its activated abilities whose cost includes the tap symbol or the untap symbol even if that creature hasn’t been controlled by that player continuously since their most recent turn began. (See rule 302.6.)
+Spells, Abilities, and Effects › Activating Activated Abilities
+602.5 … A player can’t begin to activate an ability that’s prohibited from being activated.
+602.5a A creature’s activated ability with the tap symbol ({T}) or the untap symbol ({Q}) in its activation cost can’t be activated unless the creature has been under its controller’s control since the start of their most recent turn. Ignore this rule for creatures with haste (see rule 702.10).
 
-702.20b. 702.20b Attacking doesn’t cause creatures with vigilance to tap. (See rule 508, “Declare Attackers Step.”)
+Spells, Abilities, and Effects › Replacement Effects
+614.8. Regeneration is a destruction-replacement effect. The word “instead” doesn’t appear on the card but is implicit in the definition of regeneration. “Regenerate [permanent]” means “The next time [permanent] would be destroyed this turn, instead remove all damage marked on it and its controller taps it. If it’s an attacking or blocking creature, remove it from combat.” Abilities that trigger from damage being dealt still trigger even if the permanent regenerates. See rule 701.19.
 
-702.62a. 702.62a Suspend is a keyword that represents three abilities. The first is a static ability that functions while the card with suspend is in a player’s hand. The second and third are triggered abilities that function in the exile zone. “Suspend N—[cost]” means “If you could begin to cast this card by putting it onto the stack from your hand, you may pay [cost] and exile it with N time counters on it. This action doesn’t use the stack,” and “At the beginning of your upkeep, if this card is suspended, remove a time counter from it,” and “When the last time counter is removed from this card, if it’s exiled, you may play it without paying its mana cost if able. If you don’t, it remains exiled. If you cast a creature spell this way, it gains haste until you lose control of the spell or the permanent it becomes.”
+Additional Rules › Keyword Abilities
+702.1c An effect may state that “the same is true for” a list of keyword abilities or similar. If one of those keyword abilities has variants or variables and the effect grants that keyword or counters of that keyword to one or more objects and/or players, it grants each appropriate variant and variable of that keyword.
+Example: Concerted Effort is an enchantment that reads “At the beginning of each upkeep, creatures you control gain flying until end of turn if a creature you control has flying. The same is true for fear, first strike, double strike, landwalk, protection, trample, and vigilance.” As that triggered ability resolves, each landwalk and protection ability from among creatures you control is granted to each creature you control.
 
-707.10e. 707.10e Some effects copy a spell or ability and specify a new target for the copy. If the spell or ability has more than one target, each of the copy’s targets must be that player or object. If that player or object isn’t a legal target for each instance of the word “target,” the copy isn’t created. In the case where a replacement effect causes the copy to target more than one object, the copy’s controller chooses one of them to be the new target. The chosen target must be a legal target for that spell or ability.
-Example: Frontline Heroism is an enchantment with the ability “Whenever you cast a spell that targets only a single creature you control, create a 1/1 red Soldier creature token with haste, then copy that spell. The copy targets that token.” Anointed Procession is an enchantment with the ability “If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.” If you control both and cast Moment of Triumph targeting a creature you control, Frontline Heroism’s ability triggers. As that ability resolves, you create two 1/1 red Soldier creature tokens with haste, then copy Moment of Triumph and the copy targets one of those tokens of your choice. The copy doesn’t target both the tokens.
+702.2a Deathtouch is a static ability.
 
-702.20c. 702.20c Multiple instances of vigilance on the same creature are redundant.
+702.2b A creature with toughness greater than 0 that’s been dealt damage by a source with deathtouch since the last time state-based actions were checked is destroyed as a state-based action. See rule 704.
 
-702.2b. 702.2b A creature with toughness greater than 0 that’s been dealt damage by a source with deathtouch since the last time state-based actions were checked is destroyed as a state-based action. See rule 704.
+702.2c Any nonzero amount of combat damage assigned to a creature by a source with deathtouch is considered to be lethal damage for the purposes of determining if excess damage is being dealt.
 
-702.2c. 702.2c Any nonzero amount of combat damage assigned to a creature by a source with deathtouch is considered to be lethal damage for the purposes of determining if excess damage is being dealt.
+702.2d The deathtouch rules function no matter what zone an object with deathtouch deals damage from.
+
+702.2e If an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had deathtouch.
+
+702.2f Multiple instances of deathtouch on the same object are redundant.
+
+702.10a Haste is a static ability.
+
+702.10b If a creature has haste, it can attack even if it hasn’t been controlled by its controller continuously since their most recent turn began. (See rule 302.6.)
+
+702.10c If a creature has haste, its controller can activate its activated abilities whose cost includes the tap symbol or the untap symbol even if that creature hasn’t been controlled by that player continuously since their most recent turn began. (See rule 302.6.)
+
+702.10d Multiple instances of haste on the same creature are redundant.
+
+702.20a Vigilance is a static ability that modifies the rules for the declare attackers step.
+
+702.20b Attacking doesn’t cause creatures with vigilance to tap. (See rule 508, “Declare Attackers Step.”)
+
+702.20c Multiple instances of vigilance on the same creature are redundant.
+
+702.62a Suspend is a keyword that represents three abilities. The first is a static ability that functions while the card with suspend is in a player’s hand. The second and third are triggered abilities that function in the exile zone. “Suspend N—[cost]” means “If you could begin to cast this card by putting it onto the stack from your hand, you may pay [cost] and exile it with N time counters on it. This action doesn’t use the stack,” and “At the beginning of your upkeep, if this card is suspended, remove a time counter from it,” and “When the last time counter is removed from this card, if it’s exiled, you may play it without paying its mana cost if able. If you don’t, it remains exiled. If you cast a creature spell this way, it gains haste until you lose control of the spell or the permanent it becomes.”
+
+702.154a Enlist represents a static ability and a triggered ability. Enlist means “As this creature attacks, you may tap up to one untapped creature you control that you didn’t choose to attack with and that either has haste or has been under your control continuously since this turn began. When you do, this creature gets +X/+0 until end of turn, where X is the tapped creature’s power.”
+
+Additional Rules › State-Based Actions
+704.5 … The state-based actions are as follows:
+704.5h If a creature has toughness greater than 0, and it’s been dealt damage by a source with deathtouch since the last time state-based actions were checked, that creature is destroyed. Regeneration can replace this event.
 
 CARD (looked up)
 name: Questing Beast
@@ -89,12 +132,11 @@ typeLine: Legendary Creature — Beast
 colors: G
 supertypes: Legendary
 subtypes: Beast
-oracleText: Vigilance, deathtouch, haste Questing Beast can't be blocked by creatures with power 2 or less. Combat damage that would be dealt by creatures you control can't be prevented. Whenever Questing Beast deals combat damage to an opponent, it deals that much damage to target planeswalker that player controls.
-
-OFFICIAL RULINGS (WotC reference)
-Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.
-
-Questing Beast
+oracleText: Vigilance, deathtouch, haste
+Questing Beast can't be blocked by creatures with power 2 or less.
+Combat damage that would be dealt by creatures you control can't be prevented.
+Whenever Questing Beast deals combat damage to an opponent, it deals that much damage to target planeswalker that player controls.
+Rulings for Questing Beast (published by Wizards of the Coast; apply one only when the situation matches it):
 - 2019-10-04: Vigilance means the creature doesn't tap when it attacks.
 
 QUESTION

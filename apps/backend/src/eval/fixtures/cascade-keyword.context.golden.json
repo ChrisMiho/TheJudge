@@ -34,6 +34,7 @@
           "supertypes": [],
           "subtypes": [],
           "keywords": [],
+          "oracleTextDisplay": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
           "targets": [
             {
               "kind": "none"
@@ -57,6 +58,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Cascade (When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.)",
       "caster": "Player 1",
       "targets": [],
       "manaSpent": 3,

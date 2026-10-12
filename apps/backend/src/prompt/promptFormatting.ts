@@ -7,16 +7,58 @@ import {
 import { CANONICAL_ZONE_ORDER, PLAYER_LABELS } from "../constants.js";
 import type { ResolvedRulings } from "../cardRulings.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
+import { layoutPromptRuleSections } from "./ruleLayout.js";
 import type { ConversationTurn, PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
-export const SYSTEM_ROLE_PREAMBLE_LINES = [
+/**
+ * The preamble lines every prompt carries. "Use only the provided context" stays as it was
+ * (REQ-243: its wording is left for a later paid test).
+ */
+const PREAMBLE_HEAD = [
   "You are TheJudge assistant for Magic: The Gathering stack-resolution support.",
-  "Use only the provided context to explain likely interactions and resolution order.",
-  "Treat ordered stack semantics as authoritative: stack[0] is the bottom spell and the last entry is the top spell.",
+  "Use only the provided context to explain likely interactions and resolution order."
+] as const;
+
+const PREAMBLE_TAIL = [
   "State assumptions when context is incomplete.",
   "Do not claim hidden state, private-zone information, or unseen effects.",
   "Do not present output as an official tournament ruling."
 ] as const;
+
+/** REQ-243: the stack is numbered one way, 1-based like the stack section's `Stack item N` labels. */
+export const STACK_ORDER_PREAMBLE_LINE =
+  "Treat ordered stack semantics as authoritative: Stack item 1 is the bottom of the stack and the highest-numbered Stack item is the top.";
+
+/** In-Depth preamble: carries the stack-order line, since only In-Depth sends a stack. */
+export const SYSTEM_ROLE_PREAMBLE_LINES = [...PREAMBLE_HEAD, STACK_ORDER_PREAMBLE_LINE, ...PREAMBLE_TAIL] as const;
+
+/** Quick Lookup preamble: the same lines without the stack-order line (REQ-243). */
+export const LOOKUP_ROLE_PREAMBLE_LINES = [...PREAMBLE_HEAD, ...PREAMBLE_TAIL] as const;
+
+/**
+ * REQ-243: one instruction list for both modes. The rules are framed once as binding, and one line says
+ * they never override the submitted game state or a card's oracle text. Nothing here names a section
+ * only one mode contains.
+ */
+export const SHARED_INSTRUCTION_LINES = [
+  "- Explain reasoning clearly and concisely.",
+  "- State uncertainty when context is incomplete.",
+  "- Do not invent hidden state, targets, or board conditions.",
+  "- For verbatim fidelity, quote rule text only from the rules sections of this prompt; present genuinely relevant excerpts verbatim with an explanation; never invent rule numbers or text.",
+  "- The Comprehensive Rules excerpts in this prompt are the binding rules of the game.",
+  "- Rules and rulings never override the submitted game state (stack order, zones, targets, notes) or a card's oracle text."
+] as const;
+
+/**
+ * REQ-168 (REQ-243): Quick Lookup's off-domain line -- common Magic-adjacent phrasing is in-domain; the
+ * "not found in the rules corpus" reply is reserved for input genuinely not about Magic.
+ */
+export const LOOKUP_OFF_DOMAIN_INSTRUCTION =
+  "- Treat common Magic-adjacent phrasing (combo, infinite combo, aggro, control, ramp, tempo, stax, wheel, mill, blink, sacrifice outlet, and similar community terms) as in-domain and answer it normally; reserve the \"not found in the rules corpus\" reply for input that is genuinely not about Magic, and then ask the player to check spelling or rephrase toward a Magic term; never answer an off-domain question directly.";
+
+/** In-Depth's follow-up line (a conversation already in progress). */
+export const GAME_FOLLOW_UP_INSTRUCTION =
+  "- Treat follow-up questions as refinements or clarifications against the frozen game state and prior answers.";
 
 const ZONE_SECTION_LABEL: Record<string, string> = {
   battlefield: "ZONE: BATTLEFIELD",
@@ -175,6 +217,11 @@ export function formatGameContext(context: PromptContext): string {
   ].join("\n");
 }
 
+/** The index of the first line starting with `prefix` (the splice anchors below). */
+function lineIndex(lines: string[], prefix: string): number {
+  return lines.findIndex((line) => line.startsWith(prefix));
+}
+
 export function formatZoneCardMetadataLines(
   card: {
     manaCost: string;
@@ -183,9 +230,15 @@ export function formatZoneCardMetadataLines(
     colors: string[];
     supertypes: string[];
     subtypes: string[];
+    /** REQ-245: printed as their own lines when the card has them. */
+    power?: string;
+    toughness?: string;
+    loyalty?: string;
     targets: PromptContext["orderedStack"][number]["targets"];
     contextNotes?: string;
     oracleText: string;
+    /** REQ-245: the oracle text with its line breaks kept; falls back to `oracleText`. */
+    oracleTextDisplay?: string;
   },
   displayNamesByPlayer: Record<PlayerLabel, string | undefined>
 ): string[] {
@@ -196,15 +249,40 @@ export function formatZoneCardMetadataLines(
     `colors: ${formatList(card.colors)}`,
     `supertypes: ${formatList(card.supertypes)}`,
     `subtypes: ${formatList(card.subtypes)}`,
+    ...(card.power ? [`power: ${card.power}`] : []),
+    ...(card.toughness ? [`toughness: ${card.toughness}`] : []),
+    ...(card.loyalty ? [`loyalty: ${card.loyalty}`] : []),
     `targets: ${formatTargets(card.targets, displayNamesByPlayer)}`,
     `contextNotes: ${
       card.contextNotes ? truncatePromptLabel(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"
     }`,
-    `oracleText: ${card.oracleText || "(none) — no oracle text recorded for this card"}`
+    `oracleText: ${card.oracleTextDisplay || card.oracleText || "(none) — no oracle text recorded for this card"}`
   ];
 }
 
-export function formatStackSection(context: PromptContext): string {
+/** REQ-241: the rulings of a card, once, under its first appearance. */
+export type RulingsPlacement = {
+  /** The lines to print under this card: a framing line and its rulings, or none (no rulings, or already printed). */
+  take(cardId: string, name: string): string[];
+};
+
+export function createRulingsPlacement(resolved: ResolvedRulings | undefined): RulingsPlacement {
+  const byCardId = new Map((resolved?.cards ?? []).filter((card) => card.rulings.length > 0).map((card) => [card.cardId, card]));
+  const shown = new Set<string>();
+  return {
+    take(cardId, name) {
+      const card = byCardId.get(cardId);
+      if (!card || shown.has(cardId)) return [];
+      shown.add(cardId);
+      return [
+        `Rulings for ${name} (published by Wizards of the Coast; apply one only when the situation matches it):`,
+        ...card.rulings.map((ruling) => `- ${ruling.publishedAt}: ${ruling.comment}`)
+      ];
+    }
+  };
+}
+
+export function formatStackSection(context: PromptContext, rulings?: RulingsPlacement): string {
   if (context.orderedStack.length === 0) {
     return "";
   }
@@ -214,22 +292,27 @@ export function formatStackSection(context: PromptContext): string {
     .map((card, index) => {
       const metaLines = formatZoneCardMetadataLines(card, displayNamesByPlayer);
       // Insert stack-only fields: caster after subtypes (index 6), manaSpent after targets (index 8)
-      metaLines.splice(6, 0, `caster: ${formatPlayerRef(card.caster, displayNamesByPlayer)}`);
-      metaLines.splice(8, 0, `manaSpent: ${card.manaSpent ?? card.manaValue}`);
+      metaLines.splice(lineIndex(metaLines, "targets:"), 0, `caster: ${formatPlayerRef(card.caster, displayNamesByPlayer)}`);
+      metaLines.splice(lineIndex(metaLines, "targets:") + 1, 0, `manaSpent: ${card.manaSpent ?? card.manaValue}`);
       // REQ-211: copies (the storm case) is sent only when the player set it above 0 —
       // an untouched card adds no line, keeping every prompt that doesn't use this
       // byte-identical. Inserted right after manaSpent, before contextNotes.
       if (card.copies !== undefined) {
-        metaLines.splice(9, 0, `copies: ${card.copies}`);
+        metaLines.splice(lineIndex(metaLines, "manaSpent:") + 1, 0, `copies: ${card.copies}`);
       }
-      return [`Stack item ${index + 1} (${card.stackRole})`, `card: ${card.name}`, ...metaLines].join("\n");
+      return [
+        `Stack item ${index + 1} (${card.stackRole})`,
+        `card: ${card.name}`,
+        ...metaLines,
+        ...(rulings?.take(card.cardId, card.name) ?? [])
+      ].join("\n");
     })
     .join("\n\n");
 
   return ["ZONE: STACK (BOTTOM TO TOP)", cardsSection].join("\n");
 }
 
-export function formatNonStackZoneSections(context: PromptContext): string {
+export function formatNonStackZoneSections(context: PromptContext, rulings?: RulingsPlacement): string {
   if (context.populatedZones.length === 0) {
     return "";
   }
@@ -247,13 +330,14 @@ export function formatNonStackZoneSections(context: PromptContext): string {
           // takes) — an untouched card (no sent value) adds no line, so today's
           // prompts stay byte-identical.
           if (item.manaSpent !== undefined) {
-            metaLines.splice(7, 0, `manaSpent: ${item.manaSpent}`);
+            metaLines.splice(lineIndex(metaLines, "targets:") + 1, 0, `manaSpent: ${item.manaSpent}`);
           }
           return [
             `${itemLabel} ${index + 1}`,
             `name: ${item.name}`,
             `owner: ${formatPlayerRef(item.owner, displayNamesByPlayer)}`,
-            ...metaLines
+            ...metaLines,
+            ...(rulings?.take(item.cardId, item.name) ?? [])
           ].join("\n");
         })
         .join("\n\n");
@@ -262,43 +346,9 @@ export function formatNonStackZoneSections(context: PromptContext): string {
     .join("\n\n");
 }
 
-export function formatOfficialRulingsSection(resolvedRulings: ResolvedRulings | undefined): string {
-  if (!resolvedRulings || resolvedRulings.cards.length === 0) {
-    return "";
-  }
-
-  const cardBlocks = resolvedRulings.cards
-    .filter((card) => card.rulings.length > 0)
-    .map((card) =>
-      [card.name, ...card.rulings.map((ruling) => `- ${ruling.publishedAt}: ${ruling.comment}`)].join("\n")
-    );
-
-  if (cardBlocks.length === 0) {
-    return "";
-  }
-
-  return [
-    "OFFICIAL RULINGS (WotC reference)",
-    "Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.",
-    "",
-    cardBlocks.join("\n\n")
-  ].join("\n");
-}
-
-const SUPPLEMENTAL_RULES_DISCLAIMER =
-  "Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.";
-
+/** REQ-239: the search excerpts in rule-book order, grouped and labelled (see `layoutPromptRuleSections`). */
 export function formatSupplementalRulesSection(rules: RetrievedGameRule[]): string {
-  if (rules.length === 0) return "";
-
-  const ruleBlocks = rules.map((rule) => `${rule.ruleId}. ${rule.text}`);
-
-  return [
-    "ADDITIONAL RELEVANT RULE EXCERPTS",
-    SUPPLEMENTAL_RULES_DISCLAIMER,
-    "",
-    ruleBlocks.join("\n\n")
-  ].join("\n");
+  return layoutPromptRuleSections({ topics: [], supplementalRules: rules }).supplementalRulesSection;
 }
 
 /**

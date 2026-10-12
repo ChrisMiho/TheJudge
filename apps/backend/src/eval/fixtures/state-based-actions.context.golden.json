@@ -57,6 +57,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Lightning Bolt deals 3 damage to any target.",
       "caster": "Player 1",
       "targets": [
         {

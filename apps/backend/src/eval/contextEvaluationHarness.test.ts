@@ -19,6 +19,8 @@ import { preparePromptInput, resolveGameComboCandidates } from "../prompt/prepar
 import type { AskAiRequest, GameAskAiRequest } from "../types/index.js";
 import type { ComboVariant } from "../commanderSpellbook/catalog.js";
 import { cardDetailIndexFromRequest } from "./fixtureCardDetail.js";
+import { assertVectorsMatchRuntimeModel } from "../embeddingModel.js";
+import { resolveFrozenCardEmbeddings } from "./frozenCardVectors.js";
 import {
   buildChecklistReport,
   buildEvalComboCatalog,
@@ -38,7 +40,7 @@ const ruleIndex: GameRulesRuleIndexEntry[] = loadGameRulesRuleIndex(ruleIndexPat
 const fixtureRulings = new Map([
   ["003e5dc6-8b26-4a0a-a50b-5f0806a7bacd", [{ publishedAt: "2019-10-04", comment: "Combat damage can't be prevented." }]],
   // The lookup combo fixtures attach these cards; `lookup-card-enrichment`
-  // requires an OFFICIAL RULINGS section for any attached card.
+  // requires each attached card's rulings under the card (REQ-241).
   ["eval-oracle-a", [{ publishedAt: "2020-01-10", comment: "Its ability triggers once per turn." }]],
   ["eval-oracle-b", [{ publishedAt: "2020-01-24", comment: "You may name a card that is not in your library." }]],
   ["eval-oracle-c", [{ publishedAt: "2020-02-05", comment: "It returns only creature cards." }]],
@@ -57,9 +59,13 @@ const fixtureRulings = new Map([
 // would compute for that fixture's retrieval query text.
 const ruleEmbeddingsPath = path.resolve(currentDir, "../../data/gameRulesRuleEmbeddings.json");
 type FrozenQueryEmbedding = { question: string; vector: number[] };
-const frozenQueryEmbeddings: Record<string, FrozenQueryEmbedding> = JSON.parse(
-  readFileSync(path.join(fixtureDir, "frozen-query-embeddings.json"), "utf8")
-);
+const frozenQueryEmbeddingsFile = JSON.parse(readFileSync(path.join(fixtureDir, "frozen-query-embeddings.json"), "utf8")) as {
+  model: string;
+  vectors: Record<string, FrozenQueryEmbedding>;
+};
+// REQ-237: the harness refuses (throws) when the frozen vectors were made by another model than the running one.
+assertVectorsMatchRuntimeModel("The labelled fixtures' frozen query embeddings", frozenQueryEmbeddingsFile.model);
+const frozenQueryEmbeddings = frozenQueryEmbeddingsFile.vectors;
 
 // Eval-only combo corpus: independent of the production artifact so an
 // owner-approved corpus refresh can never churn a prompt golden.
@@ -167,7 +173,12 @@ function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = 
   const comboCandidates = resolveGameComboCandidates(gameRequest, context, { comboCatalog });
   return {
     context,
-    promptText: buildPromptText(context, { gameRulesTopics: selectedTopics, supplementalRules, comboCandidates }),
+    promptText: buildPromptText(context, {
+      gameRulesTopics: selectedTopics,
+      supplementalRules,
+      gameRulesRuleIndex: ruleIndex,
+      comboCandidates
+    }),
     relevance: { selectedTopics, supplementalRules }
   };
 }
@@ -181,6 +192,12 @@ function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = 
 function evaluateFixtureRequestWithDebug(fixture: EvaluationFixture, queryEmbedding: number[] | null) {
   const comboCatalog = fixture.disableComboEnrichment ? undefined : evalComboCatalog;
   const cardDetailIndex = cardDetailIndexFromRequest(fixture.request);
+  // REQ-235: the committed frozen per-card vectors stand in for the embeddings the route handler
+  // makes, and a fixture card without one fails loudly instead of silently contributing nothing.
+  const frozenCards = queryEmbedding === null ? null : resolveFrozenCardEmbeddings(fixture.request as never, cardDetailIndex);
+  if (frozenCards) {
+    expect(frozenCards.missingKeys, `${fixture.id}: a card has no frozen per-card vector (npm run eval:build-frozen-card-vectors)`).toEqual([]);
+  }
   const prepared = preparePromptInput(fixture.request, {
     gameRulesTopics: allGameRulesTopics,
     gameRulesRuleIndex: ruleIndex,
@@ -188,7 +205,8 @@ function evaluateFixtureRequestWithDebug(fixture: EvaluationFixture, queryEmbedd
     cardDetailIndex,
     comboCatalog,
     collectEnrichmentDebug: true,
-    queryEmbedding
+    queryEmbedding,
+    cardEmbeddings: frozenCards?.embeddings
   });
   // `usedSemantic` rides through `enrichmentDebug.supplemental` at runtime
   // (preparation.ts passes the debug object through by reference) but isn't

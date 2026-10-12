@@ -21,6 +21,7 @@
       "keywords": [
         "Deathtouch"
       ],
+      "oracleTextDisplay": "Deathtouch",
       "targets": []
     }
   ]

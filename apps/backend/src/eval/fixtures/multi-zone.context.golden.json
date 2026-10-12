@@ -40,6 +40,7 @@
             "Wizard"
           ],
           "keywords": [],
+          "oracleTextDisplay": "Flash. When Snapcaster Mage enters the battlefield, target instant or sorcery card in your graveyard gains flashback until end of turn.",
           "targets": []
         }
       ]
@@ -61,6 +62,7 @@
           "supertypes": [],
           "subtypes": [],
           "keywords": [],
+          "oracleTextDisplay": "Counter target spell.",
           "targets": []
         }
       ]
@@ -79,6 +81,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Lightning Bolt deals 3 damage to any target.",
       "caster": "Player 2",
       "targets": [
         {

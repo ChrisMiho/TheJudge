@@ -350,51 +350,64 @@ the game-mode request drives them. (DEC-020, DEC-010)
 
 - Built: assembly builds one large prompt in a fixed section order:
   `GENERAL GAME CONTEXT` → `ADDITIONAL GAME STATE` (when `gameStateNotes` present)
-  → `PHASE GUIDANCE` → populated zone sections → `GAME RULES (reference)` →
-  `ADDITIONAL RELEVANT RULE EXCERPTS` → `OFFICIAL RULINGS` → combo context (when
-  eligible) → `CONVERSATION HISTORY` (when present) → `SCOPE` → `QUESTION`. Stack
+  → `PHASE GUIDANCE` → populated zone sections (each card followed by its WotC
+  rulings at its first appearance, REQ-241) → `GAME RULES (reference)` →
+  `ADDITIONAL RELEVANT RULE EXCERPTS` → combo context (when
+  eligible) → `SCOPE` → `CONVERSATION HISTORY` (when present) → `QUESTION`. Stack
   ordering (bottom-to-top) is preserved into the prompt builder. (DEC-025,
-  DEC-042, REQ-006, REQ-022, REQ-024, REQ-030, REQ-031)
-- Built: every prompt includes the static MTG reference block and a merged
-  zone-scope sentence. (DEC-025)
+  DEC-042, REQ-006, REQ-022, REQ-024, REQ-030, REQ-031, REQ-241)
+- Built: every prompt includes the game-mode MTG reference block, a merged
+  zone-scope sentence, and the shared instruction list, which frames the rules
+  once as binding and never overriding the submitted state; the stack is numbered
+  one way, "Stack item 1" at the bottom. (DEC-025, REQ-243)
 - Built: `PHASE GUIDANCE` sits between general context and the zone sections and
   carries phase-specific reasoning; when `turnPhase` is `combat` it is specific to
   the submitted `combatStep`, falling back to generic combat framing when absent.
-  It is never omitted for a valid phase and adds no rules-validation behavior.
-  (DEC-036, DEC-037, REQ-024)
+  It is never omitted for a valid phase and adds no rules-validation behavior. Its
+  text is checked against the rules (cleanup, untap and declare blockers corrected).
+  (DEC-036, DEC-037, REQ-024, REQ-238)
 - Built: every card in every populated zone section emits full metadata —
   `oracleText`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`,
-  `subtypes`, `targets`, `contextNotes` — not only stack items. Empty oracle text
+  `subtypes`, `targets`, `contextNotes`, and `power`, `toughness`, `loyalty` when
+  the card has them, with oracle line breaks kept — not only stack items. Empty oracle text
   renders `oracleText: (none) — no oracle text recorded for this card`. The stack
   section keeps stack-specific fields (`stackRole`, `caster`, `manaSpent`);
   non-stack sections use `owner` and zone item labels and omit `caster`. `cardId`
-  and `imageUrl` stay out of the prompt text. (DEC-042, REQ-030)
+  and `imageUrl` stay out of the prompt text. (DEC-042, REQ-030, REQ-245)
 
 ### Retrieval enrichment (machinery consumed)
 
 - Built: `GAME RULES (reference)` loads verbatim WotC Comprehensive Rules
   excerpts from committed artifacts, selected by DEC-045's always-on core plus
-  game-state-gated expansion (System 2, gated on `turnPhase`, `combatStep`, and
-  populated zones), plus the replacement-effect interaction topic when two or
+  expansion gated on `turnPhase` and `combatStep` (System 2), plus the topics the
+  cards' wording (through the fixed concept map) or the question match in a fixed
+  trigger table — in place of populated-zone gating (REQ-242) — plus the
+  replacement-effect interaction topic when two or
   more cards on the stack or in any zone say "instead" or "prevent" (REQ-220);
-  card names and keywords never select a topic. It is omitted only when the
+  card names and keywords never select a topic. A topic rule that introduces a
+  list carries its list (REQ-240). It is omitted only when the
   artifact is missing/empty, with a warning logged. (DEC-030, DEC-045, REQ-022,
-  REQ-220)
-- Built: `ADDITIONAL RELEVANT RULE EXCERPTS` adds up to 10 supplemental rules
+  REQ-220, REQ-240, REQ-242)
+- Built: `ADDITIONAL RELEVANT RULE EXCERPTS` adds up to 15 supplemental rules (REQ-190), plus each attached card's keyword rules as whole sets (REQ-235)
   scored per DEC-046 — hybrid ranking (normalised cosine over the committed
-  per-rule embeddings blended with the normalised IDF-weighted lexical score)
+  per-rule embeddings from the Magic-trained search model, blended 0.65 / 0.35
+  with the normalised IDF-weighted lexical score)
   when the embedding-provider seam is active, with the exact-rule-id boost
   merged into the blended score and lexical scoring alone retained as the
   mock/offline default and the fallback on any embedding failure (REQ-181,
-  REQ-182), from a query built from the question plus each submitted card's
-  name, type line, and keywords rather than its full oracle text (REQ-178),
-  deduplicated against the System 2 selection by exact rule number (REQ-179) —
-  omitted when nothing scores above 0. (DEC-032, DEC-046, REQ-022, REQ-178,
-  REQ-179, REQ-181, REQ-182)
-- Built: `OFFICIAL RULINGS` carries published WotC Oracle rulings for submitted
-  cards. Retrieval relevance (System 2 selection and System 3 recall) is verified
+  REQ-182, REQ-236), from a query built from the question plus each submitted card's
+  name, type line, keywords and concept terms and the current turn step, rather
+  than its full oracle text (REQ-178, REQ-234), with two slots reserved for a
+  separate search of each card's own text (REQ-235),
+  deduplicated against the System 2 selection by exact rule number (REQ-179),
+  printed in rule-book order under path labels with lead-in lists (REQ-239,
+  REQ-240) — omitted when nothing scores above 0. (DEC-032, DEC-046, REQ-022,
+  REQ-178, REQ-179, REQ-181, REQ-182, REQ-234, REQ-235, REQ-236, REQ-239, REQ-240)
+- Built: published WotC Oracle rulings for submitted cards print under each
+  card's block, framed as that card's rulings to apply only when the situation
+  matches (REQ-241). Retrieval relevance (System 2 selection and System 3 recall) is verified
   by the eval harness against labeled expected outcomes, not structural checks
-  alone. (DEC-029, REQ-032, DEC-047)
+  alone. (DEC-029, REQ-032, DEC-047, REQ-241)
 
 ### Combo enrichment (machinery consumed)
 
@@ -490,8 +503,9 @@ outcome-validated, not product truth.
   (DEC-031, REQ-023)
 - Auto-scroll near-bottom threshold: 64px (shared conversation workspace). (DEC-118,
   REQ-025)
-- Supplemental rules: up to 10 excerpts (System 3), deduplicated against System 2.
-  (DEC-046, REQ-022)
+- Supplemental rules: up to 15 excerpts (System 3, REQ-190, a 0.6 relevance cutoff), two reserved for per-card
+  search, plus keyword sets (REQ-235), deduplicated against System 2; lead-in list items use no slot, within a
+  12,000-character budget per prompt. (DEC-046, REQ-022, REQ-235, REQ-240)
 - Combo variants: at most 5 selected per prompt — a relevance/noise cap
   independent of the 1,000,000-char prompt budget. (DEC-116, REQ-094, REQ-095)
 - Review list: the former View all cards mode and its 4-row-per-zone scroll cap

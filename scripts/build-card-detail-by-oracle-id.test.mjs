@@ -256,3 +256,45 @@ test("resolveSnapshotDate falls back to the build date when no meta sidecar or i
   );
   assert.equal(date, now.toISOString());
 });
+
+// REQ-245: power, toughness and loyalty ride in the backend card-detail artifact, omitted when a card has none.
+import { getCombatStat } from "./build-card-detail-by-oracle-id.mjs";
+
+test("buildDetailEntry carries power and toughness as Scryfall prints them, and omits them when the card has none", () => {
+  const creature = buildDetailEntry(scryfallCard({ power: "2", toughness: "*" }));
+  assert.equal(creature.power, "2");
+  assert.equal(creature.toughness, "*");
+  assert.equal("loyalty" in creature, false);
+  const spell = buildDetailEntry(scryfallCard({ type_line: "Instant" }));
+  assert.equal("power" in spell, false);
+  assert.equal("toughness" in spell, false);
+  assert.equal("loyalty" in spell, false);
+});
+
+test("buildDetailEntry carries loyalty for a planeswalker", () => {
+  const walker = buildDetailEntry(scryfallCard({ type_line: "Legendary Planeswalker — Test", loyalty: "4" }));
+  assert.equal(walker.loyalty, "4");
+  assert.equal("power" in walker, false);
+});
+
+test("a multi-face card's value is its faces' values joined with ' // ' (only faces that have one)", () => {
+  const twoFaced = { card_faces: [{ power: "2", toughness: "3" }, { power: "4", toughness: "5" }] };
+  assert.equal(getCombatStat(twoFaced, "power"), "2 // 4");
+  assert.equal(getCombatStat(twoFaced, "toughness"), "3 // 5");
+  assert.equal(getCombatStat({ card_faces: [{ power: "1", toughness: "1" }, { loyalty: "3" }] }, "power"), "1");
+  assert.equal(getCombatStat({ card_faces: [{ power: "1" }, { loyalty: "3" }] }, "loyalty"), "3");
+  assert.equal(getCombatStat({ card_faces: [{}, {}] }, "power"), undefined);
+  assert.equal(getCombatStat({ power: "7", card_faces: [{ power: "1" }] }, "power"), "7");
+  assert.equal(getCombatStat({}, "power"), undefined);
+});
+
+test("the committed card-detail artifact carries the stats and stays one JSON value per card (REQ-245)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { brotliDecompressSync } = await import("node:zlib");
+  const detail = JSON.parse(brotliDecompressSync(readFileSync("apps/backend/data/cardDetailByOracleId.json.br")).toString("utf8"));
+  const entries = Object.values(detail);
+  assert.ok(entries.filter((entry) => typeof entry.power === "string").length > 10000);
+  assert.ok(entries.filter((entry) => typeof entry.loyalty === "string").length > 100);
+  assert.ok(entries.some((entry) => typeof entry.power === "string" && entry.power.includes(" // ")));
+  assert.ok(entries.every((entry) => entry.power === undefined || typeof entry.power === "string"));
+});

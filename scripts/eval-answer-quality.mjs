@@ -125,8 +125,8 @@ export const RESULTS_RELATIVE_PATH = "apps/backend/src/eval/answer-quality/resul
 export const DEFAULT_LINEUP = ["gpt-6-luna"];
 /** The four-model bake-off, one flag away (`--bake-off`). */
 export const BAKE_OFF_LINEUP = ["gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5-nano"];
-/** The deployed excerpt cap alone (REQ-190); `--excerpt-cap 10 --excerpt-cap 15` compares caps. */
-export const DEFAULT_EXCERPT_CAPS = [10];
+/** The deployed excerpt cap alone (REQ-190, 15 with the relevance cutoff); `--excerpt-cap 10 --excerpt-cap 15` compares caps. */
+export const DEFAULT_EXCERPT_CAPS = [15];
 export const DEFAULT_SAMPLE_SEED = 1;
 // Deliberately duplicated from apps/backend/src/eval/answer-quality/judge.ts
 // (same value, same env var, independently tested there): this plain .mjs
@@ -533,7 +533,8 @@ export async function measurePrompts({ cases, excerptCaps, env }) {
       const prepared = preparePromptInput(buildCaseRequest(caseEntry), {
         ...resources,
         supplementalRuleCap: cap,
-        queryEmbedding: vectors.get(caseEntry.id) ?? null
+        queryEmbedding: vectors.get(caseEntry.id) ?? null,
+        cardEmbeddings: vectors.cardEmbeddingsByCaseId?.get(caseEntry.id)
       });
       measured.set(promptKey(caseEntry.id, cap), {
         promptHash: hashPrompt(prepared.promptText),
@@ -800,6 +801,7 @@ export async function executeEvaluation(
           ...deps.resources,
           supplementalRuleCap: cap,
           queryEmbedding: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
+          cardEmbeddings: queryEmbeddingByCaseId.cardEmbeddingsByCaseId?.get(caseEntry.id),
           collectEnrichmentDebug: true
         });
         const retrieval = describeRetrieval(prepared.enrichmentDebug?.supplemental, caseEntry.expected.decidingRuleIds, {

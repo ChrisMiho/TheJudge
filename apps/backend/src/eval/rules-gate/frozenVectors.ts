@@ -25,6 +25,9 @@ import { fileURLToPath } from "node:url";
 import type { CardDetailEntry } from "../../cardDetail.js";
 import { buildRetrievalQueryText } from "../../prompt/preparation.js";
 import type { AskAiRequest } from "../../types/index.js";
+import { assertVectorsMatchRuntimeModel } from "../../embeddingModel.js";
+import { loadFrozenCardVectors, resolveFrozenCardEmbeddings, type FrozenCardVectorFile } from "../frozenCardVectors.js";
+import { decodeVector, encodeVector } from "../vectorEncoding.js";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 
@@ -40,6 +43,9 @@ export type FrozenVectorEntry = {
 
 export type FrozenVectorFile = Record<string, FrozenVectorEntry>;
 
+/** On disk: the vectors plus the id of the embedding model that made them (REQ-237). */
+export type FrozenVectorsOnDisk = { model: string; vectors: FrozenVectorFile };
+
 export function hashQueryText(queryText: string): string {
   return createHash("sha256").update(queryText, "utf8").digest("hex");
 }
@@ -49,31 +55,39 @@ export function buildCaseQueryText(request: AskAiRequest, cardDetailIndex: Map<s
   return buildRetrievalQueryText(request, { cardDetailIndex });
 }
 
-export function encodeVector(vector: ArrayLike<number>): string {
-  const floats = Float32Array.from(vector);
-  return Buffer.from(floats.buffer, floats.byteOffset, floats.byteLength).toString("base64");
-}
+export { decodeVector, encodeVector };
 
-export function decodeVector(encoded: string): number[] {
-  const bytes = Buffer.from(encoded, "base64");
-  const floats = new Float32Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / Float32Array.BYTES_PER_ELEMENT);
-  return Array.from(floats);
-}
-
-/** Reads the committed vector file; a missing file is an empty set, so a fresh corpus fails loudly per case. */
-export function loadFrozenVectors(path = FROZEN_VECTORS_PATH): FrozenVectorFile {
+/** Reads the committed vector file as it is on disk; null when absent. Builders use this to reuse vectors the running model made. */
+export function readFrozenVectorsOnDisk(path = FROZEN_VECTORS_PATH): FrozenVectorsOnDisk | null {
   try {
-    return JSON.parse(readFileSync(path, "utf8")) as FrozenVectorFile;
+    return JSON.parse(readFileSync(path, "utf8")) as FrozenVectorsOnDisk;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return {};
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw error;
   }
 }
 
+/**
+ * Reads the committed vector file for the gate; a missing file is an empty set, so a fresh corpus
+ * fails loudly per case. REQ-237: the file records the model that made its vectors, and the gate
+ * refuses (throws) when that is not the running model.
+ */
+export function loadFrozenVectors(path = FROZEN_VECTORS_PATH): FrozenVectorFile {
+  const file = readFrozenVectorsOnDisk(path);
+  if (!file) return {};
+  assertVectorsMatchRuntimeModel("The rules gate's frozen query vectors", file.model);
+  return file.vectors;
+}
+
 export type ReFreezeCheck =
   | { state: "missing" }
-  | { state: "awaiting-refreeze"; storedHash: string; currentHash: string }
-  | { state: "fresh"; vector: number[] };
+  | { state: "awaiting-refreeze"; storedHash: string; currentHash: string; missingCardVectors?: number }
+  | {
+      state: "fresh";
+      vector: number[];
+      /** REQ-235: the frozen per-card vectors for this request's cards, keyed by `perCardTextKey`. */
+      cardEmbeddings: Map<string, number[]>;
+    };
 
 /**
  * The one re-freeze check (A5): rebuilds the case's retrieval query text,
@@ -85,7 +99,8 @@ export function checkReFreeze(
   caseId: string,
   request: AskAiRequest,
   cardDetailIndex: Map<string, CardDetailEntry>,
-  vectors: FrozenVectorFile
+  vectors: FrozenVectorFile,
+  cardVectors: FrozenCardVectorFile = loadFrozenCardVectors()
 ): ReFreezeCheck {
   const entry = vectors[caseId];
   if (!entry) return { state: "missing" };
@@ -93,5 +108,11 @@ export function checkReFreeze(
   if (currentHash !== entry.queryTextHash) {
     return { state: "awaiting-refreeze", storedHash: entry.queryTextHash, currentHash };
   }
-  return { state: "fresh", vector: decodeVector(entry.vector) };
+  // REQ-235: a card whose search text has no frozen vector (its text changed, or it was never frozen)
+  // would silently contribute nothing; the case waits for a re-freeze instead.
+  const { embeddings, missingKeys } = resolveFrozenCardEmbeddings(request, cardDetailIndex, cardVectors);
+  if (missingKeys.length > 0) {
+    return { state: "awaiting-refreeze", storedHash: entry.queryTextHash, currentHash, missingCardVectors: missingKeys.length };
+  }
+  return { state: "fresh", vector: decodeVector(entry.vector), cardEmbeddings: embeddings };
 }

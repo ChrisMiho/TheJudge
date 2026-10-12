@@ -93,13 +93,15 @@ function makeContext(overrides: {
   stackTexts?: string[];
   /** Oracle text of each battlefield card, in order (a non-empty list also populates the battlefield). */
   battlefieldTexts?: string[];
+  /** The player's question (default "q"). */
+  question?: string;
 }): PromptContext {
   const { turnPhase = "main_1", combatStep, stack = false, battlefield = false } = overrides;
   const stackItems = overrides.stackTexts?.map((text) => makeStackItem(text)) ?? (stack ? [makeStackItem()] : []);
   const battlefieldItems =
     overrides.battlefieldTexts?.map((text) => makeZoneItem(text)) ?? (battlefield ? [makeZoneItem()] : []);
   return {
-    finalQuestion: "q",
+    finalQuestion: overrides.question ?? "q",
     gameContext: {
       playerCount: 2,
       players: [],
@@ -128,38 +130,46 @@ describe("Backend - Game Rules", () => {
       expect(ids).toEqual([...ids].sort((a, b) => a.localeCompare(b)));
     });
 
-    it("adds all five stack conditional topics when the stack is non-empty", () => {
-      const ids = selectedIds(makeContext({ stack: true }));
-      for (const id of [
-        "spell-casting-choices",
-        "spell-casting-costs",
-        "effects-resolution-targets",
-        "copying-spells-abilities",
-        "effects-source-impossible"
-      ]) {
-        expect(ids).toContain(id);
-      }
-    });
-
-    it("adds all six battlefield conditional topics when the battlefield is populated", () => {
-      const ids = selectedIds(makeContext({ battlefield: true }));
-      for (const id of [
-        "replacement-effects-basics",
-        "replacement-etb-effects",
-        "layers-order",
-        "layers-power-toughness",
-        "layers-timestamps-dependencies",
-        "abilities-zone-change-triggers"
-      ]) {
-        expect(ids).toContain(id);
-      }
-    });
-
-    it("unions stack and battlefield bucket sets with the core topics", () => {
+    it("REQ-242: a populated stack or battlefield alone selects none of the eleven formerly zone-gated topics", () => {
       const ids = selectedIds(makeContext({ stack: true, battlefield: true }));
-      expect(ids).toContain("spell-casting-choices");
-      expect(ids).toContain("layers-order");
-      for (const id of ALWAYS_ON_TOPIC_IDS) expect(ids).toContain(id);
+      expect(ids).toEqual([...ALWAYS_ON_TOPIC_IDS].sort((a, b) => a.localeCompare(b)));
+    });
+
+    it("REQ-242: words of a topic's title select it (question words, stemmed)", () => {
+      const cases: Array<[string, string[]]> = [
+        ["Can I cast it in response?", ["spell-casting-choices", "spell-casting-costs"]],
+        ["What are the costs?", ["spell-casting-costs"]],
+        ["The spell is resolving, and a target became illegal.", ["effects-resolution-targets"]],
+        ["Does the copy keep the choices?", ["copying-spells-abilities", "spell-casting-choices"]],
+        ["Is it an impossible action when the source is gone?", ["effects-source-impossible"]],
+        ["Is this a replacement effect?", ["replacement-effects-basics", "replacement-etb-effects"]],
+        ["Which layer applies first among continuous effects?", ["layers-order", "layers-power-toughness", "layers-timestamps-dependencies"]],
+        ["What is its power and toughness now?", ["layers-power-toughness"]],
+        ["How do timestamps and dependency work?", ["layers-timestamps-dependencies"]],
+        ["The creature enters tapped.", ["replacement-etb-effects"]],
+        ["It changed zone twice.", ["abilities-zone-change-triggers"]]
+      ];
+      for (const [question, expected] of cases) {
+        const ids = selectedIds(makeContext({ question }));
+        for (const id of expected) expect(ids, `${question} -> ${id}`).toContain(id);
+      }
+    });
+
+    it("REQ-242: a question that names none of them adds none of them", () => {
+      const ids = selectedIds(makeContext({ question: "Does the Goblin die?", stack: true, battlefield: true }));
+      expect(ids).toEqual([...ALWAYS_ON_TOPIC_IDS].sort((a, b) => a.localeCompare(b)));
+    });
+
+    it("REQ-242: a card's concept terms select a topic (a card that grants a copy brings the copying topic)", () => {
+      const ids = selectedIds(makeContext({ stackTexts: ["Copy target instant or sorcery spell. You may choose new targets for the copy."] }));
+      expect(ids).toContain("copying-spells-abilities");
+      const layer = selectedIds(makeContext({ battlefieldTexts: ["Creatures you control get +1/+1."] }));
+      expect(layer).toContain("layers-power-toughness");
+    });
+
+    it("REQ-242: the delayed-trigger phase trigger and the combat topics are unchanged", () => {
+      expect(selectedIds(makeContext({ turnPhase: "upkeep" }))).toContain("abilities-delayed-triggers");
+      expect(selectedIds(makeContext({ turnPhase: "combat", combatStep: "declare_blockers" }))).toContain("combat-declare-blockers");
     });
 
     it("adds combat-phase-structure and combat-declare-attackers for combat + declare_attackers", () => {

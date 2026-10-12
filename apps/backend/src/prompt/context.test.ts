@@ -609,6 +609,7 @@ describe("Backend - Ask AI", () => {
             supertypes: ["Legendary"],
             subtypes: ["Beast"],
             keywords: [],
+            oracleTextDisplay: "Vigilance, deathtouch, haste",
             targets: []
           }
         ],

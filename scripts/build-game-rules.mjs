@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -7,6 +8,8 @@ const manifestPath = path.resolve("apps/backend/data/gameRulesTopicManifest.json
 const sourcePath = path.resolve("apps/backend/data/cr/source.txt");
 const outputPath = path.resolve("apps/backend/data/gameRulesByTopic.json");
 const indexPath = path.resolve("apps/backend/data/gameRulesRuleIndex.json");
+const glossaryPath = path.resolve("apps/backend/data/gameRulesGlossary.json");
+const bookMetaPath = path.resolve("apps/backend/data/gameRulesBookMeta.json");
 const tokenStatsPath = path.resolve("apps/backend/data/gameRulesTokenStats.json");
 const coreTopicsPath = path.resolve("apps/frontend/public/data/gameRulesCoreTopics.json");
 
@@ -21,32 +24,30 @@ export const CORE_TOPIC_IDS = Object.freeze([
   "layers-order"
 ]);
 
-// Keep this stopword set + tokenizer in sync with `tokenize` in
-// apps/backend/src/gameRulesRetrieval.ts so token-frequency stats match the scorer.
-const STOP_WORDS = new Set([
-  "and", "are", "can", "card", "cards", "does", "for", "from",
-  "has", "have", "how", "one", "that", "the", "this", "what",
-  "when", "will", "with"
-]);
+// REQ-233: one tokenizer and one Porter stemmer, shared with the backend's scoring and the model
+// training export. Node loads the TypeScript module directly (it has no imports and erasable types
+// only), so the rule side and the query side can never drift apart.
+const { tokenizeSearchText } = await import("../apps/backend/src/gameRulesStemmer.ts");
 
-function tokenizeForStats(value) {
-  return value
-    .toLowerCase()
-    .split(/[^a-z0-9.]+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 3 && !STOP_WORDS.has(token));
+/**
+ * REQ-233: a rule's `searchText` is its id, section title and text read through the shared tokenizer
+ * (sentence dots dropped, "can't" whole, U+2028 and no-break spaces as spaces, Porter stems), joined
+ * by single spaces. The backend splits it on spaces and never stems it again.
+ */
+export function buildSearchText(ruleId, sectionTitle, ruleText) {
+  return tokenizeSearchText([ruleId, sectionTitle, ruleText].join(" ")).join(" ");
 }
 
 /**
  * Document-frequency stats for IDF scoring (DEC-046). `df` counts the number of
  * rule entries whose `searchText` contains the token (deduped per rule), `N` is the
- * total rule count. Mirrors the scorer's tokenization.
+ * total rule count. `searchText` is already the scorer's tokens (REQ-233), so it is read by splitting on spaces.
  * @param {Array<{ searchText: string }>} ruleEntries
  */
 function buildTokenStats(ruleEntries) {
   const df = new Map();
   for (const entry of ruleEntries) {
-    const seen = new Set(tokenizeForStats(entry.searchText));
+    const seen = new Set(entry.searchText.split(" ").filter((token) => token.length > 0));
     for (const token of seen) {
       df.set(token, (df.get(token) ?? 0) + 1);
     }
@@ -113,10 +114,13 @@ export function extractRuleExcerpt(crText, ruleNumber) {
 
   const start = match.index;
   const rest = normalizedText.slice(start);
-  const nextHeaderPattern = /\n(?=\d{3}(?:\.\d+)*(?:[a-z])?(?:\.|\s))/g;
+  const nextHeaderPattern = /\n(?=\d{3}(?:\.\d+)*(?:[a-z]{1,2})?(?:\.|\s))/g;
   const nextHeader = nextHeaderPattern.exec(rest.slice(1));
   const end = nextHeader ? 1 + nextHeader.index : rest.length;
-  return rest.slice(0, end).trim();
+  const excerpt = rest.slice(0, end).trim();
+  // The last rule of a part is followed by the next part's title line; it is not rule text.
+  const partTitleAt = excerpt.search(PART_TITLE_LINE);
+  return (partTitleAt > 0 ? excerpt.slice(0, partTitleAt) : excerpt).trim();
 }
 
 const HEADING_ONLY_MAX_LENGTH = 60;
@@ -130,14 +134,18 @@ const HEADING_ONLY_MAX_LENGTH = 60;
  * does, so that is the general, corpus-independent signal used here rather
  * than a hard-coded title list.
  */
-export function isHeadingOnlyEntry(ruleId, text) {
+export function isHeadingOnlyEntry(ruleId, text, hasOwnLetteredChild = false) {
   const prefixPattern = new RegExp(`^${escapeRegExp(ruleId)}(?:\\.|\\s)\\s*`);
   const remainder = text.replace(prefixPattern, "").trim();
   if (remainder.length === 0) return true;
   if (remainder.length >= HEADING_ONLY_MAX_LENGTH) return false;
+  // A keyword's title can end in "!" ("For Mirrodin!", "Start Your Engines!");
+  // it is a bare title when its own lettered rule (702.163a) follows.
+  if (hasOwnLetteredChild && !/[.:;]["'\u201d\u2019)\]]?$/.test(remainder)) return true;
   // A colon introduces a following list (e.g. "704.5. The state-based actions
-  // are as follows:") and is real rule content, not a bare title.
-  return !/[.!?:;]['")\]]?$/.test(remainder);
+  // are as follows:") and is real rule content, not a bare title. A rule may
+  // end in a closing curly quote after its period (700.15, 303.7).
+  return !/[.!?:;]["'\u201d\u2019)\]]?$/.test(remainder);
 }
 
 /**
@@ -146,7 +154,9 @@ export function isHeadingOnlyEntry(ruleId, text) {
  * contents is no longer scanned at all by `parseRuleIndex`.
  */
 export function cleanRuleIndexEntries(entries) {
-  const withoutHeadings = entries.filter((entry) => !isHeadingOnlyEntry(entry.ruleId, entry.text));
+  const withoutHeadings = entries.filter(
+    (entry, i) => !isHeadingOnlyEntry(entry.ruleId, entry.text, entries[i + 1]?.ruleId === `${entry.ruleId}a`)
+  );
   const seen = new Set();
   const deduped = [];
   for (const entry of withoutHeadings) {
@@ -159,7 +169,7 @@ export function cleanRuleIndexEntries(entries) {
 
 function computeParentRuleIds(ruleId) {
   const parents = [];
-  const withoutLetter = ruleId.replace(/[a-z]$/, "");
+  const withoutLetter = ruleId.replace(/[a-z]+$/, "");
   if (withoutLetter !== ruleId) {
     parents.push(withoutLetter);
   }
@@ -169,6 +179,67 @@ function computeParentRuleIds(ruleId) {
     parents.push(parts.join("."));
   }
   return parents;
+}
+
+const PART_TITLE_LINE = /^\d\. \S[^\n]*$/m;
+
+/** Source text with the table of contents cut away: where the numbered rules and the glossary begin. */
+function locateSections(normalizedText) {
+  const glossaryPattern = /^Glossary\s*$/gm;
+  const glossaryIndexes = [];
+  let gm;
+  while ((gm = glossaryPattern.exec(normalizedText)) !== null) glossaryIndexes.push(gm.index);
+  return glossaryIndexes;
+}
+
+/** The rule book's edition date (ISO), the hash of its text, and each part's title. */
+export function parseRuleBookMeta(crText) {
+  const normalizedText = normalizeNewlines(crText);
+  const editionMatch = /effective as of ([A-Z][a-z]+) (\d{1,2}), (\d{4})/.exec(normalizedText);
+  if (!editionMatch) throw new Error("Rule book edition date not found (\"effective as of ...\").");
+  const month = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].indexOf(editionMatch[1]) + 1;
+  if (month === 0) throw new Error(`Unknown month in rule book edition: ${editionMatch[1]}`);
+  const edition = `${editionMatch[3]}-${String(month).padStart(2, "0")}-${editionMatch[2].padStart(2, "0")}`;
+  const glossaryIndexes = locateSections(normalizedText);
+  const contentStart = glossaryIndexes.length > 0 ? glossaryIndexes[0] : 0;
+  const lastGlossaryIndex = glossaryIndexes.length > 0 ? glossaryIndexes[glossaryIndexes.length - 1] : -1;
+  const body = normalizedText.slice(contentStart, lastGlossaryIndex > contentStart ? lastGlossaryIndex : undefined);
+  const partTitles = {};
+  for (const m of body.matchAll(/^(\d)\. (\S[^\n]*)$/gm)) partTitles[m[1]] = m[2].trim();
+  return { edition, sourceSha256: crypto.createHash("sha256").update(normalizedText).digest("hex"), partTitles };
+}
+
+/**
+ * The rule book's glossary: one entry per term. `obsolete` marks the 35 entries
+ * the book flags "(Obsolete)"; `obsoleteSense` marks those where only one sense
+ * of a live term is obsolete (for example "Play"), so query translation can
+ * leave them alone. The glossary is never delivered as an excerpt.
+ */
+export function parseGlossary(crText) {
+  const normalizedText = normalizeNewlines(crText);
+  const lines = normalizedText.split("\n");
+  let glossaryLine = -1;
+  let creditsLine = -1;
+  lines.forEach((line, i) => {
+    if (/^Glossary\s*$/.test(line)) glossaryLine = i;
+    if (/^Credits\s*$/.test(line)) creditsLine = i;
+  });
+  if (glossaryLine < 0 || creditsLine < glossaryLine) return [];
+  const blocks = lines
+    .slice(glossaryLine + 1, creditsLine)
+    .join("\n")
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter((block) => block.length > 0);
+  return blocks.map((block) => {
+    const [head, ...rest] = block.split("\n");
+    const definition = rest.map((line) => line.trim()).filter(Boolean).join(" ");
+    const headMarked = /\(Obsolete\)\s*$/.test(head);
+    const leadMarked = /^\(Obsolete\)/.test(definition);
+    const obsolete = headMarked || /\(Obsolete\)/.test(block);
+    const term = head.replace(/\s*\(Obsolete\)\s*$/, "").trim();
+    return { term, definition, obsolete, ...(obsolete && !headMarked && !leadMarked ? { obsoleteSense: true } : {}) };
+  });
 }
 
 export function parseRuleIndex(crText) {
@@ -195,7 +266,8 @@ export function parseRuleIndex(crText) {
   const text = normalizedText.slice(contentStart, contentEnd);
 
   // Match both `100.1. ` (period+space) and `100.1a ` (space only, lettered sub-rules).
-  const ruleHeaderPattern = /^(\d{3}(?:\.\d+)*(?:[a-z])?)(?:\. | (?=\S))/gm;
+  // A rule id carries up to two trailing letters (704.5aa follows 704.5z).
+  const ruleHeaderPattern = /^(\d{3}(?:\.\d+)*(?:[a-z]{1,2})?)(?:\. | (?=\S))/gm;
   const matches = [];
   let m;
   while ((m = ruleHeaderPattern.exec(text)) !== null) {
@@ -208,7 +280,11 @@ export function parseRuleIndex(crText) {
   for (let i = 0; i < matches.length; i++) {
     const { ruleId, index } = matches[i];
     const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
-    const ruleText = text.slice(index, end).trim();
+    let ruleText = text.slice(index, end).trim();
+    // The next part's title line ("2. Parts of a Card") follows the last rule of
+    // a part; it is not rule text.
+    const partTitleAt = ruleText.search(PART_TITLE_LINE);
+    if (partTitleAt > 0) ruleText = ruleText.slice(0, partTitleAt).trim();
 
     if (!ruleId.includes(".")) {
       const headingMatch = /^\d{3}\. (.+)/.exec(ruleText);
@@ -218,12 +294,38 @@ export function parseRuleIndex(crText) {
     }
 
     const parentRuleIds = computeParentRuleIds(ruleId);
-    const searchText = [ruleId, currentSectionTitle, ruleText].join(" ").toLowerCase();
+    const searchText = buildSearchText(ruleId, currentSectionTitle, ruleText);
 
     entries.push({ ruleId, sectionTitle: currentSectionTitle, text: ruleText, searchText, parentRuleIds });
   }
 
-  return cleanRuleIndexEntries(entries);
+  return annotateKeywordRuleTitles(cleanRuleIndexEntries(entries), keywordRuleTitlesOf(text));
+}
+
+/**
+ * REQ-179 / REQ-235: the keyword rules' titles, read from the title-only lines of the rule book
+ * (`702.2. Deathtouch`, `701.9. Discard`): rule number -> title. 701.1 and 702.1 are the sections'
+ * general rules, not keywords. The first line per rule number wins.
+ */
+export function keywordRuleTitlesOf(text) {
+  const titles = new Map();
+  for (const match of text.matchAll(/^(70[12]\.(\d+))\. (.+?)\s*$/gm)) {
+    if (match[2] === "1") continue;
+    if (!titles.has(match[1])) titles.set(match[1], match[3].trim());
+  }
+  return titles;
+}
+
+/**
+ * Each lettered piece of a keyword rule carries `keywordTitle`, the rule's title, so the backend can
+ * match a card's Scryfall keyword to the rule's whole set. Data only: the title is never an excerpt.
+ */
+export function annotateKeywordRuleTitles(entries, titles) {
+  return entries.map((entry) => {
+    const parent = /^(70[12]\.\d+)[a-z]+$/.exec(entry.ruleId)?.[1];
+    const title = parent ? titles.get(parent) : undefined;
+    return title ? { ...entry, keywordTitle: title } : entry;
+  });
 }
 
 function mapPreviousTopics(previousTopics) {
@@ -386,6 +488,19 @@ async function main() {
   console.log(`Rule index entries: ${ruleEntries.length}`);
   console.log(`Rule index bytes: ${Buffer.byteLength(indexOutput)}`);
   console.log(`Wrote: ${indexPath}`);
+
+  const glossary = parseGlossary(crText);
+  ensureParentDirectory(glossaryPath);
+  const glossaryOutput = await prettierFormat(JSON.stringify(glossary), { parser: "json", printWidth: 120 });
+  fs.writeFileSync(glossaryPath, glossaryOutput);
+  console.log(`Glossary entries: ${glossary.length} (${glossary.filter((entry) => entry.obsolete).length} obsolete)`);
+  console.log(`Wrote: ${glossaryPath}`);
+
+  const bookMeta = parseRuleBookMeta(crText);
+  const bookMetaOutput = await prettierFormat(JSON.stringify(bookMeta), { parser: "json", printWidth: 120 });
+  fs.writeFileSync(bookMetaPath, bookMetaOutput);
+  console.log(`Rule book edition: ${bookMeta.edition}; parts: ${Object.keys(bookMeta.partTitles).length}`);
+  console.log(`Wrote: ${bookMetaPath}`);
 
   const tokenStats = buildTokenStats(ruleEntries);
   ensureParentDirectory(tokenStatsPath);

@@ -360,13 +360,13 @@
 ### REQ-022
 - Title: General game rules prompt enrichment
 - Priority: high
-- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, selected by game-state signals for the baseline — plus one card-wording gate for replacement-effect interactions (REQ-220) — and by card/question-driven relevance scoring for supplemental rules, without changing the product API or UI.
+- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, selected by game-state signals for the baseline — plus one card-wording gate for replacement-effect interactions (REQ-220) and, in In-Depth, card-wording and question triggers in place of zone presence (REQ-242) — and by card/question-driven relevance scoring for supplemental rules, without changing the product API or UI.
 - Acceptance Criteria:
   - committed artifact `apps/backend/data/gameRulesByTopic.json` loads at backend startup
-  - every assembled prompt includes `GAME RULES (reference)` with curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) and REQ-220 (the replacement-effect interaction topic when two or more cards carry replacement or prevention wording) in stable `id` order when the artifact is present
+  - every assembled prompt includes `GAME RULES (reference)` with curated topics selected per DEC-045 (always-on core plus turn-phase and combat-step expansion), REQ-242 (in In-Depth, the formerly zone-gated topics chosen by card wording and question) and REQ-220 (the replacement-effect interaction topic when two or more cards carry replacement or prevention wording) in stable `id` order when the artifact is present; within a topic, rules print in rule-book order, each id once (REQ-239), and a topic rule that introduces a list carries its list (REQ-240)
   - excerpts are verbatim WotC CR prose for rule numbers listed in `apps/backend/data/gameRulesTopicManifest.json`
-  - section appears after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
-  - section includes a disclaimer that rules are shared vocabulary and do not override submitted game state
+  - in In-Depth the section appears after the populated zone sections (each card followed by its own rulings, REQ-241); in both modes it comes directly before `ADDITIONAL RELEVANT RULE EXCERPTS`
+  - the section carries no disclaimer of its own: the instructions frame the rules once as the binding rules of the game, which never override the submitted game state or a card's oracle text (REQ-243)
   - section omitted only when artifact missing or empty, with a warning logged
   - `MAX_PROMPT_CHAR_BUDGET` is set to `EFFECTIVELY_UNLIMITED_CHARS` (1,000,000) per DEC-042 amendment to DEC-030; prompt diagnostics continue to track prompt size and utilization
   - `npm run data:build` runs `build-game-rules.mjs` with graceful degradation when CR source or extracts are unavailable
@@ -374,20 +374,20 @@
   - eval fixtures assert conditional System 2 topic selection per scenario (see REQ-032)
   - manual latency sampling (p50/p95) is recorded after integration against the NFR-002 product risk
   - committed artifact `apps/backend/data/gameRulesRuleIndex.json` loads at backend startup alongside the topic artifact
-  - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 10 rules scored per DEC-046 against the request context
+  - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 15 rules scored per DEC-046 against the request context (REQ-190) — the main ranking fills up to thirteen slots before its relevance cutoff and per-card search up to two (REQ-235) — plus each attached card's keyword rules as whole sets (REQ-235) and the list items of any delivered lead-in, which use no slot (REQ-240); the rules print in rule-book order, grouped under path labels (REQ-239)
   - supplemental rules are excluded from the curated baseline set (deduplicated against selected System 2 topic rule numbers by exact rule number: a rule a selected topic lists never repeats as a supplemental excerpt, while a listed parent's lettered sub-rules that the topic does not list compete like any other rule — REQ-179)
-  - supplemental section appears after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
+  - supplemental section appears directly after `GAME RULES (reference)`; there is no separate rulings section (REQ-241)
   - supplemental section omitted when index missing, empty, or no rules score above 0
   - eval fixtures assert labeled supplemental recall per REQ-032
-  - the System 3 retrieval query is built from the player's question plus a compact per-card signal — name, type line, and keyword list — not from raw concatenated card oracle text (REQ-178)
+  - the System 3 retrieval query is built from the player's question plus a compact per-card signal — name, type line, and keyword list — plus the concept terms the fixed concept map draws from each card's wording (REQ-234) and, in In-Depth, the current turn step (REQ-178); never from raw concatenated card oracle text, which only per-card search reads, as its own separate query (REQ-235)
   - System 3 scoring is a hybrid of meaning and word overlap when the embedding-provider seam is active (REQ-182): the query embedding is cosine-ranked against the committed rule embeddings and blended with the lexical IDF score, both normalised per query, with the exact-rule-id and parent-rule-id boost merged into the blended score. Lexical scoring alone is retained as the mock/offline default and as the fallback on any embedding failure, so those settings are never worse than the prior lexical-only behaviour. The blend exists because semantic-only ranking, measured 2026-09-05, was better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) but lost an expected rule on short lookup-mode questions in three of eight labelled fixtures (REQ-181, REQ-182)
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
   - no runtime CR or Scryfall fetch per request
-  - no per-request external call for System 3 query embedding in the default (`mock`) or shipped-semantic (`local`) modes; the no-per-request-external-call posture is preserved by the bundled local model (REQ-181), not reversed — only `EMBEDDING_PROVIDER=openai` would add one, and it is never the default
-  - System 2 selection uses game-state signals (`turnPhase`, `combatStep`, populated zones) plus exactly one card signal: whether two or more cards' oracle text carries replacement or prevention wording as REQ-220 defines it (the whole word "instead", "prevent", "prevents", or "prevented"), which selects the replacement-effect interaction topic (REQ-220); card names and keywords never select a System 2 topic
-  - System 3 owns all relevance-scored card/question-driven retrieval including oracle-keyword signals; REQ-220's wording gate is a fixed on/off switch, not scoring
+  - no per-request external call for System 3 query embedding in the default (`mock`) or shipped-semantic (`local`) modes; the no-per-request-external-call posture is preserved by the packaged local model — the Magic-trained model, fetched from private storage only when the deploy package is built (REQ-236, REQ-237) — not reversed; only `EMBEDDING_PROVIDER=openai` would add one, and it is never the default
+  - System 2 selection uses game-state signals (`turnPhase`, `combatStep`) plus card wording in two fixed forms: whether two or more cards' oracle text carries replacement or prevention wording as REQ-220 defines it (the whole word "instead", "prevent", "prevents", or "prevented"), which selects the replacement-effect interaction topic (REQ-220); and, in In-Depth only, the concept terms of the cards and the question's words matched against a fixed trigger table for the topics populated zones used to select (REQ-242); card names and keywords never select a System 2 topic
+  - System 3 owns all relevance-scored card/question-driven retrieval including oracle-keyword signals; REQ-220's wording gate and REQ-242's trigger table are fixed matching, not scoring
 - Dependencies:
   - DEC-045
   - DEC-046
@@ -399,7 +399,7 @@
   - REQ-220 (the card-wording gate for the replacement-effect interaction topic)
 - Notes:
   - supersedes REQ-022 acceptance criteria that required all curated topics on every request
-  - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement and System 2 deduplication are unchanged. The cap moved from five excerpts to ten (2026-09-09, `rule-excerpt-cap-ten`) on the measured result that the deployed model `gpt-4.1` scored 16/18 on the worked-solution gold set at five and 18/18 at ten, at unchanged answer latency (REQ-190)
+  - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement and System 2 deduplication are unchanged. The cap moved from five excerpts to ten (2026-09-09, `rule-excerpt-cap-ten`) on the measured result that the deployed model `gpt-4.1` scored 16/18 on the worked-solution gold set at five and 18/18 at ten, at unchanged answer latency (REQ-190); it became up to fifteen with a relevance cutoff on 2026-10-12 (`right-rules-in-order`, REQ-190), with each attached card's keyword rules added whole beside them (REQ-235)
   - amended by `niche-interaction-rule-tests` (2026-10-07): System 2 is no longer strictly card-agnostic. One topic, the replacement-effect interaction rules, is selected when two or more cards carry replacement or prevention wording (REQ-220), because no change to System 3's search, measured offline, got the rules that decide a question about two such cards attached together (614.1a, 616.1, 616.1e, 616.1f) into the prompt under both rankings
 
 ### REQ-023
@@ -427,13 +427,14 @@
 ### REQ-024
 - Title: Phase-scoped prompt guidance
 - Priority: medium
-- Description: Every backend AI prompt must include a `PHASE GUIDANCE` block containing phase-specific and combat-sub-step-specific reasoning instructions, positioned between `GENERAL GAME CONTEXT` and the zone sections.
+- Description: Every In-Depth prompt must include a `PHASE GUIDANCE` block containing phase-specific and combat-sub-step-specific reasoning instructions, positioned between `GENERAL GAME CONTEXT` and the zone sections; a Quick Lookup prompt includes the same summaries for the turn steps its question names (REQ-238).
 - Acceptance Criteria:
-  - every assembled prompt includes a `PHASE GUIDANCE` section between `GENERAL GAME CONTEXT` and the zone sections
+  - every In-Depth prompt includes a `PHASE GUIDANCE` section between `GENERAL GAME CONTEXT` and the zone sections
   - guidance text is specific to the submitted `turnPhase`
   - when `turnPhase` is `combat`, guidance text is specific to the submitted `combatStep` when present; falls back to generic combat framing when absent
   - section is never omitted for a valid phase submission
-  - canonical guidance strings per phase match those specified in DEC-036
+  - canonical guidance strings per phase are the corrected strings in `apps/backend/src/prompt/phaseGuidance.ts`, each pinned by a test to the Comprehensive Rules it summarises (REQ-238); DEC-036's original strings are superseded
+  - a Quick Lookup prompt carries `PHASE GUIDANCE` right after `MTG REFERENCE` when its question names a turn step or an attached card's concept terms do, with one summary per named step, at most three, from the same strings (REQ-238)
 - Constraints:
   - prompt-only and backend-only beyond the `combatStep` field additions in DEC-037
   - do not add rules-validation behavior under the label of phase guidance
@@ -562,7 +563,7 @@
 - Priority: high
 - Description: The backend must include full card metadata — including oracle text — for every card in every populated zone section of the assembled LLM prompt, not only stack items.
 - Acceptance Criteria:
-  - every card in every populated zone section includes `oracleText`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`, `targets`, and `contextNotes` lines in the assembled prompt
+  - every card in every populated zone section includes `oracleText`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`, `targets`, and `contextNotes` lines in the assembled prompt, plus `power`, `toughness` and `loyalty` lines when the card has them (REQ-245); `oracleText` keeps the card's line breaks (REQ-245); the card's WotC rulings follow its block at its first appearance (REQ-241)
   - empty oracle text after whitespace trim emits `oracleText: (none) — no oracle text recorded for this card`
   - stack section retains stack-specific fields (`stackRole`, `caster`, `manaSpent`)
   - non-stack sections use `owner` and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is not emitted for non-stack items
@@ -1779,9 +1780,9 @@
 - Priority: high
 - Description: For `mode: "lookup"`, the backend must assemble one prompt that always runs question-driven rules retrieval, layers in per-card enrichment when a card is attached, omits game-state-only sections, and guards against off-domain questions.
 - Acceptance Criteria:
-  - the assembled prompt always includes the static MTG reference block (DEC-025), the always-on core game-rules topics (DEC-045 core set), and question-scored System 3 supplemental rules (DEC-046 / REQ-022)
-  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings (DEC-029), and System 3 scored against the question plus a compact signal for each attached card — name, type line, and keyword list — rather than the card's full oracle text (REQ-178)
-  - the assembled prompt omits zone sections, `PHASE GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state
+  - the assembled prompt always includes Quick Lookup's own MTG reference block, which describes only sections this mode contains (DEC-025, REQ-243), the always-on core game-rules topics (DEC-045 core set), and question-scored System 3 supplemental rules (DEC-046 / REQ-022)
+  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings directly under its block (DEC-029, REQ-241), and System 3 scored against the question plus a compact signal for each attached card — name, type line, and keyword list — plus the concept terms of its wording (REQ-234), rather than the card's full oracle text (REQ-178); each attached card's own text is searched separately for the two reserved per-card slots (REQ-235)
+  - the assembled prompt omits zone sections, System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state; it includes `PHASE GUIDANCE` only for turn steps the question names or an attached card's concept terms name (REQ-024, REQ-238)
   - the prompt instructs the model to quote only from the provided rule excerpts and to present the relevant ones verbatim plus an explanation
   - the prompt instructs the model to respond to off-domain / non-MTG questions in the "confused rules lookup" persona (DEC-108) rather than a direct answer or a generic capability refusal
   - the assembled prompt includes the user `QUESTION` and, when present, the `CONVERSATION HISTORY` section (REQ-027) using the existing placement rules
@@ -3924,7 +3925,7 @@
   - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
   - The pre-submit view lets the player add, preview, and remove more than one card; an explicit cap of **10 cards** — the same number as the Stack's limit (REQ-010) — is enforced and stated to the player so the prompt stays bounded.
   - On Ask a Question (REQ-206) the Add-card search opens its result list before three characters are typed, at the threshold the direction-1 mockup's own search uses (`docs/design/ui-reimagining/direction-1/flow.js`, read at build and recorded in this requirement's Notes); every other card search in the suite keeps its three-character minimum. Which card resolves, and what the request carries, are unchanged.
-  - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus a compact signal for every attached card — name, type line, and keyword list. It no longer scores over each card's full oracle text, which was measured to drop supplemental recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178).
+  - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings directly under it (DEC-029, REQ-241) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus a compact signal for every attached card — name, type line, and keyword list — plus the concept terms of its wording (REQ-234). The main query never carries each card's full oracle text, which was measured to drop supplemental recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178); each card's text is searched on its own, separately, for the two reserved per-card slots (REQ-235).
   - Combo enrichment (Commander Spellbook) adapts to the card set: the attached cards become the match instances, amending REQ-094's single-card lookup rule. A candidate qualifies when it contains at least one attached card as an exact ingredient or authoritative template match, and candidates covering more of the attached cards rank ahead of those covering fewer (attached-card coverage), applied before popularity — so "how do these cards combo" surfaces the combos using the most of the attached cards first. With exactly one card attached this is identical to today's single-card lookup; with zero cards attached, behavior is unchanged (no combo data without explicit intent and at least one card). (DEC-116/REQ-094 [amended]/REQ-095)
   - When an eligible candidate is **complete** — every ingredient slot filled by an exact or authoritative-template match across the attached cards — the answer explains that combo, with per-ingredient card state left explicitly unverified (a lookup carries no board). When a candidate is **partial** — it qualifies on at least one attached card but at least one ingredient slot is unmatched — the answer names each missing ingredient and describes what would fill that role: the missing ingredient's own card name (missing exact ingredient) or template/category description (missing template ingredient) drawn from the combo definition, so the player learns how the combo could be completed rather than getting nothing. This is a description of the missing role, **not** a card recommendation or search — no card-suggestion engine is added. Complete/partial classification for lookup and its at-most-five selection/ranking are defined in REQ-094 (amended); the answer text itself is rendered by REQ-095's existing present/missing ingredient enrichment, which already covers game and lookup candidates alike and needs no new criterion here.
   - With no cards attached, behavior is identical to today's no-card lookup; with exactly one card attached, identical to today's single-card lookup.
@@ -4151,7 +4152,7 @@
 - Description: The ask-ai prompt assembler resolves each submitted card's descriptive block by `cardId` (oracle id) from the backend card-detail artifact (REQ-175) instead of reading it from the client-sent `gameContext.zones` payload. The client stops sending the descriptive block; the assembled prompt/context stays byte-identical to today's.
 - Acceptance Criteria:
   - an equivalence test against the eval fixtures (`apps/backend/src/eval/`, `npm run test:eval`) proves the assembled prompt/context is byte-identical before and after the change, for both game and lookup modes
-  - the backend resolves `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes` server-side by `cardId`; an empty/absent oracle still emits `(none) — no oracle text recorded for this card`
+  - the backend resolves `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes` server-side by `cardId`, and the backend-only `power`, `toughness` and `loyalty` when the card has them (REQ-245); an empty/absent oracle still emits `(none) — no oracle text recorded for this card`
   - the client-sent `ZoneCardItem` (and lookup-mode card) carries only identity and user-entered fields; it no longer carries the descriptive block
   - mock-default local dev (`ASK_AI_PROVIDER=mock`) works unchanged; the resolution reads the committed artifact with no runtime network call
   - the provider/route boundary is intact; `POST /api/ask-ai` response shape is unchanged
@@ -4194,11 +4195,12 @@
 ### REQ-178
 - Title: System 3 retrieval query is built from the question plus a compact card signal
 - Priority: high
-- Description: The System 3 supplemental-rules search query is built from the player's question plus a compact per-card signal — each submitted or attached card's name, type line, and keyword list — instead of the question plus every card's full oracle text, context notes, zone ids, and turn phase. The assembled prompt is unchanged; only the internal retrieval query changes.
+- Description: The System 3 supplemental-rules search query is built from the player's question plus a compact per-card signal — each submitted or attached card's name, type line, and keyword list — plus fixed rule-book terms: the concept terms the committed concept map draws from each card's wording (REQ-234) and, in In-Depth, the name of the game's current turn step; never every card's full oracle text, context notes, or zone ids. The assembled prompt is unchanged by this requirement; only the internal retrieval query changes.
 - Acceptance Criteria:
-  - the retrieval query carries the player's question and, per card, that card's name, type line, and keyword list; it no longer concatenates full oracle text or context notes into the query
+  - the retrieval query carries the player's question and, per card, that card's name, type line, and keyword list, plus the card's concept terms (REQ-234) and, in In-Depth, the current turn step's rule-book name (for example "cleanup step"), both at the concept weight in the word query and both appended to the embedded text; it never concatenates full oracle text or context notes into the query or its embedding
+  - per-card search (REQ-235) reads each card's oracle text as its own separate query and never merges it into this one
   - the change applies to both game mode and lookup mode, through the one shared retrieval path (no second implementation)
-  - the assembled prompt text is unchanged by this requirement: card oracle text still renders in its own card sections exactly as today, and the supplemental section still carries up to 10 excerpts
+  - the assembled prompt text is unchanged by this requirement: card oracle text still renders in its own card sections exactly as today, and the supplemental section still carries the same search excerpts (up to 10 when this was written; REQ-190 sets today's cap)
   - measured on the committed benchmark (REQ-177), multi-card recall@5 lands within 0.10 of the same build's clean-query recall@5
   - measured on the committed benchmark, clean-query recall@5 does not regress below the REQ-177 baseline
   - the labelled eval fixtures and the relevance report are re-run and their new expected outcomes are re-labelled by hand where retrieval legitimately improves — never by copying current scorer output (REQ-032)
@@ -4214,15 +4216,22 @@
 - Notes:
   - this is Step 2 of the RAG gameplan and is independent of embeddings: a semantic query built from the same polluted input inherits the same flood (measured: semantic drops 0.885 clean to 0.603 polluted)
   - located in code: `buildQueryParts` in `apps/backend/src/gameRulesRetrieval.ts` currently appends turn phase, zone ids, and every card's name, type line, oracle text, and context notes
+  - amended by `right-rules-in-order`: the ban on raw card text, context notes and zone ids stands; fixed rule-book terms join the query — concept terms (REQ-234) and the In-Depth turn step. Measured at intake (cited): the turn step moved Necropotence's 514.3a from 17th to 8th in In-Depth on the stock model; raw card text in the embedding dropped bench@5 from 118 to 96, confirming this requirement's concern
 
 ### REQ-179
 - Title: Comprehensive Rules index hygiene
 - Priority: medium
-- Description: The committed Comprehensive Rules index excludes the source document's table of contents and heading-only entries, so every searchable entry carries real rule text; and System 3 excludes from its supplemental excerpts exactly the rule numbers the selected curated topics list — the rules whose text those topics print — so a lettered sub-rule whose parent a curated topic lists, but which the topic does not print, competes for System 3's slots like any other rule.
+- Description: The committed Comprehensive Rules index excludes the source document's table of contents and heading-only entries, so every searchable entry carries real rule text, and parses every rule faithfully — no title glued to a rule, no real rule dropped, no rule id merged into another; it records the rule book's glossary, edition, source hash and part titles; and System 3 excludes from its supplemental excerpts exactly the rule numbers the selected curated topics list — the rules whose text those topics print — so a lettered sub-rule whose parent a curated topic lists, but which the topic does not print, competes for System 3's slots like any other rule.
 - Acceptance Criteria:
   - the build skips the source document's table of contents; the built index contains zero duplicate rule ids (measured before this change on 2026-09-05: 3,432 entries, 3,285 distinct ids, 147 duplicates)
   - the build omits heading-only entries — an entry whose text is nothing but its own numbered heading — so no searchable entry lacks rule content (measured before this change: 626 entries under 60 characters, of which the heading-only subset is the target; the build test names the exact count it removed)
   - a build test asserts both properties and fails when a future Comprehensive Rules refresh reintroduces either
+  - a part title is never glued to the last rule of the part before it: 123.9, 213.1g, 315.7, 408.3, 514.3a, 616.2, 733.2 and 811.5 end with their own text; the same cut applies to a curated topic's excerpt of such a rule
+  - a rule whose heading line ends in a curly closing quote is not mistaken for a heading: 700.15 and 303.7 are in the index; empty keyword titles (702.163, 702.179) are not
+  - a rule id may carry more than one trailing letter: 704.5aa is its own entry, not merged into 704.5z
+  - each lettered piece of a 701 or 702 keyword rule (not the sections' general rules 701.1 and 702.1) carries that rule's title in a `keywordTitle` field (for example 702.2b: `Deathtouch`), read from the rule book's title-only line; it is data for matching a card's keyword to the rule's whole set (REQ-235), never part of an excerpt or of the embedding text; a build test asserts it
+  - the build stores the rule book's glossary beside the index in `gameRulesGlossary.json` (741 entries, 35 marked obsolete, at intake), used only for obsolete-term query translation (REQ-233) and never delivered as an excerpt; and records the rule book's edition date, a hash of the source text, and each part's title in `gameRulesBookMeta.json` (for the excerpt labels, REQ-239)
+  - rebuilt from the same 2026-09-25 rule book, the index changes `ruleId`, `sectionTitle` or `text` only for the pieces named in the criteria above (the eight glued titles, 704.5z losing 704.5aa, 700.15, 303.7 and 704.5aa added, 702.163 and 702.179 removed); a build check diffs the old and new index and fails on any other such change
   - System 3 excludes a candidate rule only when its own id is one of the rule numbers a selected curated topic lists in `gameRulesTopicManifest.json`; a candidate whose parent rule a selected topic lists, but which that topic does not list itself, is ranked and selected like any other rule. The same rule holds on the hybrid path and on the lexical path (the mock/offline default and the embedding-failure fallback), in lookup mode and in game mode, through the one shared retrieval path
   - a test over the committed game-rules data asserts that every curated topic's excerpt in `gameRulesByTopic.json` carries the full text of each rule it lists and the full text of no other rule in `gameRulesRuleIndex.json`, so a topic that ever carries a rule it does not list fails the test and this exclusion is revisited, rather than the prompt printing that rule twice
   - the offline evidence trace's report that System 3 skipped a deciding rule because a curated topic carries it (REQ-229) applies the same exact-id rule
@@ -4242,6 +4251,7 @@
   - REQ-222 (the rules gate whose baseline holds the exclusion change)
   - REQ-229 (the evidence trace that mirrors the exclusion rule)
 - Notes:
+  - amended by `right-rules-in-order` (2026-10-11): the parser fixes above were found at intake (cited, not re-derived) and rebuilt from the same rule book. The glossary marks 35 entries obsolete; in two of them ("Play", one obsolete sense of a live term) the entry is flagged `obsoleteSense` so query translation can leave live terms alone
   - this is Step 3 of the RAG gameplan; it improves the current word-overlap scorer immediately (fewer junk entries, cleaner word-rarity statistics) and is a prerequisite for REQ-181, which would otherwise embed 147 near-identical duplicate documents
   - the deeper chunking work — folding a keyword's sub-rules into one document, prefixing an orphan sub-rule with its parent sentence, splitting fused examples — shapes what gets embedded rather than what gets printed, and belongs to REQ-181
   - amended by `exact-curated-rule-exclusion`: the exclusion originally matched by rule-number prefix — a candidate was excluded when its id or any of its parent rule ids was selected by the curated baseline — on the premise that a curated topic carries its listed parent's lettered sub-rules. It does not: measured 2026-10-07 on `f98b8feb` over all 24 curated topics, every topic carries exactly the rules it lists, none missing and none extra (the always-on `abilities-trigger-basics` topic lists 603.1, 603.2 and 603.3 and prints only those three parent sentences, an 803-character excerpt). Prefix exclusion therefore kept 41 sub-rules out of every lookup prompt by any route — 603.1a–b, 603.2a–h, 603.3a–d, 117.1a–d, 117.3a–d, 115.1a–e, 115.10a–b, 400.7a–k and 400.7m — and, across all 24 topics, 125 distinct sub-rules that no topic lists (those 41 included), each barred whenever the topic listing its parent was selected (127 counted topic by topic: 120.3f and 614.1a are each barred by one topic and listed by another). Excluding exactly the rules whose text a topic carries selects the same set on today's data; the data test above keeps the two equal. Whole-prompt size change over the corpus: median 0, p95 +79, max +465, mean −30 characters (median prompt 14,306). 58 cases' System 3 picks change (76 picks displaced, none a deciding rule)
@@ -4255,6 +4265,7 @@
 - Acceptance Criteria:
   - the card-data build writes each card's Scryfall `keywords` array into the committed backend card-detail artifact (`cardDetailByOracleId.json.br`), alongside the fields it already resolves server-side (REQ-176)
   - System 3's keyword signal for a request is the union of the submitted or attached cards' keywords, resolved server-side by `cardId`, plus any keyword the question itself names; the hand-curated static vocabulary is retained only as the source for question-text keyword detection, no longer as the per-card inference path
+  - every keyword in a card's Scryfall `keywords` gets the keyword weight (×6) in the word query whether or not the hand-curated vocabulary lists it; each word of a multi-word keyword ("First strike") carries the weight
   - the up-front `cardMetadata.json` the frontend downloads gains no field and its gzipped size is unchanged, so NFR-019's first-load gate (the trimmed artifact must be at least 40% smaller gzipped than the prior combined 16.4 MB artifact) is untouched
   - the keyword-heavy labelled fixtures retrieve their expected rules: `quick-lookup-card` and `quick-lookup-multi-card`, whose expected supplemental rule `702.2b` (deathtouch) the production retrieval path misses today
   - measured on the committed benchmark (REQ-177), clean and multi-card recall@5 do not regress below the values recorded after REQ-179
@@ -4273,22 +4284,26 @@
   - this is Step 4 of the RAG gameplan
   - measured evidence: the Scryfall bulk record carries 62 fields and the card-metadata build keeps 10, dropping `keywords` — the exact field Q-001 names as the strongest option
   - power, toughness, and loyalty are also dropped by the same build step and would remove a large class of "does this damage kill it" guesswork; that is card-data work, not retrieval, and is deliberately out of this gameplan's scope
+  - amended by `right-rules-in-order`: measured at intake (cited), 975 of 1,514 practice-suite card keywords (64%) — Enchant, Mill, Equip, First strike among them — got no keyword weight because the weight was applied only to vocabulary words; giving every card keyword the weight measured +58 suite citations, and with dot stripping (REQ-233) moved corpus cases with every deciding rule from 305 to 336
+  - the power, toughness and loyalty fields noted above as out of this gameplan's scope are taken up by REQ-245
+  - measured at build (slice B, committed benchmark, stock model): the lexical-only path's polluted recall@5 fell from 0.5256 to 0.2564 because every keyword on the three unrelated cards now counts ×6 with no meaning half to balance it; hybrid polluted recall@5 stays 0.8910
 
 ### REQ-181
 - Title: Semantic rule retrieval for System 3
 - Priority: high
-- Description: System 3 supplemental rule retrieval ranks Comprehensive Rules excerpts by semantic similarity between the player's question and the rule corpus, not by lexical word overlap alone. A committed offline artifact holds one embedding vector per rule; at request time the query is embedded and cosine-ranked against those vectors to fill System 3's ten-excerpt slot. The query embedder is selected by an explicit provider flag that mirrors the existing `ASK_AI_PROVIDER` boundary.
+- Description: System 3 supplemental rule retrieval ranks Comprehensive Rules excerpts by semantic similarity between the player's question and the rule corpus, not by lexical word overlap alone. A committed offline artifact holds one embedding vector per rule; at request time the query is embedded and cosine-ranked against those vectors to fill System 3's excerpt slots (up to fifteen, REQ-190). The query embedder is selected by an explicit provider flag that mirrors the existing `ASK_AI_PROVIDER` boundary.
 - Acceptance Criteria:
-  - a committed offline artifact in `apps/backend/data/` holds one embedding vector per entry in `gameRulesRuleIndex.json`, built by an offline step alongside `build-game-rules.mjs` and rebuilt only on a Comprehensive Rules refresh
+  - a committed offline artifact in `apps/backend/data/` holds one embedding vector per entry in `gameRulesRuleIndex.json`, built by an offline step alongside `build-game-rules.mjs` and rebuilt on a Comprehensive Rules refresh and whenever the search model is retrained (REQ-236); it records the model id and manifest hash that built it (REQ-237)
   - a new `EMBEDDING_PROVIDER` flag selects the query embedder with values `mock` | `local` | `openai`; the default when unset is `mock`, and it never auto-switches on `NODE_ENV` or deploy target, mirroring `ASK_AI_PROVIDER`
   - `EMBEDDING_PROVIDER=mock` performs no embedding and makes no external call; System 3 uses lexical retrieval only, so a checkout with no model access and no network behaves exactly as before
   - `EMBEDDING_PROVIDER=local` embeds the query in-process with the bundled model and cosine-ranks it against the committed rule vectors
-  - `EMBEDDING_PROVIDER=openai` is seam-selectable for live mode only and is never the default
+  - `EMBEDDING_PROVIDER=openai` is seam-selectable for live mode only and is never the default; a query vector whose length differs from the committed rule vectors' (OpenAI's 1,536 against 384) is never silently replaced by lexical-only ranking under a semantic label: it disables the semantic path with one error-level diagnostic naming both dimensions, and the eval harnesses and benchmark fail on it
+  - a committed vector file built by a model other than the running one is caught at load (REQ-237): one error-level diagnostic naming both model ids, the lexical fallback above, never a mixed ranking
   - the async route handler embeds the query and passes the resulting vector (or null) into prompt preparation as an option, so `preparePromptInput` stays synchronous
   - the exact-rule-id and parent-rule-id boost is merged with the semantic ranking, so a question citing a rule number by name (for example "rule 613.9") still pulls that rule even when semantic similarity misses it — measured on the benchmark, gold rule 613.9 ranks 1st lexically and 5th semantically
-  - on any embedding failure — model load, inference error, missing artifact, provider error — System 3 falls back to lexical retrieval, still returns up to 10 excerpts, and emits one diagnostic warning
+  - on any embedding failure — model load, inference error, missing artifact, provider error — System 3 falls back to lexical retrieval, still returns a plain top-N of up to 15 excerpts with no relevance cutoff (REQ-190), and emits one diagnostic warning
   - each rule's embedding text is `sectionTitle: text` — measured against the more elaborate transformation originally proposed here (folding a keyword's numbered sub-rules into one document, prefixing an orphaned lettered sub-rule with its parent sentence, excluding fused `Example:` text), which scored 13/20 recall@5 on a benchmark sample against 19/20 for the plain form; the worked examples and each sub-rule's own text carry meaning the model needs, so nothing is folded, prefixed, or stripped before embedding
-  - System 3 is capped at 10 excerpts, still deduplicated against the curated System 2 selection by exact rule number (REQ-179)
+  - System 3 is capped at 15 search excerpts (REQ-190), still deduplicated against the curated System 2 selection by exact rule number (REQ-179); each attached card's keyword rules arrive whole beside them (REQ-235)
   - the shipped quantised model's clean and multi-card recall@5 are re-measured on the committed benchmark (REQ-177) against the full-precision reference of 0.865 clean / 0.763 multi-card; a material drop ships the full-precision model by container image instead of the quantised package — measured 2026-09-05: 0.853 clean / 0.833 multi-card, no material drop
   - the eval measures the semantic path using committed frozen query vectors, so `system3-expected-recall` and `system3-noise-excluded` run with no live embedding call and no live AI call
   - the deploy package budget test (NFR-017) is green with the bundled model and the embeddings artifact present
@@ -4297,7 +4312,7 @@
   - the raw model download and any oversized full-precision vector blob are gitignored and never committed; only the trimmed committed vectors ship
   - NFR-002's typical-answer target (about 4 seconds) holds; an in-process query embedding adds about 2 milliseconds
   - semantic retrieval scope is the Comprehensive Rules corpus only; cards, WotC rulings, and Commander Spellbook combos remain exact-id keyed lookups and are never embedded or semantically searched under this requirement
-  - the shipped semantic provider is a small embedding model bundled in the answer process and run in-process (`all-MiniLM-L6-v2`, 384 dimensions, quantised), not a hosted service and not a per-request external call; System 3's no-per-request-external-call posture is preserved by this choice rather than reversed, and only `EMBEDDING_PROVIDER=openai` would add such a call, which is never the default. A dedicated always-on inference host is out of scope
+  - the shipped semantic provider is a small embedding model bundled in the answer process and run in-process — `all-MiniLM-L6-v2` fine-tuned on Magic rules questions (REQ-236), 384 dimensions, quantised, stored privately and packaged at deploy (REQ-237) — not a hosted service and not a per-request external call; System 3's no-per-request-external-call posture is preserved by this choice rather than reversed, and only `EMBEDDING_PROVIDER=openai` would add such a call, which is never the default. A dedicated always-on inference host is out of scope
   - no vector database and no new storage service: the rule vectors are loaded in-process alongside the rule index and cosine-searched directly. A hosted vector store would only be justified if semantic search later spanned cards, rulings, and combos (over 150,000 vectors), which the corpus-scope constraint above excludes
   - lexical retrieval is retained and never removed: it is the retrieval path under `EMBEDDING_PROVIDER=mock` (the default, which must run with no model access — canonical mock-first rule, `integrations-and-data.md` Tech Stack), under an `openai` provider failure, and under any embedding failure, it supplies the exact-rule-id and parent-rule-id boost merged into ranking — so those settings are never worse than System 3's prior lexical-only behaviour. Under `local`, semantic-only ranking measured 2026-09-05 on the 156-pair benchmark was better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) and worse on short lookup-mode questions where the query is a card name, type line, and one keyword (three of eight labelled fixtures lost an expected rule from the top five, scoring 9 of 12 checks against lexical's 12 of 12). REQ-182 replaces that either/or switch with a blended score that keeps both, and is what makes `local` safe as a deployed default (REQ-184)
 - Dependencies:
@@ -4314,6 +4329,8 @@
   - the parked mechanic-definition corpus idea reuses this machinery but is a different feature — a new corpus and a new prompt section — and is not built here
   - no hybrid lexical-plus-semantic fusion score was measured for this requirement; it merges the exact-rule-id boost with semantic ranking rather than claiming a measured fusion result. REQ-182 measured one afterwards and ships it
   - the embedding-text shaping described in early drafts of this requirement was measured, not assumed, and dropped when it measurably hurt recall; `scripts/build-rule-embeddings.mjs` records the comparison
+  - amended by `right-rules-in-order`: the shipped model became the Magic-trained MiniLM (REQ-236), exported as per-channel, reduced-range int8 to match the stock model's layout (a per-tensor export lost 23 citations at intake, cited); the embedding text `sectionTitle: text` is unchanged — labelled rule text inside the vectors measured −17 check-half citations at intake, so labels go in the prompt (REQ-239), not the vectors
+  - until a trained model's manifest is committed (REQ-237) the running model is the stock `Xenova/all-MiniLM-L6-v2` and the committed vector files record that id; `LOCAL_MODEL_ID` is the manifest's model id once one exists
 
 ### REQ-182
 - Title: Hybrid lexical-plus-semantic scoring for System 3
@@ -4324,11 +4341,11 @@
   - `alpha` is a single named constant tuned at implementation within the measured band `[0.50, 0.70]`; the chosen value and the full sweep behind it are recorded in this requirement's notes, never left as an unexplained magic number
   - the cross-reference boost is a single named constant, measured to be smaller than the exact-rule-id boost, and its value and sizing rationale are recorded in this requirement's notes
   - the blend is scored over the full candidate list, not over a truncated top-N of either ranking
-  - under `EMBEDDING_PROVIDER=mock`, and on any embedding failure, scoring is byte-identical to the prior lexical-only path — measured on the committed benchmark (REQ-177) as clean recall@5 0.5833 / MRR 0.4249 and polluted recall@5 0.5256 / MRR 0.3872, the values recorded on 2026-09-05
-  - all 12 labelled fixture checks pass under the semantic path (`system3-expected-recall` and `system3-noise-excluded` across the eight labelled fixtures), against the 2026-09-05 baselines of 9/12 semantic-only and 12/12 lexical-only
+  - under `EMBEDDING_PROVIDER=mock`, and on any embedding failure, scoring is the lexical-only path. At this requirement's build it was byte-identical to the prior lexical-only path — measured on the committed benchmark (REQ-177) as clean recall@5 0.5833 / MRR 0.4249 and polluted recall@5 0.5256 / MRR 0.3872, the values recorded on 2026-09-05; REQ-233's token fixes later changed the lexical path, and its re-recorded figures live there
+  - all labelled fixture checks pass under the semantic path (`system3-expected-recall` and `system3-noise-excluded`: 12 across the eight original fixtures, against the 2026-09-05 baselines of 9/12 semantic-only and 12/12 lexical-only; 14 across nine fixtures after `right-rules-in-order`, with the Magic-trained model, the 0.6 cutoff, the cap of fifteen and keyword sets in place)
   - measured on the committed benchmark (REQ-177), clean recall@5 is at or above the 2026-09-05 semantic-only baseline of 0.8526 and polluted recall@5 at or above 0.8333
   - clean and polluted MRR are recorded alongside recall in the same run and reported in this requirement's notes; they are not a gate
-  - System 3 is capped at 10 excerpts, still deduplicated against the curated System 2 selection by exact rule number (REQ-179), and the prompt's section placement is unchanged
+  - System 3 is capped at 15 search excerpts (REQ-190), still deduplicated against the curated System 2 selection by exact rule number (REQ-179), and the prompt's section placement is unchanged; on the semantic path a main-ranking candidate scoring below 0.6 of the top unboosted blend is dropped unless the question cites its rule number, and the lexical-only fallback keeps a plain top-N
 - Constraints:
   - backend and prompt-internal only; no `AskAiRequest` change, no Zod schema change, no frontend change, no new endpoint, no new dependency
   - no change to the committed embeddings artifact's contents or to query construction (REQ-178); this requirement changes only how two existing scores are combined, plus the one additional boost term above
@@ -4345,7 +4362,9 @@
   - measured at build, 2026-09-05, with the cross-reference boost in place (`npm run test:eval`, `npm run benchmark:rag-retrieval -- --semantic`, full candidate list): all 12 fixture checks pass at every alpha tested — 0.50, 0.55, 0.60, 0.65, 0.70. Benchmark clean/polluted recall@5 and MRR per alpha (unaffected by the boost — none of the 156 benchmark questions cites a rule number, so the boost never fires there): 0.8526/0.6649 clean, 0.8205/0.6392 polluted at 0.50; 0.8782/0.6918, 0.8718/0.6615 at 0.55; 0.8974/0.7139, 0.8910/0.6928 at 0.60; 0.8974/0.7188, 0.9038/0.7042 at 0.65; 0.9167/0.7353, 0.9038/0.7188 at 0.70. `alpha = 0.60` is chosen: the first value in the sweep where both clean and polluted recall clear the accepted floors (0.8526 / 0.8333) with real headroom. This sweep predates REQ-183's int8 re-encoding; the shipped artifact's committed `semantic-results.json` records clean/polluted recall@5 unchanged (0.8974/0.8910) with MRR 0.7107/0.6931 — a sub-0.001 shift from int8 quantisation reordering within an unchanged top-5, not a recall regression.
   - the prior state this replaces: `gameRulesRetrieval.ts` chose `scoreEntrySemantic` or `scoreEntry` for the whole index with no blend, which is why REQ-181's notes recorded that no fusion score had been measured
   - the cap moved from 5 to 10 excerpts on 2026-09-09 (`rule-excerpt-cap-ten`) on REQ-190's run-3 measurement, which is model-dependent: the then-deployed `gpt-4.1` improved 16 → 18 fully correct of 18, while the smaller `gpt-4.1-mini` regressed 17 → 15 and `gpt-5-nano` 15 → 13 — extra lower-ranked excerpts distract a smaller model more than they inform it. If the deployed answer model is ever changed to a smaller one, this cap is re-decided in the same package, not inherited
-  - the deployed answer model moved to `gpt-6-luna` in the `luna-answer-budget` change (REQ-231). It was measured at cap 10 — 125 of 126 approved rules cases right, owner-adjudicated, 2026-10-09 — so ten stands for it and is not re-decided; it was not measured at any other cap
+  - the deployed answer model moved to `gpt-6-luna` in the `luna-answer-budget` change (REQ-231). It was measured at cap 10 — 125 of 126 approved rules cases right, owner-adjudicated, 2026-10-09. The owner moved the cap to up to fifteen with a 0.6 relevance cutoff on 2026-10-12 (`right-rules-in-order`) on the cross-validated search measurement (REQ-190); Luna has not been measured at that cap, and the first paid answer run after merge is its answer-quality check
+  - amended by `right-rules-in-order` (2026-10-11): `alpha` moves to 0.65 with the Magic-trained model (REQ-236), chosen on the practice suite's tuning half at intake (cited, not re-derived), inside the accepted `[0.50, 0.70]` band; the benchmark floors and the labelled checks above remain gates for that change (14 of 14 at build, 2026-10-12). Ties now fall back to rule-book order (REQ-233)
+  - the benchmark's polluted condition stays what the floors were set on: three fixed unrelated cards carried as name, type line and keywords, with no oracle text (production's main query never holds card text). The oracle-text variant, where the concept map and per-card search also run on those three cards, is the intake's "bench" guard (`scripts/score-rule-search.mjs`, threshold set in REQ-236); on the stock model it measured polluted recall@5 0.7756 at build, which is why that guard is measured with the trained model. Measured at build (slice B, stock model, alpha 0.65): hybrid clean 0.9103 and polluted 0.8910, above the 0.8526 and 0.8333 floors
 
 ### REQ-183
 - Title: Rule-embedding vectors ship in a compact number format
@@ -4355,13 +4374,13 @@
   - the artifact's `encoding` field names the shipped format and the loader reads that field rather than assuming a format, so an older or newer artifact is detected rather than misread
   - the committed artifact is measurably smaller: from the 2026-09-05 measurement of 5.650 MB (`float32-base64`, 2873 vectors x 384 dims), an int8 encoding lands at about 1.442 MB and a float16 encoding at about 2.845 MB
   - tracked `apps/backend/data` total drops from the 2026-09-05 measurement of 118.095 MB, and the new figure and headroom are recorded in NFR-017
-  - retrieval quality is re-measured after the format change and does not regress: benchmark clean recall@5 at or above the value REQ-182 records, polluted recall@5 likewise, and all 12 labelled fixture checks still pass
+  - retrieval quality is re-measured after the format change and does not regress: benchmark clean recall@5 at or above the value REQ-182 records, polluted recall@5 likewise, and all labelled fixture checks still pass (REQ-182)
   - the vector-loading path degrades exactly as REQ-181 already requires: a missing, malformed, or unrecognised-encoding artifact disables the semantic path with one diagnostic warning and System 3 falls back to lexical retrieval
   - `node --test scripts/lambda-package-budget.test.mjs` passes with the new artifact and the budget test's recorded figures are updated in the same change
 - Constraints:
   - no new dependency, no new external service, and no runtime fetch: the vectors stay committed, loaded in-process, and cosine-searched with no vector database (REQ-181)
   - the combo corpus is not trimmed: `MIN_VARIANT_POPULARITY` stays at 0 and remains the emergency valve NFR-017 describes, not a routine lever, because trimming it removes combos players see in answers (REQ-093)
-  - the local embedding model is not moved to S3 or fetched at cold start; that would add a runtime external integration and relieves the non-data reserve rather than the constrained data budget
+  - the local embedding model is never fetched at cold start or per request. Because the Magic-trained model (REQ-236) cannot be committed to the public repository, it is stored in the project's private S3 bucket and fetched only when the deploy package is built (REQ-237), which adds no runtime external integration; this relieves neither budget — the model stays in the non-data reserve at about the same size
 - Dependencies:
   - NFR-017 (the deploy package budget this relieves)
   - REQ-181 (the embeddings artifact whose format this changes)
@@ -4380,7 +4399,7 @@
 - Acceptance Criteria:
   - `EMBEDDING_PROVIDER` unset still resolves to `mock`; it never auto-switches on `NODE_ENV` or deploy target (REQ-181, unchanged)
   - the deployed Lambda's environment sets `EMBEDDING_PROVIDER=local` explicitly, and the deploy configuration records it where the equivalent `ASK_AI_PROVIDER` setting is recorded
-  - the deploy fails, rather than silently degrading, when the packaged model cache is absent: the packaging script already refuses without `apps/backend/data/models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx`, and that refusal is asserted
+  - the deploy fails, rather than silently degrading, when the packaged model cache is absent or unverified: the packaging script fills `apps/backend/data/models/<model-id>/` from the private S3 bucket (REQ-237), refuses without `apps/backend/data/models/<model-id>/onnx/model_quantized.onnx` whose files all match the committed manifest's hashes, and refuses when the committed rule embeddings name a different model; each refusal is asserted
   - the deploy fails, rather than silently degrading, when the package lacks the `onnxruntime-node` native binding for the function's architecture: `thejudge-api` runs linux/arm64 (`scripts/aws-bootstrap.sh --architectures arm64`), `scripts/package-lambda.sh` keeps exactly that binding through `scripts/lib/prune-onnxruntime-platforms.mjs`, and the pruner refuses (exit 1, before deleting anything) when `linux/arm64/onnxruntime_binding.node` is absent; `scripts/lib/prune-onnxruntime-platforms.test.mjs` proves both the kept platform and the refusal
   - the same holds for the second native module the local embedder needs: `@huggingface/transformers` imports `sharp` at module load, and `sharp` resolves its build from the optional packages `@img/sharp-linux-arm64` and `@img/sharp-libvips-linux-arm64`, which npm installs only for the platform *running the install* unless told otherwise — so `scripts/package-lambda.sh` runs `npm ci --os=linux --cpu=arm64 --libc=glibc` (the function's platform, not the deploy runner's linux/x64 or a laptop's darwin/arm64), and `scripts/lib/assert-sharp-platform-binding.mjs` refuses (exit 1) when the resulting `node_modules` lacks that build; `scripts/lib/assert-sharp-platform-binding.test.mjs` proves the refusal and the script's install flags
   - a local `npm run dev` with no warmed model cache and no network still answers, using lexical retrieval, with the single diagnostic warning REQ-181 requires
@@ -4587,17 +4606,18 @@
 ### REQ-190
 - Title: The System 3 excerpt cap is a parameter of the answer-quality run
 - Priority: medium
-- Description: An answer-quality run may answer the same gold case at more than one System 3 supplemental-excerpt cap, for every answer model in the lineup (REQ-188), and score the legs side by side, so the effect of attaching more rule excerpts on the *answer* can be observed. Production retrieval is one of the legs: System 3 is capped at ten excerpts (REQ-181, REQ-182, `system-map/game-rules-retrieval.md`), raised from five on 2026-09-09 by this requirement's own run-3 measurement.
+- Description: An answer-quality run may answer the same gold case at more than one System 3 supplemental-excerpt cap, for every answer model in the lineup (REQ-188), and score the legs side by side, so the effect of attaching more rule excerpts on the *answer* can be observed. Production retrieval is one of the legs: System 3 is capped at fifteen excerpts — thirteen main-ranking slots plus the two per-card slots (REQ-235) — with a relevance cutoff on the semantic path: a main-ranking candidate whose blended score (before rule-id boosts) is below 0.6 × the top main candidate's is dropped, except a rule the question cites by number (REQ-181, REQ-182, `system-map/game-rules-retrieval.md`). Raised from five to ten on 2026-09-09 by this requirement's run-3 measurement, and from ten to up-to-fifteen-with-cutoff on 2026-10-12 by the owner on the `right-rules-in-order` cross-validated search measurement.
 - Acceptance Criteria:
-  - the run accepts a repeatable `--excerpt-cap` option, defaulting to `[10]` — the deployed cap — so a routine run grades only what production does; a cap comparison such as `--excerpt-cap 10 --excerpt-cap 15` is an explicit choice. Each cap value is one leg per answer model, and every selected case is answered once per model per cap in the same run
-  - `apps/backend/src/prompt/preparation.ts` exports one named constant, `DEFAULT_SUPPLEMENTAL_RULE_CAP` (value `10`), used at all four production call sites; `PreparePromptInputOptions.supplementalRuleCap` is an optional override (default: the constant) threaded to the same `retrieveRulesForQueryWithDebug` / `retrieveSupplementalRulesWithDebug` `max` parameter production already uses
-  - with no override, the assembled prompt is byte-identical to the prompt production has always produced, for every gold case — proven for all six originally-committed cases against the real committed rule index and topics (`preparation.test.ts`, REQ-190 describe block)
+  - the run accepts a repeatable `--excerpt-cap` option, defaulting to `[15]` — the deployed cap — so a routine run grades only what production does; a cap comparison such as `--excerpt-cap 10 --excerpt-cap 15` is an explicit choice. Each cap value is one leg per answer model, and every selected case is answered once per model per cap in the same run
+  - `apps/backend/src/prompt/preparation.ts` exports one named constant, `DEFAULT_SUPPLEMENTAL_RULE_CAP` (value `15`), used at all four production call sites; the cutoff (`SUPPLEMENTAL_RELEVANCE_CUTOFF`, `0.6`) is a second named constant in `gameRulesRetrieval.ts`; `PreparePromptInputOptions.supplementalRuleCap` is an optional override (default: the constant) threaded to the same `retrieveRulesForQueryWithDebug` / `retrieveSupplementalRulesWithDebug` `max` parameter production already uses
+  - with no override, the assembled prompt is byte-identical to the prompt production produces, for every gold case — proven for all six originally-committed cases against the real committed rule index and topics (`preparation.test.ts`, REQ-190 describe block)
   - a larger cap reuses the identical production ranking rather than re-ranking: `retrieveRulesForQueryWithDebug` returns `runnerUp` as the ranks below the cap of the same scored list, so a larger-cap call's leading excerpts stay identical to the smaller-cap call's and the added slots are drawn from that same `runnerUp` list — proven directly, not assumed, in `preparation.test.ts`
+  - with per-card search (REQ-235), the reserved per-card slots stay two at every cap and the added slots come from the main ranking's `runnerUp`, so a larger-cap call's selected set contains the smaller-cap call's set (or equals it, when the cutoff leaves nothing more to add) — proven in `preparation.test.ts`
   - the run artifact records the model and cap per leg and reports the headline correctness count per model per cap (REQ-189)
-  - the deployed cap is 10, raised from 5 on 2026-09-09 (`rule-excerpt-cap-ten`) on the recorded run-3 measurement in the notes below. Changing it again requires the same evidence — a recorded run showing a different cap scored better for the deployed model — and an amendment to REQ-181, REQ-182, and `system-map/game-rules-retrieval.md` alongside this requirement, never a change made inside this requirement alone
+  - the deployed cap is 15 with the 0.6 relevance cutoff (2026-10-12, `right-rules-in-order`, owner decision on the cross-validated search measurement: check-half deciding-rule citations 445 → 520 with REQ-235's keyword sets, all 14 labelled checks passing); before that 10, raised from 5 on 2026-09-09 (`rule-excerpt-cap-ten`) on the run-3 answer measurement. The first paid answer run after this change is its answer-quality check. Changing the cap or the cutoff again requires a recorded measurement and an amendment to REQ-181, REQ-182, and `system-map/game-rules-retrieval.md` alongside this requirement
 - Constraints:
   - no change to System 3 query construction (REQ-178), scoring or blending (REQ-182), the committed corpus or embeddings (REQ-181, REQ-183), or the System 2 deduplication (REQ-179)
-  - NFR-002's answer targets are not re-gated by the cap: the then-deployed `gpt-4.1`'s answer latency was measured unchanged across cap 5 and cap 10 (3.4 → 3.5 s, run 3), `gpt-6-luna` was measured at cap 10 only (REQ-231's note), and end-to-end production request latency has never been sampled at either cap — that sampling is a separate parked package, not a precondition of this cap
+  - NFR-002's answer targets are not re-gated by the cap: the then-deployed `gpt-4.1`'s answer latency was measured unchanged across cap 5 and cap 10 (3.4 → 3.5 s, run 3), `gpt-6-luna` was measured at cap 10 only (REQ-231's note), and end-to-end production request latency has never been sampled at any cap — that sampling is a separate parked package, not a precondition of this cap
   - the judge is not told which cap or which model produced an answer (REQ-186)
 - Dependencies:
   - REQ-182 (the hybrid ranking whose top-N the legs slice)
@@ -5812,14 +5832,14 @@
   - a card carries replacement or prevention wording when its oracle text contains, as a whole word in any letter case, "instead" (CR 614.1a: effects that use the word "instead" are replacement effects) or "prevent", "prevents", or "prevented"; other forms such as "prevention" or "preventing" do not count
   - the topic is selected when two or more cards in the request carry that wording — in lookup mode the attached cards, in game mode every card on the stack or in any zone; two copies of one card count as two. With fewer than two it is not selected
   - one shared selection function serves both modes, so lookup and game mode cannot drift apart
-  - in lookup mode the topic is added alongside the four always-on core topics, never in place of them; in game mode it is added alongside the game-state-gated topics
+  - in lookup mode the topic is added alongside the four always-on core topics, never in place of them; in game mode it is added alongside the topics the game state and REQ-242's card-wording and question triggers select
   - the topic's rule numbers join the curated exclusion set, so System 3 never repeats them (REQ-179)
-  - System 3's search text, scoring, cap, and embeddings are unchanged: the query stays the question plus each card's name, type line, and keywords, never oracle text (REQ-167, REQ-178, REQ-190)
+  - System 3's search text, scoring, cap, and embeddings were unchanged by this requirement: the query stayed the question plus each card's name, type line, and keywords, never oracle text (REQ-167, REQ-178, REQ-190). The main query later gained fixed concept terms from card wording (REQ-234) and a separate per-card search (REQ-235); it still never carries raw oracle text
   - for the approved rules test case `academy-manufactor-esix-treasure` (REQ-185; the tester's question with Academy Manufactor and Esix, Fractal Bloom attached), every deciding rule — `614.1a`, `616.1`, `616.1e`, `616.1f` — reaches the prompt through this topic under both hybrid and lexical ranking, and so does the tester's verbatim question, "How do academy manufactor and esix, fractal bloom interact when I'm attempting to create a treasure token?", with both cards attached
   - the rules gate's baseline is raised in the same change (`npm run eval:rules-gate:baseline`, without `--allow-regressions`), recording those four rules as carried by a curated topic for `academy-manufactor-esix-treasure` (REQ-222), so the gate fails if they stop reaching the prompt
   - no existing rule-output result moves from its 2026-10-07 measurement: `npm run eval:worked-solutions` 287 of 392 cases, and 16/18 of the first-ship cases in System 3 under hybrid ranking and 14/18 under lexical; the rules gate passes, with every case's System 3 hits unchanged except `replacement-bard-and-bilbo-tokens`, whose rule `616.1f` moves from a System 3 excerpt into this topic and stays in the prompt; the context-evaluation harness's labelled System 3 checks 14/14 semantic and 14/14 lexical; none of the 31 fixtures' prompt, context, or checklist report goldens changes; the retrieval benchmark's recall@5 stays at 0.5833 clean / 0.5769 polluted lexical and 0.8974 clean / 0.8910 polluted hybrid; the coverage gate passes with `coverage.json` unchanged; the staleness report lists no stale case and no case awaiting a re-freeze
 - Constraints:
-  - card wording selects this one topic only; card names and keywords never select a System 2 topic
+  - this gate selects this one topic only; elsewhere card wording selects topics only through REQ-242's fixed trigger table, in In-Depth; card names and keywords never select a System 2 topic
   - no live AI call, no new runtime dependency, no per-request external call
   - verbatim rules text only; no paraphrase
 - Dependencies:
@@ -6092,14 +6112,14 @@
   - NFR-002 (the latency targets this budget serves)
 - Notes:
   - chosen 2026-10-09 by the owner on the paid answer-quality investigation (production prompt, 126 approved cases, owner-adjudicated): `gpt-6-luna` 125 right against `gpt-4.1`'s 120, all 12 disagreements to Luna, preferred blind 78 to 47, about 0.05¢ per answer against about 1¢; it cites rule numbers less often (1.26 → 0.89 of 2) and a typical answer is slower. Answer time over 181 answers per model, eval machine straight to OpenAI: Luna median 3.8 s, p95 9.5 s, 4 over 15 s, 2 over 20 s, none over 30 s, slowest 22.7 s (the only correct Necropotence answer any model has given). Every Luna answer over 10 s was on one of the two hardest cases, and answer time tracks reasoning tokens, so the correct hard answers are the long ones — which is why no lower effort is set
-  - the excerpt cap stays at 10: Luna was measured at cap 10 (REQ-182's caveat)
+  - the excerpt cap was 10 when this was chosen and Luna was measured at cap 10 (REQ-182's caveat); `right-rules-in-order` later moved it to up to fifteen with a relevance cutoff (REQ-190), to be checked by the first paid answer run after merge
   - the prior state this replaces: `gpt-4.1` with a 15-second timeout per attempt and 2 retries, under a 20-second Lambda limit set only when the function was first created. A long answer was retried at 15 s and the server was stopped at 20 s mid-retry, so the backend's own `PROVIDER_TIMEOUT` reply was never sent; the player still saw "Miho is working on it" through the frontend's fallback for any failed request
   - the production server's own overhead (prompt build, local embedding, cold start) was never measured; 22.7 s leaves about 7 s of margin. The first deploy's receipt records one timed live tier-3 question, the `ask_ai.provider_invocation_completed` log line's `providerElapsedMs`, and that semantic retrieval, not the lexical fallback, served it
 
 ### REQ-232
 - Title: Local practice suite: import, convert and run, never committed
 - Priority: medium
-- Description: Beside the committed rules test corpus (REQ-185), the owner can keep a local-only practice suite of judge-style rules questions from an outside question site, and run the free retrieval check and the paid answer-quality run over it, split by the suite's level, complexity and tags. Three committed commands import the questions politely and freeze each one as fetched, convert them into local cases in the format version 2 shape, and purge them; the two existing run commands gain a `--suite practice` selection with filters. Every piece of suite data (questions, answers, card rolls, converted cases, run output and per-question results) stays in one gitignored folder on the owner's machine and is never committed. Suite answers are community-written: they are never ground truth, never approved, and never a reference answer for the corpus, and a suite result is reported as agreement with the suite's own answer, apart from the official corpus and never in its headline (REQ-187). The suite is never a build gate, because CI cannot see it.
+- Description: Beside the committed rules test corpus (REQ-185), the owner can keep a local-only practice suite of judge-style rules questions from an outside question site, and run the free retrieval check and the paid answer-quality run over it, split by the suite's level, complexity and tags. Three committed commands import the questions politely and freeze each one as fetched, convert them into local cases in the format version 2 shape, and purge them; the two existing run commands gain a `--suite practice` selection with filters. Every piece of suite data (questions, answers, card rolls, converted cases, run output and per-question results) stays in one gitignored folder on the owner's machine and is never committed. Suite answers are community-written: they are never ground truth, never approved, and never a reference answer for the corpus, and a suite result is reported as agreement with the suite's own answer, apart from the official corpus and never in its headline (REQ-187). The suite is never a build gate, because CI cannot see it. It may train the shipped search model (REQ-236): the model's weights are stored only in the project's private bucket and never committed (REQ-237), and the suite, the training pairs and every per-question result stay in the gitignored folder.
 - Acceptance Criteria:
   - **one gitignored folder**: every file a suite command writes lives under the suite folder `output/practice-suite/` (one constant), ignored by its own `.gitignore` line committed in the same change as the import command, so the folder is ignored before the first import. Every suite command refuses to write, naming the fix, unless `git check-ignore` reports the suite folder ignored; a test asserts that `git check-ignore` matches a path inside the suite folder and that `git ls-files` lists nothing under it
   - **import**: `npm run eval:practice-suite:import` pages the suite's question API (`GET <address>?json=<settings>`, the address read from the `PRACTICE_SUITE_API_URL` environment variable and never committed) in id order with `previousId` starting at 1 (the API rejects 0), with every level, every complexity, legality `all`, no tag filter, and a `from` value naming TheJudge. Requests are sequential, and each starts no sooner than 3 seconds after the previous one finished (the server asks for at least 2). A batch starts at 50 questions; a batch the API answers as malformed is retried at half the size, down to 1; a one-question request that still fails steps `previousId` past one id and records the skip; after five successful batches in a row the size doubles back toward 50
@@ -6119,7 +6139,8 @@
 - Constraints:
   - nothing derived from a specific suite question is committed: no question, answer, card roll, converted case, test fixture, per-question result, coverage count, receipt, ledger, PR body or PRD text. Committed text about the suite gives counts and field names only, and never names the suite's source
   - suite answers are never ground truth and never a corpus reference answer (REQ-185); a suite result never enters the official headline (REQ-187), the committed scores or coverage files (REQ-189), or the offline gate's baseline (REQ-222)
-  - nothing from the suite enters a player's prompt; no runtime dependency, route, schema, provider or frontend change; no new npm dependency (the import uses Node's built-in `fetch`)
+  - nothing from the suite enters a player's prompt; the one runtime effect is the search model it helps train (REQ-236), whose weights ship from private storage only (REQ-237); no route, schema, provider or frontend change; no new npm dependency (the import uses Node's built-in `fetch`)
+  - the trained model's suite scores are a one-time acceptance measurement taken locally at build, reported as counts, never a standing gate in `npm test`, `npm run quality:check` or CI
   - the import is the only command that contacts the suite's question site; the owner runs it, never an agent, and it never re-imports unless asked; the owner launches any paid suite run, as for every live run (REQ-188)
 - Dependencies:
   - REQ-185 (the case format, and the corpus the suite stays apart from)
@@ -6132,3 +6153,323 @@
 - Notes:
   - measured 2026-10-10 (probe of 918 of about 1,500 questions, ids 2–2249; counts only): 830 cite at least one rule, 820 of them only rules in the committed index; 7 cited ids are bare keyword headers whose subrules the index holds; 686 cite a rule no corpus case decides on (470 distinct rule ids, against the 372 the corpus decides on); 110 share any card with the corpus; level 0/1/2/3/corner 89/330/295/141/63; complexity simple/intermediate/complicated 835/78/5; 43 tagged `Unsupported answers`; a 50-question request took about 30 seconds, so a full import takes roughly 15–20 minutes; some batches came back malformed and halving the batch size got past each one
   - measured 2026-10-10 against the committed data at `dabad406`, by joining the three files below by oracle id (a name from `cardMetadata.json`, else the first `cardScanMap.json` printing) and counting named ids, non-token creature ids with empty oracle text, and names shared by two or more non-token ids: `cardDetailByOracleId.json.br` holds 37,854 oracle ids and no names; `cardMetadata.json` names 34,639 cards and leaves out cards with no rules text; adding `cardScanMap.json` names 34,973 of the 37,854 ids, including 341 of the 348 non-token creatures with no rules text, and the unnamed rest are almost all art cards and tokens; 19 names match two non-token cards and stay unresolved. The probe's lookup, from `cardMetadata.json` alone, resolved every card for only 676 of 918 questions
+
+### REQ-233
+- Title: System 3 word matching reads Magic words the way the rule book writes them
+- Priority: high
+- Description: System 3's word-overlap score — the lexical half of the hybrid blend (REQ-182) — matches question and card words against rule text more faithfully. Sentence dots no longer stick to words; every word is reduced to its stem on both the query side and the rule side, so "attacks" meets "attacking"; six everyday verbs stop counting as Magic keywords; a stray three-digit number is no longer read as a rule number; ties fall back to rule-book order; and a question that uses an obsolete Magic term is matched through the rule book's own glossary entry for it.
+- Acceptance Criteria:
+  - tokenizing, on the query side and in the committed rule index's `searchText` alike: a trailing sentence period is dropped while a rule-id token (`514.3a`) keeps its dots; "can't" and "it's" stay whole tokens; U+2028 and no-break spaces count as spaces
+  - every token with no digit and no dot is Porter-stemmed on both the query side and the rule side by one shared stemmer implementation (`apps/backend/src/gameRulesStemmer.ts`), used by the rule-index build, the backend and the model-training export (REQ-236); `gameRulesTokenStats.json` is rebuilt from the stemmed rule side
+  - `gameRulesKeywordVocabulary.json` drops `counter`, `destroy`, `exile`, `sacrifice`, `trigger` and `replacement`, leaving 14 words; it still serves only question-text keyword detection (REQ-180)
+  - no "can't" → "cannot" mapping is added
+  - a bare three-digit number counts as a cited rule id only when "rule", "rules", "CR" or "section" directly precedes it; a dotted rule id (`613.9`, `704.5aa`) always counts
+  - candidates with equal scores are ordered by rule-book order — a comparator over the rule id's numbered parts and its letters, so `704.5z` sorts before `704.5aa` — replacing the numeric `parseFloat` comparison
+  - when the question contains a term the committed glossary (REQ-179) marks obsolete, the words of that glossary entry's definition join the word query at the concept weight (REQ-234) and are appended to the text that is embedded; a glossary entry is never delivered as an excerpt; an entry that flags only one obsolete sense of a live term ("Play") is skipped, and so is a single-word term used as an ordinary word in more than 25 rules ("during"), because translating it would add the same words to nearly every query
+  - the lexical-only path (the `mock` default and the embedding-failure fallback) uses the same fixed tokens; the retrieval benchmark's lexical recall@5 is re-recorded at build, not gated; the rule index stores each rule's `searchText` as these tokens already, joined by spaces, and the backend reads it by splitting on spaces, so a word is never stemmed twice
+  - the ranks of 702.3a (`defender-ageless-sentinels`), 113.7a (`sensei-top-leaves-battlefield-ability-on-stack`) and 615.12 (`replacement-unpreventable-damage-hydra`) are recorded before and after this change, with the trained model (REQ-236) in place
+- Constraints:
+  - backend retrieval and offline build only; no request, response, schema or frontend change
+  - no new npm dependency: the stemmer is one in-repo module
+- Dependencies:
+  - REQ-179 (the rule index and glossary these tokens are built from)
+  - REQ-180 (the per-card keyword signal and the question-only vocabulary)
+  - REQ-182 (the blend this lexical score feeds)
+  - REQ-177 (the benchmark that records the lexical figure)
+- Notes:
+  - measured at intake (`right-rules-in-order` intake, probe session 4, 2026-10-11, cited, not re-derived): card keywords plus dot stripping together moved check-half citations 223 → 252 on today's model; a "can't" → "cannot" mapping measured zero; stemming cost the three cases above a few ranks before training
+  - measured at build, 2026-10-11 (`right-rules-in-order` slice B, stock model, committed benchmark of 156 pairs): lexical recall@5 clean 0.6218 (was 0.5833) and polluted 0.2564 (was 0.5256). The polluted fall is the card-keyword weight (every keyword on the three unrelated cards now counts ×6) in a ranking with no meaning half; the hybrid path the deploy uses is not affected (clean 0.9103, polluted 0.8910, above REQ-182's floors). The word-only path no longer ranks 500.6 in its top ten for the `upkeep-trigger` fixture, which the fixture records as a known lexical miss (`lexicalKnownMisses`) while the semantic leg still requires it
+  - measured at build (stock model, `scripts/score-rule-search.mjs`, 1,181 suite questions and the 415 corpus cases): suite deciding-rule citations in the top ten 473 → 618, suite questions with every deciding rule 159 → 192, hard 25 5 → 9, corpus citations 351 → 386, corpus cases with every deciding rule 305 → 340. Ranks before → after: 702.3a (`defender-ageless-sentinels`) 494 → 148, 113.7a (`sensei-top-leaves-battlefield-ability-on-stack`) 12 → 4, 615.12 (`replacement-unpreventable-damage-hydra`) 2 → 3
+
+### REQ-234
+- Title: A fixed concept map turns card wording into rule-book concepts for System 3
+- Priority: high
+- Description: System 3 reads each card's oracle text and type line through a fixed, committed concept map — general phrase-to-concept rules, one per common card templating — and adds the resulting rule-book concept terms to the search: to the word query at twice the weight of the card signal, and to the text that is embedded. The card's raw oracle text still never enters the main query or its embedding (REQ-178).
+- Acceptance Criteria:
+  - the map is one committed module (`apps/backend/src/gameRulesConceptMap.ts`) holding `CONCEPT_MAP` (78 oracle-text entries) and `TYPE_MAP` (5 type-line entries), of which 77 were ported verbatim — every pattern and every term — from the `right-rules-in-order` intake appendix and the 78th is the owner-reviewed type-setting entry of 2026-10-12; after this ships, that module is the only copy
+  - input: each card's oracle text lower-cased, curly apostrophes turned into `'`, and the card's own name (each face of a `//` name) replaced by `~`; `TYPE_MAP` runs on the lower-cased type line; every matching entry adds its terms; the request's terms are de-duplicated
+  - word-query weights: question ×3, card signal ×1, concept term ×2; a keyword token is additionally ×6 on top of its source weight, as today
+  - the concept terms are appended to the embedded query text (`buildRetrievalQueryText`) in both modes, through the one shared query builder
+  - a committed test asserts that every distinct word of every concept term appears in the committed rule index's text (163 distinct words across the 83 entries on 2026-10-12), and that the module holds 78 + 5 entries
+  - no model call ever produces search terms at request time
+  - concept terms also feed turn-step detection (REQ-238) and In-Depth curated-topic choice (REQ-242)
+- Constraints:
+  - entries stay general — one per common templating, never per test case; no added, reworded or AI-generated terms; any change to the map is a separate, owner-reviewed edit; the 78th entry (type-setting wording: `in addition to its other types`, or a subject followed by is/are and a card type, subtype or basic land type, mapped to `type-changing effects layer continuous effect`, never conditional or targeting wording such as `if it is a creature`, `target creature`, `that is a creature`, `as long as you control a Forest, ~ is a creature`, or reminder text in parentheses) was reviewed by the owner on 2026-10-12
+  - raw oracle text never enters the main query or its embedding (REQ-178)
+  - backend-only; no request, response, schema or frontend change
+- Dependencies:
+  - REQ-178 (the compact query this adds to)
+  - REQ-233 (the tokens and weights this uses)
+  - REQ-236 (training pairs are built with this query builder)
+  - REQ-220 (whose notes record the earlier, stock-model rejection of card-wording search terms)
+- Notes:
+  - measured at intake (cited, not re-derived): the recipe without the concept map scored 432 check-half citations against 449 with it, and bench@5 129 against 125; the raw-card-text alternative dropped bench@5 118 → 96, confirming REQ-178's concern
+  - REQ-220's 2026-10-07 measurement rejected adding "replacement effect" / "prevention effect" from card wording on the then-shipped stock model; this requirement adds a broader, fixed map on the trained model and is held to bench@5 ≥ 118 (REQ-236)
+
+### REQ-235
+- Title: Per-card search fills two reserved System 3 slots
+- Priority: medium
+- Description: Besides the main query, System 3 runs one search per card: the card's oracle text, embedded on its own and cosine-ranked against the committed rule vectors. Two of the fifteen System 3 slots are reserved for the best per-card hits — the top hit of the highest-scoring cards, skipping any rule already selected. Card text never enters the main query, so the other thirteen slots keep REQ-178's protection against unrelated cards drowning the question.
+- Acceptance Criteria:
+  - for each distinct card in the request — the attached cards in lookup mode, every stack and zone card in game mode, one search per oracle id — the async route handler embeds the card's oracle text as the card-detail artifact holds it and passes the vectors into prompt preparation with the main query vector, so `preparePromptInput` stays synchronous (REQ-181)
+  - the main ranking fills the first thirteen slots (after the relevance cutoff, REQ-190); then cards are taken in order of their best per-card cosine score, and each contributes its top-ranked rule unless that rule is already selected (then the card is skipped), until the two reserved slots are filled; slots left unfilled go back to the main ranking, so the total stays at most fifteen
+  - per-card hits obey the exact-number curated exclusion (REQ-179)
+  - the number of reserved slots is one named constant, `2`; the System 3 cap is REQ-190's
+  - keyword sets: for each card per-card search covers, every Scryfall keyword (REQ-180's source) whose name matches a keyword rule's title (701.N or 702.N, title shipped in the rule index, REQ-179) adds all that rule's lettered pieces as one set after the selected excerpts, skipping pieces already selected or excluded by REQ-179; sets share one named per-prompt character budget of 6,000 characters for the added pieces (`KEYWORD_SET_CHAR_BUDGET`), and a set that would exceed it is skipped whole; keyword-set pieces are not counted against the cap and the enrichment-debug sidecar names them and their card
+  - with no cards, under `EMBEDDING_PROVIDER=mock`, or when a card's embedding fails, that card contributes nothing and the main ranking fills the slots; an embedding failure emits one diagnostic warning
+  - the enrichment-debug sidecar names which selected rules came from per-card search and for which card
+  - the offline gates — the rules gate (REQ-222), the labelled context-eval checks (REQ-032) and `npm run eval:worked-solutions` — use committed frozen per-card vectors built by the shipped local embedder, each stored with a hash of the card text it was embedded from, so they stay offline and mirror production
+- Constraints:
+  - the per-card text is never merged into the main query or its embedding (REQ-178)
+  - in-process only; no per-request external call; no request, response or frontend change
+- Dependencies:
+  - REQ-178 (the main query this stays apart from)
+  - REQ-181 (the embedder seam and the synchronous preparation contract)
+  - REQ-190 (the cap and the larger-cap legs)
+  - REQ-222 (the offline gate that needs frozen per-card vectors)
+- Notes:
+  - measured at build, 2026-10-12 (`right-rules-in-order` slice D, cross-validated, trained model): keyword sets beside the excerpts with the 0.6 cutoff at cap fifteen took check-half citations from 445 to 520, tuning half 435 to 511, questions with every deciding rule (check half) 144 to 169, the hard 25 from 19 to 24, the corpus from 423 to 435 (372 of 415 cases with every deciding rule), bench@5 stayed 131; about 3.2 keyword-rule pieces were added per practice question, the 6,000-character budget skipped a set on 13 of 778 practice questions with a keyword rule and on no corpus case; rule text per practice question rose from 4,220 to 6,707 characters (corpus 3,949 to 4,125), still under the roughly 7,500 shipped before the work. A keyword set placed inside the ten instead lost 27 check-half citations and was rejected
+  - measured at intake (cited): the recipe without per-card search scored 441 check-half citations against 449 and bench@5 127 against 125; one extra embedding costs about 4.5 ms per card on a Mac; the post-deploy live timing records the Lambda figure
+
+### REQ-236
+- Title: System 3 uses a Magic-trained search model, retrained by the owner
+- Priority: high
+- Description: The embedding model System 3 ranks rules with is `all-MiniLM-L6-v2` fine-tuned on Magic rules questions — the committed rules test corpus (REQ-185), the Comprehensive Rules' own worked examples, and the owner's local practice suite (REQ-232) — so it learns which rules decide which situations. It keeps the base model's size, 384 dimensions and speed. A committed pipeline trains it, scores it by cross-validation and exports it; the owner runs it locally, and retrains whenever its inputs change.
+- Acceptance Criteria:
+  - a committed training pipeline under `scripts/` — an export step in Node (`scripts/export-rule-search-training.mjs`) and a trainer in Python 3.12 run through `uv` with `python -I` (`scripts/train-rule-search-model.py`, dependencies pinned in `scripts/rule-search-model.requirements.txt`) — reads the practice suite from a folder given by a flag (default the git-ignored `output/practice-suite/`), the committed corpus and the committed rule index, and writes training pairs, checkpoints and the model only under git-ignored folders
+  - every training pair's query side is built by the shipped production query builder (REQ-178 as amended, REQ-233, REQ-234, and the In-Depth turn step); the rule side is the production embedding text `${sectionTitle}: ${text}` sliced to 2,000 characters (REQ-181); training runs only after the rule-data and search changes have landed
+  - each `Example:` passage in the rule book is paired with its rule (277 pairs over 215 rules at intake), with the example stripped from that rule's text for that pair
+  - each pair carries one hard negative drawn from the current search's top 40, with the deciding rule's whole family removed
+  - recipe: base `sentence-transformers/all-MiniLM-L6-v2`; sentence-transformers, cached MultipleNegativesRankingLoss; batch 32 (mini-batch 16) with no-duplicates batching; learning rate 5e-5; 4 epochs; 10% warmup; max length 512; seed 13
+  - export: ONNX opset 14, then dynamic int8 quantisation, per-channel, reduced range; laid out the way transformers.js loads it (`onnx/model_quantized.onnx` plus tokenizer and config); about 23.0 MB
+  - a cross-validation mode trains 5 fold models — grouped so both versions of a corpus case, and practice questions sharing a card set, stay in one fold — scores every question with a model that never trained on it, and prints counts only; the shipped model trains on 100% of the data
+  - a committed scorer reports, counts only: deciding-rule citations in the prompt (the search excerpts, plus the keyword sets of REQ-235; the top ten before the cap moved) and questions with every deciding rule there, for the tuning and check halves of the fixed `pft-split-1` split, the hard 25 (level 3 / Corner Case), the corpus, and bench@5 (the 156-question benchmark with three unrelated cards attached, top-five hits)
+  - fidelity, before any search change: the scorer reproduces production's current top ten — 473 suite citations (tuning plus check), 159 suite every-rule questions, 5 hard-25, 351 corpus citations, 305 corpus every-rule cases
+  - acceptance, measured once at build, locally: cross-validated check half ≥ 430, tuning half ≥ 410, every-rule check ≥ 140, hard 25 ≥ 15; the 100% model scores corpus ≥ 410 citations and ≥ 355 every-rule cases, bench@5 ≥ 118, and puts 514.1, 514.2 and 514.3a in the top ten for `necropotence-silence-borne-upon-a-wind-cleanup` in both versions and in the built prompt
+  - the rules gate (REQ-222) is re-baselined in this change with `npm run eval:rules-gate:baseline -- --allow-regressions`; every lost hit is listed by case and rule in the pull request body and the receipt, and the total of deciding rules reaching the prompts rises
+  - retraining is an owner-run local step, required when the Comprehensive Rules, the committed corpus or the practice suite changes, and with every Comprehensive Rules-moving data refresh (`integrations-and-data.md`, Game Rules Data Strategy)
+- Constraints:
+  - no practice-suite question, answer, card list, id or per-question result in any committed file — committed text gives counts, levels and rule ids only (REQ-232)
+  - no model weights, checkpoints or training pairs in git; the repository is public
+  - never in `npm test`, `npm run quality:check` or CI; the acceptance above is a one-time local measurement, not a standing gate (REQ-232)
+  - the Python toolchain is dev-only and owner-run; nothing in it becomes a runtime or CI dependency
+  - suite answers are never ground truth (REQ-185): training uses each suite question's cited rules, never its answer as a reference
+- Dependencies:
+  - REQ-185 (the committed corpus)
+  - REQ-232 (the local practice suite, amended to allow this use)
+  - REQ-233, REQ-234, REQ-235 (the shipped query builder training must use)
+  - REQ-237 (where the model is stored and how it is checked)
+  - REQ-181 (the embedding text and provider seam)
+  - REQ-222 (the offline gate re-baselined here)
+- Notes:
+  - measured at intake (probe session 4, 2026-10-11, cited, not re-derived), check half / tuning half citations: today 223 / 250; the full recipe 449 / 433; trained without practice questions 348 / 351; hybrid recall@100 37.8% → about 70%; when a deciding rule still misses the top ten its median rank improves from about 450 to about 86
+  - caveats accepted at intake: 88% of suite citations are rules the model saw in training (found 422 → 713); never-seen rules go 51 → 73; on the 1,139 questions with no training question closer than cosine 0.7, 465 → 748, so the gain is not near-duplicate leakage; the practice questions provide almost all of the suite gain, the corpus cases and rule-book examples almost all of the corpus gain
+  - tested and rejected at intake: BM25 word scoring (ties the recipe on the check half, worse elsewhere), stronger off-the-shelf embedders (at most +13 check-half at 4–14× the size), a local reranker (+18 at 279 MB and about 3 s per question), labelled rule text inside the vectors (−17)
+  - about 7–8 minutes to train the 100% model on an Apple GPU
+  - measured at build, 2026-10-12 (`right-rules-in-order` slice D, retrained in review loop 2: the training pairs were re-exported from the shipped query builder and the five fold models and the 100% model were trained after the type-setting concept-map entry landed, as this requirement says; model `rule-search-d2c2e500a4c6`; counts only), with the shipped search — the 0.6 cutoff, cap fifteen, keyword sets (REQ-190, REQ-235) and the type-setting concept-map entry (REQ-234): cross-validated check half 522 citations (floor 430), tuning half 511 (floor 410), every-rule check half 175 (floor 140), hard 25 21 of 59 (floor 15), corpus 442 citations and 377 cases with every deciding rule, bench@5 130; the 100% model: corpus 472 citations of 494 and 395 of 415 cases with every deciding rule, bench@5 126 of 156 (floor 118), and 514.1, 514.2 and 514.3a at ranks 1, 6 and 4 in Quick Lookup and 2, 4 and 3 in In-Depth; benchmark recall@5 0.9103 clean and 0.8846 polluted (floors 0.8526 and 0.8333); all 14 labelled checks pass; ranks 702.3a 494 → 4, 113.7a 12 → 1, 615.12 2 → 1; q8 against fp32 mean cosine 0.996, 2.8 ms per query, 23.0 MB. The previous model (`rule-search-ed14e631c046`, trained before the type-setting entry) scored 530 / 526 / 175 / 24, corpus 442 / 374, bench@5 131, final 472 / 394, bench@5 130
+  - the rules gate baseline was re-baselined once, in this change, with `--allow-regressions`, on the retrained model with the cap-15, cutoff, keyword-set and type-setting concept-map search. Against the baseline on main, deciding rules reaching the prompt (search excerpts or a curated topic) rise from 351 to 472 across the 415 cases; no recorded rule is lost (the three rules the previous model lost are hits again)
+
+### REQ-237
+- Title: The trained search model is stored privately, fetched at packaging, and identity-checked at every load
+- Priority: high
+- Description: The trained model (REQ-236) never enters the public repository. It is stored in the project's private, public-access-blocked S3 bucket; a small committed manifest names it and records a hash for every file; a fetch script fills the local model cache from S3 and verifies the hashes; packaging refuses without a verified model; and every committed vector file records the model that built it, so a mismatch with the running model is caught loudly instead of ranking with the wrong vectors.
+- Acceptance Criteria:
+  - the owner uploads the 100% model folder to `thejudge-lambda-artifacts-<account>` (the bucket `scripts/aws-bootstrap.sh` creates, public access blocked) under `models/<model-id>/`
+  - a committed manifest (`apps/backend/data/embeddingModel.manifest.json`) records `<model-id>`, the base model, and a sha256 and byte size for every file in the folder
+  - a committed fetch script (`scripts/fetch-embedding-model.mjs`) downloads `models/<model-id>/` into the git-ignored `apps/backend/data/models/<model-id>/`, verifies every file against the manifest, and exits non-zero on any missing or mismatched file; it replaces the Hugging Face download in `scripts/warm-embedding-model-cache.mjs` for this model
+  - `LOCAL_MODEL_ID` in `apps/backend/src/providers/localEmbeddingProvider.ts` is the manifest's model id, loaded from the local cache only, never downloaded at runtime
+  - every committed vector file is rebuilt with the trained model and records its model id and the manifest's hash: `apps/backend/data/gameRulesRuleEmbeddings.json`, `apps/backend/src/eval/fixtures/frozen-query-embeddings.json`, `apps/backend/src/prompt/preparation.crossReferenceQueryEmbedding.json`, `apps/backend/src/eval/rules-gate/frozen-query-vectors.json`, and the frozen per-card vectors (REQ-235)
+  - identity check at load: a vector file whose recorded model id differs from the running model's disables the semantic path with one error-level diagnostic naming both ids — REQ-181's lexical fallback, never a mixed ranking; the eval harnesses, the retrieval benchmark and the rules gate refuse to run on a mismatch; `scripts/package-lambda.sh` refuses (exit 1) when the packaged model's id or file hashes do not match the manifest, or the committed rule embeddings name a different model
+  - the deploy role can read `models/*` in the bucket; if it cannot, `scripts/aws-bootstrap.sh` grants `s3:GetObject` on that prefix (the owner runs bootstrap locally with profile `thejudge-admin`; CI cannot provision)
+  - CI quality checks need no AWS access and no model: the unset `EMBEDDING_PROVIDER` stays `mock`, and tests that need vectors read the committed frozen ones
+  - the model is fetched only when the deploy package is built and when the owner trains or rebuilds vectors locally — never at Lambda cold start, never per request
+- Constraints:
+  - no model weights in git
+  - no runtime external call; the model ships inside the deploy package as today
+  - the model sits in NFR-017's non-data reserve at about the same size as today (about 23 MB)
+- Dependencies:
+  - REQ-236 (the model)
+  - REQ-181 (the embedder seam and lexical fallback)
+  - REQ-183 (amended: the model may now live in S3)
+  - REQ-184 (the packaging refusal this repoints)
+  - NFR-017 (the package budget)
+- Notes:
+  - storage design per the `right-rules-in-order` intake (C.5, C.6), cited
+
+
+### REQ-238
+- Title: Turn-step summaries are correct, and Quick Lookup gets them when a step is named
+- Priority: high
+- Description: The phase-guidance summaries — the short "what happens in this step" paragraphs — are corrected against the Comprehensive Rules, and Quick Lookup now receives the summary for any turn step its question names, or that an attached card's wording points at through the concept map (REQ-234), the same help In-Depth gets for its current step.
+- Acceptance Criteria:
+  - cleanup: says that damage is removed and "until end of turn" and "this turn" effects end (514.2) before any player gets priority, and that players get priority in cleanup only if a state-based action is performed or an ability triggers, after which another cleanup step follows (514.3a)
+  - untap: says no player receives priority, and an ability that triggers during untap is put on the stack the next time a player would receive priority, usually in upkeep (502.4) — replacing "resolved before moving to the upkeep step"
+  - declare blockers: drops "The active player orders damage assignment for multiply-blocked creatures", which the rules no longer contain
+  - every step's text is reviewed against the Comprehensive Rules, and a test pins each step to the rule ids it summarises and asserts those ids exist in the committed rule index (`apps/backend/src/prompt/phaseGuidanceSteps.test.ts`)
+  - one source of step text serves both modes (`STEP_SUMMARIES` in `apps/backend/src/prompt/phaseGuidance.ts`); In-Depth adds its "You are in the … step." lead line, Quick Lookup describes the step without claiming the game is in it
+  - Quick Lookup: a step is named when the question contains a step name from one fixed committed table of the rule book's step and phase names (`TURN_STEP_NAME_TABLE`: untap, upkeep, draw, main, beginning of combat, declare attackers, declare blockers, combat damage, end of combat, end, cleanup — each matched by the rule book's own name for it, so a bare "draw", "combat damage" or "until end of turn" names nothing), or when an attached card's concept terms (REQ-234) name a step; the prompt carries the summary for each named step, de-duplicated, in turn order, at most three, under a `PHASE GUIDANCE` heading right after `MTG REFERENCE`
+  - In-Depth keeps its current-step summary in its current place, with the corrected text
+  - acceptance: over every committed corpus case built as a Quick Lookup prompt, the summary is present whenever the question names a step; the Necropotence case's Quick Lookup prompt carries the cleanup summary
+- Constraints:
+  - guidance is reference text; no rules-validation behaviour (REQ-024)
+  - no request change: Quick Lookup still sends no game state
+- Dependencies:
+  - REQ-024 (phase guidance, amended)
+  - REQ-074 (Quick Lookup assembly, amended)
+  - REQ-234 (the concept terms that can name a step)
+- Notes:
+  - measured at intake on the saved prompts of the paid runs (cited): In-Depth answered `necropotence-silence-borne-upon-a-wind-cleanup` right 10 of 12 times, Quick Lookup 6 of 12; Quick Lookup's prompt had 703.4p fifth, after the priority rules, 514.3 without 514.3a, and no step guidance; in 5 of 6 Quick Lookup misses Luna found the priority window and still ruled that Silence applies (pooled p ≈ 0.04, a consistent mechanism, not yet proven — the post-merge paid run is the proof)
+  - a card whose wording says "until end of turn" or "this turn" brings the cleanup summary through the concept map (the map reads that wording as a cleanup-step term); this is by design and bounded by the three-summary cap
+
+### REQ-239
+- Title: Rule excerpts arrive in rule-book order, grouped by family and labelled
+- Priority: high
+- Description: The `ADDITIONAL RELEVANT RULE EXCERPTS` section prints its selected rules in rule-book order instead of score order, grouped by rule family under a path label built from the rule book's own titles, each rule's number printed once, and a sub-rule that cannot stand alone printed with its parent's lead-in sentence. Which rules are selected does not change. A card's keyword-set rules (REQ-235) and a lead-in's list items (REQ-240) are excerpts for grouping, labelling and order.
+- Acceptance Criteria:
+  - excerpts are sorted by rule-book order (the comparator REQ-233 defines) after selection; selection, the cap and the curated exclusion are unchanged
+  - excerpts sharing a three-digit section (for example every 514.x) form one group, headed by a path label "<part title> › <section title>" taken from the titles the rule index stores (REQ-179) — for example "Turn Structure › Cleanup Step"; a section titled "General" is labelled with its part ("Turn Structure › General"), never "General" alone
+  - each rule prints as its own text, which opens with its id, once — never `514.3a. 514.3a …`
+  - a sub-rule whose parent is not itself in the prompt is preceded by the parent's lead-in sentence (the parent's last sentence, shown once per parent, above the first delivered sibling, as "<parent id> … <sentence>") when the sub-rule is an item of the parent's list (REQ-240), begins with "First", "Second", "Third", "Fourth", "Fifth" or "At this point", or says "this rule"
+  - curated topics in `GAME RULES (reference)` print each rule's id once, in rule-book order within each topic (the manifest lists each topic's rule numbers in that order, and a data test asserts it)
+  - acceptance: over every committed corpus case's built prompts (REQ-240's set), 100% of excerpts are in rule-book order and 0 rule ids are printed twice
+- Constraints:
+  - prompt layout only; no change to which rules are selected
+  - verbatim rule text only; labels are the rule book's own titles
+- Dependencies:
+  - REQ-179 (the stored part and section titles)
+  - REQ-233 (the rule-order comparator)
+  - REQ-240 (lead-in lists)
+  - REQ-022 (the excerpt section)
+- Notes:
+  - measured at intake (cited): 370 index pieces (13%) need their parent's lead-in to make sense
+  - the part titles come from `gameRulesBookMeta.json` (REQ-179) and the section title from the index entry; the layout lives in `apps/backend/src/prompt/ruleLayout.ts`
+
+### REQ-240
+- Title: A rule that introduces a list is delivered with its list
+- Priority: high
+- Description: When a delivered rule ends by introducing a list — "…determined by the following rules:", "…subject to the following exception:" — the list's items are delivered with it, in search excerpts and curated topics alike, so the model never reads a lead-in with its list missing. Curated topics also gain rules they lack.
+- Acceptance Criteria:
+  - a lead-in is a rule whose text (its "Example:" lines set aside) ends with a colon, or with "following exception.", "following exceptions." or "following rules."; its list is its directly lettered sub-rules in the committed rule index. Measured at build on the committed index (2026-10-12): 17 lead-ins have such a list (the define-time count was 28 under a different parse of the index); list size median 1,071 characters, largest 5,164 (704.5, 25 items)
+  - search excerpts: a delivered lead-in brings every item of its list not already delivered; list items never use any of the System 3 slots (REQ-190); all list items added to one prompt share a budget of 12,000 characters (`LIST_ITEM_CHAR_BUDGET`), separate from REQ-235's keyword-set budget; a list that does not fit the remaining budget is never cut — the lead-in is followed by one line naming the omitted range
+  - curated topics: a topic rule that is a lead-in lists its items as topic rule numbers in `gameRulesTopicManifest.json` — `stack-and-priority` gains 117.3a–117.3d, `zones-basics` gains 400.7's twelve lettered sub-rules, and `combat-damage-assignment` gains 510.1a–510.1e; a curated lead-in whose items are somehow missing from its topic is completed from the index at layout time (a safety net, counted against the same budget), and a data test fails the build instead
+  - `layers-power-toughness` gains 613.4d and `layers-timestamps-dependencies` gains 613.8b; `abilities-delayed-triggers` carries 603.7a, 603.7b and 603.7c in place of 603.10
+  - the curated exclusion follows the manifest (REQ-179), so a topic's list items never repeat as search excerpts, and REQ-179's test that every topic carries exactly the rules it lists still passes
+  - the build-policy test's cap on total curated topic text (26,000 characters before) is raised to 35,000, the new measured total (34,317 characters across 24 topics) rounded up to the next 1,000
+  - acceptance: over every committed corpus case built as a Quick Lookup prompt, and as an In-Depth prompt when it has a game state, 0 lead-ins appear without their list and the omitted-range line fires 0 times (`apps/backend/src/prompt/builtPromptChecks.test.ts`)
+- Constraints:
+  - verbatim rule text only
+  - the cap (REQ-190) is unchanged by list items
+- Dependencies:
+  - REQ-179 (the exact-number exclusion and topic data test)
+  - REQ-022 (curated topics)
+  - REQ-239 (layout of delivered list items)
+- Notes:
+  - measured at intake (cited): curated 117.3 dangles without its list in 414 of 415 corpus prompts, 400.7 in 398
+  - measured at build: 117.3's list is 884 characters and 400.7's 2,737, added to every prompt through the always-on topics (about 3,600 characters); the rules gate does not credit a deciding rule that arrives only as a list item, so its baseline understates this recall
+  - takes up the follow-up REQ-179's notes recorded as out of scope on 2026-10-07 (expanding a rule that ends "the following rules:" into its sub-rules)
+
+### REQ-244
+- Title: "See rule X" pointers in delivered rules carry what they point at
+- Priority: low
+- Description: When a delivered rule points elsewhere — "see rule 101.4", "see rules 613.2 and 613.3", "see section 7" — and the target is not itself in the prompt, the pointer carries the target's first sentence (a specific rule) or its title (a section or family), verbatim.
+- Acceptance Criteria:
+  - a pointer to a specific rule absent from the prompt is followed, in brackets, by that rule's first sentence from the committed index; a pointer to a section, family or keyword rule is followed by its title; a pointer whose text already gives the title ("see rule 702.26, “Phasing.”") is left as written
+  - a pointer whose target is already in the prompt (a curated topic's rule, an excerpt, or a list item) is left as written
+  - at most ten pointers are resolved per prompt, in the order they appear (curated topics first, then excerpts); each attached first sentence is capped at 250 characters; pointers beyond the cap stay as written
+  - the build reports the share of pointers resolved over the committed corpus prompts (`builtPromptChecks.test.ts`; the enrichment debug carries `pointersFound` and `pointersResolved` per prompt)
+- Constraints:
+  - verbatim rule text and titles only; no paraphrase
+- Dependencies:
+  - REQ-179 (the index the targets come from)
+  - REQ-239 (excerpt layout)
+- Notes:
+  - measured at intake (cited): 73% of "see rule X" pointers point at text that is not in the prompt
+  - measured at build, 2026-10-12: over the corpus prompts (Quick Lookup for every case, In-Depth where a game state exists) 4,056 of the 4,523 pointers to absent text were resolved (89.7%); the rest hit the ten-per-prompt cap
+
+### REQ-241
+- Title: Wizards rulings sit under their card, framed as situation-specific
+- Priority: medium
+- Description: Each card's published Wizards (WotC) rulings print directly under that card's block, introduced as rulings for that card to apply only when the situation matches, instead of in a separate section after the rules (In-Depth) or after the cards (Quick Lookup).
+- Acceptance Criteria:
+  - In-Depth: each card's rulings follow its block in its zone section; a card shown more than once (copies, or several zones) carries its rulings once, under its first appearance (stack bottom to top, then zones in canonical order)
+  - Quick Lookup: each attached card's rulings follow its block in `CARD (looked up)`
+  - the standalone `OFFICIAL RULINGS (WotC reference)` section is retired; each card's rulings open with one line, "Rulings for <card> (published by Wizards of the Coast; apply one only when the situation matches it):", then one `- <date>: <comment>` line per ruling
+  - which rulings are selected, their per-card and section limits, and the WotC-only filter are unchanged; the rules gate's card check (REQ-222) still finds every ruling
+- Constraints:
+  - no request, response or frontend change
+- Dependencies:
+  - REQ-022 (section order, amended)
+  - REQ-074, REQ-167 (Quick Lookup per-card enrichment)
+  - REQ-222 (the card check)
+- Notes:
+  - located at intake (cited): `normalization.ts:9-11`, `promptFormatting.ts:280-285`
+  - built in `apps/backend/src/prompt/promptFormatting.ts` (`createRulingsPlacement`) and `promptAssembly.ts`; `apps/backend/src/prompt/promptStructure.test.ts` and `builtPromptChecks.test.ts` assert the placement, the single appearance and the absent section over the whole corpus
+
+### REQ-242
+- Title: In-Depth chooses curated topics by card wording and question, not by zone presence
+- Priority: medium
+- Description: In In-Depth, the curated topics that used to be added because the stack or the battlefield held cards are instead added when the cards' wording (through the concept map, REQ-234) or the question's words match the topic. The always-on core, the turn-phase and combat-step topics, the delayed-trigger topic and REQ-220's replacement-interaction gate are unchanged. Quick Lookup is unchanged.
+- Acceptance Criteria:
+  - the stack-populated trigger (5 topics) and the battlefield-populated trigger (6 topics) are removed; each of those 11 topics is selected when a concept term from any card or a stemmed question word (REQ-233) matches one of the topic's trigger words
+  - trigger words live in one fixed committed table (`IN_DEPTH_TOPIC_TRIGGERS` in `apps/backend/src/gameRulesTopicSelection.ts`), built only from words of the topic's own title and its listed rules' section titles in the rule book; a test asserts that and that every trigger word appears in the committed rule index
+  - the always-on core, turn-phase and combat-step triggers, the delayed-trigger phase trigger and REQ-220's gate are unchanged
+  - Quick Lookup's selection is unchanged: four always-on topics plus REQ-220
+  - one shared selection function still serves both modes (REQ-220)
+  - acceptance: on the 9 corpus cases that exist in both versions, In-Depth keeps at least 17 of their 30 deciding rules in the prompt (measured at build, 2026-10-12: 27 of 30; `inDepthTopicGuard.test.ts`)
+- Constraints:
+  - card names and keywords never select a topic; card wording does, through the fixed concept map only
+  - no model call selects topics
+- Dependencies:
+  - REQ-022 (System 2 selection, amended)
+  - REQ-220 (the card-wording gate, amended)
+  - REQ-234 (the concept terms)
+- Notes:
+  - measured at intake (cited): across the 9 paired corpus cases, In-Depth delivered 17 of 30 deciding rules against Quick Lookup's 6 of 30, mostly through its zone-triggered layer topics
+  - located at intake: `gameRulesTopicSelection.ts:32-39, 134-136`
+  - measured at build: two In-Depth layer cases (`layers-blood-moon-urborg-dependency-in-depth`, `layers-mycosynth-lattice-march-dependency-in-depth`) would lose rule 613.1d through the `layers-order` topic, because neither the question nor the cards' wording used a layer word; the type-setting concept-map entry (REQ-234) keeps the layers topic for type-setting cards, so both prompts still carry 613.1d
+
+### REQ-243
+- Title: One instruction list, a reference block per mode, one stack numbering, and rules framed as binding
+- Priority: medium
+- Description: Both modes build their instructions from one shared list; each mode gets its own reference block that describes only sections that mode contains; the prompt numbers the stack one way; and the rules are framed once as the binding rules of the game, with a single statement that they never override the submitted game state or a card's oracle text.
+- Acceptance Criteria:
+  - one shared instruction list in code (`SHARED_INSTRUCTION_LINES`) serves both modes: explain reasoning, state uncertainty, never invent hidden state, quote rule text verbatim only from the rules sections of the prompt, and the rules-framing lines below; mode additions only: Quick Lookup's off-domain line (REQ-168) and In-Depth's follow-up line
+  - the off-domain line keeps REQ-168's meaning — common Magic-adjacent phrasing is in-domain; the "not found in the rules corpus" reply is reserved for input genuinely not about Magic, with a request to check spelling or rephrase — and drops its pointer to a phrasing glossary the prompt does not contain, and its garbled clause
+  - In-Depth's reference block keeps today's content; Quick Lookup's block keeps the turn order, the stack's resolution order and the layer list, and omits the app's turn-phase field, the zone model, the scope note and any mention of a section Quick Lookup lacks
+  - the prompt numbers the stack one way, 1-based to match the stack section's `Stack item N` labels, with item 1 the bottom; the preamble's `stack[0]` wording goes, and the stack-order line appears only in In-Depth; bottom-to-top meaning is unchanged
+  - rules framing: one instruction says the provided Comprehensive Rules excerpts are the binding rules of the game; one instruction says rules and rulings never override the submitted game state (stack order, zones, targets, notes) or a card's oracle text; the per-section disclaimers on `GAME RULES (reference)`, the excerpt section and the rulings are removed, and the reference block's "use layers as shared vocabulary" sentence goes
+  - unchanged, pending a later paid test: the preamble's "use only the provided context" line, and the single user-message channel
+  - acceptance: over every committed corpus case's built prompts (REQ-240's set), 0 references to a section absent from that prompt's mode (`builtPromptChecks.test.ts`)
+- Constraints:
+  - prompt text only; no request, response or frontend change
+  - bottom-to-top stack semantics preserved (`technical-design-rules.md`)
+- Dependencies:
+  - REQ-022 (the rules section disclaimer, amended)
+  - REQ-074 (Quick Lookup assembly, amended)
+  - REQ-168 (the off-domain line)
+  - REQ-024 (phase guidance)
+- Notes:
+  - located at intake (cited): `mtgReference.ts:7, 18`; stack numbering 0-based at `promptFormatting.ts:15`, 1-based at `:225`; the glossary pointer at `promptAssembly.ts:149`; the disclaimers at `gameRules.ts:15-16`
+  - the arm-R recipe file (`apps/backend/src/eval/answer-quality/arm-r-recipe.json`) names the layers paragraph it replaces; its `replaces` text lost the "use layers as shared vocabulary" sentence here, with the recipe text and its approval date unchanged
+
+### REQ-245
+- Title: Card blocks in the prompt carry power, toughness and loyalty, and keep oracle line breaks
+- Priority: medium
+- Description: The backend card-detail artifact carries each card's power, toughness and loyalty, and every card block in the prompt prints them when the card has them; oracle text keeps its line breaks, so each ability reads on its own line.
+- Acceptance Criteria:
+  - the card-detail build writes `power`, `toughness` and `loyalty` from the Scryfall bulk record, omitted when the card has none; a multi-face card's values are its faces' values joined with " // " (only faces that have one)
+  - the fields are backend-only, like `keywords` (REQ-180): the `GET /api/cards/:oracleId` block and the frontend's up-front card data are unchanged (the route leaves the three fields out, with a test)
+  - every card block in both modes prints `power:`, `toughness:` and `loyalty:` lines when present, right after `subtypes:`, and no line when absent
+  - oracle text keeps its line breaks in the prompt; other whitespace is normalised as today; the one-line oracle text still feeds retrieval, so search texts and their frozen vectors are unchanged
+  - NFR-017's package budget test passes; the artifact's size change is recorded
+- Constraints:
+  - no request, response or frontend change; no new runtime fetch
+- Dependencies:
+  - REQ-030 (per-card prompt fields, amended)
+  - REQ-176 (server-side card resolution, amended)
+  - REQ-180 (the backend-only field precedent)
+  - NFR-017 (package budget)
+- Notes:
+  - REQ-180's notes recorded this as card-data work outside the RAG gameplan; this requirement takes it up
+  - located at intake (cited): `cardDetail.ts:11-22`, `normalization.ts:15-16, 40-41`
+  - measured at build, 2026-10-12 (`node scripts/build-card-detail-by-oracle-id.mjs` over the committed-source Scryfall bulk, 37,854 cards): power on 19,853 cards, loyalty on 339, 237 multi-face values; no other field of any card changed; the artifact grew from 1,701,595 to 1,735,902 bytes (+34,307); the prices artifact was byte-identical

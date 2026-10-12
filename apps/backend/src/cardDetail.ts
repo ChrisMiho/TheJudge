@@ -20,6 +20,11 @@ export type CardDetailEntry = {
    * signal. Optional (older committed artifacts predate this field); callers
    * treat an absent value the same as an empty array. */
   keywords?: string[];
+  /** REQ-245: power, toughness and loyalty as printed ("2", "*"); a multi-face card's faces joined
+   * with " // ". Backend-only like `keywords`: the `GET /api/cards/:oracleId` block omits them. */
+  power?: string;
+  toughness?: string;
+  loyalty?: string;
 };
 
 const warnedLoadFailures = new Set<string>();
@@ -38,7 +43,10 @@ function isCardDetailEntry(value: unknown): value is Omit<CardDetailEntry, "keyw
     Array.isArray(candidate.colors) &&
     Array.isArray(candidate.supertypes) &&
     Array.isArray(candidate.subtypes) &&
-    (candidate.keywords === undefined || Array.isArray(candidate.keywords))
+    (candidate.keywords === undefined || Array.isArray(candidate.keywords)) &&
+    (candidate.power === undefined || typeof candidate.power === "string") &&
+    (candidate.toughness === undefined || typeof candidate.toughness === "string") &&
+    (candidate.loyalty === undefined || typeof candidate.loyalty === "string")
   );
 }
 

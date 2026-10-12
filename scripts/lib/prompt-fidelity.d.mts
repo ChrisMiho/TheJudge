@@ -48,4 +48,4 @@ export function embedGoldCaseQueries(input: {
   goldCases: Array<Pick<GoldCase, "id" | "question" | "cards" | "gameState">>;
   embedder: Embedder;
   cardDetailIndex: Map<string, CardDetailEntry>;
-}): Promise<Map<string, number[] | null>>;
+}): Promise<Map<string, number[] | null> & { cardEmbeddingsByCaseId: Map<string, Map<string, number[]>> }>;

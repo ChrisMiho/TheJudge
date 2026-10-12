@@ -54,6 +54,13 @@ export type EvaluationFixtureExpected = {
   expectedSupplementalRuleIds?: string[];
   /** Rule ids that must NOT appear in the System 3 supplemental top-10. */
   forbiddenSupplementalRuleIds?: string[];
+  /**
+   * Expected rule ids the word-only (lexical) path is known to miss and the semantic path hits.
+   * Only the lexical leg of `system3-expected-recall` skips them -- every id here is still required
+   * on the semantic path (REQ-182's gate). `right-rules-in-order` (REQ-233) records each one with the
+   * reason in the fixture's description; an entry is a reviewed exception, never a silent one.
+   */
+  lexicalKnownMisses?: string[];
 };
 
 export type EvaluationFixture = {
@@ -168,9 +175,9 @@ function checkFinalQuestionBehavior(fixture: EvaluationFixture, context: PromptI
 
 function checkLookupGuardrails(promptText: string): EvaluationCheckResult {
   const required = [
-    "quote rule text only from the provided GAME RULES / ADDITIONAL RELEVANT RULE EXCERPTS sections",
+    "quote rule text only from the rules sections of this prompt",
     "not found in the rules corpus",
-    "never answer the off-domain question directly",
+    "never answer an off-domain question directly",
     // REQ-168: common Magic-adjacent phrasing is carved out as in-domain,
     // ahead of the off-domain refusal — present on every lookup path
     // (DEC-108), so this check applies universally like the others above.
@@ -188,8 +195,19 @@ function checkLookupGuardrails(promptText: string): EvaluationCheckResult {
 }
 
 function checkLookupGameStateSectionsOmitted(promptText: string): EvaluationCheckResult {
-  const forbidden = ["GENERAL GAME CONTEXT", "PHASE GUIDANCE", "ZONE:", "\nSCOPE\n"];
+  const forbidden = ["GENERAL GAME CONTEXT", "ZONE:", "\nSCOPE\n"];
   const present = forbidden.filter((section) => promptText.includes(section));
+  // REQ-238: a Quick Lookup prompt may carry PHASE GUIDANCE, but only for a step the question names,
+  // and only right after MTG REFERENCE (before every rules section).
+  const guidanceAt = promptText.indexOf("\nPHASE GUIDANCE\n");
+  if (guidanceAt >= 0) {
+    const referenceAt = promptText.indexOf("\nMTG REFERENCE\n");
+    const nextSectionAt = ["\nGAME RULES (reference)\n", "\nADDITIONAL RELEVANT RULE EXCERPTS\n", "\nCARD (looked up)\n", "\nQUESTION\n"]
+      .map((heading) => promptText.indexOf(heading))
+      .filter((at) => at >= 0)
+      .reduce((min, at) => Math.min(min, at), Number.MAX_SAFE_INTEGER);
+    if (!(referenceAt >= 0 && referenceAt < guidanceAt && guidanceAt < nextSectionAt)) present.push("PHASE GUIDANCE (misplaced)");
+  }
   return {
     id: "lookup-game-state-sections-omitted",
     passed: present.length === 0,
@@ -208,17 +226,20 @@ function checkLookupCardEnrichment(
   const expectsCards =
     fixture.request.mode === "lookup" && (fixture.request.cards?.length ?? 0) > 0;
   const hasCardSection = promptText.includes("CARD (looked up)");
-  const hasOfficialRulings = promptText.includes("OFFICIAL RULINGS");
+  // REQ-241: the rulings follow each card's block; there is no standalone section.
+  const hasOfficialRulings = promptText.includes("Rulings for ") && !promptText.includes("OFFICIAL RULINGS");
   const cardMetadataPresent =
     !expectsCards ||
     (context.cards !== undefined &&
       context.cards.length > 0 &&
       context.cards.every(
-        (card) => promptText.includes(`name: ${card.name}`) && promptText.includes(`oracleText: ${card.oracleText}`)
+        (card) =>
+          promptText.includes(`name: ${card.name}`) &&
+          promptText.includes(`oracleText: ${card.oracleTextDisplay ?? card.oracleText}`)
       ));
   const passed = expectsCards
     ? hasCardSection && hasOfficialRulings && cardMetadataPresent
-    : !hasCardSection && !hasOfficialRulings;
+    : !hasCardSection && !promptText.includes("Rulings for ");
   return {
     id: "lookup-card-enrichment",
     passed,
@@ -398,25 +419,25 @@ function checkGameRulesSectionPresent(promptText: string): EvaluationCheckResult
   };
 }
 
+// REQ-241: rulings sit under their card, so no standalone rulings section exists to order against.
 function checkGameRulesBeforeRulings(promptText: string): EvaluationCheckResult {
-  const gameRulesIndex = promptText.indexOf("GAME RULES (reference)");
-  const officialRulingsIndex = promptText.indexOf("OFFICIAL RULINGS");
-  const hasGameRules = gameRulesIndex !== -1;
-  const hasOfficialRulings = officialRulingsIndex !== -1;
-  const passed = hasGameRules && (!hasOfficialRulings || gameRulesIndex < officialRulingsIndex);
+  const hasGameRules = promptText.includes("GAME RULES (reference)");
+  const hasStandaloneRulings = promptText.includes("OFFICIAL RULINGS");
+  const passed = hasGameRules && !hasStandaloneRulings;
 
   return {
     id: "game-rules-before-rulings",
     passed,
     details: passed
-      ? "GAME RULES (reference) appears before OFFICIAL RULINGS (or no OFFICIAL RULINGS present)."
-      : "GAME RULES (reference) is absent or appears after OFFICIAL RULINGS."
+      ? "GAME RULES (reference) is present and no standalone OFFICIAL RULINGS section exists (rulings sit under their card)."
+      : "GAME RULES (reference) is absent, or a standalone OFFICIAL RULINGS section is present."
   };
 }
 
 function checkSupplementalRulesSectionPresent(promptText: string): EvaluationCheckResult {
   const hasSupplemental = promptText.includes("\nADDITIONAL RELEVANT RULE EXCERPTS\n");
-  const disclaimerOk = !hasSupplemental || promptText.includes("Use these additional official rule excerpts");
+  // REQ-243: the section carries no per-section disclaimer; its rules open straight after the heading.
+  const disclaimerOk = !hasSupplemental || !promptText.includes("Use these additional official rule excerpts");
   const passed = disclaimerOk;
 
   return {
@@ -540,7 +561,8 @@ function checkSystem3NoiseExcluded(
  */
 export function evaluateSystem3RelevanceChecks(
   supplementalRules: RetrievedGameRule[],
-  expected?: EvaluationFixtureExpected
+  expected?: EvaluationFixtureExpected,
+  { path = "semantic" }: { path?: "lexical" | "semantic" } = {}
 ): EvaluationCheckResult[] {
   if (!expected || (!expected.expectedSupplementalRuleIds && !expected.forbiddenSupplementalRuleIds)) {
     return [];
@@ -549,7 +571,13 @@ export function evaluateSystem3RelevanceChecks(
   const retrievedRuleIds = new Set(supplementalRules.map((rule) => rule.ruleId));
   const checks: EvaluationCheckResult[] = [];
   if (expected.expectedSupplementalRuleIds) {
-    checks.push(checkSystem3ExpectedRecall(retrievedRuleIds, expected.expectedSupplementalRuleIds));
+    const knownMisses = path === "lexical" ? new Set(expected.lexicalKnownMisses ?? []) : new Set<string>();
+    checks.push(
+      checkSystem3ExpectedRecall(
+        retrievedRuleIds,
+        expected.expectedSupplementalRuleIds.filter((id) => !knownMisses.has(id))
+      )
+    );
   }
   if (expected.forbiddenSupplementalRuleIds) {
     checks.push(checkSystem3NoiseExcluded(retrievedRuleIds, expected.forbiddenSupplementalRuleIds));
@@ -608,7 +636,7 @@ export function evaluateScenario(
       const selectedTopicIds = new Set(relevance.selectedTopics.map((topic) => topic.id));
       checks.push(checkSystem2ConditionalSelection(selectedTopicIds, expected.expectedSystem2TopicIds));
     }
-    checks.push(...evaluateSystem3RelevanceChecks(relevance.supplementalRules, expected));
+    checks.push(...evaluateSystem3RelevanceChecks(relevance.supplementalRules, expected, { path: "lexical" }));
   }
 
   const score = checks.filter((check) => check.passed).length;

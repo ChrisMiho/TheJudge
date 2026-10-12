@@ -31,6 +31,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Scry 1, then draw a card.",
       "caster": "Player 1",
       "targets": [],
       "manaSpent": 1,

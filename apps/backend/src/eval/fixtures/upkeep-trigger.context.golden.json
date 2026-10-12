@@ -33,6 +33,7 @@
           "supertypes": [],
           "subtypes": [],
           "keywords": [],
+          "oracleTextDisplay": "At the beginning of your upkeep, you draw a card and you lose 1 life.",
           "targets": [
             {
               "kind": "none"

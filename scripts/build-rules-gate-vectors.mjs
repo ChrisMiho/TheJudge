@@ -24,14 +24,16 @@ async function main() {
   }
   const force = process.argv.includes("--force");
 
-  const { buildCaseQueryText, encodeVector, hashQueryText, loadFrozenVectors, FROZEN_VECTORS_PATH } = await import(
+  const { buildCaseQueryText, encodeVector, hashQueryText, readFrozenVectorsOnDisk, FROZEN_VECTORS_PATH } = await import(
     "../apps/backend/src/eval/rules-gate/frozenVectors.ts"
   );
-  const { localEmbeddingProvider } = await import("../apps/backend/src/providers/localEmbeddingProvider.ts");
+  const { localEmbeddingProvider, LOCAL_MODEL_ID } = await import("../apps/backend/src/providers/localEmbeddingProvider.ts");
 
   const { resources } = await loadGateInputs();
   const cases = await loadGateCases();
-  const existing = loadFrozenVectors();
+  // Only vectors the running model made are reused; a file from another model is rebuilt whole (REQ-237).
+  const onDisk = readFrozenVectorsOnDisk();
+  const existing = onDisk && onDisk.model === LOCAL_MODEL_ID ? onDisk.vectors : {};
   const out = {};
   let embedded = 0;
   let kept = 0;
@@ -52,7 +54,7 @@ async function main() {
     embedded += 1;
   }
 
-  const bytes = await writeFormattedJson(FROZEN_VECTORS_PATH, out);
+  const bytes = await writeFormattedJson(FROZEN_VECTORS_PATH, { model: LOCAL_MODEL_ID, vectors: out });
   console.log(
     `Wrote ${FROZEN_VECTORS_PATH}: ${Object.keys(out).length} vectors (${embedded} embedded, ${kept} kept), ${bytes} bytes.`
   );

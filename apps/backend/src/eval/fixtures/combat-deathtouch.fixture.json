@@ -35,17 +35,11 @@
   "expected": {
     "expectedSystem2TopicIds": [
       "abilities-trigger-basics",
-      "abilities-zone-change-triggers",
       "combat-damage-assignment",
       "combat-phase-structure",
       "damage-basics",
       "damage-lifelink-deathtouch",
       "damage-marked-lethal",
-      "layers-order",
-      "layers-power-toughness",
-      "layers-timestamps-dependencies",
-      "replacement-effects-basics",
-      "replacement-etb-effects",
       "stack-and-priority",
       "targets-basics",
       "zones-basics"

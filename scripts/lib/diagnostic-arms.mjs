@@ -81,18 +81,19 @@ const SECTION_HEADERS = [
   "QUESTION"
 ];
 
-// Printed by promptFormatting.ts; used only when a prompt carries no excerpt section for an arm to extend.
-const SUPPLEMENTAL_RULES_DISCLAIMER =
-  "Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.";
 const EXCERPT_HEADER = "ADDITIONAL RELEVANT RULE EXCERPTS";
 
-const RULE_BLOCK_ID = /^(\d+\.\d+[a-z]*)\. /;
+// REQ-239: the excerpt section prints each rule once as its own text ("514.3a At this point ..." or
+// "514.2. Second, ..."), the first rule of a group under a "<part> \u203a <section>" label line.
+const RULE_START = String.raw`\d+\.\d+[a-z]*(?:\. | )`;
+const GROUP_LABEL = String.raw`(?:[^\n]+ \u203a [^\n]+\n)?`;
+const RULE_BLOCK_ID = new RegExp(String.raw`^${GROUP_LABEL}(\d+\.\d+[a-z]*)(?:\. | )`);
 
 // Where one block ends and the next begins. A block may hold blank lines (a rule's "Example:" paragraph),
 // so a blank line splits only when what follows has the shape of a block's first lines.
 const BLOCK_BOUNDARY = {
-  topics: /\n\n(?=(?!Example)[^\n]{1,80}[^.\n]\n\d+\.\d+[a-z]*\. )/,
-  excerpts: /\n\n(?=\d+\.\d+[a-z]*\. )/,
+  topics: new RegExp(String.raw`\n\n(?=(?!Example)[^\n]{1,80}[^.\n]\n${RULE_START})`),
+  excerpts: new RegExp(String.raw`\n\n(?=${GROUP_LABEL}${RULE_START})`),
   cards: /\n\n(?=name: )/,
   rulings: /\n\n(?=[^\n]+\n- \d{4}-\d{2}-\d{2}: )/
 };
@@ -100,6 +101,16 @@ const BLOCK_BOUNDARY = {
 /** Splits a section body into its blocks: `kind` is topics, excerpts, cards or rulings. */
 export function splitBlocks(kind, body) {
   return body.length > 0 ? body.split(BLOCK_BOUNDARY[kind]) : [];
+}
+
+/**
+ * REQ-243: GAME RULES and the excerpts print their heading straight above their blocks (no per-section
+ * disclaimer, no blank line). A pre-REQ-243 prompt's two-line introduction is not recognised.
+ */
+function blocksAfterHeading(kind, sectionText) {
+  const newline = sectionText.indexOf("\n");
+  if (newline < 0) throw new Error(`Unrecognised prompt section "${sectionText}": expected blocks after its heading.`);
+  return { intro: sectionText.slice(0, newline), blocks: splitBlocks(kind, sectionText.slice(newline + 1)) };
 }
 
 function blocksAfterIntro(kind, sectionText, introLines) {
@@ -141,10 +152,10 @@ export function parseLookupPrompt(promptText) {
   const parsed = { head, sections: [], topics: null, excerpts: null, cards: null, rulings: null };
   for (const section of sections) {
     if (section.header === "GAME RULES (reference)") {
-      const { intro, blocks } = blocksAfterIntro("topics", section.text, 2);
+      const { intro, blocks } = blocksAfterHeading("topics", section.text);
       parsed.topics = { intro, blocks };
     } else if (section.header === EXCERPT_HEADER) {
-      const { intro, blocks } = blocksAfterIntro("excerpts", section.text, 2);
+      const { intro, blocks } = blocksAfterHeading("excerpts", section.text);
       for (const block of blocks) {
         if (!RULE_BLOCK_ID.test(block)) throw new Error(`An excerpt block does not start with a rule id: "${block.slice(0, 40)}".`);
       }
@@ -165,8 +176,8 @@ export function parseLookupPrompt(promptText) {
 export function renderOriginal(parsed) {
   const parts = [parsed.head];
   for (const header of parsed.sections) {
-    if (header === "GAME RULES (reference)") parts.push([parsed.topics.intro, "", parsed.topics.blocks.join("\n\n")].join("\n"));
-    else if (header === EXCERPT_HEADER) parts.push([parsed.excerpts.intro, "", parsed.excerpts.blocks.join("\n\n")].join("\n"));
+    if (header === "GAME RULES (reference)") parts.push([parsed.topics.intro, parsed.topics.blocks.join("\n\n")].join("\n"));
+    else if (header === EXCERPT_HEADER) parts.push([parsed.excerpts.intro, parsed.excerpts.blocks.join("\n\n")].join("\n"));
     else if (header === "CARD (looked up)") parts.push(["CARD (looked up)", parsed.cards.blocks.join("\n\n")].join("\n"));
     else if (header === "OFFICIAL RULINGS (WotC reference)") parts.push([parsed.rulings.intro, "", parsed.rulings.blocks.join("\n\n")].join("\n"));
     else parts.push(parsed.rawSections[header]);
@@ -187,7 +198,22 @@ export function evidenceUnits(parsed) {
   const units = [];
   for (const text of parsed.topics?.blocks ?? []) units.push({ kind: "topic", text });
   for (const text of parsed.excerpts?.blocks ?? []) units.push({ kind: "excerpt", text });
-  for (const text of parsed.cards?.blocks ?? []) units.push({ kind: "card", text });
+  for (const block of parsed.cards?.blocks ?? []) {
+    // REQ-241: a card block ends with its own rulings (a framing line, then one line per ruling).
+    const frame = /\nRulings for (.+?) \(published by Wizards of the Coast;[^\n]*\n/.exec(block);
+    if (!frame) {
+      units.push({ kind: "card", text: block });
+      continue;
+    }
+    units.push({ kind: "card", text: block.slice(0, frame.index) });
+    const rulingLines = block.slice(frame.index + frame[0].length).split("\n");
+    const rulings = [];
+    for (const line of rulingLines) {
+      if (line.startsWith("- ") || rulings.length === 0) rulings.push(line);
+      else rulings[rulings.length - 1] += `\n${line}`;
+    }
+    for (const ruling of rulings) units.push({ kind: "ruling", text: `${frame[1]}\n${ruling}` });
+  }
   for (const block of parsed.rulings?.blocks ?? []) {
     const [name, ...lines] = block.split("\n");
     const rulings = [];
@@ -248,7 +274,7 @@ export function renderArmB(parsed) {
   const rulingBlocks = parsed.rulings?.blocks ?? [];
   if (cardBlocks.length > 0 || rulingBlocks.length > 0) {
     const group = [ARM_B_HEADINGS.cards];
-    if (parsed.rulings) group.push(parsed.rulings.intro.split("\n").slice(1).join("\n"));
+    if (parsed.rulings) group.push(parsed.rulings.intro.split("\n").slice(1).join("\n")); // a saved pre-REQ-241 prompt
     const usedRulings = new Set();
     for (const cardBlock of cardBlocks) {
       group.push("", cardBlock);
@@ -266,11 +292,11 @@ export function renderArmB(parsed) {
 
   if (parsed.excerpts && parsed.excerpts.blocks.length > 0) {
     const ordered = [...parsed.excerpts.blocks].sort(compareRuleBlocks);
-    parts.push([ARM_B_HEADINGS.excerpts, parsed.excerpts.intro.split("\n").slice(1).join("\n"), "", ordered.join("\n\n")].join("\n"));
+    parts.push([ARM_B_HEADINGS.excerpts, ordered.join("\n\n")].join("\n"));
   }
 
   if (parsed.topics && parsed.topics.blocks.length > 0) {
-    parts.push([ARM_B_HEADINGS.topics, parsed.topics.intro.split("\n").slice(1).join("\n"), "", parsed.topics.blocks.join("\n\n")].join("\n"));
+    parts.push([ARM_B_HEADINGS.topics, parsed.topics.blocks.join("\n\n")].join("\n"));
   }
 
   for (const header of parsed.sections) {
@@ -287,7 +313,12 @@ export function renderArmB(parsed) {
 /** Rule ids a prompt already carries: its excerpt blocks and the rule lines of its curated topics. */
 export function carriedRuleIds(parsed) {
   const ids = new Set();
-  for (const block of parsed.excerpts?.blocks ?? []) ids.add(RULE_BLOCK_ID.exec(block)[1]);
+  for (const block of parsed.excerpts?.blocks ?? []) {
+    for (const line of block.split("\n")) {
+      const match = /^(\d+\.\d+[a-z]*)(?:\.|\s(?!\u2026))/.exec(line); // a lead-in sentence line ("514.3 \u2026 ...") carries no rule
+      if (match) ids.add(match[1]);
+    }
+  }
   for (const block of parsed.topics?.blocks ?? []) {
     for (const line of block.split("\n")) {
       const match = RULE_BLOCK_ID.exec(line);
@@ -328,12 +359,13 @@ export function addBundleToParsed(parsed, { decidingRuleIds, ruleIndex }) {
   const bundleRuleIds = decidingRuleBundle({ decidingRuleIds, ruleIndex }).filter((ruleId) => !carried.has(ruleId));
   if (bundleRuleIds.length === 0) return { parsed, bundleRuleIds };
 
-  const added = bundleRuleIds.map((ruleId) => `${ruleId}. ${byId.get(ruleId).text}`);
+  const printed = (ruleId) => (byId.get(ruleId).text.startsWith(ruleId) ? byId.get(ruleId).text : `${ruleId}. ${byId.get(ruleId).text}`);
+  const added = bundleRuleIds.map(printed);
   const next = { ...parsed, sections: [...parsed.sections] };
   if (parsed.excerpts) {
     next.excerpts = { intro: parsed.excerpts.intro, blocks: [...parsed.excerpts.blocks, ...added] };
   } else {
-    next.excerpts = { intro: `${EXCERPT_HEADER}\n${SUPPLEMENTAL_RULES_DISCLAIMER}`, blocks: added };
+    next.excerpts = { intro: EXCERPT_HEADER, blocks: added };
     const after = next.sections.indexOf("GAME RULES (reference)");
     next.sections.splice(after + 1, 0, EXCERPT_HEADER);
   }

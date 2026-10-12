@@ -198,26 +198,35 @@ both providers. (DEC-020, REQ-072)
   forking by how many cards are attached — the bounded card set (REQ-167) is a
   loop inside one path, not a second implementation. (DEC-107, REQ-074,
   REQ-167)
-- Built: three things always run regardless of the attached card set. The
-  static `MTG REFERENCE` block (DEC-025), the always-on core game-rules topics
+- Built: three things always run regardless of the attached card set. Quick
+  Lookup's own `MTG REFERENCE` block, which describes only sections this mode
+  contains (DEC-025, REQ-243), the always-on core game-rules topics
   (DEC-045 core set), and question-scored System 3 supplemental rules
   (DEC-046 / REQ-022). (DEC-107, REQ-074)
 - Built: when one or more cards are attached, per-card enrichment layers in for
   every attached card — each card's full metadata including oracle text using
   the same per-card formatting as populated-zone cards (DEC-042 / REQ-030),
-  each card's WotC rulings under one `CARD (looked up)` / `OFFICIAL RULINGS`
-  heading per section, and System 3 additionally scored against a compact
-  signal for every attached card — its name, type line, and keywords — not its
-  full oracle text, which was measured to collapse supplemental recall
-  (REQ-178). With no cards attached, the rulings section and card section are
-  empty and System 3 scores on the question alone. (DEC-107, REQ-074, REQ-167,
-  REQ-178)
-- Built: game-state-only sections are always omitted — zone sections, `PHASE
-  GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged
-  zone scope sentence (DEC-025) — because lookup mode never carries game state.
-  These are structurally absent: the lookup assembler does not call the
-  game-context, phase-guidance, or zone-section builders at all. (DEC-107,
-  REQ-074)
+  with power, toughness and loyalty when present and oracle line breaks kept
+  (REQ-245), each followed by its WotC rulings under the one `CARD (looked up)`
+  heading, framed as that card's rulings to apply only when the situation matches
+  (REQ-241), and System 3 additionally scored against a compact
+  signal for every attached card — its name, type line, keywords and concept
+  terms (REQ-234) — not its full oracle text, which was measured to collapse
+  supplemental recall (REQ-178); each card's own text is searched separately for
+  two reserved excerpt slots (REQ-235), and each card's keyword rules arrive as
+  whole sets beside the excerpts (REQ-235). With no cards attached, the card
+  section is empty and System 3 scores on the question alone. (DEC-107, REQ-074,
+  REQ-167, REQ-178)
+- Built: game-state-only sections are always omitted — zone sections, System 2
+  game-state topic gating (DEC-045), and the merged zone scope sentence
+  (DEC-025) — because lookup mode never carries game state. These are
+  structurally absent: the lookup assembler does not call the game-context or
+  zone-section builders at all. (DEC-107, REQ-074)
+- Built: when the question names a turn step, or an attached card's concept
+  terms do, the prompt carries that step's `PHASE GUIDANCE` summary (at most
+  three steps, in turn order) right after `MTG REFERENCE`, from the same
+  rules-checked text In-Depth uses. It comes from the question and the cards'
+  wording, not from game state. (REQ-024, REQ-238)
 - Built: the prompt instructs the model to quote rule text only from the
   provided rule-excerpt sections and to present the relevant ones verbatim with
   an explanation. The user `QUESTION` and, when present, the conversation history
@@ -269,13 +278,16 @@ both providers. (DEC-020, REQ-072)
 ### Retrieval
 
 - Built: System 3 supplemental rules retrieval (DEC-046) is hybrid-ranked when
-  the embedding-provider seam is active (REQ-182) — the query embedding is
+  the embedding-provider seam is active (REQ-182) — the query embedding, from the
+  Magic-trained search model (REQ-236), is
   cosine-ranked against the committed per-rule embeddings and blended with the
   IDF keyword score, both normalised per query, with the exact-rule-id boost
   merged into the blended score — over a rule index with the source document's
   table of contents and heading-only entries stripped (REQ-179), excluding
   exactly the curated rule numbers the selected curated topics already carry,
-  and returning a small capped set of the best-ranked rules. IDF-scored
+  and returning a capped set of the best-ranked rules, two of them reserved
+  for per-card search (REQ-235), printed in rule-book order with their lead-in
+  lists (REQ-239, REQ-240). IDF-scored
   keyword retrieval alone is retained as the mock/offline default and the
   fallback on any embedding failure, so those settings are never worse than the
   prior lexical behaviour. The blend exists for exactly this screen's query
@@ -283,13 +295,15 @@ both providers. (DEC-020, REQ-072)
   name, type line, and one keyword with no combat context, where three of eight
   labelled fixtures lost their expected rule from the top five (REQ-181,
   REQ-182). For lookup the query is built from the question tokens always, plus
-  each attached card's name, type line, and keywords — not its oracle text
-  (REQ-167, REQ-178). (DEC-046, REQ-022, REQ-178, REQ-179, REQ-181, REQ-182,
-  DEC-107, REQ-167)
+  each attached card's name, type line, keywords and concept terms — not its
+  oracle text (REQ-167, REQ-178, REQ-234). (DEC-046, REQ-022, REQ-178, REQ-179,
+  REQ-181, REQ-182, DEC-107, REQ-167, REQ-234, REQ-235)
 - Built: the always-on core game-rules topics are a fixed curated set
   (stack-and-priority, targets, zones, triggered-ability basics), not the
-  state-gated selector the game flow uses — lookup carries no game state to gate
-  on. One topic is added on card wording: when two or more attached cards say
+  selector the game flow uses — lookup carries no game state to gate on.
+  Stack-and-priority carries 117.3's list (117.3a–d) and zones carries 400.7's,
+  so neither lead-in arrives without its list (REQ-240). One topic is added on
+  card wording: when two or more attached cards say
   "instead" or "prevent" (replacement or prevention effects), the prompt also
   carries the replacement-effect interaction rules (CR 614.1a, 616.1, 616.1a–g,
   616.2), so a question about two such cards — Academy Manufactor with Esix,
@@ -345,20 +359,23 @@ as the current shipped configuration, not product truth.
 - Conversation limits: 1–20 turns, alternating roles starting with user and
   ending with assistant, per-message cap — shared with the main flow, not a
   Quick-Lookup-specific policy. (REQ-072, REQ-075)
-- Retrieval: System 3 returns a small capped best-ranked set (top 10), curated
+- Retrieval: System 3 returns a capped best-ranked set (up to 15 with a 0.6
+  relevance cutoff, two of them reserved for per-card search, REQ-190, REQ-235;
+  each card's keyword rules as whole sets beside it, REQ-235; lead-in list items
+  outside the cap within a 12,000-character budget, REQ-240), curated
   core-topic rule numbers excluded by exact number; ranking is a hybrid blend of
   normalised cosine over the committed per-rule embeddings and normalised
-  lexical IDF overlap, with the exact-rule-id boost merged into the blended
+  lexical IDF overlap (0.65 meaning), with the exact-rule-id boost merged into the blended
   score, and lexical scoring alone retained as the mock/offline default and
   failure fallback (REQ-181, REQ-182); the query is the question tokens always,
-  plus each attached card's name, type line, and keywords (REQ-167, REQ-178).
-  (DEC-046, REQ-022, REQ-178, REQ-181, REQ-182, REQ-167)
+  plus each attached card's name, type line, keywords and concept terms (REQ-167,
+  REQ-178, REQ-234). (DEC-046, REQ-022, REQ-178, REQ-181, REQ-182, REQ-167)
 - Card attach cap: the card stage accepts at most 10 cards (REQ-167 as
   amended); an add attempted past the cap is blocked with a stated limit
   message. (REQ-167, `QuickLookupApp.tsx`)
 - Always-on core topics: a fixed four-topic core set (stack-and-priority,
-  targets, zones, triggered-ability basics); the static MTG reference block is a
-  bounded ≤2500-char constant. (DEC-045, DEC-025)
+  targets, zones, triggered-ability basics); the lookup MTG reference block is a
+  bounded ≤2500-char constant. (DEC-045, DEC-025, REQ-243)
 - Pre-submit card stage: the front card is the only full-size image; the one
   other card peeks and the rest are off-stage, so the stage's height does not
   grow with the card count. The send pill stays in the first viewport at every

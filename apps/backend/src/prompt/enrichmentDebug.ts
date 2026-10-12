@@ -26,6 +26,16 @@ export const enrichmentDebugSchema = z.object({
       })
     )
   }),
+  ruleLayout: z
+    .object({
+      listItemsAdded: z.number(),
+      listItemChars: z.number(),
+      listOverflows: z.number(),
+      leadInSentencesAdded: z.number(),
+      pointersFound: z.number(),
+      pointersResolved: z.number()
+    })
+    .optional(),
   rulings: z.object({
     cardsConsidered: z.array(z.object({ cardId: z.string(), name: z.string() })),
     cardsIncluded: z.array(z.object({ cardId: z.string(), name: z.string(), rulingCount: z.number() })),

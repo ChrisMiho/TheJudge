@@ -48,8 +48,9 @@ describe("Backend - Ask AI", () => {
       const response = await request(appWithRulings).post("/api/ask-ai").send(createAskAiRequest());
 
       expect(response.status).toBe(200);
-      expect(providerCalls[0]?.promptText).toContain("OFFICIAL RULINGS (WotC reference)");
-      expect(providerCalls[0]?.promptText).toContain("Opt\n- 2020-04-17: Use the published ruling as reference.");
+      expect(providerCalls[0]?.promptText).not.toContain("OFFICIAL RULINGS");
+      expect(providerCalls[0]?.promptText).toContain("Rulings for Opt (published by Wizards of the Coast; apply one only when the situation matches it):");
+      expect(providerCalls[0]?.promptText).toContain("- 2020-04-17: Use the published ruling as reference.");
       expect(providerCalls[0]?.diagnostics.rulingsCardCount).toBe(1);
     });
 

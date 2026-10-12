@@ -36,6 +36,7 @@
     "benchmark:rag-retrieval": "tsx scripts/rag-retrieval-benchmark.mjs",
     "data:build-rule-embeddings": "tsx scripts/build-rule-embeddings.mjs",
     "eval:build-frozen-query-embeddings": "tsx scripts/build-frozen-query-embeddings.mjs",
+    "eval:build-frozen-card-vectors": "tsx scripts/build-frozen-card-vectors.mjs",
     "eval:build-rules-gate-vectors": "tsx scripts/build-rules-gate-vectors.mjs",
     "eval:rules-gate:baseline": "tsx scripts/raise-rules-gate-baseline.mjs",
     "eval:rules-review:render": "node scripts/rules-review.mjs render",

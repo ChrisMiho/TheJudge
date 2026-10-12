@@ -34,6 +34,7 @@
           "supertypes": [],
           "subtypes": [],
           "keywords": [],
+          "oracleTextDisplay": "When this enters, look at the top of your library.",
           "owner": "Player 1",
           "targets": []
         }
@@ -54,6 +55,7 @@
           "supertypes": [],
           "subtypes": [],
           "keywords": [],
+          "oracleTextDisplay": "Name a card. Exile the top four cards of your library.",
           "owner": "Player 1",
           "targets": []
         }

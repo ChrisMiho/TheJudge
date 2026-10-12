@@ -1,0 +1,26 @@
+{
+  "modelId": "rule-search-d2c2e500a4c6",
+  "baseModel": "sentence-transformers/all-MiniLM-L6-v2",
+  "files": [
+    {
+      "path": "config.json",
+      "sha256": "7135149f7cffa1a573466c6e4d8423ed73b62fd2332c575bf738a0d033f70df7",
+      "bytes": 650
+    },
+    {
+      "path": "tokenizer.json",
+      "sha256": "da0e79933b9ed51798a3ae27893d3c5fa4a201126cef75586296df9b4d2c62a0",
+      "bytes": 711661
+    },
+    {
+      "path": "tokenizer_config.json",
+      "sha256": "9261e7d79b44c8195c1cada2b453e55b00aeb81e907a6664974b4d7776172ab3",
+      "bytes": 366
+    },
+    {
+      "path": "onnx/model_quantized.onnx",
+      "sha256": "89567d8336bfa2ae49ffa08d94891b808b5d9a89eb6c3a3eed56d0e62aaba45f",
+      "bytes": 22977247
+    }
+  ]
+}

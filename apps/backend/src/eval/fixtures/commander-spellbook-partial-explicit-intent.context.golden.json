@@ -33,6 +33,7 @@
           "supertypes": [],
           "subtypes": [],
           "keywords": [],
+          "oracleTextDisplay": "When this enters, look at the top of your library.",
           "owner": "Player 1",
           "targets": []
         }

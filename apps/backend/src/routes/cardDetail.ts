@@ -26,6 +26,12 @@ export function registerCardDetailRoute(app: Express, deps: CardDetailRouteDeps)
       return;
     }
 
-    res.status(200).json(entry satisfies CardDetailEntry);
+    // REQ-245: power, toughness and loyalty are backend-only, like keywords' siblings in the prompt
+    // path; the block this route serves is unchanged.
+    const block: CardDetailEntry = { ...entry };
+    delete block.power;
+    delete block.toughness;
+    delete block.loyalty;
+    res.status(200).json(block);
   });
 }

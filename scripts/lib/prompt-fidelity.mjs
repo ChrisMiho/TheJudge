@@ -167,13 +167,27 @@ export async function buildEmbedder(env) {
  * Returns a map from case id to vector (`null` for every case under mock).
  */
 export async function embedGoldCaseQueries({ goldCases, embedder, cardDetailIndex }) {
-  const { buildRetrievalQueryText } = await import("../../apps/backend/src/prompt/preparation.ts");
+  const { buildRetrievalQueryText, buildPerCardSearchTexts } = await import("../../apps/backend/src/prompt/preparation.ts");
   const byCaseId = new Map();
+  // REQ-235: each card's own oracle text is embedded on its own, as the route handler does. The
+  // per-case maps (key = hash of the card text -> vector) ride on the returned Map so a caller that
+  // only needs the query vectors is unchanged; a call site passes `cardEmbeddingsByCaseId.get(id)`
+  // to `preparePromptInput` as `cardEmbeddings`.
+  const cardEmbeddingsByCaseId = new Map();
+  const vectorByCardKey = new Map();
   for (const caseEntry of goldCases) {
     const request = buildCaseRequest(caseEntry);
     const vector = await embedder.embed(buildRetrievalQueryText(request, { cardDetailIndex }));
     assertQueryEmbedded({ mode: embedder.mode, vector, caseId: caseEntry.id });
     byCaseId.set(caseEntry.id, vector);
+    const cardEmbeddings = new Map();
+    for (const card of buildPerCardSearchTexts(request, { cardDetailIndex })) {
+      if (!vectorByCardKey.has(card.key)) vectorByCardKey.set(card.key, await embedder.embed(card.text));
+      const cardVector = vectorByCardKey.get(card.key);
+      if (cardVector) cardEmbeddings.set(card.key, cardVector);
+    }
+    cardEmbeddingsByCaseId.set(caseEntry.id, cardEmbeddings);
   }
+  byCaseId.cardEmbeddingsByCaseId = cardEmbeddingsByCaseId;
   return byCaseId;
 }

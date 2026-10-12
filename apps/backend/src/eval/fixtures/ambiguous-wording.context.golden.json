@@ -34,6 +34,7 @@
           "supertypes": [],
           "subtypes": [],
           "keywords": [],
+          "oracleTextDisplay": "Each opponent can't draw more than one card each turn. Whenever you cast a noncreature spell, look at the top four cards of your library. You may reveal a noncreature, nonland card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
           "targets": [
             {
               "kind": "none"
@@ -57,6 +58,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Your opponents can't cast spells this turn.",
       "caster": "Player 1",
       "targets": [],
       "manaSpent": 1,
@@ -75,6 +77,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Counter target spell unless its controller pays 3.",
       "caster": "Player 2",
       "targets": [
         {

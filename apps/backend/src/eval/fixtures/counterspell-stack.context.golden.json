@@ -31,6 +31,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Draw two cards.",
       "caster": "Player 1",
       "targets": [],
       "manaSpent": 3,
@@ -49,6 +50,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Counter target spell.",
       "caster": "Player 2",
       "targets": [
         {

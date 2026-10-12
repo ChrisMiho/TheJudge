@@ -21,7 +21,7 @@ import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildRetrievalQueryText } from "../apps/backend/src/prompt/preparation.ts";
 import { cardDetailIndexFromRequest } from "../apps/backend/src/eval/fixtureCardDetail.ts";
-import { localEmbeddingProvider } from "../apps/backend/src/providers/localEmbeddingProvider.ts";
+import { LOCAL_MODEL_ID, localEmbeddingProvider } from "../apps/backend/src/providers/localEmbeddingProvider.ts";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixturesDir = resolve(repoRoot, "apps/backend/src/eval/fixtures");
@@ -63,7 +63,8 @@ async function main() {
     console.log(`Embedded ${fixture.id}`);
   }
 
-  await writeFile(outputPath, `${JSON.stringify(out, null, 2)}\n`, "utf8");
+  // REQ-237: the file records the model that made its vectors.
+  await writeFile(outputPath, `${JSON.stringify({ model: LOCAL_MODEL_ID, vectors: out }, null, 2)}\n`, "utf8");
   console.log(`Wrote ${outputPath} (${Object.keys(out).length} fixtures)`);
 }
 

@@ -31,6 +31,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "This spell costs 1 more to cast for each target beyond the first.",
       "caster": "Player 1",
       "targets": [
         {
@@ -54,6 +55,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Counter target noncreature spell.",
       "caster": "Player 2",
       "targets": [
         {

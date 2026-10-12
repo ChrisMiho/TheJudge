@@ -5,8 +5,8 @@
       "miss": []
     },
     "absorb-lymph-sliver": {
-      "hit": [],
-      "miss": ["702.64a"]
+      "hit": ["702.64a"],
+      "miss": []
     },
     "academy-manufactor-esix-treasure": {
       "hit": [],
@@ -19,16 +19,16 @@
       "inTopic": ["614.1a", "616.1", "616.1e", "616.1f"]
     },
     "activate-chronatog": {
-      "hit": [],
-      "miss": ["701.2a"]
+      "hit": ["701.2a"],
+      "miss": []
     },
     "adapt-aeromunculus": {
       "hit": ["701.46a"],
       "miss": []
     },
     "affinity-frogmyr-enforcer": {
-      "hit": [],
-      "miss": ["702.41a"]
+      "hit": ["702.41a"],
+      "miss": []
     },
     "afflict-ammit-eternal": {
       "hit": ["702.130a"],
@@ -47,12 +47,12 @@
       "miss": []
     },
     "amass-crush-dissent": {
-      "hit": [],
-      "miss": ["701.47a"]
+      "hit": ["701.47a"],
+      "miss": []
     },
     "amplify-canopy-crawler": {
-      "hit": [],
-      "miss": ["702.38a"]
+      "hit": ["702.38a"],
+      "miss": []
     },
     "annihilator-it-that-betrays": {
       "hit": ["702.86a"],
@@ -83,8 +83,8 @@
       "miss": []
     },
     "banding-ayesha-tanaka": {
-      "hit": [],
-      "miss": ["702.22a"]
+      "hit": ["702.22a"],
+      "miss": []
     },
     "bargain-archon-s-glory": {
       "hit": ["702.166a"],
@@ -95,16 +95,16 @@
       "miss": []
     },
     "behold-celestial-reunion": {
-      "hit": [],
-      "miss": ["701.4a"]
+      "hit": ["701.4a"],
+      "miss": []
     },
     "bestow-flitterstep-eidolon": {
       "hit": ["702.103a"],
       "miss": []
     },
     "blight-auntie-ool-cursewretch": {
-      "hit": [],
-      "miss": ["701.68a"]
+      "hit": ["701.68a"],
+      "miss": []
     },
     "blitz-caldaia-strongarm": {
       "hit": ["702.152a"],
@@ -143,8 +143,8 @@
       "miss": []
     },
     "champion-wren-s-run-packmaster": {
-      "hit": [],
-      "miss": ["702.72a"]
+      "hit": ["702.72a"],
+      "miss": []
     },
     "changeling-crib-swap": {
       "hit": ["702.73a"],
@@ -155,8 +155,8 @@
       "miss": []
     },
     "clash-whirlpool-whelm": {
-      "hit": [],
-      "miss": ["701.30a"]
+      "hit": ["701.30a"],
+      "miss": []
     },
     "cleave-lantern-flare": {
       "hit": ["702.148a"],
@@ -187,8 +187,8 @@
       "miss": []
     },
     "combat-horizon-drake-protection-from-lands": {
-      "hit": [],
-      "miss": ["702.16a", "702.16b"]
+      "hit": ["702.16a", "702.16b"],
+      "miss": []
     },
     "combat-only-one-creature-can-attack": {
       "hit": ["508.1d"],
@@ -211,16 +211,16 @@
       "miss": []
     },
     "combat-vengeful-archon-prevent-which-damage": {
-      "hit": [],
-      "miss": ["615.1", "616.1"]
+      "hit": ["615.1"],
+      "miss": ["616.1"]
     },
     "combat-ward-of-piety-redirected-damage": {
       "hit": [],
       "miss": ["615.1", "510.2"]
     },
     "combat-wicker-warcrawler-counter-after-damage": {
-      "hit": [],
-      "miss": ["510.2", "603.2"],
+      "hit": ["510.2"],
+      "miss": ["603.2"],
       "inTopic": ["603.2"]
     },
     "combat-wither-applies-to-noncombat-damage": {
@@ -240,8 +240,8 @@
       "miss": []
     },
     "commander-devoid-color-identity": {
-      "hit": ["903.4"],
-      "miss": ["702.114a"]
+      "hit": ["903.4", "702.114a"],
+      "miss": []
     },
     "commander-scorched-geyser-basic-land-types": {
       "hit": ["305.6", "205.3i"],
@@ -264,8 +264,8 @@
       "miss": []
     },
     "connive-mask-of-the-schemer": {
-      "hit": [],
-      "miss": ["701.50a"]
+      "hit": ["701.50a"],
+      "miss": []
     },
     "conspire-rally-the-galadhrim": {
       "hit": ["702.78a"],
@@ -296,8 +296,8 @@
       "miss": []
     },
     "copies-bloodlord-and-phantasmal-image": {
-      "hit": [],
-      "miss": ["707.2"]
+      "hit": ["707.2"],
+      "miss": []
     },
     "copies-clone-copies-enters-tapped-and-fading": {
       "hit": ["707.5"],
@@ -316,8 +316,8 @@
       "miss": []
     },
     "copies-copy-of-permanent-spell-not-created": {
-      "hit": [],
-      "miss": ["707.10", "111.1"]
+      "hit": ["707.10"],
+      "miss": ["111.1"]
     },
     "copies-dawnglow-infusion-copy": {
       "hit": ["707.10"],
@@ -336,12 +336,12 @@
       "miss": []
     },
     "copies-morphic-tide-and-sakashimas-student": {
-      "hit": [],
-      "miss": ["614.12", "707.2"]
+      "hit": ["614.12", "707.2"],
+      "miss": []
     },
     "copies-null-profusion-and-isochron-scepter": {
-      "hit": [],
-      "miss": ["603.2", "707.12"],
+      "hit": ["707.12"],
+      "miss": ["603.2"],
       "inTopic": ["603.2"]
     },
     "copies-quicksilver-gargantuan-and-tarmogoyf": {
@@ -381,20 +381,20 @@
       "miss": []
     },
     "create-regal-bloodlord": {
-      "hit": [],
-      "miss": ["701.7a"]
+      "hit": ["701.7a"],
+      "miss": []
     },
     "crew-aradara-express": {
       "hit": ["702.122a"],
       "miss": []
     },
     "cumulative-upkeep-mwonvuli-ooze": {
-      "hit": [],
-      "miss": ["702.24a"]
+      "hit": ["702.24a"],
+      "miss": []
     },
     "cycling-esper-sojourners": {
-      "hit": [],
-      "miss": ["702.29a"]
+      "hit": ["702.29a"],
+      "miss": []
     },
     "damage-does-not-destroy-sba-does": {
       "hit": ["120.5"],
@@ -405,8 +405,8 @@
       "miss": []
     },
     "daybound-and-nightbound-shady-traveler-stalking-predator": {
-      "hit": [],
-      "miss": ["702.145a"]
+      "hit": ["702.145a"],
+      "miss": []
     },
     "deathtouch-wurmcoil-engine": {
       "hit": ["702.2a"],
@@ -417,8 +417,8 @@
       "miss": []
     },
     "defender-ageless-sentinels": {
-      "hit": [],
-      "miss": ["702.3a"]
+      "hit": ["702.3a"],
+      "miss": []
     },
     "delayed-trigger-created-too-late": {
       "hit": ["603.7a"],
@@ -437,8 +437,8 @@
       "miss": []
     },
     "detain-azorius-justiciar": {
-      "hit": [],
-      "miss": ["701.35a"]
+      "hit": ["701.35a"],
+      "miss": []
     },
     "dethrone-enraged-revolutionary": {
       "hit": ["702.105a"],
@@ -453,12 +453,12 @@
       "miss": []
     },
     "dfc-bolas-copy-exile-and-return-transformed": {
-      "hit": ["712.9"],
-      "miss": ["701.27a"]
+      "hit": ["712.9", "701.27a"],
+      "miss": []
     },
     "dfc-modal-double-faced-card-legality": {
-      "hit": [],
-      "miss": ["712.8f", "712.12"]
+      "hit": ["712.12"],
+      "miss": ["712.8f"]
     },
     "dfc-sever-the-bloodline-double-faced-name": {
       "hit": [],
@@ -533,8 +533,8 @@
       "miss": []
     },
     "enchant-rancor": {
-      "hit": [],
-      "miss": ["702.5a"]
+      "hit": ["702.5a"],
+      "miss": []
     },
     "encore-broodmate-tyrant": {
       "hit": ["702.141a"],
@@ -553,12 +553,12 @@
       "miss": []
     },
     "epic-undying-flames": {
-      "hit": [],
-      "miss": ["702.50a"]
+      "hit": ["702.50a"],
+      "miss": []
     },
     "equip-demonmail-hauberk": {
-      "hit": [],
-      "miss": ["702.6a"]
+      "hit": ["702.6a"],
+      "miss": []
     },
     "escalate-blessed-alliance": {
       "hit": ["702.120a"],
@@ -581,8 +581,8 @@
       "miss": []
     },
     "exalted-akrasan-squire": {
-      "hit": [],
-      "miss": ["702.83a"]
+      "hit": ["702.83a"],
+      "miss": []
     },
     "exchange-arcanum-wings": {
       "hit": ["701.12a"],
@@ -605,8 +605,8 @@
       "miss": []
     },
     "explore-nicanzil-current-conductor": {
-      "hit": [],
-      "miss": ["701.44a"]
+      "hit": ["701.44a"],
+      "miss": []
     },
     "extort-basilica-guards": {
       "hit": ["702.101a"],
@@ -617,20 +617,20 @@
       "miss": []
     },
     "face-a-villainous-choice-the-dalek-emperor": {
-      "hit": [],
-      "miss": ["701.55a"]
+      "hit": ["701.55a"],
+      "miss": []
     },
     "fading-parallax-nexus": {
-      "hit": [],
-      "miss": ["702.32a"]
+      "hit": ["702.32a"],
+      "miss": []
     },
     "fateseal-spin-into-myth": {
       "hit": ["701.29a"],
       "miss": []
     },
     "fear-inkfathom-witch": {
-      "hit": [],
-      "miss": ["702.36a"]
+      "hit": ["702.36a"],
+      "miss": []
     },
     "fight-primal-might": {
       "hit": ["701.14a"],
@@ -641,8 +641,8 @@
       "miss": []
     },
     "first-strike-pit-spawn": {
-      "hit": [],
-      "miss": ["702.7a"]
+      "hit": ["702.7a"],
+      "miss": []
     },
     "flanking-knight-of-valor": {
       "hit": ["702.25a"],
@@ -657,8 +657,8 @@
       "miss": []
     },
     "flying-kinscaer-harpoonist": {
-      "hit": [],
-      "miss": ["702.9a"]
+      "hit": ["702.9a"],
+      "miss": []
     },
     "for-mirrodin-bladehold-war-whip": {
       "hit": ["702.163a"],
@@ -701,8 +701,8 @@
       "miss": []
     },
     "graft-vigean-hydropon": {
-      "hit": [],
-      "miss": ["702.58a"]
+      "hit": ["702.58a"],
+      "miss": []
     },
     "gravestorm-follow-the-bodies": {
       "hit": ["702.69a"],
@@ -733,8 +733,8 @@
       "miss": []
     },
     "hidden-agenda-double-stroke": {
-      "hit": [],
-      "miss": ["702.106a"]
+      "hit": ["702.106a"],
+      "miss": []
     },
     "hideaway-cemetery-tampering": {
       "hit": ["702.75a"],
@@ -769,8 +769,8 @@
       "miss": []
     },
     "infect-blackcleave-goblin": {
-      "hit": [],
-      "miss": ["702.90a"]
+      "hit": ["702.90a"],
+      "miss": []
     },
     "infinity-infinity-the-soul-stone": {
       "hit": ["702.186a"],
@@ -781,8 +781,8 @@
       "miss": []
     },
     "intimidate-bladetusk-boar": {
-      "hit": [],
-      "miss": ["702.13a"]
+      "hit": ["702.13a"],
+      "miss": []
     },
     "investigate-expose-evil": {
       "hit": ["701.16a"],
@@ -809,21 +809,21 @@
       "miss": []
     },
     "layers-blood-moon-urborg-dependency": {
-      "hit": [],
-      "miss": ["613.1d", "613.8a", "613.8b", "305.7"]
+      "hit": ["613.1d", "613.8a", "613.8b", "305.7"],
+      "miss": []
     },
     "layers-blood-moon-urborg-dependency-in-depth": {
-      "hit": [],
-      "miss": ["613.1d", "613.8a", "613.8b", "305.7"],
-      "inTopic": ["613.1d", "613.8a"]
+      "hit": ["305.7"],
+      "miss": ["613.1d", "613.8a", "613.8b"],
+      "inTopic": ["613.1d", "613.8a", "613.8b"]
     },
     "layers-clone-copies-frogified-serra-angel": {
-      "hit": ["707.2"],
-      "miss": ["613.1a"]
+      "hit": ["707.2", "613.1a"],
+      "miss": []
     },
     "layers-clone-copies-frogified-serra-angel-in-depth": {
-      "hit": [],
-      "miss": ["707.2", "613.1a"],
+      "hit": ["707.2"],
+      "miss": ["613.1a"],
       "inTopic": ["613.1a"]
     },
     "layers-hand-size-timestamp-praetors-counsel": {
@@ -831,20 +831,20 @@
       "miss": ["613.7"]
     },
     "layers-hand-size-timestamp-thought-eater": {
-      "hit": ["402.2"],
-      "miss": ["613.7"]
+      "hit": ["613.7", "402.2"],
+      "miss": []
     },
     "layers-honor-of-the-pure-color-changes": {
       "hit": ["613.5"],
       "miss": []
     },
     "layers-humility-then-opalescence": {
-      "hit": [],
-      "miss": ["613.1d", "613.1f", "613.4b", "613.6", "613.7"]
+      "hit": ["613.1d", "613.1f", "613.4b", "613.6", "613.7"],
+      "miss": []
     },
     "layers-humility-then-opalescence-in-depth": {
-      "hit": [],
-      "miss": ["613.1d", "613.1f", "613.4b", "613.6", "613.7"],
+      "hit": ["613.6"],
+      "miss": ["613.1d", "613.1f", "613.4b", "613.7"],
       "inTopic": ["613.1d", "613.1f", "613.4b", "613.7"]
     },
     "layers-independent-effects-use-timestamp": {
@@ -852,13 +852,13 @@
       "miss": []
     },
     "layers-mycosynth-lattice-march-dependency": {
-      "hit": [],
-      "miss": ["613.1d", "613.8a", "613.8b", "704.5f"]
+      "hit": ["613.8a", "613.8b"],
+      "miss": ["613.1d", "704.5f"]
     },
     "layers-mycosynth-lattice-march-dependency-in-depth": {
       "hit": [],
       "miss": ["613.1d", "613.8a", "613.8b", "704.5f"],
-      "inTopic": ["613.1d", "613.8a"]
+      "inTopic": ["613.1d", "613.8a", "613.8b"]
     },
     "layers-noncreature-artifacts-become-creatures": {
       "hit": ["613.6"],
@@ -873,8 +873,8 @@
       "miss": []
     },
     "layers-turn-to-frog-after-giant-growth-counter": {
-      "hit": [],
-      "miss": ["613.4b", "613.4c"]
+      "hit": ["613.4b", "613.4c"],
+      "miss": []
     },
     "layers-turn-to-frog-after-giant-growth-counter-in-depth": {
       "hit": [],
@@ -918,36 +918,36 @@
       "miss": []
     },
     "manifest-wildcall": {
-      "hit": [],
-      "miss": ["701.40a"]
+      "hit": ["701.40a"],
+      "miss": []
     },
     "max-speed-amonkhet-raceway": {
       "hit": ["702.178a"],
       "miss": []
     },
     "mayhem-oscorp-industries": {
-      "hit": [],
-      "miss": ["702.187a"]
+      "hit": ["702.187a"],
+      "miss": []
     },
     "meld-mishra-claimed-by-gix": {
-      "hit": [],
-      "miss": ["701.42a"]
+      "hit": ["701.42a"],
+      "miss": []
     },
     "melee-wulfgar-of-icewind-dale": {
-      "hit": [],
-      "miss": ["702.121a"]
+      "hit": ["702.121a"],
+      "miss": []
     },
     "menace-boggart-brute": {
-      "hit": [],
-      "miss": ["702.111a"]
+      "hit": ["702.111a"],
+      "miss": []
     },
     "mentor-barging-sergeant": {
       "hit": ["702.134a"],
       "miss": []
     },
     "mill-incarnation-technique": {
-      "hit": [],
-      "miss": ["701.17a"]
+      "hit": ["701.17a"],
+      "miss": []
     },
     "miracle-banishing-stroke": {
       "hit": ["702.94a"],
@@ -986,8 +986,8 @@
       "miss": []
     },
     "multiplayer-only-blood-ends-your-nightmares-opponents": {
-      "hit": ["701.21a"],
-      "miss": ["608.2d"]
+      "hit": ["608.2d", "701.21a"],
+      "miss": []
     },
     "multiplayer-player-leaves-range-expands": {
       "hit": ["801.2c"],
@@ -1014,20 +1014,20 @@
       "miss": []
     },
     "necropotence-silence-borne-upon-a-wind-cleanup": {
-      "hit": ["514.1"],
-      "miss": ["514.2", "514.3a"]
+      "hit": ["514.1", "514.2", "514.3a"],
+      "miss": []
     },
     "necropotence-silence-borne-upon-a-wind-cleanup-in-depth": {
-      "hit": ["514.1"],
-      "miss": ["514.2", "514.3a"]
+      "hit": ["514.1", "514.2", "514.3a"],
+      "miss": []
     },
     "ninjutsu-azra-smokeshaper": {
-      "hit": [],
-      "miss": ["702.49a"]
+      "hit": ["702.49a"],
+      "miss": []
     },
     "offering-patron-of-the-kitsune": {
-      "hit": [],
-      "miss": ["702.48a"]
+      "hit": ["702.48a"],
+      "miss": []
     },
     "offspring-agate-instigator": {
       "hit": ["702.175a"],
@@ -1099,12 +1099,12 @@
       "miss": []
     },
     "protection-azorius-first-wing": {
-      "hit": [],
-      "miss": ["702.16a"]
+      "hit": ["702.16a"],
+      "miss": []
     },
     "prototype-blitz-automaton": {
-      "hit": [],
-      "miss": ["702.160a"]
+      "hit": ["702.160a"],
+      "miss": []
     },
     "provoke-hunter-sliver": {
       "hit": ["702.39a"],
@@ -1127,8 +1127,8 @@
       "miss": []
     },
     "reach-canopy-spider": {
-      "hit": [],
-      "miss": ["702.17a"]
+      "hit": ["702.17a"],
+      "miss": []
     },
     "read-ahead-braids-s-frightful-return": {
       "hit": ["702.155a"],
@@ -1159,8 +1159,8 @@
       "miss": []
     },
     "reinforce-brighthearth-banneret": {
-      "hit": [],
-      "miss": ["702.77a"]
+      "hit": ["702.77a"],
+      "miss": []
     },
     "renown-acolyte-of-the-inferno": {
       "hit": ["702.112a"],
@@ -1172,17 +1172,17 @@
       "inTopic": ["616.1", "616.1f"]
     },
     "replacement-byrke-and-branching-evolution": {
-      "hit": [],
-      "miss": ["614.1a", "122.6"]
+      "hit": ["614.1a"],
+      "miss": ["122.6"]
     },
     "replacement-crafty-cutpurse-anointed-procession": {
-      "hit": [],
-      "miss": ["616.1", "614.12"],
+      "hit": ["614.12"],
+      "miss": ["616.1"],
       "inTopic": ["616.1"]
     },
     "replacement-damia-thought-reflection-draw": {
-      "hit": [],
-      "miss": ["614.1a", "614.11"]
+      "hit": ["614.1a"],
+      "miss": ["614.11"]
     },
     "replacement-daunting-defender-and-pyroclasm": {
       "hit": ["615.10"],
@@ -1202,20 +1202,20 @@
       "miss": ["614.1"]
     },
     "replacement-invoke-the-ancients-parallel-lives": {
-      "hit": [],
-      "miss": ["616.1", "614.1a"]
+      "hit": ["616.1", "614.1a"],
+      "miss": []
     },
     "replacement-jailer-and-colossus-replacement": {
-      "hit": ["614.6"],
-      "miss": ["614.1a"]
+      "hit": ["614.1a", "614.6"],
+      "miss": []
     },
     "replacement-kalitas-blood-artist-no-dies-trigger": {
-      "hit": [],
-      "miss": ["614.1a", "614.6", "700.4"]
+      "hit": ["614.1a", "614.6", "700.4"],
+      "miss": []
     },
     "replacement-kalitas-blood-artist-no-dies-trigger-in-depth": {
-      "hit": [],
-      "miss": ["614.1a", "614.6", "700.4"],
+      "hit": ["614.1a", "700.4"],
+      "miss": ["614.6"],
       "inTopic": ["614.6"]
     },
     "replacement-lifegain-and-draw-replacements-combine": {
@@ -1231,28 +1231,28 @@
       "miss": []
     },
     "replacement-regenerate-planeswalker-loyalty-zero": {
-      "hit": [],
-      "miss": ["701.19a", "704.5i"]
+      "hit": ["701.19a", "704.5i"],
+      "miss": []
     },
     "replacement-rhythm-of-the-wild-leaves-with-creature": {
       "hit": ["614.12"],
       "miss": []
     },
     "replacement-rukarumel-and-bramblewood-paragon": {
-      "hit": [],
-      "miss": ["614.12", "616.1"]
+      "hit": ["614.12"],
+      "miss": ["616.1"]
     },
     "replacement-saheeli-three-artifacts-sculpting-steel": {
-      "hit": ["614.12"],
-      "miss": ["603.6a"]
+      "hit": ["614.12", "603.6a"],
+      "miss": []
     },
     "replacement-sutured-ghoul-cannot-exile-entering-cards": {
       "hit": ["614.13a"],
       "miss": []
     },
     "replacement-szadek-and-mending-hands": {
-      "hit": [],
-      "miss": ["616.1", "615.1"],
+      "hit": ["615.1"],
+      "miss": ["616.1"],
       "inTopic": ["616.1"]
     },
     "replacement-two-devour-effects-one-sacrifice": {
@@ -1260,8 +1260,8 @@
       "miss": []
     },
     "replacement-unpreventable-damage-hydra": {
-      "hit": ["615.12"],
-      "miss": ["615.1"]
+      "hit": ["615.12", "615.1"],
+      "miss": []
     },
     "replacement-yixlid-jailer-and-enters-tapped": {
       "hit": ["614.12"],
@@ -1292,16 +1292,16 @@
       "miss": []
     },
     "resolution-intellect-devourer-leaves-before-resolving": {
-      "hit": [],
-      "miss": ["610.3b"]
+      "hit": ["610.3b"],
+      "miss": []
     },
     "resolution-scroll-of-isildur-illegal-target": {
       "hit": ["608.2b"],
       "miss": []
     },
     "resolution-soulfire-grand-master-exile-spell": {
-      "hit": [],
-      "miss": ["608.2n"]
+      "hit": ["608.2n"],
+      "miss": []
     },
     "restoration-angel-blink-resets-counters": {
       "hit": [],
@@ -1321,8 +1321,8 @@
       "miss": []
     },
     "ripple-thrumming-stone": {
-      "hit": [],
-      "miss": ["702.60a"]
+      "hit": ["702.60a"],
+      "miss": []
     },
     "roll-to-visit-your-attractions-rule-text": {
       "hit": ["701.52a"],
@@ -1337,8 +1337,8 @@
       "miss": []
     },
     "sba-aura-and-permanent-destroyed-together": {
-      "hit": ["404.3"],
-      "miss": ["704.5m"]
+      "hit": ["404.3", "704.5m"],
+      "miss": []
     },
     "sba-constricting-sliver-returning-creature": {
       "hit": [],
@@ -1357,8 +1357,8 @@
       "miss": []
     },
     "scry-condescend": {
-      "hit": [],
-      "miss": ["701.22a"]
+      "hit": ["701.22a"],
+      "miss": []
     },
     "search-hunting-cheetah": {
       "hit": ["701.23a"],
@@ -1381,12 +1381,12 @@
       "miss": []
     },
     "shuffle-sylvan-primordial": {
-      "hit": [],
-      "miss": ["701.24a"]
+      "hit": ["701.24a"],
+      "miss": []
     },
     "skulk-farbog-revenant": {
-      "hit": [],
-      "miss": ["702.118a"]
+      "hit": ["702.118a"],
+      "miss": []
     },
     "sneak-dark-leo-shredder": {
       "hit": ["702.190a"],
@@ -1397,8 +1397,8 @@
       "miss": []
     },
     "soulbond-deadeye-navigator": {
-      "hit": [],
-      "miss": ["702.95a"]
+      "hit": ["702.95a"],
+      "miss": []
     },
     "soulshift-promised-kannushi": {
       "hit": ["702.46a"],
@@ -1469,8 +1469,8 @@
       "miss": []
     },
     "tap-and-untap-snow-day": {
-      "hit": [],
-      "miss": ["701.26a"]
+      "hit": ["701.26a"],
+      "miss": []
     },
     "teamwork-repulsor-blast-total-power": {
       "hit": ["702.194a"],
@@ -1493,8 +1493,8 @@
       "miss": []
     },
     "toxic-annex-sentry": {
-      "hit": [],
-      "miss": ["702.164a"]
+      "hit": ["702.164a"],
+      "miss": []
     },
     "training-apprentice-sharpshooter": {
       "hit": ["702.149a"],
@@ -1525,12 +1525,12 @@
       "miss": []
     },
     "triggers-apnap-blood-artists-at-one-life": {
-      "hit": [],
-      "miss": ["603.3b", "704.3", "704.5a"]
+      "hit": ["603.3b", "704.3", "704.5a"],
+      "miss": []
     },
     "triggers-apnap-blood-artists-at-one-life-in-depth": {
-      "hit": [],
-      "miss": ["603.3b", "704.3", "704.5a"]
+      "hit": ["603.3b", "704.3"],
+      "miss": ["704.5a"]
     },
     "triggers-becomes-tapped-not-entering-tapped": {
       "hit": ["603.2e"],
@@ -1549,12 +1549,12 @@
       "miss": ["608.2"]
     },
     "triggers-dark-power-and-gaeas-cradle": {
-      "hit": [],
-      "miss": ["106.12a"]
+      "hit": ["106.12a"],
+      "miss": []
     },
     "triggers-devouring-hellion-and-kronch-wrangler": {
-      "hit": ["603.6a"],
-      "miss": ["614.12"]
+      "hit": ["603.6a", "614.12"],
+      "miss": []
     },
     "triggers-dies-trigger-same-time-as-artifact": {
       "hit": ["603.10a"],
@@ -1582,25 +1582,25 @@
       "miss": []
     },
     "triggers-obstinate-baloth-discard-and-raiders-wake": {
-      "hit": [],
-      "miss": ["701.9a", "603.2"],
+      "hit": ["701.9a"],
+      "miss": ["603.2"],
       "inTopic": ["603.2"]
     },
     "triggers-quagnoth-discard-and-yixlid-jailer": {
-      "hit": [],
-      "miss": ["113.6"]
+      "hit": ["113.6"],
+      "miss": []
     },
     "triggers-reflexive-trigger-only-for-its-own-sacrifice": {
       "hit": ["603.12"],
       "miss": []
     },
     "triggers-satoru-and-aven-interrupter": {
-      "hit": [],
-      "miss": ["118.9"]
+      "hit": ["118.9"],
+      "miss": []
     },
     "triple-tifa-s-limit-break": {
-      "hit": [],
-      "miss": ["701.11a"]
+      "hit": ["701.11a"],
+      "miss": []
     },
     "two-headed-giant-beacon-of-immortality-two-headed-giant": {
       "hit": ["810.9a"],
@@ -1623,8 +1623,8 @@
       "miss": []
     },
     "undaunted-coastal-breach": {
-      "hit": [],
-      "miss": ["702.125a"]
+      "hit": ["702.125a"],
+      "miss": []
     },
     "undying-demonlord-of-ashmouth": {
       "hit": ["702.93a"],
@@ -1643,16 +1643,16 @@
       "miss": []
     },
     "venture-into-the-dungeon-zalto-fire-giant-duke": {
-      "hit": [],
-      "miss": ["701.49a"]
+      "hit": ["701.49a"],
+      "miss": []
     },
     "vigilance-herald-of-dromoka": {
       "hit": ["702.20a"],
       "miss": []
     },
     "visit-swinging-ship": {
-      "hit": [],
-      "miss": ["702.159a"]
+      "hit": ["702.159a"],
+      "miss": []
     },
     "vote-mob-verdict": {
       "hit": ["701.38a"],

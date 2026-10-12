@@ -15,7 +15,7 @@ import type {
   PromptContextStackTarget,
   PromptContextZoneItem
 } from "../types/index.js";
-import { normalizeCardText, normalizeQuestion, normalizeWhitespace } from "./normalization.js";
+import { normalizeCardText, normalizeCardTextKeepingLines, normalizeQuestion, normalizeWhitespace } from "./normalization.js";
 
 function toStackRole(stackIndex: number, stackLength: number): PromptContextStackItem["stackRole"] {
   if (stackIndex === stackLength - 1) {
@@ -157,6 +157,25 @@ function normalizeOptionalCopies(value: number | undefined): number | undefined 
   return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 99 ? value : undefined;
 }
 
+/** REQ-245: power, toughness, loyalty and the line-keeping oracle text, each only when the card has it. */
+function displayFields(detail: CardDetailEntry): {
+  power?: string;
+  toughness?: string;
+  loyalty?: string;
+  oracleTextDisplay?: string;
+} {
+  const power = normalizeOptionalText(detail.power);
+  const toughness = normalizeOptionalText(detail.toughness);
+  const loyalty = normalizeOptionalText(detail.loyalty);
+  const oracleTextDisplay = normalizeCardTextKeepingLines(detail.oracleText);
+  return {
+    ...(power ? { power } : {}),
+    ...(toughness ? { toughness } : {}),
+    ...(loyalty ? { loyalty } : {}),
+    ...(oracleTextDisplay ? { oracleTextDisplay } : {})
+  };
+}
+
 function normalizeZoneItem(
   card: import("../types/index.js").ZoneCardItem,
   cardDetailIndex: CardDetailIndex
@@ -178,6 +197,7 @@ function normalizeZoneItem(
     supertypes: normalizeOptionalList(detail.supertypes),
     subtypes: normalizeOptionalList(detail.subtypes),
     keywords: normalizeOptionalList(detail.keywords),
+    ...displayFields(detail),
     owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
     targets: normalizeTargets(card.targets),
     contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
@@ -286,6 +306,7 @@ export function buildPromptContext(
         supertypes: normalizeOptionalList(detail.supertypes),
         subtypes: normalizeOptionalList(detail.subtypes),
         keywords: normalizeOptionalList(detail.keywords),
+        ...displayFields(detail),
         caster: card.caster ?? "Player 1",
         targets: normalizeTargets(card.targets),
         contextNotes: normalizeOptionalText(card.contextNotes) || undefined,

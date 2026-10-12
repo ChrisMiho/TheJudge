@@ -21,6 +21,7 @@
       "keywords": [
         "Deathtouch"
       ],
+      "oracleTextDisplay": "Deathtouch",
       "targets": []
     },
     {
@@ -37,6 +38,7 @@
       "supertypes": [],
       "subtypes": [],
       "keywords": [],
+      "oracleTextDisplay": "Name a card. Exile the top four cards of your library.",
       "targets": []
     }
   ]

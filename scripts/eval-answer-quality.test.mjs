@@ -92,9 +92,9 @@ test("parseArgs defaults to the deployed model at the deployed cap and --changed
   try {
     const parsed = parseArgs([])
     assert.deepEqual(DEFAULT_LINEUP, ["gpt-6-luna"])
-    assert.deepEqual(DEFAULT_EXCERPT_CAPS, [10])
+    assert.deepEqual(DEFAULT_EXCERPT_CAPS, [15])
     assert.deepEqual(parsed.models, ["gpt-6-luna"])
-    assert.deepEqual(parsed.excerptCaps, [10])
+    assert.deepEqual(parsed.excerptCaps, [15])
     assert.deepEqual(parsed.mode, { kind: "changed" })
     assert.equal(parsed.confirmed, false)
     assert.ok(!parsed.models.includes("some-other-model"))
@@ -834,7 +834,7 @@ test("the dry run on the real corpus selects every approved case (no recorded ha
   assert.match(logs[0], new RegExp(`Cases selected: ${approved} of \\d+ \\(selection: changed`))
   assert.match(
     logs[0],
-    /: never graded \(gpt-6-luna, cap 10\)/,
+    /: never graded \(gpt-6-luna, cap 15\)/,
     "each selected case is listed with the reason it needs grading"
   )
   assert.match(logs[0], /\.\.\. and \d+ more/, "the per-case reason list is capped, not printed in full")
@@ -1556,7 +1556,7 @@ test("the fidelity check runs before any client exists, in a dry run too, and re
       }),
     /fid-game: the prompt from the raw case request differs/
   )
-  assert.deepEqual(seen, [{ ids: ["fid-lookup", "fid-game"], excerptCaps: [10] }])
+  assert.deepEqual(seen, [{ ids: ["fid-lookup", "fid-game"], excerptCaps: [15] }])
   assert.equal(clientBuilt, false)
 
   // A passing check leaves the dry run printing its calls and estimate.

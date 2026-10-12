@@ -172,8 +172,9 @@ describe("game rules build policy", () => {
     expect(entry100_1a.sectionTitle).toBe("General");
     expect(entry100_1a.parentRuleIds).toEqual(["100.1", "100"]);
     expect(entry100_1a.searchText).toContain("100.1a");
-    expect(entry100_1a.searchText).toContain("general");
-    expect(entry100_1a.searchText).toContain("two-player");
+    // REQ-233: searchText holds the rule's Porter-stemmed tokens ("general" -> "gener"); a hyphen cuts a word.
+    expect(entry100_1a.searchText).toContain("gener");
+    expect(entry100_1a.searchText).toContain("two player");
   });
 
   it("parseRuleIndex stops at the Glossary section and excludes glossary content", () => {
@@ -203,7 +204,9 @@ describe("game rules build policy", () => {
     expect(artifact).toHaveLength(manifest.length);
     expect(artifactIds).toEqual(sortedArtifactIds);
     expect(excerptChars).toBeGreaterThanOrEqual(18000);
-    expect(excerptChars).toBeLessThanOrEqual(26000);
+    // REQ-240: raised from 26,000 to the measured 34,317 characters (24 topics) rounded up to the next 1,000,
+    // after the lead-in lists (117.3a-d, 400.7a-m, 510.1a-e, 613.4d, 613.8b, 603.7a-c) joined their topics.
+    expect(excerptChars).toBeLessThanOrEqual(35000);
 
     for (const topic of artifact) {
       expect(topic.excerpt.trim().length).toBeGreaterThan(0);
