@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/follow-ups-keep-their-rules`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-follow-ups-keep-their-rules`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261012-195753/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/follow-ups-keep-their-rules/`
+- Current node: `owner-action` (parked at gate-qc PASS)
+- Next action: owner answers `GATE-QUESTIONS.md` in the docs PR and merges it; then `/graph-implement PRD/work/follow-ups-keep-their-rules/`
 
 ## Node ledger
 
@@ -16,10 +16,13 @@
 | 1 | preflight | haiku | ok | `0 → 6` | branch `thejudge-auto/follow-ups-keep-their-rules` cut from `origin/main` `0461969f` into `.worktrees/kickoff-follow-ups-keep-their-rules` and pushed (`git ls-remote` shows `0461969f`); lock `.worktrees/.graph-run.lock` holds run `graph-20261012-195753`; universal canary `rm -rf .worktrees/.graph-canary-nonexistent` denied, graph canary `nohup true` denied while the lock was held; `Profile: unverified`; launch checkout porcelain unchanged (4 untracked folders) | 2026-10-12 |
 | 2 | shape | sonnet | ok | `0 → 19` | commit `d9f2bb2d` pushed: `PRD/work/follow-ups-keep-their-rules/` with `IDEA.md` (8 `## Prior run` lines), `README.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md` and `intake/DRIVER-NOTE-changes-since-the-brief.md` (driver `cmp`: byte-identical to staging), board row under `## ideation`; staged copy left (removal under `.worktrees/` is denied) | 2026-10-12 |
 | 3 | define | opus | ok | `0 → 101` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (11 slots, all verdicts blank: new REQ-246, REQ-247; amended REQ-022, REQ-024, REQ-027, REQ-074, REQ-178, REQ-226, REQ-228, REQ-238, REQ-242; no blocker), `evidence/amendment-grep.md` (268 hits = 13 amend / 13 build / 242 no change), `evidence/offline-measurement.md` (62-case diagnostic manifest at `0461969f`: carried excerpts 62/62, In-Depth curated topics 9/9, lookup step guidance 53/53; today 6 of 9 In-Depth follow-ups change topics); `STATUS.refined` only marker, board row under `## refined`; driver `git diff --stat HEAD -- PRD/sections apps scripts` empty. Deviation: node wrote the first README/board/grep drafts with short python scripts and renamed markers with `mv` (no denial) | 2026-10-12 |
+| 4 | gate-qc | sonnet | ok | `0 → 19` | PASS, attempt 1 of 3: every old and context line of the 11 diffs matches `PRD/sections/functional-requirements.md` at its stated line (scripted exact match, 0 misses); 13 amend rows map to slots; three plain-language lines and blank verdicts in each slot; REQ-246/REQ-247 free on main; numeric targets trace to `evidence/offline-measurement.md`; code references true; no practice-suite data. One non-blocking nit (evidence line cited `askAiRequest.ts:227`, true line 228) fixed by the driver. `README.md` `## Preparation gate` written PASS | 2026-10-12 |
 
 ## Open gate
 
-- None
+- Question: answer the 11 verdict slots in `PRD/work/follow-ups-keep-their-rules/GATE-QUESTIONS.md` (accept, edit with a reason, or reject with a reason), then merge the docs PR to build.
+- Evidence: gate-qc PASS (row 4); `DESIGN-BRIEF.md`; `evidence/offline-measurement.md`.
+- Resume: after the merge, `/graph-implement PRD/work/follow-ups-keep-their-rules/`.
 
 ## Dispatch prompts
 

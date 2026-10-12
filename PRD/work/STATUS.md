@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [follow-ups-keep-their-rules](follow-ups-keep-their-rules/) | Follow-ups reuse the opening question's rule excerpts; answer-quality eval gains a pushback follow-up mode |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [follow-ups-keep-their-rules](follow-ups-keep-their-rules/) | Follow-ups reuse the opening question's rule excerpts; answer-quality eval gains a pushback follow-up mode. Answer `GATE-QUESTIONS.md` (11 slots) in the docs PR, then merge to build |
 
 ## deferred
 

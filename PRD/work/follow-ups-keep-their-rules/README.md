@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # follow-ups-keep-their-rules
 
@@ -9,3 +9,9 @@ Refined 2026-10-12: design in `DESIGN-BRIEF.md`; proposed product truth in `GATE
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/follow-ups-keep-their-rules
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/follow-ups-keep-their-rules/DESIGN-BRIEF.md`
+- Findings: none

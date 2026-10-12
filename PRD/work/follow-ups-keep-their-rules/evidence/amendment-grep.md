@@ -12,7 +12,7 @@ Hits: 268. Dispositions: amend 13, build 13, no change 242.
 
 Lines an amend slot also edits that this grep does not hit (same slot, listed for completeness): REQ-022, REQ-024, REQ-027, REQ-074, REQ-178, REQ-238, REQ-242 each gain `REQ-246` under Dependencies; REQ-238 and REQ-242 each gain one acceptance bullet; REQ-226 gains one acceptance bullet and `REQ-247` under Dependencies; REQ-228 gains `REQ-247` under Dependencies. The full diffs are in `GATE-QUESTIONS.md`.
 
-Pre-existing drift seen while reading, not in scope and not changed: REQ-027 (line 502) and `in-depth/README.md` (line 490) say a history message is capped at 2,000 characters; the code caps it at 10,000 (`apps/backend/src/validation/askAiRequest.ts:227`, `boundedText(10000)`).
+Pre-existing drift seen while reading, not in scope and not changed: REQ-027 (line 502) and `in-depth/README.md` (line 490) say a history message is capped at 2,000 characters; the code caps it at 10,000 (`apps/backend/src/validation/askAiRequest.ts:228`, `boundedText(10000)`).
 
 Amend slots (one `## <ID>` block each in `GATE-QUESTIONS.md`): REQ-022, REQ-024, REQ-027, REQ-074, REQ-178, REQ-226, REQ-228, REQ-238, REQ-242, plus the two new IDs REQ-246 and REQ-247.
 
