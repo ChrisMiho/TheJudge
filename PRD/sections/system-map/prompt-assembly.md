@@ -22,7 +22,7 @@ The prompt starts with role and instruction framing, then the static
 `GENERAL GAME CONTEXT` -> `ADDITIONAL GAME STATE` (planned, DEC-043) ->
 `PHASE GUIDANCE` (DEC-036) -> populated zone sections with full card metadata in all
 zones (DEC-042) -> `GAME RULES (reference)` / System 2 ->
-`ADDITIONAL RELEVANT RULE EXCERPTS` / System 3 -> `OFFICIAL RULINGS` / System 1 ->
+`ADDITIONAL RELEVANT RULE EXCERPTS` / System 3 (rule-book order, grouped and labelled, REQ-239; keyword sets and lead-in lists included, REQ-235, REQ-240) -> `OFFICIAL RULINGS` / System 1 ->
 `SCOPE` -> `QUESTION`. When conversation history is present, it is inserted before
 `QUESTION` and the instructions tell the model to treat follow-ups as refinements
 against the frozen game state and prior answers.

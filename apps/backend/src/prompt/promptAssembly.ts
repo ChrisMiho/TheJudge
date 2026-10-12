@@ -10,14 +10,14 @@ import {
   formatNonStackZoneSections,
   formatOfficialRulingsSection,
   formatStackSection,
-  formatSupplementalRulesSection,
   formatZoneCardMetadataLines
 } from "./promptFormatting.js";
 import { MTG_PROMPT_REFERENCE } from "./mtgReference.js";
-import { getPhaseGuidance } from "./phaseGuidance.js";
+import { describeTurnSteps, getPhaseGuidance, type TurnStepKey } from "./phaseGuidance.js";
+import { layoutPromptRuleSections, type PromptRuleSections } from "./ruleLayout.js";
 import type { ResolvedRulings } from "../cardRulings.js";
-import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
-import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
+import type { GameRulesTopic } from "../gameRules.js";
+import type { GameRulesRuleIndexEntry, RetrievedGameRule } from "../gameRulesRetrieval.js";
 import type { ConversationTurn, LookupPromptContext, PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 import { formatComboSection } from "../commanderSpellbook/formatting.js";
 import type { ComboCandidate } from "../commanderSpellbook/matcher.js";
@@ -26,9 +26,26 @@ export type BuildPromptTextOptions = {
   rulings?: ResolvedRulings;
   gameRulesTopics?: GameRulesTopic[];
   supplementalRules?: RetrievedGameRule[];
+  /** The committed rule index: list items, lead-in sentences and pointers (REQ-239, REQ-240, REQ-244). */
+  gameRulesRuleIndex?: readonly GameRulesRuleIndexEntry[];
+  /** Both rules sections already laid out; the builders lay them out themselves when absent. */
+  ruleSections?: PromptRuleSections;
+  /** Quick Lookup: the turn steps the question or an attached card's concept terms name (REQ-238). */
+  namedSteps?: readonly TurnStepKey[];
   conversationHistory?: ConversationTurn[];
   comboCandidates?: ComboCandidate[];
 };
+
+function ruleSectionsFor(options: BuildPromptTextOptions): PromptRuleSections {
+  return (
+    options.ruleSections ??
+    layoutPromptRuleSections({
+      topics: options.gameRulesTopics ?? [],
+      supplementalRules: options.supplementalRules ?? [],
+      ruleIndex: options.gameRulesRuleIndex
+    })
+  );
+}
 
 export function buildPromptText(context: PromptContext, options: BuildPromptTextOptions = {}): string {
   const populatedZoneIds: ZoneId[] = [
@@ -40,8 +57,7 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
 
   const stackSection = formatStackSection(context);
   const nonStackSections = formatNonStackZoneSections(context);
-  const gameRulesSection = formatGameRulesSection(options.gameRulesTopics ?? []);
-  const supplementalRulesSection = formatSupplementalRulesSection(options.supplementalRules ?? []);
+  const { gameRulesSection, supplementalRulesSection } = ruleSectionsFor(options);
   const officialRulingsSection = formatOfficialRulingsSection(options.rulings);
   const comboSection = formatComboSection(options.comboCandidates ?? []);
 
@@ -111,8 +127,7 @@ export function buildLookupPromptText(
   context: LookupPromptContext,
   options: BuildPromptTextOptions = {}
 ): string {
-  const gameRulesSection = formatGameRulesSection(options.gameRulesTopics ?? []);
-  const supplementalRulesSection = formatSupplementalRulesSection(options.supplementalRules ?? []);
+  const { gameRulesSection, supplementalRulesSection } = ruleSectionsFor(options);
   // REQ-167: one heading, one block per attached card (max 5) — matches
   // OFFICIAL RULINGS's existing one-heading/many-blocks convention below, so
   // exactly one card renders byte-identical to the prior single-card section.
@@ -151,6 +166,12 @@ export function buildLookupPromptText(
     "MTG REFERENCE",
     MTG_PROMPT_REFERENCE
   ];
+
+  // REQ-238: right after MTG REFERENCE, a description of each turn step the question names.
+  const namedSteps = options.namedSteps ?? [];
+  if (namedSteps.length > 0) {
+    sections.push("", "PHASE GUIDANCE", ...describeTurnSteps(namedSteps));
+  }
 
   for (const section of [
     gameRulesSection,

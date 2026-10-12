@@ -2,7 +2,7 @@
   {
     "id": "abilities-delayed-triggers",
     "title": "Delayed Triggered Abilities",
-    "ruleNumbers": ["603.7", "603.10"]
+    "ruleNumbers": ["603.7", "603.7a", "603.7b", "603.7c"]
   },
   {
     "id": "abilities-trigger-basics",
@@ -17,7 +17,7 @@
   {
     "id": "combat-damage-assignment",
     "title": "Combat Damage Assignment",
-    "ruleNumbers": ["510.1", "702.2c", "702.19a", "702.19d"]
+    "ruleNumbers": ["510.1", "510.1a", "510.1b", "510.1c", "510.1d", "510.1e", "702.2c", "702.19a", "702.19d"]
   },
   {
     "id": "combat-declare-attackers",
@@ -72,12 +72,12 @@
   {
     "id": "layers-power-toughness",
     "title": "Power/Toughness Layers",
-    "ruleNumbers": ["613.4", "613.4a", "613.4b", "613.4c"]
+    "ruleNumbers": ["613.4", "613.4a", "613.4b", "613.4c", "613.4d"]
   },
   {
     "id": "layers-timestamps-dependencies",
     "title": "Timestamps and Dependencies",
-    "ruleNumbers": ["613.7", "613.8a"]
+    "ruleNumbers": ["613.7", "613.8a", "613.8b"]
   },
   {
     "id": "replacement-effects-basics",
@@ -107,7 +107,7 @@
   {
     "id": "stack-and-priority",
     "title": "Stack and Priority",
-    "ruleNumbers": ["117.1", "117.3", "117.4", "117.7", "405.1", "405.2"]
+    "ruleNumbers": ["117.1", "117.3", "117.3a", "117.3b", "117.3c", "117.3d", "117.4", "117.7", "405.1", "405.2"]
   },
   {
     "id": "targets-basics",
@@ -117,6 +117,22 @@
   {
     "id": "zones-basics",
     "title": "Zones and Zone Changes",
-    "ruleNumbers": ["400.1", "400.2", "400.7"]
+    "ruleNumbers": [
+      "400.1",
+      "400.2",
+      "400.7",
+      "400.7a",
+      "400.7b",
+      "400.7c",
+      "400.7d",
+      "400.7e",
+      "400.7f",
+      "400.7g",
+      "400.7h",
+      "400.7i",
+      "400.7j",
+      "400.7k",
+      "400.7m"
+    ]
   }
 ]

@@ -3,7 +3,7 @@ import {
   resolveRulingsForPrompt,
   type RulingEntry
 } from "../cardRulings.js";
-import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
+import type { GameRulesTopic } from "../gameRules.js";
 import { ALWAYS_ON_TOPIC_IDS, selectCardWordingTopicIds, selectGameRulesTopics } from "../gameRulesTopicSelection.js";
 import {
   buildRetrievalQuery,
@@ -13,6 +13,7 @@ import {
   retrieveRulesForQuery,
   retrieveRulesForQueryWithDebug,
   type GameRulesRuleIndexEntry,
+  type RetrievedGameRule,
   type PerCardSearchText,
   type PerCardVector,
   type RetrievalQuery,
@@ -31,7 +32,8 @@ import {
   MAX_RULINGS_SECTION_CHARS,
   truncateConversationHistory
 } from "./normalization.js";
-import { formatSupplementalRulesSection } from "./promptFormatting.js";
+import { namedTurnSteps } from "./phaseGuidance.js";
+import { layoutPromptRuleSections, type PromptRuleSections } from "./ruleLayout.js";
 import { getPromptDiagnostics, type PromptDiagnostics } from "./promptDiagnostics.js";
 import { buildLookupPromptText, buildPromptText } from "./promptAssembly.js";
 import type {
@@ -156,6 +158,19 @@ function resolveCardVectors(query: RetrievalQuery, options: PreparePromptInputOp
   });
 }
 
+/** REQ-239 / REQ-240 / REQ-244: both rules sections of the prompt, laid out once and used for the text and the diagnostics. */
+function layoutRules(
+  gameRulesTopics: GameRulesTopic[],
+  supplementalRules: RetrievedGameRule[],
+  options: PreparePromptInputOptions
+): PromptRuleSections {
+  return layoutPromptRuleSections({
+    topics: gameRulesTopics,
+    supplementalRules,
+    ruleIndex: options.gameRulesRuleIndex
+  });
+}
+
 function getRulingLimits() {
   return {
     maxRulingsPerCard: MAX_RULINGS_PER_CARD,
@@ -255,7 +270,6 @@ function prepareLookupPromptInput(
   ]);
   // The loaded topic list is id-ordered, so the filtered list stays in id order.
   const gameRulesTopics = allGameRulesTopics.filter((topic) => lookupTopicIds.has(topic.id));
-  const gameRulesSection = formatGameRulesSection(gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
   // REQ-167 / REQ-178 / REQ-180: System 3 scores the question plus, for every
   // attached card, the same compact per-card signal (name, type line, real
@@ -266,6 +280,8 @@ function prepareLookupPromptInput(
   const cardVectors = resolveCardVectors(query, options);
   // REQ-235: each attached card's keyword rules arrive as whole sets beside the search excerpts.
   const keywordSets = keywordRuleSetsForCards(context.cards ?? [], options.gameRulesRuleIndex ?? []);
+  // REQ-238: the turn steps the question, or an attached card's concept terms, name.
+  const namedSteps = namedTurnSteps([request.question, ...query.conceptTerms]);
   const conversationHistory = request.conversationHistory;
   const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);
   const conversationHistoryChars = truncatedHistory.reduce((sum, turn) => sum + turn.content.length, 0);
@@ -292,19 +308,21 @@ function prepareLookupPromptInput(
       cardVectors,
       keywordSets
     );
-    const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
+    const ruleSections = layoutRules(gameRulesTopics, supplementalResult.selected, options);
     const promptText = buildLookupPromptText(context, {
       rulings: rulingsResult,
       gameRulesTopics,
       supplementalRules: supplementalResult.selected,
+      ruleSections,
+      namedSteps,
       comboCandidates
     });
     const diagnostics = getPromptDiagnostics(promptText, {
       resolvedRulings: rulingsResult,
       gameRulesTopics,
-      gameRulesSectionChars: gameRulesSection.length,
+      gameRulesSectionChars: ruleSections.gameRulesSection.length,
       supplementalRules: supplementalResult.selected,
-      supplementalRulesSectionChars: supplementalRulesSection.length,
+      supplementalRulesSectionChars: ruleSections.supplementalRulesSection.length,
       comboSectionChars,
       comboCandidateCount: comboCandidates.length,
       conversationHistoryChars
@@ -315,7 +333,8 @@ function prepareLookupPromptInput(
         topicIds: gameRulesTopics.map((topic) => topic.id),
         topics: gameRulesTopics.map((topic) => ({ id: topic.id, title: topic.title, ruleNumbers: topic.ruleNumbers }))
       },
-      rulings: rulingsResult.debug
+      rulings: rulingsResult.debug,
+      ruleLayout: ruleSections.stats
     };
     return { context, promptText, diagnostics, enrichmentDebug, conversationHistory };
   }
@@ -337,19 +356,21 @@ function prepareLookupPromptInput(
     cardVectors,
     keywordSets
   );
-  const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
+  const ruleSections = layoutRules(gameRulesTopics, supplementalRules, options);
   const promptText = buildLookupPromptText(context, {
     rulings: resolvedRulings,
     gameRulesTopics,
     supplementalRules,
+    ruleSections,
+    namedSteps,
     comboCandidates
   });
   const diagnostics = getPromptDiagnostics(promptText, {
     resolvedRulings,
     gameRulesTopics,
-    gameRulesSectionChars: gameRulesSection.length,
+    gameRulesSectionChars: ruleSections.gameRulesSection.length,
     supplementalRules,
-    supplementalRulesSectionChars: supplementalRulesSection.length,
+    supplementalRulesSectionChars: ruleSections.supplementalRulesSection.length,
     comboSectionChars,
     comboCandidateCount: comboCandidates.length,
     conversationHistoryChars
@@ -363,7 +384,6 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
   const limits = getRulingLimits();
   const allGameRulesTopics = options.gameRulesTopics ?? [];
   const gameRulesTopics = selectGameRulesTopics(context, allGameRulesTopics);
-  const gameRulesSection = formatGameRulesSection(gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
   // REQ-178 / REQ-233 / REQ-234 / REQ-235: the same shared query builder lookup mode uses, plus
   // the In-Depth turn step.
@@ -392,20 +412,21 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
       cardVectors,
       keywordSets
     );
-    const supplementalRulesSection = formatSupplementalRulesSection(supplementalResult.selected);
+    const ruleSections = layoutRules(gameRulesTopics, supplementalResult.selected, options);
     const promptText = buildPromptText(context, {
       rulings: rulingsResult,
       gameRulesTopics,
       supplementalRules: supplementalResult.selected,
+      ruleSections,
       conversationHistory,
       comboCandidates
     });
     const diagnostics = getPromptDiagnostics(promptText, {
       resolvedRulings: rulingsResult,
       gameRulesTopics,
-      gameRulesSectionChars: gameRulesSection.length,
+      gameRulesSectionChars: ruleSections.gameRulesSection.length,
       supplementalRules: supplementalResult.selected,
-      supplementalRulesSectionChars: supplementalRulesSection.length,
+      supplementalRulesSectionChars: ruleSections.supplementalRulesSection.length,
       comboSectionChars,
       comboCandidateCount: comboCandidates.length,
       conversationHistoryChars
@@ -416,7 +437,8 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
         topicIds: gameRulesTopics.map((t) => t.id),
         topics: gameRulesTopics.map((t) => ({ id: t.id, title: t.title, ruleNumbers: t.ruleNumbers }))
       },
-      rulings: rulingsResult.debug
+      rulings: rulingsResult.debug,
+      ruleLayout: ruleSections.stats
     };
     return { context, promptText, diagnostics, enrichmentDebug, conversationHistory };
   }
@@ -434,20 +456,21 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
     cardVectors,
     keywordSets
   );
-  const supplementalRulesSection = formatSupplementalRulesSection(supplementalRules);
+  const ruleSections = layoutRules(gameRulesTopics, supplementalRules, options);
   const promptText = buildPromptText(context, {
     rulings: resolvedRulings,
     gameRulesTopics,
     supplementalRules,
+    ruleSections,
     conversationHistory,
     comboCandidates
   });
   const diagnostics = getPromptDiagnostics(promptText, {
     resolvedRulings,
     gameRulesTopics,
-    gameRulesSectionChars: gameRulesSection.length,
+    gameRulesSectionChars: ruleSections.gameRulesSection.length,
     supplementalRules,
-    supplementalRulesSectionChars: supplementalRulesSection.length,
+    supplementalRulesSectionChars: ruleSections.supplementalRulesSection.length,
     comboSectionChars,
     comboCandidateCount: comboCandidates.length,
     conversationHistoryChars

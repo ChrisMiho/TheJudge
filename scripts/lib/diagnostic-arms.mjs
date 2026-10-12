@@ -86,13 +86,17 @@ const SUPPLEMENTAL_RULES_DISCLAIMER =
   "Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.";
 const EXCERPT_HEADER = "ADDITIONAL RELEVANT RULE EXCERPTS";
 
-const RULE_BLOCK_ID = /^(\d+\.\d+[a-z]*)\. /;
+// REQ-239: the excerpt section prints each rule once as its own text ("514.3a At this point ..." or
+// "514.2. Second, ..."), the first rule of a group under a "<part> \u203a <section>" label line.
+const RULE_START = String.raw`\d+\.\d+[a-z]*(?:\. | )`;
+const GROUP_LABEL = String.raw`(?:[^\n]+ \u203a [^\n]+\n)?`;
+const RULE_BLOCK_ID = new RegExp(String.raw`^${GROUP_LABEL}(\d+\.\d+[a-z]*)(?:\. | )`);
 
 // Where one block ends and the next begins. A block may hold blank lines (a rule's "Example:" paragraph),
 // so a blank line splits only when what follows has the shape of a block's first lines.
 const BLOCK_BOUNDARY = {
-  topics: /\n\n(?=(?!Example)[^\n]{1,80}[^.\n]\n\d+\.\d+[a-z]*\. )/,
-  excerpts: /\n\n(?=\d+\.\d+[a-z]*\. )/,
+  topics: new RegExp(String.raw`\n\n(?=(?!Example)[^\n]{1,80}[^.\n]\n${RULE_START})`),
+  excerpts: new RegExp(String.raw`\n\n(?=${GROUP_LABEL}${RULE_START})`),
   cards: /\n\n(?=name: )/,
   rulings: /\n\n(?=[^\n]+\n- \d{4}-\d{2}-\d{2}: )/
 };

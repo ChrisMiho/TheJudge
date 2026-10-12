@@ -7,6 +7,7 @@ import {
 import { CANONICAL_ZONE_ORDER, PLAYER_LABELS } from "../constants.js";
 import type { ResolvedRulings } from "../cardRulings.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
+import { layoutPromptRuleSections } from "./ruleLayout.js";
 import type { ConversationTurn, PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
 export const SYSTEM_ROLE_PREAMBLE_LINES = [
@@ -285,20 +286,9 @@ export function formatOfficialRulingsSection(resolvedRulings: ResolvedRulings | 
   ].join("\n");
 }
 
-const SUPPLEMENTAL_RULES_DISCLAIMER =
-  "Use these additional official rule excerpts as reference. They do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text.";
-
+/** REQ-239: the search excerpts in rule-book order, grouped and labelled (see `layoutPromptRuleSections`). */
 export function formatSupplementalRulesSection(rules: RetrievedGameRule[]): string {
-  if (rules.length === 0) return "";
-
-  const ruleBlocks = rules.map((rule) => `${rule.ruleId}. ${rule.text}`);
-
-  return [
-    "ADDITIONAL RELEVANT RULE EXCERPTS",
-    SUPPLEMENTAL_RULES_DISCLAIMER,
-    "",
-    ruleBlocks.join("\n\n")
-  ].join("\n");
+  return layoutPromptRuleSections({ topics: [], supplementalRules: rules }).supplementalRulesSection;
 }
 
 /**

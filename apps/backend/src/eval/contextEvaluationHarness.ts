@@ -195,8 +195,19 @@ function checkLookupGuardrails(promptText: string): EvaluationCheckResult {
 }
 
 function checkLookupGameStateSectionsOmitted(promptText: string): EvaluationCheckResult {
-  const forbidden = ["GENERAL GAME CONTEXT", "PHASE GUIDANCE", "ZONE:", "\nSCOPE\n"];
+  const forbidden = ["GENERAL GAME CONTEXT", "ZONE:", "\nSCOPE\n"];
   const present = forbidden.filter((section) => promptText.includes(section));
+  // REQ-238: a Quick Lookup prompt may carry PHASE GUIDANCE, but only for a step the question names,
+  // and only right after MTG REFERENCE (before every rules section).
+  const guidanceAt = promptText.indexOf("\nPHASE GUIDANCE\n");
+  if (guidanceAt >= 0) {
+    const referenceAt = promptText.indexOf("\nMTG REFERENCE\n");
+    const nextSectionAt = ["\nGAME RULES (reference)\n", "\nADDITIONAL RELEVANT RULE EXCERPTS\n", "\nCARD (looked up)\n", "\nQUESTION\n"]
+      .map((heading) => promptText.indexOf(heading))
+      .filter((at) => at >= 0)
+      .reduce((min, at) => Math.min(min, at), Number.MAX_SAFE_INTEGER);
+    if (!(referenceAt >= 0 && referenceAt < guidanceAt && guidanceAt < nextSectionAt)) present.push("PHASE GUIDANCE (misplaced)");
+  }
   return {
     id: "lookup-game-state-sections-omitted",
     passed: present.length === 0,

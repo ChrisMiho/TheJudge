@@ -54,7 +54,7 @@ export function attachedRuleIdsOf(prepared, extraRuleIds = []) {
 
 /**
  * The excerpt rule ids printed in a stored prompt (the lines under
- * "ADDITIONAL RELEVANT RULE EXCERPTS", each `<rule id>. <text>`). A regrade uses it
+ * "ADDITIONAL RELEVANT RULE EXCERPTS", each rule's own text, which opens with its id; a group's first rule follows a `<part> › <section>` label). A regrade uses it
  * for a transcript that predates the stored `attachedRuleIds` field.
  */
 export function extractExcerptRuleIds(promptText) {
@@ -62,6 +62,6 @@ export function extractExcerptRuleIds(promptText) {
   const start = text.indexOf("ADDITIONAL RELEVANT RULE EXCERPTS");
   if (start < 0) return [];
   const ids = [];
-  for (const match of text.slice(start).matchAll(/^(\d{3}\.\d+[a-z]*)\. /gm)) ids.push(match[1]);
+  for (const match of text.slice(start).matchAll(/^(\d{3}\.\d+[a-z]*)(?:\.\s|\s(?!\u2026))/gm)) ids.push(match[1]);
   return [...new Set(ids)];
 }

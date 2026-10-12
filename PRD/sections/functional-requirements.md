@@ -360,13 +360,13 @@
 ### REQ-022
 - Title: General game rules prompt enrichment
 - Priority: high
-- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, selected by game-state signals for the baseline — plus one card-wording gate for replacement-effect interactions (REQ-220) — and by card/question-driven relevance scoring for supplemental rules, without changing the product API or UI.
+- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, selected by game-state signals for the baseline — plus one card-wording gate for replacement-effect interactions (REQ-220) and, in In-Depth, card-wording and question triggers in place of zone presence (REQ-242) — and by card/question-driven relevance scoring for supplemental rules, without changing the product API or UI.
 - Acceptance Criteria:
   - committed artifact `apps/backend/data/gameRulesByTopic.json` loads at backend startup
-  - every assembled prompt includes `GAME RULES (reference)` with curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) and REQ-220 (the replacement-effect interaction topic when two or more cards carry replacement or prevention wording) in stable `id` order when the artifact is present
+  - every assembled prompt includes `GAME RULES (reference)` with curated topics selected per DEC-045 (always-on core plus turn-phase and combat-step expansion), REQ-242 (in In-Depth, the formerly zone-gated topics chosen by card wording and question) and REQ-220 (the replacement-effect interaction topic when two or more cards carry replacement or prevention wording) in stable `id` order when the artifact is present; within a topic, rules print in rule-book order, each id once (REQ-239), and a topic rule that introduces a list carries its list (REQ-240)
   - excerpts are verbatim WotC CR prose for rule numbers listed in `apps/backend/data/gameRulesTopicManifest.json`
-  - section appears after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
-  - section includes a disclaimer that rules are shared vocabulary and do not override submitted game state
+  - in In-Depth the section appears after the populated zone sections (each card followed by its own rulings, REQ-241); in both modes it comes directly before `ADDITIONAL RELEVANT RULE EXCERPTS`
+  - the section carries no disclaimer of its own: the instructions frame the rules once as the binding rules of the game, which never override the submitted game state or a card's oracle text (REQ-243)
   - section omitted only when artifact missing or empty, with a warning logged
   - `MAX_PROMPT_CHAR_BUDGET` is set to `EFFECTIVELY_UNLIMITED_CHARS` (1,000,000) per DEC-042 amendment to DEC-030; prompt diagnostics continue to track prompt size and utilization
   - `npm run data:build` runs `build-game-rules.mjs` with graceful degradation when CR source or extracts are unavailable
@@ -374,20 +374,20 @@
   - eval fixtures assert conditional System 2 topic selection per scenario (see REQ-032)
   - manual latency sampling (p50/p95) is recorded after integration against the NFR-002 product risk
   - committed artifact `apps/backend/data/gameRulesRuleIndex.json` loads at backend startup alongside the topic artifact
-  - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 10 rules scored per DEC-046 against the request context
+  - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 15 rules scored per DEC-046 against the request context (REQ-190) — the main ranking fills at least thirteen before its relevance cutoff and per-card search up to two (REQ-235) — plus each attached card's keyword rules as whole sets (REQ-235) and the list items of any delivered lead-in, which use no slot (REQ-240); the rules print in rule-book order, grouped under path labels (REQ-239)
   - supplemental rules are excluded from the curated baseline set (deduplicated against selected System 2 topic rule numbers by exact rule number: a rule a selected topic lists never repeats as a supplemental excerpt, while a listed parent's lettered sub-rules that the topic does not list compete like any other rule — REQ-179)
-  - supplemental section appears after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
+  - supplemental section appears directly after `GAME RULES (reference)`; there is no separate rulings section (REQ-241)
   - supplemental section omitted when index missing, empty, or no rules score above 0
   - eval fixtures assert labeled supplemental recall per REQ-032
-  - the System 3 retrieval query is built from the player's question plus a compact per-card signal — name, type line, and keyword list — not from raw concatenated card oracle text (REQ-178)
+  - the System 3 retrieval query is built from the player's question plus a compact per-card signal — name, type line, and keyword list — plus the concept terms the fixed concept map draws from each card's wording (REQ-234) and, in In-Depth, the current turn step (REQ-178); never from raw concatenated card oracle text, which only per-card search reads, as its own separate query (REQ-235)
   - System 3 scoring is a hybrid of meaning and word overlap when the embedding-provider seam is active (REQ-182): the query embedding is cosine-ranked against the committed rule embeddings and blended with the lexical IDF score, both normalised per query, with the exact-rule-id and parent-rule-id boost merged into the blended score. Lexical scoring alone is retained as the mock/offline default and as the fallback on any embedding failure, so those settings are never worse than the prior lexical-only behaviour. The blend exists because semantic-only ranking, measured 2026-09-05, was better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) but lost an expected rule on short lookup-mode questions in three of eight labelled fixtures (REQ-181, REQ-182)
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
   - no runtime CR or Scryfall fetch per request
-  - no per-request external call for System 3 query embedding in the default (`mock`) or shipped-semantic (`local`) modes; the no-per-request-external-call posture is preserved by the bundled local model (REQ-181), not reversed — only `EMBEDDING_PROVIDER=openai` would add one, and it is never the default
-  - System 2 selection uses game-state signals (`turnPhase`, `combatStep`, populated zones) plus exactly one card signal: whether two or more cards' oracle text carries replacement or prevention wording as REQ-220 defines it (the whole word "instead", "prevent", "prevents", or "prevented"), which selects the replacement-effect interaction topic (REQ-220); card names and keywords never select a System 2 topic
-  - System 3 owns all relevance-scored card/question-driven retrieval including oracle-keyword signals; REQ-220's wording gate is a fixed on/off switch, not scoring
+  - no per-request external call for System 3 query embedding in the default (`mock`) or shipped-semantic (`local`) modes; the no-per-request-external-call posture is preserved by the packaged local model — the Magic-trained model, fetched from private storage only when the deploy package is built (REQ-236, REQ-237) — not reversed; only `EMBEDDING_PROVIDER=openai` would add one, and it is never the default
+  - System 2 selection uses game-state signals (`turnPhase`, `combatStep`) plus card wording in two fixed forms: whether two or more cards' oracle text carries replacement or prevention wording as REQ-220 defines it (the whole word "instead", "prevent", "prevents", or "prevented"), which selects the replacement-effect interaction topic (REQ-220); and, in In-Depth only, the concept terms of the cards and the question's words matched against a fixed trigger table for the topics populated zones used to select (REQ-242); card names and keywords never select a System 2 topic
+  - System 3 owns all relevance-scored card/question-driven retrieval including oracle-keyword signals; REQ-220's wording gate and REQ-242's trigger table are fixed matching, not scoring
 - Dependencies:
   - DEC-045
   - DEC-046
@@ -427,13 +427,14 @@
 ### REQ-024
 - Title: Phase-scoped prompt guidance
 - Priority: medium
-- Description: Every backend AI prompt must include a `PHASE GUIDANCE` block containing phase-specific and combat-sub-step-specific reasoning instructions, positioned between `GENERAL GAME CONTEXT` and the zone sections.
+- Description: Every In-Depth prompt must include a `PHASE GUIDANCE` block containing phase-specific and combat-sub-step-specific reasoning instructions, positioned between `GENERAL GAME CONTEXT` and the zone sections; a Quick Lookup prompt includes the same summaries for the turn steps its question names (REQ-238).
 - Acceptance Criteria:
-  - every assembled prompt includes a `PHASE GUIDANCE` section between `GENERAL GAME CONTEXT` and the zone sections
+  - every In-Depth prompt includes a `PHASE GUIDANCE` section between `GENERAL GAME CONTEXT` and the zone sections
   - guidance text is specific to the submitted `turnPhase`
   - when `turnPhase` is `combat`, guidance text is specific to the submitted `combatStep` when present; falls back to generic combat framing when absent
   - section is never omitted for a valid phase submission
-  - canonical guidance strings per phase match those specified in DEC-036
+  - canonical guidance strings per phase are the corrected strings in `apps/backend/src/prompt/phaseGuidance.ts`, each pinned by a test to the Comprehensive Rules it summarises (REQ-238); DEC-036's original strings are superseded
+  - a Quick Lookup prompt carries `PHASE GUIDANCE` right after `MTG REFERENCE` when its question names a turn step or an attached card's concept terms do, with one summary per named step, at most three, from the same strings (REQ-238)
 - Constraints:
   - prompt-only and backend-only beyond the `combatStep` field additions in DEC-037
   - do not add rules-validation behavior under the label of phase guidance
@@ -6293,3 +6294,93 @@
   - NFR-017 (the package budget)
 - Notes:
   - storage design per the `right-rules-in-order` intake (C.5, C.6), cited
+
+
+### REQ-238
+- Title: Turn-step summaries are correct, and Quick Lookup gets them when a step is named
+- Priority: high
+- Description: The phase-guidance summaries — the short "what happens in this step" paragraphs — are corrected against the Comprehensive Rules, and Quick Lookup now receives the summary for any turn step its question names, or that an attached card's wording points at through the concept map (REQ-234), the same help In-Depth gets for its current step.
+- Acceptance Criteria:
+  - cleanup: says that damage is removed and "until end of turn" and "this turn" effects end (514.2) before any player gets priority, and that players get priority in cleanup only if a state-based action is performed or an ability triggers, after which another cleanup step follows (514.3a)
+  - untap: says no player receives priority, and an ability that triggers during untap is put on the stack the next time a player would receive priority, usually in upkeep (502.4) — replacing "resolved before moving to the upkeep step"
+  - declare blockers: drops "The active player orders damage assignment for multiply-blocked creatures", which the rules no longer contain
+  - every step's text is reviewed against the Comprehensive Rules, and a test pins each step to the rule ids it summarises and asserts those ids exist in the committed rule index (`apps/backend/src/prompt/phaseGuidanceSteps.test.ts`)
+  - one source of step text serves both modes (`STEP_SUMMARIES` in `apps/backend/src/prompt/phaseGuidance.ts`); In-Depth adds its "You are in the … step." lead line, Quick Lookup describes the step without claiming the game is in it
+  - Quick Lookup: a step is named when the question contains a step name from one fixed committed table of the rule book's step and phase names (`TURN_STEP_NAME_TABLE`: untap, upkeep, draw, main, beginning of combat, declare attackers, declare blockers, combat damage, end of combat, end, cleanup — each matched by the rule book's own name for it, so a bare "draw", "combat damage" or "until end of turn" names nothing), or when an attached card's concept terms (REQ-234) name a step; the prompt carries the summary for each named step, de-duplicated, in turn order, at most three, under a `PHASE GUIDANCE` heading right after `MTG REFERENCE`
+  - In-Depth keeps its current-step summary in its current place, with the corrected text
+  - acceptance: over every committed corpus case built as a Quick Lookup prompt, the summary is present whenever the question names a step; the Necropotence case's Quick Lookup prompt carries the cleanup summary
+- Constraints:
+  - guidance is reference text; no rules-validation behaviour (REQ-024)
+  - no request change: Quick Lookup still sends no game state
+- Dependencies:
+  - REQ-024 (phase guidance, amended)
+  - REQ-074 (Quick Lookup assembly, amended)
+  - REQ-234 (the concept terms that can name a step)
+- Notes:
+  - measured at intake on the saved prompts of the paid runs (cited): In-Depth answered `necropotence-silence-borne-upon-a-wind-cleanup` right 10 of 12 times, Quick Lookup 6 of 12; Quick Lookup's prompt had 703.4p fifth, after the priority rules, 514.3 without 514.3a, and no step guidance; in 5 of 6 Quick Lookup misses Luna found the priority window and still ruled that Silence applies (pooled p ≈ 0.04, a consistent mechanism, not yet proven — the post-merge paid run is the proof)
+  - a card whose wording says "until end of turn" or "this turn" brings the cleanup summary through the concept map (the map reads that wording as a cleanup-step term); this is by design and bounded by the three-summary cap
+
+### REQ-239
+- Title: Rule excerpts arrive in rule-book order, grouped by family and labelled
+- Priority: high
+- Description: The `ADDITIONAL RELEVANT RULE EXCERPTS` section prints its selected rules in rule-book order instead of score order, grouped by rule family under a path label built from the rule book's own titles, each rule's number printed once, and a sub-rule that cannot stand alone printed with its parent's lead-in sentence. Which rules are selected does not change. A card's keyword-set rules (REQ-235) and a lead-in's list items (REQ-240) are excerpts for grouping, labelling and order.
+- Acceptance Criteria:
+  - excerpts are sorted by rule-book order (the comparator REQ-233 defines) after selection; selection, the cap and the curated exclusion are unchanged
+  - excerpts sharing a three-digit section (for example every 514.x) form one group, headed by a path label "<part title> › <section title>" taken from the titles the rule index stores (REQ-179) — for example "Turn Structure › Cleanup Step"; a section titled "General" is labelled with its part ("Turn Structure › General"), never "General" alone
+  - each rule prints as its own text, which opens with its id, once — never `514.3a. 514.3a …`
+  - a sub-rule whose parent is not itself in the prompt is preceded by the parent's lead-in sentence (the parent's last sentence, shown once per parent, above the first delivered sibling, as "<parent id> … <sentence>") when the sub-rule is an item of the parent's list (REQ-240), begins with "First", "Second", "Third", "Fourth", "Fifth" or "At this point", or says "this rule"
+  - curated topics in `GAME RULES (reference)` print each rule's id once, in rule-book order within each topic (the manifest lists each topic's rule numbers in that order, and a data test asserts it)
+  - acceptance: over every committed corpus case's built prompts (REQ-240's set), 100% of excerpts are in rule-book order and 0 rule ids are printed twice
+- Constraints:
+  - prompt layout only; no change to which rules are selected
+  - verbatim rule text only; labels are the rule book's own titles
+- Dependencies:
+  - REQ-179 (the stored part and section titles)
+  - REQ-233 (the rule-order comparator)
+  - REQ-240 (lead-in lists)
+  - REQ-022 (the excerpt section)
+- Notes:
+  - measured at intake (cited): 370 index pieces (13%) need their parent's lead-in to make sense
+  - the part titles come from `gameRulesBookMeta.json` (REQ-179) and the section title from the index entry; the layout lives in `apps/backend/src/prompt/ruleLayout.ts`
+
+### REQ-240
+- Title: A rule that introduces a list is delivered with its list
+- Priority: high
+- Description: When a delivered rule ends by introducing a list — "…determined by the following rules:", "…subject to the following exception:" — the list's items are delivered with it, in search excerpts and curated topics alike, so the model never reads a lead-in with its list missing. Curated topics also gain rules they lack.
+- Acceptance Criteria:
+  - a lead-in is a rule whose text (its "Example:" lines set aside) ends with a colon, or with "following exception.", "following exceptions." or "following rules."; its list is its directly lettered sub-rules in the committed rule index. Measured at build on the committed index (2026-10-12): 17 lead-ins have such a list (the define-time count was 28 under a different parse of the index); list size median 1,071 characters, largest 5,164 (704.5, 25 items)
+  - search excerpts: a delivered lead-in brings every item of its list not already delivered; list items never use any of the System 3 slots (REQ-190); all list items added to one prompt share a budget of 12,000 characters (`LIST_ITEM_CHAR_BUDGET`), separate from REQ-235's keyword-set budget; a list that does not fit the remaining budget is never cut — the lead-in is followed by one line naming the omitted range
+  - curated topics: a topic rule that is a lead-in lists its items as topic rule numbers in `gameRulesTopicManifest.json` — `stack-and-priority` gains 117.3a–117.3d, `zones-basics` gains 400.7's twelve lettered sub-rules, and `combat-damage-assignment` gains 510.1a–510.1e; a curated lead-in whose items are somehow missing from its topic is completed from the index at layout time (a safety net, counted against the same budget), and a data test fails the build instead
+  - `layers-power-toughness` gains 613.4d and `layers-timestamps-dependencies` gains 613.8b; `abilities-delayed-triggers` carries 603.7a, 603.7b and 603.7c in place of 603.10
+  - the curated exclusion follows the manifest (REQ-179), so a topic's list items never repeat as search excerpts, and REQ-179's test that every topic carries exactly the rules it lists still passes
+  - the build-policy test's cap on total curated topic text (26,000 characters before) is raised to 35,000, the new measured total (34,317 characters across 24 topics) rounded up to the next 1,000
+  - acceptance: over every committed corpus case built as a Quick Lookup prompt, and as an In-Depth prompt when it has a game state, 0 lead-ins appear without their list and the omitted-range line fires 0 times (`apps/backend/src/prompt/ruleLayoutCorpus.test.ts`)
+- Constraints:
+  - verbatim rule text only
+  - the cap (REQ-190) is unchanged by list items
+- Dependencies:
+  - REQ-179 (the exact-number exclusion and topic data test)
+  - REQ-022 (curated topics)
+  - REQ-239 (layout of delivered list items)
+- Notes:
+  - measured at intake (cited): curated 117.3 dangles without its list in 414 of 415 corpus prompts, 400.7 in 398
+  - measured at build: 117.3's list is 884 characters and 400.7's 2,737, added to every prompt through the always-on topics (about 3,600 characters); the rules gate does not credit a deciding rule that arrives only as a list item, so its baseline understates this recall
+  - takes up the follow-up REQ-179's notes recorded as out of scope on 2026-10-07 (expanding a rule that ends "the following rules:" into its sub-rules)
+
+### REQ-244
+- Title: "See rule X" pointers in delivered rules carry what they point at
+- Priority: low
+- Description: When a delivered rule points elsewhere — "see rule 101.4", "see rules 613.2 and 613.3", "see section 7" — and the target is not itself in the prompt, the pointer carries the target's first sentence (a specific rule) or its title (a section or family), verbatim.
+- Acceptance Criteria:
+  - a pointer to a specific rule absent from the prompt is followed, in brackets, by that rule's first sentence from the committed index; a pointer to a section, family or keyword rule is followed by its title; a pointer whose text already gives the title ("see rule 702.26, “Phasing.”") is left as written
+  - a pointer whose target is already in the prompt (a curated topic's rule, an excerpt, or a list item) is left as written
+  - at most ten pointers are resolved per prompt, in the order they appear (curated topics first, then excerpts); each attached first sentence is capped at 250 characters; pointers beyond the cap stay as written
+  - the build reports the share of pointers resolved over the committed corpus prompts (`ruleLayoutCorpus.test.ts`; the enrichment debug carries `pointersFound` and `pointersResolved` per prompt)
+- Constraints:
+  - verbatim rule text and titles only; no paraphrase
+- Dependencies:
+  - REQ-179 (the index the targets come from)
+  - REQ-239 (excerpt layout)
+- Notes:
+  - measured at intake (cited): 73% of "see rule X" pointers point at text that is not in the prompt
+  - measured at build, 2026-10-12: over the corpus prompts (Quick Lookup for every case, In-Depth where a game state exists) 4,056 of the 4,523 pointers to absent text were resolved (89.7%); the rest hit the ten-per-prompt cap
