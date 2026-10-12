@@ -1,4 +1,4 @@
-status: ship-ready
+status: owner-action
 
 # right-rules-in-order
 
