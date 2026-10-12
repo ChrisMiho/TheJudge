@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261012-195753/`
-- Current node: `build` parked (owner-action); next node `review`
+- Current node: `review` (resumed 2026-10-12 after the accepted build park; lock re-taken, graph canary `nohup true` denied)
 - Next action: `/graph-implement PRD/work/follow-ups-keep-their-rules/`
 
 ## Node ledger
@@ -240,6 +240,32 @@ Rules:
 - Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, stop and report it verbatim; never retry it.
 
 Report back: per slice, the commits and what each criterion's evidence showed; every path you wrote; the PR URL; the final STATUS marker; and `git status --porcelain` of the working directory.
+
+### review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-follow-ups-keep-their-rules
+
+You are node 7 (`review`) of graph run `graph-20261012-152231`, attempt 1: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit tool and must not change any file, index, branch, stash or PR. You have not seen the build and must not trust its narration; read the code.
+
+What to review: the code PR https://github.com/ChrisMiho/TheJudge/pull/297, branch `thejudge-auto/follow-ups-keep-their-rules-work`, checked out in the working directory above. The diff is `git diff origin/main...HEAD` there (slice A commit `61ea4899`, slice B commit `3626876e`). Package artifacts: `PRD/work/follow-ups-keep-their-rules/` — `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (11 accepted slots: the exact `PRD/sections/` truth), `GAMEPLAN.md`, `slice-a-eval-pushback-mode.md`, `slice-b-follow-ups-keep-rules.md`, `slice-a.evidence.md`, `slice-b.evidence.md`, `evidence/`.
+
+Rubric: each slice's own `## Acceptance criteria`, A1 to A14 and B1 to B13, read verbatim from the two slice docs. The product claim under test: a follow-up (any request carrying `conversationHistory`) selects its rule excerpts, In-Depth curated topics and Quick Lookup step guidance from the opening question, while the follow-up text still drives the QUESTION line and the combo section; a request without history builds a byte-identical prompt. Slice A adds the eval's `--follow-up pushback` mode as tooling only.
+
+Check, at least:
+- B1: find every place rule selection reads the question; confirm all go through the one helper and nothing else reads the follow-up text for rule selection.
+- B2/B3/B7: the tests assert what the criteria say (byte-identical sections, opening-query embed, combo still on follow-up text), not something weaker.
+- B5/B8: no schema, route-logic, response or frontend change; a no-history request is unchanged.
+- A1 to A12: the pushback mode refuses what it must, never makes a network call in tests, and the dry run makes no paid call.
+- A13/B9/B13: diff `PRD/sections/` against the accepted slot diffs in `GATE-QUESTIONS.md`; flag any wording drift or any edit outside those entries.
+- Run, in the foreground: `npm --workspace apps/backend run test`, `npm run test:scripts`, `npm run typecheck`, `npm run lint`, `npm run format:check`. Report pass or fail with counts. If a command cannot run in this worktree, say why rather than guessing.
+
+Severity rule: Critical or Important only for a gap that breaks correctness or a stated acceptance criterion. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important; list it as Minor. Do not manufacture findings.
+
+Rules: spawn no subagents or forks; do not sleep or poll; stay well under 120 tool calls. Never read `.secrets/`. No paid or live model calls. Copy the `Working directory:` line, unchanged, into any prompt you write. If a command is denied, report it verbatim; never retry it.
+
+Report back: a verdict line `APPROVE` or `CHANGES REQUIRED`; per criterion A1 to A14 and B1 to B13, met or not with file:line evidence; the five command results; then findings as Critical / Important / Minor, each with file:line and the criterion it breaks.
 
 ## Instruction ledger
 
