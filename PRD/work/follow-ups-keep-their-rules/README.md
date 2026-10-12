@@ -12,7 +12,7 @@ Mapped 2026-10-12: `GAMEPLAN.md`. One worktree, one branch. The REQ-246 follow-u
 
 | Slice | Doc | Goal | Depends on |
 | --- | --- | --- | --- |
-| A | `slice-a-eval-pushback-mode.md` | The eval's pushback mode (REQ-247, REQ-226, REQ-228); tooling only | none |
+| A | `slice-a-eval-pushback-mode.md` | The eval's pushback mode (REQ-247, REQ-226, REQ-228); tooling only. Status: done 2026-10-12 (evidence note: `slice-a.evidence.md`) | none |
 | B | `slice-b-follow-ups-keep-rules.md` | Follow-ups keep the opening question's rules (REQ-246 and seven amendments, 13 derived-doc rows); ship gates | A (ordering: the "before" run is launched from A's commit) |
 
 ## Autonomous metadata

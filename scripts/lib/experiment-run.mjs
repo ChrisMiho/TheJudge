@@ -25,6 +25,7 @@ import { mechanicPrefixes, ruleSections, sha256 } from "./gold-cases.mjs";
 import { hashPrompt, referenceAnswerHash } from "./answer-quality-run.mjs";
 import { attachedRuleIdsOf, buildJudgeInputs, extractExcerptRuleIds } from "./judge-inputs.mjs";
 import { describeDecidingRules } from "./rule-availability.mjs";
+import { buildFollowUpRequest, buildFollowUpSummary, findDisownedRules, extractCitedRuleIds, formatFollowUpReport } from "./pushback-follow-up.mjs";
 
 export const EXPERIMENT_RUNS_DIR = "output/answer-quality/runs";
 export const IDENTITY_FORMAT_VERSION = 1;
@@ -64,17 +65,18 @@ export function runFolder(runsRoot, runId) {
   return join(runsRoot, validateRunId(runId));
 }
 
-/** One record is keyed by case, model, excerpt cap, arm and repeat index (REQ-226). */
-export function recordKey({ caseId, model, excerptCap, arm = DEFAULT_ARM, repeat = 1 }) {
-  return `${caseId}|${model}|${excerptCap}|${arm}|${repeat}`;
+/** One record is keyed by case, model, excerpt cap, arm and repeat index, and in a follow-up run also by turn (REQ-226, REQ-247). */
+export function recordKey({ caseId, model, excerptCap, arm = DEFAULT_ARM, repeat = 1, turn }) {
+  return `${caseId}|${model}|${excerptCap}|${arm}|${repeat}${turn === undefined ? "" : `|turn${turn}`}`;
 }
 
 function safeSegment(value) {
   return String(value).replace(/[^a-z0-9.-]/gi, "_");
 }
 
-export function transcriptRelativePath({ caseId, model, excerptCap, arm = DEFAULT_ARM, repeat = 1 }) {
-  return `transcripts/${safeSegment(caseId)}--${safeSegment(model)}--cap${excerptCap}--arm${safeSegment(arm)}--r${repeat}.json`;
+export function transcriptRelativePath({ caseId, model, excerptCap, arm = DEFAULT_ARM, repeat = 1, turn }) {
+  const turnPart = turn === undefined ? "" : `--turn${turn}`;
+  return `transcripts/${safeSegment(caseId)}--${safeSegment(model)}--cap${excerptCap}--arm${safeSegment(arm)}--r${repeat}${turnPart}.json`;
 }
 
 // ---------------------------------------------------------------------------
@@ -244,6 +246,7 @@ export function buildIdentityRecord({
   productionTimeoutMs = null,
   regrade = null,
   suite = null,
+  followUp = null,
   startedAt
 }) {
   return {
@@ -274,7 +277,9 @@ export function buildIdentityRecord({
     maxCostUsd,
     regrade,
     // Present only for a local practice-suite run (REQ-232), so every other identity record is unchanged.
-    ...(suite ? { suite } : {})
+    ...(suite ? { suite } : {}),
+    // Present only for a follow-up run (REQ-247): the follow-up's name and the revision id of its text.
+    ...(followUp ? { followUp: { name: followUp.name, revision: followUp.revision } } : {})
   };
 }
 
@@ -370,6 +375,7 @@ export function buildSummary({
     records
   };
   if (identity.suite) summary.suite = suiteAgreementCounts(identity.suite, ok);
+  if (identity.followUp) summary.followUp = buildFollowUpSummary({ ...identity.followUp, records });
   assertNoProseKeys(summary);
   return summary;
 }
@@ -576,6 +582,7 @@ export async function executeExperiment(params, deps) {
     maxCostUsd = null,
     heldOutIds = new Set(),
     suite = null,
+    followUp = null,
     extraFiles = {},
     env,
     log
@@ -613,6 +620,7 @@ export async function executeExperiment(params, deps) {
     client: deps.clientOptions,
     productionTimeoutMs: deps.productionTimeoutMs ?? null,
     suite,
+    followUp,
     startedAt: deps.nowIso()
   });
   if (resume) {
@@ -661,6 +669,97 @@ export async function executeExperiment(params, deps) {
     return true;
   };
 
+  // A finished record is appended the moment it exists, so a crash keeps every finished call (REQ-227).
+  const persist = async (result) => {
+    calls.records.set(result.record.key, result.record);
+    state.spent += (result.record.costUsd ?? 0) + (result.record.judgeCostUsd ?? 0);
+    await appendCall(folder, { type: "record", record: result.record });
+    const { model, reportedModel } = result.record;
+    if (reportedModel && identity.models.reported[model] !== reportedModel) {
+      identity.models.reported[model] = reportedModel;
+      await writeJson(join(folder, "manifest.json"), identity);
+    }
+  };
+
+  // One follow-up conversation (REQ-247): turn 1 is the production request, turn 2 a production follow-up built
+  // from turn 1's request and answer. A completed turn is never repeated; a conversation whose turn 1 finished
+  // resumes at turn 2 from the stored turn-1 answer. Returns { stopped: true } when the spending cap stops it.
+  const runConversation = async ({ caseEntry, arm, repeat, model, cap, request, referenceHash }) => {
+    const base = { caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat };
+    const shared = {
+      deps, client, judgeModel, identity, caseEntry, referenceHash, arm, repeat, model, cap, knownRuleIds, folder, heldOutIds, passesCap, log
+    };
+    let turn1 = calls.records.get(recordKey({ ...base, turn: 1 }));
+    let turn1Answer = "";
+    if (turn1 && (turn1.status === "ok" || !retryErrors)) {
+      if (turn1.status === "ok") turn1Answer = (await readStoredAnswer(folder, turn1)).answerText;
+    } else {
+      const result = await answerAndGrade({
+        ...shared,
+        request,
+        turn: 1,
+        reserveFollowUp: true,
+        vector: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
+        cardEmbeddings: queryEmbeddingByCaseId.cardEmbeddingsByCaseId?.get(caseEntry.id)
+      });
+      if (!result) return { stopped: true };
+      await persist(result);
+      turn1 = result.record;
+      turn1Answer = result.answerText;
+    }
+    if (turn1.status !== "ok") return {};
+
+    const existing = calls.records.get(recordKey({ ...base, turn: 2 }));
+    if (existing && (existing.status === "ok" || !retryErrors)) return {};
+
+    const built = buildFollowUpRequest({ turn1Request: request, turn1Answer, followUp });
+    let parsed;
+    try {
+      parsed = deps.parseRequest(built);
+    } catch (error) {
+      // A request the route's schema rejects is the app's own limit (a turn-1 answer past the history cap, say): never sent.
+      const key = { ...base, turn: 2 };
+      const record = {
+        key: recordKey(key),
+        ...key,
+        armRevision: arm.revision,
+        diagnostic: arm.id !== DEFAULT_ARM,
+        heldOut: heldOutIds.has(caseEntry.id),
+        tier: caseEntry.tier,
+        strata: strataOf(caseEntry),
+        referenceAnswerHash: referenceHash,
+        judgeModel,
+        rubricRevision: identity.rubricRevision,
+        embeddingProvider: identity.embeddingProvider,
+        commit: identity.commit,
+        status: "error",
+        errorKind: "request-rejected",
+        errorMessage: `the route's request schema rejects the follow-up request: ${errorMessageOf(error)}`,
+        gradedAt: deps.nowIso(),
+        costUsd: 0,
+        judgeCostUsd: 0
+      };
+      log?.(`  ${caseEntry.id} / ${model} / cap ${cap} / repeat ${repeat}: turn 2 not sent -- ${record.errorMessage}`);
+      await persist({ record });
+      return {};
+    }
+    const embedded = await deps.embedRequest(parsed, caseEntry);
+    const result = await answerAndGrade({
+      ...shared,
+      request: parsed,
+      turn: 2,
+      vector: embedded?.vector ?? null,
+      cardEmbeddings: embedded?.cardEmbeddings
+    });
+    if (!result) return { stopped: true };
+    if (result.record.status === "ok") {
+      result.record.disownedRuleIds = findDisownedRules({ answerText: result.answerText, turn1RuleIds: extractCitedRuleIds(turn1Answer) });
+    }
+    await persist(result);
+    return {};
+  };
+
+  const turnList = followUp ? [1, 2] : [undefined];
   const ordered = [];
   for (const cap of excerptCaps) {
     for (const caseEntry of cases) {
@@ -677,6 +776,11 @@ export async function executeExperiment(params, deps) {
     const group = [];
     let groupComplete = true;
     for (const model of models) {
+      if (followUp) {
+        const outcome = await runConversation({ caseEntry, arm, repeat, model, cap, request, referenceHash });
+        if (outcome.stopped) break;
+        continue;
+      }
       const key = { caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat };
       const existing = calls.records.get(recordKey(key));
       if (existing && (existing.status === "ok" || !retryErrors)) {
@@ -705,21 +809,16 @@ export async function executeExperiment(params, deps) {
         log
       });
       if (!result) break; // stopped before the call: the cap
-      calls.records.set(result.record.key, result.record);
-      state.spent += (result.record.costUsd ?? 0) + (result.record.judgeCostUsd ?? 0);
-      await appendCall(folder, { type: "record", record: result.record });
+      await persist(result);
       if (result.record.status === "ok") group.push(result);
       else groupComplete = false;
-      if (result.record.reportedModel && identity.models.reported[model] !== result.record.reportedModel) {
-        identity.models.reported[model] = result.record.reportedModel;
-        await writeJson(join(folder, "manifest.json"), identity);
-      }
     }
     if (state.stopped) break;
 
     // Ranking one answer against itself means nothing: a one-model run makes no ranking call (REQ-186).
     const groupKey = groupKeyOf({ caseId: caseEntry.id, excerptCap: cap, arm: arm.id, repeat });
-    if (models.length > 1 && groupComplete && group.length === models.length && !calls.rankings.has(groupKey)) {
+    // A follow-up run grades each turn alone and ranks nothing.
+    if (!followUp && models.length > 1 && groupComplete && group.length === models.length && !calls.rankings.has(groupKey)) {
       const estimate = deps.estimateCallCostUsd?.({ kind: "ranking", model: judgeModel }) ?? null;
       if (passesCap(estimate, { caseId: caseEntry.id, kind: "ranking" })) break;
       const ranking = await rankGroup({ deps, client, judgeModel, caseEntry, arm, repeat, cap, group, folder, groupKey });
@@ -735,17 +834,21 @@ export async function executeExperiment(params, deps) {
   const records = [];
   for (const { cap, caseEntry, arm, repeat } of ordered) {
     for (const model of models) {
-      const record = calls.records.get(recordKey({ caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat }));
-      if (!record) continue;
-      const ranking = calls.rankings.get(groupKeyOf({ caseId: caseEntry.id, excerptCap: cap, arm: arm.id, repeat }));
-      records.push(ranking && !ranking.undetermined ? { ...record, blindRank: ranking.ranks[model] ?? null } : record);
+      for (const turn of turnList) {
+        const record = calls.records.get(recordKey({ caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat, turn }));
+        if (!record) continue;
+        const ranking = calls.rankings.get(groupKeyOf({ caseId: caseEntry.id, excerptCap: cap, arm: arm.id, repeat }));
+        records.push(ranking && !ranking.undetermined ? { ...record, blindRank: ranking.ranks[model] ?? null } : record);
+      }
     }
   }
   const notCompleted = [];
   for (const { cap, caseEntry, arm, repeat } of ordered) {
     for (const model of models) {
-      const key = recordKey({ caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat });
-      if (calls.records.get(key)?.status !== "ok") notCompleted.push(key);
+      for (const turn of turnList) {
+        const key = recordKey({ caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat, turn });
+        if (calls.records.get(key)?.status !== "ok") notCompleted.push(key);
+      }
     }
   }
   const stoppedReason = state.stopped
@@ -760,6 +863,7 @@ export async function executeExperiment(params, deps) {
   } else {
     log?.(`\nWrote the run folder ${folder}/ (manifest.json, calls.jsonl, transcripts/, summary.json).`);
   }
+  if (followUp) log?.(`\n${formatFollowUpReport(summary.followUp)}`);
   return { identity, summary, folder };
 }
 
@@ -791,6 +895,8 @@ async function answerAndGrade({
   folder,
   heldOutIds = new Set(),
   passesCap,
+  turn,
+  reserveFollowUp = false,
   log
 }) {
   const { prepared, promptText, bundleRuleIds = [] } = buildPromptFor({ deps, arm, request, cap, vector, cardEmbeddings, caseEntry });
@@ -802,13 +908,17 @@ async function answerAndGrade({
   // The answer and the grade that follows are checked together, so a run never pays for an answer it cannot grade.
   const answerEstimate = deps.estimateCallCostUsd?.({ kind: "answer", model, promptChars: promptText.length }) ?? null;
   const judgeEstimate = deps.estimateCallCostUsd?.({ kind: "judge", model: judgeModel }) ?? null;
-  const callEstimate = answerEstimate === null || judgeEstimate === null ? null : answerEstimate + judgeEstimate;
+  const pairEstimate = answerEstimate === null || judgeEstimate === null ? null : answerEstimate + judgeEstimate;
+  // Turn 1 of a conversation is checked for the whole conversation -- two answers and two grades -- so a run never pays for a turn 1 it cannot follow up (REQ-247).
+  const callEstimate = pairEstimate !== null && reserveFollowUp ? pairEstimate * 2 : pairEstimate;
   if (passesCap(callEstimate, { caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat, kind: "answer" })) return null;
 
-  const key = { caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat };
+  const key = { caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat, ...(turn === undefined ? {} : { turn }) };
   const common = {
     key: recordKey(key),
     ...key,
+    // The System 3 rule ids this turn's prompt carried, so a follow-up run can say how many turn 2 shared with turn 1 (REQ-247).
+    ...(turn === undefined ? {} : { system3RuleIds: retrieval.selectedRuleIds }),
     armRevision: arm.revision,
     // Every arm but A is a test-only variant, reported apart as a diagnostic control (REQ-230, REQ-228).
     diagnostic: arm.id !== DEFAULT_ARM,
@@ -894,6 +1004,7 @@ async function answerAndGrade({
     arm: arm.id,
     armRevision: arm.revision,
     repeat,
+    ...(turn === undefined ? {} : { turn, requestQuestion: request.question }),
     question: caseEntry.question,
     promptText,
     attachedRuleIds,

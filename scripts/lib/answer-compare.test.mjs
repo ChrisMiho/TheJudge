@@ -10,6 +10,7 @@ import test from "node:test";
 import { parseCompareArgs, runCompare } from "../eval-answer-compare.mjs";
 import { compareRunSides, formatComparison, parseRepeatSelector, readRunFolder, resolveGroup, selectSide, selfComparisonReasons, DIAGNOSTIC_HEADING } from "./answer-compare.mjs";
 import { executeExperiment, manifestEntryFor } from "./experiment-run.mjs";
+import { resolveFollowUp } from "./pushback-follow-up.mjs";
 
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -53,6 +54,7 @@ async function makeRun({
   failCaseIds = new Set(),
   timeoutMs,
   commit = "0123456789abcdef0123456789abcdef01234567",
+  followUp = null,
   runsRoot
 }) {
   const manifest = { cases: cases.map(manifestEntryFor) };
@@ -60,6 +62,8 @@ async function makeRun({
   let clock = 0;
   const deps = {
     preparePromptInput: (request) => ({ promptText: `PROMPT ${request.question}${promptSuffix}`, enrichmentDebug: { supplemental: { usedSemantic: true, selected: [] } } }),
+    parseRequest: (request) => request,
+    embedRequest: async () => ({ vector: [1], cardEmbeddings: new Map() }),
     buildCaseRequest: (caseEntry) => ({ mode: "lookup", question: caseEntry.question }),
     describeRetrieval: () => ({ usedSemantic: true, selectedRuleIds: [], goldRuleInPrompt: false }),
     computeDeterministicAssertions: () => ({ namesGoldRuleId: false, nonEmpty: true, length: 5, unknownRuleIds: [] }),
@@ -106,7 +110,7 @@ async function makeRun({
     }
   };
   const result = await executeExperiment(
-    { runId, runsRoot, client, judgeModel, models: ["gpt-4.1"], excerptCaps: [10], arms, repeats, cases, manifest, manifestSha256: "m".repeat(64), env: {}, log: () => {} },
+    { runId, runsRoot, client, judgeModel, models: ["gpt-4.1"], excerptCaps: [10], arms, repeats, cases, manifest, manifestSha256: "m".repeat(64), followUp: followUp ? resolveFollowUp(followUp) : null, env: {}, log: () => {} },
     deps
   );
   if (timeoutMs !== undefined) {
@@ -548,4 +552,71 @@ test("the compare report reads two suite run folders and splits them by suite le
   const corpus = await makeRun({ runId: "corpus-one", right: new Set(), runsRoot });
   const corpusResult = await compareFolders(corpus, corpus);
   assert.equal(Object.hasOwn(corpusResult.breakdowns["tiers 1-2"], "level"), false);
+});
+
+// REQ-228 / REQ-247: --turn picks one turn of a follow-up run -----------------
+
+test("parseCompareArgs reads --turn, --turn-a and --turn-b", () => {
+  const parsed = parseCompareArgs(["a", "b", "--turn", "2", "--turn-a", "1", "--turn-b", "2"]);
+  assert.equal(parsed.selectors.turn, "2");
+  assert.equal(parsed.selectors.turnA, "1");
+  assert.equal(parsed.selectors.turnB, "2");
+  assert.equal(parseCompareArgs(["a", "b"]).selectors.turn, undefined);
+});
+
+test("--turn selects one turn of a follow-up run, defaults to turn 1, and refuses a turn that is not 1 or 2", async () => {
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-turn-"));
+  // Every first answer is right; the pushback answer is right for r2r and w2r only.
+  const folder = await makeRun({
+    runId: "pushback-run",
+    runsRoot,
+    followUp: "pushback",
+    rightByRepeat: (caseId, index) => index === 0 || ["r2r", "w2r"].includes(caseId)
+  });
+  const run = await readRunFolder(folder);
+  assert.equal(run.summary.records.length, CASES.length * 2, "the run holds both turns");
+
+  const first = selectSide(run, {});
+  assert.equal(first.turn, 1, "turn 1 by default");
+  assert.equal(first.records.length, CASES.length);
+  assert.ok(first.records.every((record) => record.turn === 1));
+  const second = selectSide(run, { turn: "2" });
+  assert.ok(second.records.every((record) => record.turn === 2));
+  assert.equal(second.records.length, CASES.length);
+  assert.equal(selectSide(run, { turn: 2 }).records.length, CASES.length);
+
+  for (const bad of ["3", "0", "x", "1.5"]) assert.throws(() => selectSide(run, { turn: bad }), /--turn must be 1 or 2/);
+});
+
+test("the two turns of one follow-up run compare as two sides, and the same turn on both sides is refused as a self-comparison", async () => {
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-turn-"));
+  const folder = await makeRun({
+    runId: "pushback-run",
+    runsRoot,
+    followUp: "pushback",
+    rightByRepeat: (caseId, index) => index === 0 || ["r2r", "w2r"].includes(caseId)
+  });
+  const run = await readRunFolder(folder);
+  const result = compareRunSides(selectSide(run, { turn: 1 }), selectSide(run, { turn: 2 }));
+  assert.ok(!result.refused);
+  assert.equal(result.sides.a.turn, 1);
+  assert.equal(result.sides.b.turn, 2);
+  const report = formatComparison(result, { labelA: "turn-one", labelB: "turn-two" });
+  assert.match(report, /turn 1/);
+  assert.match(report, /turn 2/);
+
+  assert.ok(selfComparisonReasons(selectSide(run, { turn: 2 }), selectSide(run, { turn: 2 })).length > 0);
+  assert.deepEqual(selfComparisonReasons(selectSide(run, { turn: 1 }), selectSide(run, { turn: 2 })), []);
+});
+
+test("a run without follow-up records works unchanged: turn 1 is implicit, its report names no turn, and --turn 2 finds nothing", async () => {
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-turn-"));
+  const folder = await makeRun({ runId: "plain", runsRoot, right: new Set(["r2r"]) });
+  const run = await readRunFolder(folder);
+  const side = selectSide(run, {});
+  assert.equal(side.records.length, CASES.length);
+  assert.equal(selectSide(run, { turn: "1" }).records.length, CASES.length);
+  const report = formatComparison(compareRunSides(side, selectSide(run, { arm: "A", repeats: "1" })), { labelA: "x", labelB: "y" });
+  assert.doesNotMatch(report, /turn \d/);
+  assert.throws(() => selectSide(run, { turn: "2" }), /has no records for arm A at turn 2/);
 });

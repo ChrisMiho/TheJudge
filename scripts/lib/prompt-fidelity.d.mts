@@ -49,3 +49,14 @@ export function embedGoldCaseQueries(input: {
   embedder: Embedder;
   cardDetailIndex: Map<string, CardDetailEntry>;
 }): Promise<Map<string, number[] | null> & { cardEmbeddingsByCaseId: Map<string, Map<string, number[]>> }>;
+export function embedRequestQuery(input: {
+  request: unknown;
+  caseId: string;
+  embedder: Embedder;
+  cardDetailIndex: Map<string, CardDetailEntry>;
+  cardVectorCache?: Map<string, number[] | null>;
+  queryTexts?: {
+    buildRetrievalQueryText: (request: never, options: never) => string;
+    buildPerCardSearchTexts: (request: never, options: never) => Array<{ key: string; text: string }>;
+  };
+}): Promise<{ vector: number[] | null; cardEmbeddings: Map<string, number[]> }>;

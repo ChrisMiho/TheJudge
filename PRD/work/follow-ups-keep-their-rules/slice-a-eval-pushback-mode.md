@@ -1,6 +1,6 @@
 # Slice A — the eval's pushback mode
 
-## Status: planned
+## Status: done
 
 ## Goal
 
