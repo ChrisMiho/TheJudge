@@ -4,7 +4,8 @@
   "tier": 1,
   "review": {
     "status": "approved",
-    "reviewedOn": "2026-10-07"
+    "reviewedOn": "2026-10-12",
+    "note": "Re-approved 2026-10-12 by the owner after #293 stripped a stray chapter heading from the end of the case’s deciding rule text (514.3a / 616.2); no rule wording changed."
   },
   "cards": [],
   "gameState": null,
@@ -34,9 +35,9 @@
     "variants": []
   },
   "snapshot": {
-    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "ruleIndexHash": "5b780ef413c855f7b9c4e20ded93316862dd6af7da1a8c1c0ba18513480ecfe4",
     "dependsOnHashes": {
-      "rules": "11b27ef6a7cf41d73fe002d98e971c60985614bbe8005862d9f9d224816c4aa0",
+      "rules": "30f22d0955d7f2326b93233a141ec30473dbf1e5bece1af9038c17bc6dd68a45",
       "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
       "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     }
