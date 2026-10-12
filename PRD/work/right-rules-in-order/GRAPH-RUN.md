@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261011-234114/`
-- Current node: `gate-review`
+- Current node: `gate-qc`
 - Next action: `/graph-implement PRD/work/right-rules-in-order/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 12` | `PRD/work/right-rules-in-order/` (IDEA.md, README.md, STATUS.ideation, `intake/GRAPH-BRIEF-search-and-prompt.md` byte-identical to the staged copy, `cmp` clean); board row under ideation; commit `e0c78ba9` pushed; 17 prior-run receipts in IDEA.md; driver added `## Autonomous metadata` to README | 2026-10-11 |
 | 3 | define | opus | ok | `0 → 95` | `PRD/work/right-rules-in-order/DESIGN-BRIEF.md` (363 lines, 12 acceptance targets, 23 assumptions), `PRD/work/right-rules-in-order/GATE-QUESTIONS.md` (39 slots, 39 blank verdicts: new REQ-233–245; amended REQ-022, 024, 030, 074, 167, 176, 178, 179, 180, 181, 182, 183, 184, 190, 220, 232, NFR-017, FLOW-011, FLOW-023; 7 section docs), `evidence/amendment-grep.md` (100 hits = 70 amend / 5 build / 25 no change); no blocker questions; `STATUS.refined` only marker, board row under refined; commit `09467219` pushed; node-reported diff check 206 removed + 138 context lines exact; `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` empty; no paid or network calls | 2026-10-11 |
 | 4 | gate-qc | sonnet | ok | `0 → 24` | PASS attempt 1, findings none — `PRD/work/right-rules-in-order/QUALITY-CHECK.md`, commit `abb4ed8b` pushed; 344 removed/context diff lines exact over 39 slots; amendment grep re-run 100 hits = 100 rows; REQ-233–245 unused on `origin/main`; privacy scan 0 matches; `git diff --stat 61d32c76 HEAD -- PRD/sections apps scripts docs .gitignore` empty; README `## Preparation gate` PASS written by the driver; parked `owner-action` (marker and board row moved, commit `c65cb5bf`); docs PR https://github.com/ChrisMiho/TheJudge/pull/291 | 2026-10-11 |
+| 5 | gate-review | sonnet | ok | `0 → 12` | build half run `graph-20261011-190751`: claim commit `67f75ba8` on `thejudge-auto/right-rules-in-order-work` cut from `origin/main` `9776e936` (docs PR #291 merge; kickoff worktree removed clean); `graph-gate-review` commit `6ec5730b`: 39 accept / 0 edit / 0 reject, brief reconciliation none, `## Gate verdicts` written, `## Open gate` resolved; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` empty; worktree porcelain empty | 2026-10-11 |
 
 ## Open gate
 
@@ -168,6 +169,35 @@ You are the gate-resolution node (`gate-review`) of build-half graph run `graph-
 - Change files with the Write and Edit tools. Run git as short separate calls from inside the working directory: `git add <explicit paths>`, then `git commit`, then `git push origin thejudge-auto/right-rules-in-order-work`. Never `git add -A` or `.`; never force-push.
 - Do not edit the `## Node ledger` table or `## Dispatch prompts`; the driver owns them.
 - Report: verdict counts, the brief reconciliation list, the commit sha, `git status --porcelain` (must be empty), and `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` (must be empty).
+
+Note: the driver has an uncommitted edit to `PRD/work/right-rules-in-order/GRAPH-RUN.md` (header lines and the `### gate-review` dispatch prompt). Keep it and include `GRAPH-RUN.md` in your commit.
+
+### gate-qc (build half, attempt 1)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-right-rules-in-order
+
+You are node `gate-qc` of build-half graph run `graph-20261011-190751`, attempt 1 — the re-grade after the owner's verdicts. Invoke the `thejudge-quality-check` skill and follow it in its graph-controlled mode (`graph is controlling`: no questions to the user, no approval pauses). Produce a PASS or FAIL report only — never a GAMEPLAN or slice docs.
+
+Package: `PRD/work/right-rules-in-order/` inside the working directory above, on branch `thejudge-auto/right-rules-in-order-work` (cut from `origin/main` `9776e936`, which now includes rename PR #292). Checked artifact: `DESIGN-BRIEF.md`, with `GATE-QUESTIONS.md` (39 slots, all answered accept — see `## Gate verdicts` in `GRAPH-RUN.md`), `evidence/amendment-grep.md`, and `intake/GRAPH-BRIEF-search-and-prompt.md`. Never write to the launch checkout /Users/chrismiho/Coding/Projects/TheJudge itself. Leave `GRAPH-RUN.md` and `README.md` alone — the driver writes the README `## Preparation gate` section.
+
+Checks to include alongside the skill's own, all against the current branch (which equals `origin/main` outside the package):
+1. Every removed and context line in every `GATE-QUESTIONS.md` diff matches current `PRD/sections/` word for word. Verify with one script over all diffs, not by hand.
+2. The amendment grep re-runs to the same hit count, and every hit has a disposition. A drift caused only by main moving is bookkeeping — report it precisely.
+3. The 39 verdicts are consistent with the brief: no accepted slot contradicts a brief passage.
+4. New IDs REQ-233 to REQ-245 are still unused in `PRD/sections/`; no DEC entry is added.
+5. Privacy: no practice-suite question text, answers, card lists, ids or per-question results in any package file; no model weights; the suite's source name appears nowhere in the package.
+6. `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs .gitignore` is empty.
+Do not open the probe-folder documents the intake cites (`PRD/work/probe-prompt-format-tuning/**`); make no paid or network calls.
+
+Write the report to `PRD/work/right-rules-in-order/QUALITY-CHECK.md` (replace the spec-forming report). On PASS leave `STATUS.refined`; on FAIL set `STATUS.refining` (exactly one marker) and move the `PRD/work/STATUS.md` board row fully (remove from the old section, add to the new). Quote any finding precisely with file and line.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`, no long chained Bash. Commit only explicit paths (`git add <path>`, then `git commit`, then `git push origin thejudge-auto/right-rules-in-order-work`, as separate short calls; never `git add -A` or `git add .`). End every commit message with this line:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Verify directly. Spawn no subagents or forks; no sleeping or polling. Stay well under 60 tool calls — aim for 40; if you near 45, write the verdict with what you have and report. Copy the Working directory line above unchanged into any prompt you write.
+
+Report back: PASS or FAIL, the complete finding list, the commit SHA and push result, and the marker left in place.
 
 ## Instruction ledger
 
