@@ -8,6 +8,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [follow-ups-keep-their-rules](follow-ups-keep-their-rules/) | Follow-ups reuse the opening question's rule excerpts; answer-quality eval gains a pushback follow-up mode. Both slices done (A eval pushback mode, B follow-ups keep their rules); code PR open; post-merge paid before/after pushback runs are owner steps |
 
 ## active
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [follow-ups-keep-their-rules](follow-ups-keep-their-rules/) | Both slices built, code PR #297 open. Parked after build: the builder wrote one temp file under `/tmp` (outside its folder) and ran `git stash` / `git stash pop`. Decide in `GRAPH-RUN.md` `## Open gate`, then resume to run review |
 
 ## deferred
 
