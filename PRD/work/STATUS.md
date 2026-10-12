@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order: trained search model, search fixes, prompt fixes. All slices A to G done; code PR open for review. Upload the search model before merging (docs/aws/model-upload.md). |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| [right-rules-in-order](right-rules-in-order/) | Luna gets the deciding rules about twice as often, in rule-book order: trained search model, search fixes, prompt fixes. Build in progress; slices A to F done, G next. |
 
 ## refined
 

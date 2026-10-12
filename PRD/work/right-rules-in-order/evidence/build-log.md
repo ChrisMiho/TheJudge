@@ -66,8 +66,8 @@ The owner accepted REQ-190 (up to fifteen excerpts, 0.6 relevance cutoff) and RE
 
 - 2026-10-12 — Prompt rules section built and applied by intent with the cap-15 and keyword-set amendments (keyword-set pieces are excerpts for grouping, labelling and order).
 - Step summaries (REQ-238, REQ-024): `apps/backend/src/prompt/phaseGuidance.ts` is the one source (`STEP_SUMMARIES`, each step pinned to rule ids; `TURN_STEP_NAME_TABLE`; `namedTurnSteps`). Three wrong facts corrected (cleanup 514.2/514.3a, untap 502.4, declare blockers). In-Depth keeps "You are in the … step." plus the same body; Quick Lookup prints `PHASE GUIDANCE` right after `MTG REFERENCE` with one described step per named step, at most three, in turn order. Tests: `phaseGuidanceSteps.test.ts` (16 phase-guidance tests overall: one per corrected fact, ids exist in the committed index, table matches and non-matches, concept-term naming).
-- Layout (REQ-239, REQ-240, REQ-244): `apps/backend/src/prompt/ruleLayout.ts` (`layoutPromptRuleSections`) lays out both rules sections once; `promptAssembly.ts` and `preparation.ts` use it, and the prompt diagnostics measure the laid-out text. Excerpts sorted in rule-book order, grouped by three-digit section under "<part title> › <section title>" (part titles from `gameRulesBookMeta.json`), each id once (the doubled `514.3a. 514.3a` is gone); lead-in lists (12,000-character budget, omitted-range line), parent lead-in sentence once per parent above the first delivered sibling; pointers (at most ten resolved per prompt, first sentence capped at 250 characters). Tests: `ruleLayout.test.ts` (21) and `ruleLayoutCorpus.test.ts` (4, over the whole committed corpus).
-- Corpus result (`npx vitest run src/prompt/ruleLayoutCorpus.test.ts`; Quick Lookup prompt for every non-rejected case plus an In-Depth prompt for each case with a game state): 100% of excerpts in rule-book order, 0 rule ids printed twice, 0 lead-ins without their list, the omitted-range line fires 0 times, pointers resolved 4,056 of 4,523 absent-target pointers (89.7%; the rest hit the ten-per-prompt cap).
+- Layout (REQ-239, REQ-240, REQ-244): `apps/backend/src/prompt/ruleLayout.ts` (`layoutPromptRuleSections`) lays out both rules sections once; `promptAssembly.ts` and `preparation.ts` use it, and the prompt diagnostics measure the laid-out text. Excerpts sorted in rule-book order, grouped by three-digit section under "<part title> › <section title>" (part titles from `gameRulesBookMeta.json`), each id once (the doubled `514.3a. 514.3a` is gone); lead-in lists (12,000-character budget, omitted-range line), parent lead-in sentence once per parent above the first delivered sibling; pointers (at most ten resolved per prompt, first sentence capped at 250 characters). Tests: `ruleLayout.test.ts` (21) and `builtPromptChecks.test.ts` (4, over the whole committed corpus).
+- Corpus result (`npx vitest run src/prompt/builtPromptChecks.test.ts`; Quick Lookup prompt for every non-rejected case plus an In-Depth prompt for each case with a game state): 100% of excerpts in rule-book order, 0 rule ids printed twice, 0 lead-ins without their list, the omitted-range line fires 0 times, pointers resolved 4,056 of 4,523 absent-target pointers (89.7%; the rest hit the ten-per-prompt cap).
 - Lead-in count: the committed index has 17 lead-ins with a lettered list under the REQ-240 definition (the define-time figure was 28). Curated topic data: `stack-and-priority` + 117.3a-d; `zones-basics` + 400.7a-k, m (12); `combat-damage-assignment` + 510.1a-e (REQ-240's general rule: a curated lead-in lists its items; found by the new data test); `layers-power-toughness` + 613.4d; `layers-timestamps-dependencies` + 613.8b; `abilities-delayed-triggers` carries 603.7a-c in place of 603.10; every topic's rule numbers now sorted in rule-book order. `gameRulesByTopic.json` and the frontend `gameRulesCoreTopics.json` rebuilt with `node scripts/build-game-rules.mjs`. Total curated text 34,317 characters; the frontend build-policy cap moved 26,000 to 35,000.
 - Other code touched: the context-eval check `lookup-game-state-sections-omitted` allows a conditional `PHASE GUIDANCE` in Quick Lookup only right after `MTG REFERENCE`; `scripts/lib/diagnostic-arms.mjs` and `scripts/lib/judge-inputs.mjs` read the new excerpt shape (group label line, no doubled id, lead-in sentence lines).
 - Rules gate: unchanged and passing against the baseline raised in slice D. It credits only search-selected and curated-topic rules, not a rule that arrives as a list item, so it understates recall now; it was not re-baselined again.
@@ -78,7 +78,7 @@ The owner accepted REQ-190 (up to fifteen excerpts, 0.6 relevance cutoff) and RE
 ## Slice F
 
 - 2026-10-12 — Prompt structure built; REQ-241, 242, 243, 245 added and REQ-030, 074, 176 and FLOW-011, FLOW-023 amended (REQ-022 and REQ-024 were applied in slice E, REQ-167 and REQ-220 in earlier slices).
-- Rulings (REQ-241): the standalone `OFFICIAL RULINGS (WotC reference)` section is gone; each card's rulings follow its block (In-Depth: stack bottom to top, then zones in canonical order; Quick Lookup: inside `CARD (looked up)`), once per card, introduced by "Rulings for <card> (published by Wizards of the Coast; apply one only when the situation matches it):". Tests: `promptStructure.test.ts`, `promptAssembly.test.ts`, `ruleLayoutCorpus.test.ts` (a card's rulings never print twice, over the whole corpus).
+- Rulings (REQ-241): the standalone `OFFICIAL RULINGS (WotC reference)` section is gone; each card's rulings follow its block (In-Depth: stack bottom to top, then zones in canonical order; Quick Lookup: inside `CARD (looked up)`), once per card, introduced by "Rulings for <card> (published by Wizards of the Coast; apply one only when the situation matches it):". Tests: `promptStructure.test.ts`, `promptAssembly.test.ts`, `builtPromptChecks.test.ts` (a card's rulings never print twice, over the whole corpus).
 - Topic choice (REQ-242): `IN_DEPTH_TOPIC_TRIGGERS` (11 topics, trigger words from topic titles and rule section titles, tested against the committed manifest and rule index); the stack and battlefield zone triggers are removed; Quick Lookup untouched. Guard (`inDepthTopicGuard.test.ts`): In-Depth keeps 27 of 30 deciding rules on the 9 paired corpus cases (floor 17). Consequence: two In-Depth layer cases lose rule 613.1d (it came through `layers-order` by the battlefield trigger; neither their questions nor their cards' concept terms use a layer word). No principled trigger word in the topic's own titles recovers them, so the rules-gate baseline was raised once more with `--allow-regressions`, for exactly those two losses. Gate after this raise: 415 scored, 376 cases with every deciding rule hit, deciding rules reaching the prompt (search or curated topic) 469 -> 467 against the slice-D baseline (the two lost, none gained), and 351 -> 467 against main with 5 lost in all (`commander-devoid-color-identity` 903.4, `copies-shattering-spree-replicate-countered` 707.10, `exchange-arcanum-wings` 701.12a, `layers-blood-moon-urborg-dependency-in-depth` 613.1d, `layers-mycosynth-lattice-march-dependency-in-depth` 613.1d) and 121 gained.
 - Instructions (REQ-243): `SHARED_INSTRUCTION_LINES` (six bullets) serves both modes; Quick Lookup adds the REQ-168 off-domain line (glossary pointer and garbled clause gone), In-Depth a follow-up line when history exists; `MTG_LOOKUP_REFERENCE` for Quick Lookup (turn order, stack resolution order, layer list), `MTG_PROMPT_REFERENCE` for In-Depth; the stack is "Stack item 1 is the bottom" in the In-Depth preamble only; the three "do not override" disclaimers and the "shared vocabulary" sentence are gone; "use only the provided context" and the single user-message channel are unchanged. Corpus test: 0 references to an absent section in any built prompt (Quick Lookup for every case, In-Depth where a game state exists).
 - Card blocks (REQ-245): `scripts/build-card-detail-by-oracle-id.mjs` now writes `power`, `toughness`, `loyalty` (faces joined with " // ", omitted when absent). Rebuilt `apps/backend/data/cardDetailByOracleId.json.br` offline from the local Scryfall bulk (read through a git-ignored symlink to the launch checkout's copy, removed afterwards): 37,854 cards, power on 19,853, loyalty on 339, 237 multi-face values, no other field changed, 1,701,595 -> 1,735,902 bytes (+34,307), prices artifact byte-identical (not rewritten). The route `GET /api/cards/:oracleId` leaves the three fields out (test); the frontend payload is untouched. The card block prints the lines right after `subtypes`, keeps oracle line breaks (`oracleTextDisplay`; the one-line `oracleText` still feeds retrieval, so frozen vectors are unchanged); the stack's caster/manaSpent/copies lines are now placed by anchor and keep their places (test).
@@ -88,3 +88,128 @@ The owner accepted REQ-190 (up to fifteen excerpts, 0.6 relevance cutoff) and RE
 - Product truth applied: REQ-241, 242, 243, 245 added; REQ-030, 074, 176 amended; FLOW-011, FLOW-023 in `user-flows.md`; `system-map/prompt-layout-spec.md` (rows renumbered, matrix, verification record re-run), `system-map/prompt-assembly.md`, `quick-lookup/README.md`, `in-depth/README.md`, `system-map.md`.
 - `npm run quality:check`: passes (backend 770 tests, frontend 1,559, scripts 893; exit 0).
 - Deviations: a second `sed -i` was used on `PRD/work/STATUS.md` (one-line note edit) after the first on `scripts/eval-answer-quality.test.mjs`; the node `fs` rewrite approach was used from then on. REQ-240's lead-in count is 17 on the committed index (the define-time figure was 28).
+
+## Slice G
+
+- 2026-10-12 — Built-prompt check: `apps/backend/src/prompt/builtPromptChecks.test.ts` (runs in `npm run quality:check`, reads no suite data). Over every non-rejected corpus case as a Quick Lookup prompt (415) and as an In-Depth prompt where it has a game state (9): 0 lead-ins without their list and the omitted-range line fires 0 times; 100% of excerpts in rule-book order; 0 rule ids printed twice; 0 references to a section absent from the mode (and no `stack[0]`, no standalone rulings section); the Quick Lookup step summary is present whenever the question names a step, including the Necropotence case's cleanup summary; each card's rulings print once; pointers resolved 4,055 of 4,501 absent-target pointers (90.1%, the rest hit the ten-per-prompt cap). The before-set for the 613.x / 510.x assertion is recorded from `origin/main`'s committed rules-gate baseline (search excerpts or curated topic) in `apps/backend/src/eval/rules-gate/reach-613-510-before.json`: 14 cases, 20 deciding rules. 18 of 20 still reach the prompt. The two that do not are rule 613.1d in `layers-blood-moon-urborg-dependency-in-depth` and `layers-mycosynth-lattice-march-dependency-in-depth` (REQ-242 consequence, see slice F); the test lists them as the known losses and fails if either comes back or any other rule goes missing. This is the one place slice G's text ("every case ... still has it") is not met as written; it is surfaced in the PR body for the owner.
+- Standing gates: `npm run quality:check` passes (backend 774 tests, frontend 1,559, scripts 893). `npm --workspace apps/backend run test:eval` passes (3 tests; the semantic-path report is PASS on all nine labelled fixtures, 14 of 14 checks; every golden change is listed in the slice E and slice F records above). Benchmark (`npm run benchmark:rag-retrieval -- --semantic`): clean recall@5 0.9231, polluted 0.9167 (floors 0.8526 and 0.8333); lexical (`npx tsx scripts/rag-retrieval-benchmark.mjs`): 0.6218 and 0.2564, as committed. No floor missed; nothing parked.
+- Size: rule characters per prompt over the committed corpus (average per prompt, search excerpts including keyword sets and list items / curated topics): Quick Lookup 4,038 / 8,529 (415 prompts); In-Depth 8,014 / 13,687 (9 prompts, game-state cases, a small and unrepresentative sample). Over the 1,181 practice questions (local, cross-validated): 6,707 characters of search excerpts plus keyword sets, against about 7.5k before the work and 4,220 for the cap-10 trained model. The curated lists add about 3.6k to every prompt through the always-on topics. The model folder: 4 files, `onnx/model_quantized.onnx` 22,977,247 bytes (23.0 MB; 23.7 MB with tokenizer and config), unchanged by the cap change. NFR-017's budget test (`scripts/lambda-package-budget.test.mjs`, inside `npm run test:scripts`) passes; the card-detail artifact grew 34,307 bytes and the rule index and topic data a few tens of kilobytes.
+- Privacy: `node scripts/privacy-scan.mjs`: 2,940 suite texts, 0 matches in all tracked files. `git ls-files | grep -E '\.(onnx|safetensors)$'`: none. The committed no-weights test passes (`npm run test:scripts`). Training pairs, checkpoints, the model folder and per-question results live only under git-ignored `output/`.
+- No `DEC-###` added: `git diff origin/main -- PRD/sections | grep -cE '^\+### DEC-'` = 0.
+- Slot sweep (39 slots; every added line of every accepted diff in `GATE-QUESTIONS.md` was checked against `PRD/sections/` with a line-level grep, `evidence/amendment-grep.md`'s old-wording grep was re-run — 98 hits now against 100 at define, the remaining ones are the "no change" rows such as the request convention `stack[0]`, the historical measured notes and the retired DEC index — and leftovers were applied in this slice by intent: the prompt-framing and rulings bullets of `integrations-and-data.md`, the System 1/2/3 and seam paragraphs of `system-map/game-rules-retrieval.md`, one framing sentence in `system-map/prompt-assembly.md`, REQ-236's gate re-baseline criterion). Wording that the owner's build-half amendments changed (cap fifteen, cutoff, keyword sets, 14 labelled checks) differs from the original diff on purpose; "proposed" file names are now the real ones.
+
+| Slot | Applied in | Where / note |
+| --- | --- | --- |
+| REQ-233 | B | new entry; stemming, tokens, tie-break |
+| REQ-234 | B | new entry; concept map module |
+| REQ-235 | B, D | new entry; thirteen + two slots, keyword sets (D) |
+| REQ-236 | C, D, G | new entry; tooling (C), measured record and cap/keyword numbers (D), gate re-baseline criterion (G) |
+| REQ-237 | C | new entry; private storage, manifest, identity check |
+| REQ-238 | E | new entry; `phaseGuidance.ts`, step table |
+| REQ-239 | E | new entry; `ruleLayout.ts` |
+| REQ-240 | E, F | new entry; 17 lead-ins, 12,000-character budget, topic lists (510.1 added in F's data test) |
+| REQ-241 | F | new entry; rulings under cards |
+| REQ-242 | F | new entry; trigger table, guard 27 of 30 |
+| REQ-243 | F | new entry; shared instructions, reference per mode |
+| REQ-244 | E | new entry; pointers |
+| REQ-245 | F | new entry; power, toughness, loyalty, line breaks |
+| REQ-022 | E | rules sections: order, labels, topic choice, no disclaimer |
+| REQ-024 | E | corrected strings, Quick Lookup summary |
+| REQ-030 | F | card block fields |
+| REQ-074 | F | Quick Lookup assembly |
+| REQ-167 | B | per-card text read separately |
+| REQ-176 | F | server also resolves power, toughness, loyalty |
+| REQ-178 | B | concept terms and turn step in the query |
+| REQ-179 | A, D | parser fixes, glossary, titles (A); `keywordTitle` (D) |
+| REQ-180 | B | every card keyword counts |
+| REQ-181 | C | trained model, loud mismatch |
+| REQ-182 | B, D | weight 0.65; 14 labelled checks (D) |
+| REQ-183 | C | model may live in private S3 |
+| REQ-184 | C | packaging refuses without the verified model |
+| REQ-190 | B, D | per-card slots (B); up to fifteen with the 0.6 cutoff (D) |
+| REQ-220 | B | gate beside the new topic choice |
+| REQ-232 | C | practice suite may train the shipped model |
+| NFR-017 | C | model source moves to private S3 |
+| FLOW-011 | F | Quick Lookup flow step |
+| FLOW-023 | F | multi-card lookup flow step |
+| system-map/game-rules-retrieval.md | A, B, D, G | rewritten across slices; leftovers in G |
+| system-map/prompt-layout-spec.md | E, F | rows, matrix, verification record re-run from real `prompt:preview` output |
+| system-map/prompt-assembly.md | E, F, G | section order, framing, worked example |
+| quick-lookup/README.md | F | what Quick Lookup's prompt receives |
+| in-depth/README.md | F | what In-Depth's prompt receives |
+| integrations-and-data.md | C, G | model artifact (C); prompt framing and rulings bullets (G) |
+| system-map.md | E, F | System 2 and System 3 summaries |
+
+- Amendment grep `build` rows 94 to 98 (the dated prompt-layout verification record): re-run with `npm run prompt:preview` for `combat-deathtouch`, `follow-up-chat`, `quick-lookup-multi-card`, `quick-lookup-no-card` and rewritten from real output (2026-10-12) in `system-map/prompt-layout-spec.md`.
+- Tree check: `git diff --name-only origin/main HEAD` outside `PRD/work/right-rules-in-order/` and `PRD/work/STATUS.md` touches only `apps/`, `scripts/`, `docs/aws/model-upload.md`, `PRD/sections/` and `.gitignore`; nothing needed lives under `PRD/work/`.
+- 2026-10-12 — Confirmed for the whole build (attempts 1 and 2): no S3 upload, no AWS bootstrap, no deploy, no paid model call, no `npm run data:refresh`, no network write ran. Free local work only: the trained model and the cross-validation ran on this machine; the Scryfall bulk file was read from the launch checkout through a git-ignored symlink (removed) to rebuild the card-detail artifact offline.
+
+### PR body (as opened)
+
+#### What this is
+
+Luna, the answering model, now gets the deciding rules about twice as often, reads them in rule-book order, and gets a short summary of the turn step when a question names one. Nothing outward-facing ran during the build: no upload, deploy, paid model call or data refresh.
+
+#### What you need to do
+
+**Review, then merge, but upload the search model first.** The deploy fails on purpose if the model is not in the private bucket.
+
+1. Upload the trained search model (model id `rule-search-ed14e631c046`, 4 files, about 23 MB). From the build worktree `.worktrees/implement-right-rules-in-order` (do not prune it yet):
+
+   ```bash
+   export AWS_PROFILE=thejudge-admin
+   ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+   aws s3 cp output/rule-search-model/upload/rule-search-ed14e631c046 \
+     "s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-ed14e631c046/" --recursive
+   aws s3 ls "s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-ed14e631c046/" --recursive
+   ```
+
+   The build found the deploy role already reads every object in that bucket, so `scripts/aws-bootstrap.sh` needs no change; run it only if the deploy later reports it cannot read `models/`. The same steps are in `docs/aws/model-upload.md`. To check the upload before merging: `node scripts/fetch-embedding-model.mjs --source "s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-ed14e631c046"`.
+2. Merge. Then run the after-merge steps at the bottom.
+
+#### What it changes
+
+For a player: a Quick Lookup or In-Depth answer now sees more of the rules that decide the question, laid out under the rule book's own headings, with each card's keyword rules in full, each card's rulings under the card, and the right turn-step summary. In-Depth picks its rules by what the cards say and what is asked, not by which zones hold cards. Card blocks show power, toughness and loyalty.
+
+Measured with the search model trained on Magic rules questions, on questions it never trained on (cross-validated, counts only):
+
+- Deciding rules reaching the prompt, practice-question check half: 223 before the work, 445 with the trained model, **520** with this change. Tuning half 250, 435, **511**. Hard 25: 5, 19, **24** of 59. Worked-solutions corpus: 351, 423, **435** of 494; cases with every deciding rule 305, 366, **372** of 415.
+- The model trained on all the data (not a fair test, a regression guard): corpus 469 of 494, 393 of 415 cases with every deciding rule; the three Necropotence rules (514.1, 514.2, 514.3a) are in the prompt in both versions.
+- Benchmark recall@5 (156 questions): 0.9231 clean, 0.9167 with three unrelated cards (floors 0.8526 and 0.8333). All 14 labelled search checks pass.
+- Search speed unchanged, 2.7 ms a question; the model is 23.0 MB.
+
+### Two owner-accepted changes made during the build (2026-10-12)
+
+The first trained model passed every number but missed two of the 14 labelled checks (rule 702.2b on a two-keyword question, rule 500.6 on an upkeep question). A measured fix, with your yes:
+
+- **Up to fifteen search excerpts, cut at 60% of the best score** (was exactly ten). Thirteen from the main search plus two per-card slots; a rule whose score is under 0.6 of the top one is dropped unless the question cites its number. The word-only fallback keeps a plain top-fifteen.
+- **Each card's keyword rule arrives whole.** A card's Scryfall keywords that name a 701/702 rule (deathtouch, trample, discard) add all that rule's lettered pieces after the excerpts, under a 6,000-character budget, skipping pieces already there.
+
+Trade-off: rule text per practice question grows from 4,220 to 6,707 characters (still under the roughly 7,500 shipped before the work). Worked-solutions corpus: search excerpts and keyword sets average 4,038 characters per Quick Lookup prompt, and the curated topics 8,529 (+3.7k from the lists that now travel with their lead-in). The answer quality of the longer prompt is not measured; the paid run below is that check. Keyword sets placed inside the old ten were tested and rejected (445 → 418).
+
+### Rules-gate re-baseline: every lost hit
+
+The rules gate (the free check that each case's deciding rules reach the prompt) was re-baselined twice with `--allow-regressions`: on the trained model (slice D) and after In-Depth's topic choice changed (slice F). Against main, deciding rules reaching the prompt rise from 351 to **467** across the 415 cases; 121 gained, **5 lost** (corpus case ids only):
+
+- `commander-devoid-color-identity`: 903.4
+- `copies-shattering-spree-replicate-countered`: 707.10
+- `exchange-arcanum-wings`: 701.12a
+- `layers-blood-moon-urborg-dependency-in-depth`: 613.1d
+- `layers-mycosynth-lattice-march-dependency-in-depth`: 613.1d
+
+The last two come from your accepted rule that In-Depth chooses topics by card wording and question instead of zone presence: neither question nor the cards' concept terms use a layer word, so the layers topic no longer comes in. The built-prompt check lists them as the only two known losses of the 14 layer and combat-damage cases. Decide later if you want a concept-map entry for "is/are [type]" wording (an owner-reviewed edit) to bring them back. On the nine cases that exist in both versions, In-Depth keeps 27 of 30 deciding rules (floor 17).
+
+### Also in this change
+
+Rule-book parser fixes (eight glued part titles, two dropped rules, one merged id), word stemming, a concept map from card wording to rule-book terms, per-card search, weight 0.65 for meaning, rule excerpts in rule-book order with labels, lead-in lists, "see rule" pointers resolved (90% of absent targets), corrected turn-step summaries (cleanup, untap, declare blockers), one shared instruction list with the rules framed as binding, rulings under their card, and the training, packaging and fetch tooling for the model. 39 product-truth slots (REQ-233 to REQ-245 plus 26 amendments) are applied in `PRD/sections/`. The search model never enters git; its manifest does.
+
+#### After merge (owner)
+
+1. **Free check after deploy:** one live request plus a CloudWatch tail to confirm the trained-model search path is live (the native-binding chain has failed silently twice before).
+2. **Latency:** time one live Quick Lookup and one In-Depth answer; the answer budget is 30 s (Lambda 40 s).
+3. **One paid batch, launched by you with `!`:** Luna answering, judge gpt-6.1-sol, rubric per `docs/eval/answer-quality-investigation/RUNBOOK.md`, `--max-cost-usd` 15 or less per run. Bars: Necropotence ten times per version, Quick Lookup at least 9 of 10 (it was 6 of 12); the hard 25 and the 18 hard corpus cases, no regression; the ordinary corpus regression set, no regression; then the preamble and system-message ideas as separate prompt-only arms. The answer-quality results file is now stale for every case (the prompt changed), so the first run regrades everything; the default excerpt cap for the run is now 15. Before spending, assert the request inputs and abort on any silent fallback flag.
+4. Re-run `npm run graph:prune -- --apply` after merge to remove the build worktree (delete the local `parked/right-rules-in-order-*` branches by hand with `git branch -D`).
+
+#### Technical detail
+
+Slices A to G in `PRD/work/right-rules-in-order/` (deleted at close); evidence in `evidence/build-log.md`. Free checks that run in `npm run quality:check`: the built-prompt checks (`apps/backend/src/prompt/builtPromptChecks.test.ts`) over every corpus case as Quick Lookup and as In-Depth where a game state exists: 0 lead-ins without their list, 100% rule-book order, 0 doubled ids, 0 references to an absent section, step summary present whenever the question names a step. Privacy: no practice-suite text, ids or results in any tracked file (scanner: 2,940 suite texts, 0 matches); no weights tracked.

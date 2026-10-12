@@ -1,7 +1,9 @@
-// REQ-239 / REQ-240 / REQ-244 acceptance over the committed corpus: every case built as a Quick Lookup
-// prompt (and as an In-Depth prompt when it has a game state) prints its excerpts in rule-book order with
-// no rule id twice, delivers every lead-in with its list, never fires the omitted-range line, and
-// reports how many "see rule X" pointers it resolved.
+// The built-prompt checks (right-rules-in-order target 4), over the committed corpus and free to run: every
+// case built as a Quick Lookup prompt (and as an In-Depth prompt when it has a game state) prints its
+// excerpts in rule-book order with no rule id twice (REQ-239), delivers every lead-in with its list and never
+// fires the omitted-range line (REQ-240), resolves its pointers (REQ-244), names no section absent from its
+// mode (REQ-243), carries the step summary whenever the question names a step (REQ-238), and still carries
+// every 613.x / 510.x deciding rule it carried before the change (REQ-242). It reads no practice-suite data.
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,6 +14,7 @@ import { checkReFreeze, loadFrozenVectors, type FrozenVectorFile } from "../eval
 import { compareRuleIds, type GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import { askAiRequestSchema } from "../validation/askAiRequest.js";
 import { preparePromptInput } from "./preparation.js";
+import { describeTurnSteps, namedTurnSteps } from "./phaseGuidance.js";
 import { isLeadIn } from "./ruleLayout.js";
 
 vi.mock("../providers/localEmbeddingProvider.js", () => ({
@@ -23,7 +26,16 @@ vi.mock("../providers/localEmbeddingProvider.js", () => ({
 const dataDir = resolve(dirname(fileURLToPath(import.meta.url)), "../../data");
 const ruleIndex = JSON.parse(readFileSync(resolve(dataDir, "gameRulesRuleIndex.json"), "utf8")) as GameRulesRuleIndexEntry[];
 
-type Built = { id: string; kind: "lookup" | "game"; promptText: string; stats: NonNullable<ReturnType<typeof preparePromptInput>["enrichmentDebug"]>["ruleLayout"] };
+type Built = {
+  id: string;
+  kind: "lookup" | "game";
+  /** True for the request the rules gate builds for the case (a game-state case as In-Depth, any other as Quick Lookup). */
+  natural: boolean;
+  question: string;
+  promptText: string;
+  ruleChars: { curated: number; excerpts: number };
+  stats: NonNullable<ReturnType<typeof preparePromptInput>["enrichmentDebug"]>["ruleLayout"];
+};
 
 const built: Built[] = [];
 
@@ -47,7 +59,18 @@ beforeAll(async () => {
         cardEmbeddings: fresh && freeze ? freeze.cardEmbeddings : undefined,
         collectEnrichmentDebug: true
       });
-      built.push({ id: caseEntry.id, kind, promptText: prepared.promptText, stats: prepared.enrichmentDebug?.ruleLayout });
+      built.push({
+        id: caseEntry.id,
+        kind,
+        natural,
+        question: caseEntry.question,
+        promptText: prepared.promptText,
+        ruleChars: {
+          curated: prepared.diagnostics.gameRulesSectionChars ?? 0,
+          excerpts: prepared.diagnostics.supplementalRulesSectionChars ?? 0
+        },
+        stats: prepared.enrichmentDebug?.ruleLayout
+      });
     }
   }
 }, 120_000);
@@ -150,5 +173,71 @@ describe("REQ-243 over the committed corpus", () => {
       if (new Set(frames).size !== frames.length) failures.push(`${id} (${kind}): rulings printed twice for one card`);
     }
     expect(failures).toEqual([]);
+  });
+});
+
+describe("REQ-238 the step summary over the committed corpus", () => {
+  it("a Quick Lookup prompt carries the summary of every step its question names", () => {
+    const failures: string[] = [];
+    let named = 0;
+    for (const { id, kind, question, promptText } of built) {
+      if (kind !== "lookup") continue;
+      const steps = namedTurnSteps([question]);
+      if (steps.length === 0) continue;
+      named += 1;
+      if (!promptText.includes("\nPHASE GUIDANCE\n")) failures.push(`${id}: the question names a step but there is no PHASE GUIDANCE`);
+      for (const line of describeTurnSteps(steps)) if (!promptText.includes(line)) failures.push(`${id}: missing ${line.slice(0, 30)}`);
+    }
+    expect(named).toBeGreaterThan(5);
+    expect(failures).toEqual([]);
+  });
+
+  it("the Necropotence case's Quick Lookup prompt carries the cleanup summary", () => {
+    const necro = built.find((b) => b.id === "necropotence-silence-borne-upon-a-wind-cleanup" && b.kind === "lookup");
+    expect(necro, "the Necropotence case is in the corpus").toBeDefined();
+    expect(necro!.promptText).toContain("\nCleanup step: ");
+  });
+});
+
+describe("REQ-242 the layer and combat-damage rules that reached the prompt before the change", () => {
+  // The cases whose deciding 613.x / 510.x rule reached the prompt under origin/main's code, recorded from main's
+  // committed rules-gate baseline (search excerpts or a curated topic) as reach-613-510-before.json.
+  const before = JSON.parse(readFileSync(resolve(dataDir, "../src/eval/rules-gate/reach-613-510-before.json"), "utf8")) as Record<string, string[]>;
+  // The two losses REQ-242 causes (see its notes): the zone trigger that used to bring the layers-order topic is gone, and
+  // neither the question nor the cards' concept terms use a layer word. Listing them keeps the loss visible and the check exact.
+  const KNOWN_REQ_242_LOSSES: Record<string, string[]> = {
+    "layers-blood-moon-urborg-dependency-in-depth": ["613.1d"],
+    "layers-mycosynth-lattice-march-dependency-in-depth": ["613.1d"]
+  };
+
+  it("still reaches the prompt, except the two recorded REQ-242 losses, which are exactly still lost", () => {
+    const failures: string[] = [];
+    for (const [id, ruleIds] of Object.entries(before)) {
+      const prompt = built.find((candidate) => candidate.id === id && candidate.natural);
+      expect(prompt, `${id} is a corpus case`).toBeDefined();
+      for (const ruleId of ruleIds) {
+        const expectedLost = KNOWN_REQ_242_LOSSES[id]?.includes(ruleId) ?? false;
+        const present = printed(prompt!.promptText, ruleId);
+        if (expectedLost && present) failures.push(`${id}: ${ruleId} is back; remove it from the known losses`);
+        if (!expectedLost && !present) failures.push(`${id}: ${ruleId} reached the prompt before and no longer does`);
+      }
+    }
+    expect(failures).toEqual([]);
+    expect(Object.keys(before)).toHaveLength(14);
+  });
+});
+
+describe("rule characters per prompt over the committed corpus", () => {
+  it("reports the size of the two rules sections and keeps them bounded", () => {
+    const average = (kind: "lookup" | "game") => {
+      const rows = built.filter((b) => b.kind === kind);
+      const sum = (pick: (b: Built) => number) => Math.round(rows.reduce((total, b) => total + pick(b), 0) / rows.length);
+      return { prompts: rows.length, curated: sum((b) => b.ruleChars.curated), excerpts: sum((b) => b.ruleChars.excerpts) };
+    };
+    const lookup = average("lookup");
+    const game = average("game");
+    console.info(`rule characters per prompt, corpus average -- Quick Lookup (${lookup.prompts}): curated topics ${lookup.curated}, search excerpts ${lookup.excerpts}; In-Depth (${game.prompts}): curated topics ${game.curated}, search excerpts ${game.excerpts}`);
+    // Search excerpts (with keyword sets and list items) stay under the roughly 7,500 characters shipped before the work.
+    expect(lookup.excerpts).toBeLessThan(7500);
   });
 });

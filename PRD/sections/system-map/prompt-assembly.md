@@ -93,6 +93,6 @@ included. If this is a follow-up turn, `CONVERSATION HISTORY` appears before the
   add hidden state or a rules engine (canonical rule: `goals-and-non-goals.md` Scope Notes).
 - The rules excerpts are framed once, in the instructions, as the binding rules of the game, and
   rulings as card-specific; neither overrides submitted stack
-  order, zones, targets, notes, or stated game state.
+  order, zones, targets, notes, stated game state, or a card's oracle text (REQ-243).
 - The enrichment-debug sidecar is mock-only diagnostic output and is not part of the
   live provider-facing answer contract.

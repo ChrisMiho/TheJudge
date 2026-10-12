@@ -355,24 +355,23 @@ The backend should include:
 - final user question
 - game context (player count, life totals, active player when provided, turn phase, combat sub-step when present)
 - `ADDITIONAL GAME STATE` section containing `gameStateNotes` content, positioned after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE`; omitted entirely when `gameStateNotes` is absent or blank after trim (DEC-043)
-- phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` (and `ADDITIONAL GAME STATE` when present) and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
+- phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` (and `ADDITIONAL GAME STATE` when present) and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036); in Quick Lookup, the same rules-checked summaries for the turn steps the question or an attached card's concept terms name, right after the reference block (REQ-024, REQ-238)
 - selected zones
-- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
+- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text (line breaks kept), mana cost/value, type line, colors, supertypes/subtypes, power/toughness/loyalty when present, targets, and context notes, followed by its WotC rulings at its first appearance (REQ-241, REQ-245); the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
 - ordered stack zone when populated; stack section additionally includes stack role, caster, and mana spent per item
 - non-stack sections use owner and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is omitted for non-stack items
 - mana spent per stack item (fallback to `manaValue` when omitted)
-- published WotC Oracle rulings for submitted cards when available from the static backend artifact
-- verbatim WotC Comprehensive Rules excerpts for curated general game-rules topics selected per DEC-045 (always-on core plus game-state-gated expansion) plus the replacement-effect interaction topic when two or more cards carry replacement or prevention wording (REQ-220), from the static backend artifact
+- published WotC Oracle rulings for submitted cards when available from the static backend artifact, under each card's block, framed as that card's rulings to apply only when the situation matches (REQ-241)
+- verbatim WotC Comprehensive Rules excerpts for curated general game-rules topics selected per DEC-045 (always-on core plus turn-phase and combat-step expansion), in In-Depth the topics the cards' wording or the question match (REQ-242), plus the replacement-effect interaction topic when two or more cards carry replacement or prevention wording (REQ-220), from the static backend artifact
 - up to 15 supplemental WotC CR rule excerpts (with a 0.6 relevance cutoff on the semantic path, REQ-190), plus each attached card's keyword rules as whole sets (REQ-235), dynamically retrieved from the committed rule index artifact, ranked by a hybrid blend of normalised cosine against the committed per-rule embeddings and normalised lexical IDF overlap, with the exact-rule-id boost merged into the blended score and lexical scoring alone retained as the mock/offline default and failure fallback (DEC-046, REQ-181, REQ-182), from a query built from the question plus each card's name, type line, and keywords rather than its full oracle text (REQ-178), and deduplicated by exact rule number against the rule numbers the selected System 2 topics list, so a listed parent's unlisted sub-rules still compete (REQ-179)
 - up to 5 eligible community-sourced Commander Spellbook variants: complete identity, quantity, and compatible-zone matches in game context, or labeled partial candidates for explicit combo questions; each ingredient carries the card state applicable to its matched zone plus `mustBeCommander`, with an instruction to check that state against the submitted board before calling a combo live; omit combo context otherwise and keep official Wizards card, rules, and rulings sources authoritative (DEC-116, REQ-094, REQ-095)
-- static MTG reference block
+- the MTG reference block for the prompt's mode, describing only sections that mode contains (REQ-243)
 - merged scope sentence for unselected zones and selected-but-empty zones
 - instructions to explain reasoning
 - instructions to state uncertainty
 - instructions not to invent hidden state
 - player display names in roster lines and resolved player references (`activePlayer`, caster, owner, player targets) using `Player N (Name)` when set
-- official WotC rulings only as reference context; they do not override the user's submitted stack order, zones, targets, notes, or stated game state
-- general game rules only as reference vocabulary; they do not override the user's submitted game state, stack order, zones, targets, notes, or card oracle text
+- the Comprehensive Rules excerpts as the binding rules of the game and WotC rulings as card-specific, applying only when the situation matches; neither overrides the user's submitted game state, stack order, zones, targets, notes, or card oracle text — stated once, in the instructions (REQ-243)
 
 The backend mock/debug response should:
 - include explicit stack-order metadata (`stackOrderConvention`, `stackIndex`, `stackRole`)
@@ -396,12 +395,12 @@ WotC rulings prompt enrichment must:
 - preserve submitted card ordering, including bottom-to-top stack order
 - avoid printing `cardId` or `oracle_id` in the model-facing prompt text
 - use per-card and whole-section caps so `MAX_PROMPT_CHAR_BUDGET` remains authoritative
-- appear after populated zone sections and before `SCOPE` and `QUESTION`
+- appear directly under each card's block, once per card at its first appearance, in both modes; there is no separate rulings section (REQ-241)
 
 Game rules prompt enrichment must:
-- include curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) and REQ-220 (the replacement-effect interaction topic, on card wording) from the committed artifact
-- render selected topics in stable manifest `id` order with verbatim WotC CR prose only
-- appear after populated zone sections and before `OFFICIAL RULINGS`, then `SCOPE` and `QUESTION`
+- include curated topics selected per DEC-045 (always-on core plus turn-phase and combat-step expansion), REQ-242 (in In-Depth, topics matched by card wording and question) and REQ-220 (the replacement-effect interaction topic, on card wording) from the committed artifact
+- render selected topics in stable manifest `id` order, each topic's rules in rule-book order with their lead-in lists, with verbatim WotC CR prose only (REQ-239, REQ-240)
+- appear after populated zone sections and before the supplemental excerpts, then `SCOPE` and `QUESTION`
 - be omitted only when the artifact is missing or empty
 - respect `MAX_PROMPT_CHAR_BUDGET` (`EFFECTIVELY_UNLIMITED_CHARS = 1_000_000` per DEC-042 amendment; revisit after latency/cost sampling)
 

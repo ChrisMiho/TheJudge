@@ -1,6 +1,6 @@
 # Slice G — Built-prompt checks, goldens, PRD sweep, ship
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -19,16 +19,16 @@ The finished change is proven end to end on free local checks, every accepted ga
 
 ## Acceptance criteria
 
-- [ ] The built-prompt check test is committed, runs inside `npm run quality:check` and passes all six assertions
-- [ ] `npm run test:eval` passes and every golden change is listed in the evidence log
-- [ ] The 12 labelled checks and the benchmark floors pass (miss parks the build)
-- [ ] Rule characters per prompt, model folder size and the NFR-017 budget test are recorded and pass
-- [ ] `scripts/privacy-scan.mjs` reports 0, no weights are tracked, the no-weights test passes
-- [ ] The slot table covers all 39 slots with a row each, every one applied in `PRD/sections/`
-- [ ] No `DEC-###` was added (grep of `PRD/sections/` shows none new)
-- [ ] The PR-body draft carries the upload commands, the lost-hit list and the owner's after-merge steps
-- [ ] No deliverable file outside `PRD/work/` is missing from the tree and nothing needed is under `PRD/work/`
-- [ ] A dated evidence-log line confirms no S3 upload, AWS bootstrap, deploy, paid call or data refresh ran
+- [x] The built-prompt check test is committed, runs inside `npm run quality:check` and passes all six assertions
+- [x] `npm run test:eval` passes and every golden change is listed in the evidence log
+- [x] The 12 labelled checks and the benchmark floors pass (miss parks the build)
+- [x] Rule characters per prompt, model folder size and the NFR-017 budget test are recorded and pass
+- [x] `scripts/privacy-scan.mjs` reports 0, no weights are tracked, the no-weights test passes
+- [x] The slot table covers all 39 slots with a row each, every one applied in `PRD/sections/`
+- [x] No `DEC-###` was added (grep of `PRD/sections/` shows none new)
+- [x] The PR-body draft carries the upload commands, the lost-hit list and the owner's after-merge steps
+- [x] No deliverable file outside `PRD/work/` is missing from the tree and nothing needed is under `PRD/work/`
+- [x] A dated evidence-log line confirms no S3 upload, AWS bootstrap, deploy, paid call or data refresh ran
 
 ## Verification
 
@@ -48,8 +48,8 @@ git ls-files | grep -E '\.(onnx|safetensors)$' || echo none
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/right-rules-in-order/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/right-rules-in-order/` ready to delete

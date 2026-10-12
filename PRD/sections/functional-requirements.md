@@ -6246,6 +6246,7 @@
   - a committed scorer reports, counts only: deciding-rule citations in the prompt (the search excerpts, plus the keyword sets of REQ-235; the top ten before the cap moved) and questions with every deciding rule there, for the tuning and check halves of the fixed `pft-split-1` split, the hard 25 (level 3 / Corner Case), the corpus, and bench@5 (the 156-question benchmark with three unrelated cards attached, top-five hits)
   - fidelity, before any search change: the scorer reproduces production's current top ten — 473 suite citations (tuning plus check), 159 suite every-rule questions, 5 hard-25, 351 corpus citations, 305 corpus every-rule cases
   - acceptance, measured once at build, locally: cross-validated check half ≥ 430, tuning half ≥ 410, every-rule check ≥ 140, hard 25 ≥ 15; the 100% model scores corpus ≥ 410 citations and ≥ 355 every-rule cases, bench@5 ≥ 118, and puts 514.1, 514.2 and 514.3a in the top ten for `necropotence-silence-borne-upon-a-wind-cleanup` in both versions and in the built prompt
+  - the rules gate (REQ-222) is re-baselined in this change with `npm run eval:rules-gate:baseline -- --allow-regressions`; every lost hit is listed by case and rule in the pull request body and the receipt, and the total of deciding rules reaching the prompts rises
   - retraining is an owner-run local step, required when the Comprehensive Rules, the committed corpus or the practice suite changes, and with every Comprehensive Rules-moving data refresh (`integrations-and-data.md`, Game Rules Data Strategy)
 - Constraints:
   - no practice-suite question, answer, card list, id or per-question result in any committed file — committed text gives counts, levels and rule ids only (REQ-232)
@@ -6266,7 +6267,7 @@
   - tested and rejected at intake: BM25 word scoring (ties the recipe on the check half, worse elsewhere), stronger off-the-shelf embedders (at most +13 check-half at 4–14× the size), a local reranker (+18 at 279 MB and about 3 s per question), labelled rule text inside the vectors (−17)
   - about 7–8 minutes to train the 100% model on an Apple GPU
   - measured at build, 2026-10-12 (`right-rules-in-order` slice D; model `rule-search-ed14e631c046`; counts only), with the shipped search — the 0.6 cutoff, cap fifteen and keyword sets (REQ-190, REQ-235): cross-validated check half 520 citations (floor 430), tuning half 511 (floor 410), every-rule check half 169 (floor 140), hard 25 24 of 59 (floor 15), corpus 435 citations and 372 cases with every deciding rule, bench@5 131; the 100% model: corpus 469 citations of 494 and 393 of 415 cases with every deciding rule, bench@5 130 of 156, and 514.1, 514.2 and 514.3a at ranks 1, 4 and 5 in Quick Lookup and 1, 4 and 3 in In-Depth; benchmark recall@5 0.9231 clean and 0.9167 polluted (floors 0.8526 and 0.8333); all 14 labelled checks pass; ranks 702.3a 494 → 3, 113.7a 12 → 2, 615.12 2 → 1; rule text per practice question 6,707 characters (corpus 4,125); q8 against fp32 mean cosine 0.996, 2.8 ms per query, 23.0 MB
-  - the rules gate was re-baselined once, with `--allow-regressions`, against the trained model: against the pre-work baseline hits rose from 319 to 437 across the 415 cases, and three recorded hits were lost (`commander-devoid-color-identity` 903.4, `copies-shattering-spree-replicate-countered` 707.10, `exchange-arcanum-wings` 701.12a)
+  - the rules gate baseline was raised twice with `--allow-regressions`: once on the trained model with the cap-15, cutoff and keyword-set search (slice D), and once after REQ-242 moved the layer topics from zone presence to wording (slice F). Against the baseline on main, deciding rules reaching the prompt (search excerpts or a curated topic) rise from 351 to 467 across the 415 cases; five recorded rules are lost: `commander-devoid-color-identity` 903.4, `copies-shattering-spree-replicate-countered` 707.10, `exchange-arcanum-wings` 701.12a, and 613.1d in `layers-blood-moon-urborg-dependency-in-depth` and `layers-mycosynth-lattice-march-dependency-in-depth`
 
 ### REQ-237
 - Title: The trained search model is stored privately, fetched at packaging, and identity-checked at every load
@@ -6354,7 +6355,7 @@
   - `layers-power-toughness` gains 613.4d and `layers-timestamps-dependencies` gains 613.8b; `abilities-delayed-triggers` carries 603.7a, 603.7b and 603.7c in place of 603.10
   - the curated exclusion follows the manifest (REQ-179), so a topic's list items never repeat as search excerpts, and REQ-179's test that every topic carries exactly the rules it lists still passes
   - the build-policy test's cap on total curated topic text (26,000 characters before) is raised to 35,000, the new measured total (34,317 characters across 24 topics) rounded up to the next 1,000
-  - acceptance: over every committed corpus case built as a Quick Lookup prompt, and as an In-Depth prompt when it has a game state, 0 lead-ins appear without their list and the omitted-range line fires 0 times (`apps/backend/src/prompt/ruleLayoutCorpus.test.ts`)
+  - acceptance: over every committed corpus case built as a Quick Lookup prompt, and as an In-Depth prompt when it has a game state, 0 lead-ins appear without their list and the omitted-range line fires 0 times (`apps/backend/src/prompt/builtPromptChecks.test.ts`)
 - Constraints:
   - verbatim rule text only
   - the cap (REQ-190) is unchanged by list items
@@ -6375,7 +6376,7 @@
   - a pointer to a specific rule absent from the prompt is followed, in brackets, by that rule's first sentence from the committed index; a pointer to a section, family or keyword rule is followed by its title; a pointer whose text already gives the title ("see rule 702.26, “Phasing.”") is left as written
   - a pointer whose target is already in the prompt (a curated topic's rule, an excerpt, or a list item) is left as written
   - at most ten pointers are resolved per prompt, in the order they appear (curated topics first, then excerpts); each attached first sentence is capped at 250 characters; pointers beyond the cap stay as written
-  - the build reports the share of pointers resolved over the committed corpus prompts (`ruleLayoutCorpus.test.ts`; the enrichment debug carries `pointersFound` and `pointersResolved` per prompt)
+  - the build reports the share of pointers resolved over the committed corpus prompts (`builtPromptChecks.test.ts`; the enrichment debug carries `pointersFound` and `pointersResolved` per prompt)
 - Constraints:
   - verbatim rule text and titles only; no paraphrase
 - Dependencies:
@@ -6402,7 +6403,7 @@
   - REQ-222 (the card check)
 - Notes:
   - located at intake (cited): `normalization.ts:9-11`, `promptFormatting.ts:280-285`
-  - built in `apps/backend/src/prompt/promptFormatting.ts` (`createRulingsPlacement`) and `promptAssembly.ts`; `apps/backend/src/prompt/promptStructure.test.ts` and `ruleLayoutCorpus.test.ts` assert the placement, the single appearance and the absent section over the whole corpus
+  - built in `apps/backend/src/prompt/promptFormatting.ts` (`createRulingsPlacement`) and `promptAssembly.ts`; `apps/backend/src/prompt/promptStructure.test.ts` and `builtPromptChecks.test.ts` assert the placement, the single appearance and the absent section over the whole corpus
 
 ### REQ-242
 - Title: In-Depth chooses curated topics by card wording and question, not by zone presence
@@ -6438,7 +6439,7 @@
   - the prompt numbers the stack one way, 1-based to match the stack section's `Stack item N` labels, with item 1 the bottom; the preamble's `stack[0]` wording goes, and the stack-order line appears only in In-Depth; bottom-to-top meaning is unchanged
   - rules framing: one instruction says the provided Comprehensive Rules excerpts are the binding rules of the game; one instruction says rules and rulings never override the submitted game state (stack order, zones, targets, notes) or a card's oracle text; the per-section disclaimers on `GAME RULES (reference)`, the excerpt section and the rulings are removed, and the reference block's "use layers as shared vocabulary" sentence goes
   - unchanged, pending a later paid test: the preamble's "use only the provided context" line, and the single user-message channel
-  - acceptance: over every committed corpus case's built prompts (REQ-240's set), 0 references to a section absent from that prompt's mode (`ruleLayoutCorpus.test.ts`)
+  - acceptance: over every committed corpus case's built prompts (REQ-240's set), 0 references to a section absent from that prompt's mode (`builtPromptChecks.test.ts`)
 - Constraints:
   - prompt text only; no request, response or frontend change
   - bottom-to-top stack semantics preserved (`technical-design-rules.md`)

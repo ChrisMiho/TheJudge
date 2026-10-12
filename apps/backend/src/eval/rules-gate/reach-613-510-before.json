@@ -1,0 +1,16 @@
+{
+  "combat-brontodon-and-hunt-the-weak": ["510.1a"],
+  "combat-damage-assignment-order-multiple-blockers": ["510.1c"],
+  "combat-treefolk-umbra-and-savage-swipe": ["510.1a"],
+  "layers-blood-moon-urborg-dependency-in-depth": ["613.1d", "613.8a"],
+  "layers-clone-copies-frogified-serra-angel-in-depth": ["613.1a"],
+  "layers-honor-of-the-pure-color-changes": ["613.5"],
+  "layers-humility-then-opalescence-in-depth": ["613.1d", "613.1f", "613.4b", "613.7"],
+  "layers-independent-effects-use-timestamp": ["613.9"],
+  "layers-mycosynth-lattice-march-dependency-in-depth": ["613.1d", "613.8a"],
+  "layers-noncreature-artifacts-become-creatures": ["613.6"],
+  "layers-switch-power-toughness-then-plus-five": ["613.4d"],
+  "layers-timestamp-order": ["613.9"],
+  "layers-turn-to-frog-after-giant-growth-counter-in-depth": ["613.4b", "613.4c"],
+  "layers-two-switches-cancel": ["613.4d"]
+}
