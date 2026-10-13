@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
-- Current node: `owner-action` (build parked at slice A step 2)
+- Current node: `build` (attempt 2, resuming at slice A step 3)
 - Next action: `/graph-implement PRD/work/concept-map-wording-entries/`
 
 ## Node ledger
@@ -25,7 +25,9 @@
 
 ## Open gate
 
-- Terminal state: PARKED at `owner-action`, node `build` attempt 1, slice A, brief step 2 (the earlier `define` gate was resolved 2026-10-13; see `## Gate verdicts`).
+**RESOLVED 2026-10-13** — the owner adopted the recommendation: the fresh fold models `F-fold0..4` (check 539 / tuning 529) are the baseline for the set re-check; the step 7 retrain park (check half below 522) stays as written. The owner removed the lock and run-state by hand; guardrail fix PR https://github.com/ChrisMiho/TheJudge/pull/301. The build resumes at slice A step 3.
+
+- Terminal state (historical): PARKED at `owner-action`, node `build` attempt 1, slice A, brief step 2 (the earlier `define` gate was resolved 2026-10-13; see `## Gate verdicts`).
 - Question: the freshly trained baseline folds score above REQ-236's recorded figures by more than the brief's 5-citation tolerance. Should these fold models become the baseline the six entries are re-checked against?
 - Evidence (counts only; `output/rule-search-eval/baseline-cv.log` in the build worktree, git-ignored): retrained on unchanged code with the unchanged recipe, scored with `EMBEDDING_PROVIDER=local` (no fallback warning). Check half 539 vs 522 (+17), tuning half 529 vs 511 (+18), every-rule check / tuning 185 / 171 vs 175 / 166, hard 25 20 vs 21 of 59, corpus 438 / 372 vs 442 / 377 (−4, inside tolerance), bench@5 128 vs 130; rule characters per question 7,171 practice / 4,313 corpus vs 7,478 / 4,412.
 - Driver diagnosis: (1) no leakage — the trainer and `scripts/score-rule-search.mjs --cv` read the same `fold` from `output/rule-search-model/data/cases.jsonl`; (2) the split file is not the cause — a wrong split moves citations between the halves, but both halves rose together (total 1,068 vs 1,033); (3) the suite is unchanged — 0 files in `output/practice-suite/cases` newer than the 2026-10-12 receipt; (4) the trainer runs on `mps` (`scripts/train-rule-search-model.py:62`), which is not bit-reproducible under seed 13, and REQ-236's own record shows retrain swings of this size (previous model 530 / 526 → 522 / 511 after one entry). Conclusion: training noise exceeds the tolerance the brief assumed (assumption A4); the inputs are the ones REQ-236 measured.
@@ -261,3 +263,4 @@ Report back: per slice, status and criteria earned; the measured numbers; any pa
 | --- | --- | --- | --- |
 | "Six more card-wording entries in the concept map so rule search reaches triggered-ability, cost, casting, layer and toughness rules, with a model retrain" | answered-once | shape | — |
 | "fill in your suggestions, ask me for ones you truly cant answer" | answered-once | owner-action | — |
+| "agreed, i follow your recommendation" | answered-once | build | — |
