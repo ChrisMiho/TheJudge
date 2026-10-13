@@ -33,7 +33,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| concept-map-wording-entries | Quality check PASS. Answer `GATE-QUESTIONS.md` (2 slots: REQ-234 concept map, REQ-236 retrain) in the docs PR, then merge to build. `split.json` and `hard25.json` restored to the launch checkout's `output/rule-search-eval/` on 2026-10-13. Run graph-20261013-034606 |
 
 ## deferred
 

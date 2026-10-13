@@ -852,8 +852,8 @@
       "miss": []
     },
     "layers-mycosynth-lattice-march-dependency": {
-      "hit": ["613.8a", "613.8b"],
-      "miss": ["613.1d", "704.5f"]
+      "hit": ["613.1d", "613.8a", "613.8b"],
+      "miss": ["704.5f"]
     },
     "layers-mycosynth-lattice-march-dependency-in-depth": {
       "hit": [],
