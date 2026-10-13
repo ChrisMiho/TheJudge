@@ -1380,16 +1380,26 @@ export const RULES = Object.freeze([
     // absolute paths are judged: a relative path resolves against a working
     // directory the hook cannot see, and the return-side porcelain check still
     // covers it.
+    //
+    // The run's control files are exempt: the driver hands the run back from
+    // `build` by rewriting the run state, and releases it by writing the
+    // release record and removing the lock, all while the run state still
+    // names `build` (2026-10-13: the first flip was denied, stranding the
+    // lock). The lock and the stop sentinel keep their own rules.
     id: "build-write-outside-worktree",
     tier: "graph",
     evaluate: (context) => {
       if (context.runState?.node !== EVIDENCE_EARNING_NODE) return null
       if (typeof context.lockSlug !== "string" || context.lockSlug === "") return null
       const worktree = path.join(context.root, ".worktrees", `implement-${context.lockSlug}`)
+      const controlFiles = new Set(
+        [RUN_STATE_PATH, RUN_RELEASE_PATH, RUN_LOCK_PATH, RUN_STOP_PATH].map((file) => path.join(context.root, file))
+      )
       for (const candidate of writtenPaths(context)) {
         const text = String(candidate).replace(/^["']|["']$/g, "")
         if (text.startsWith("&") || text.startsWith("/dev/")) continue
         if (!text.startsWith("~") && !path.isAbsolute(text)) continue
+        if (!text.startsWith("~") && controlFiles.has(path.resolve(text))) continue
         if (text.startsWith("~") || !isInside(path.resolve(text), worktree)) {
           return `The build node writes only inside \`.worktrees/implement-${context.lockSlug}/\` (REQ-193); \`${text}\` is outside it. Put scratch files in that worktree's gitignored \`.tmp/\`.`
         }

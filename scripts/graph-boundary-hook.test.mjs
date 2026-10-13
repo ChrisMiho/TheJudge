@@ -1390,6 +1390,26 @@ for (const [name, call] of INSIDE_BUILD_WRITES) {
   })
 }
 
+// The driver hands the run back from `build` by rewriting the run-state file,
+// and ends it by writing the release record and removing the lock — all while
+// the run state still names `build`. Observed 2026-10-13: the rule denied that
+// first flip, so the run could neither leave `build` nor release its lock.
+const RUN_CONTROL_FILES = [".graph-run-state.json", ".graph-run-release.json", ".graph-run.lock", ".graph-stop"]
+
+for (const name of RUN_CONTROL_FILES) {
+  test(`the out-of-worktree rule spares the run control file ${name}`, () => {
+    const target = path.join(process.env.CLAUDE_PROJECT_DIR, ".worktrees", name)
+    const result = tool("Write", { file_path: target, content: "{}" }, buildRun())
+    assert.notEqual(result.rule, "build-write-outside-worktree")
+  })
+}
+
+test("the control-file exemption is exact, not a .worktrees/ wildcard", () => {
+  const sibling = path.join(process.env.CLAUDE_PROJECT_DIR, ".worktrees", ".graph-run-state.json.bak")
+  const result = tool("Write", { file_path: sibling, content: "x" }, buildRun())
+  assert.equal(result.rule, "build-write-outside-worktree")
+})
+
 test("the out-of-worktree rule binds the build node only", () => {
   // The driver's own bookkeeping, and every other node, write outside the build
   // worktree by design (the run-state file, the release record).

@@ -709,7 +709,11 @@ delete`, a recursive `rm`, a forced branch delete, a data refresh, and a
 worktree outside `.worktrees/`. While the `build` node runs, the graph tier also
 denies a write to any absolute path outside `.worktrees/implement-<slug>/`
 (REQ-193), so a stray write is refused up front rather than found by the
-return-side check afterwards.
+return-side check afterwards. The run's four control files under `.worktrees/`
+— the run state, the release record, the lock and the stop sentinel — are
+exempt from that rule, because the driver rewrites the run state to leave
+`build` and releases the run while the state still names it; the lock and the
+sentinel keep their own rules.
 
 **The hook is a superset of the profile.** Until 2026-10-12 a dozen of the
 profile's denies had no hook rule, so a build node's bare `git stash pop` ran
