@@ -2,7 +2,9 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
 
-## Status: blocked (parked at brief step 4: the set misses the bar)
+## Status: in-progress
+
+Owner decision 2026-10-13 (step 4 park): ship the six entries as measured, unchanged. The set result below (check 558, tuning 536, every-rule 182 / 176, hard 25 19, corpus 441 / 374, bench@5 127) is accepted; do not narrow or drop any entry. Resume at step 5 (the two one-entry re-measures against the same baseline folds), then step 6, then slices B and C. Slice C's step 7 and step 8 retrain parks still bind.
 
 ### Handoff (attempt 2): step 3 and step 4 numbers (counts only)
 

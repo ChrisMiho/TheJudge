@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
-- Current node: `owner-action` (build attempt 2 parked at slice A step 4)
+- Current node: `build` (attempt 3, resuming at slice A step 5)
 - Next action: `/graph-implement PRD/work/concept-map-wording-entries/`
 
 ## Node ledger
@@ -26,7 +26,9 @@
 
 ## Open gate
 
-- Terminal state: PARKED at `owner-action`, node `build` attempt 2 (run `graph-20261013-054503`), slice A, brief step 4: the six entries as a set miss the step 3 bar.
+**RESOLVED 2026-10-13** (build attempt 2 park) — the owner follows the recommendation: ship the six as measured; the build resumes at slice A step 5, and the step 7 and step 8 retrain gates still bind. The owner also asked for an overnight investigation of where the update gains and where it loses (per-question winners and losers by category), run after this build as a separate measurement-only probe, not part of this package.
+
+- Terminal state (historical): PARKED at `owner-action`, node `build` attempt 2 (run `graph-20261013-054503`), slice A, brief step 4: the six entries as a set miss the step 3 bar.
 - Question: ship the six as measured, or narrow entries 79 (triggered abilities) and 81 (layer wording) first and re-measure?
 - Evidence (counts only; `output/rule-search-eval/set-cv.log` and `alone-*.log` in the build worktree, git-ignored; local embedder, query side only, adopted folds `F-fold0..4`). Baseline → set: check 539 → 558 (+19), tuning 529 → 536 (+7), every-rule check 185 → 182 (−3) and tuning 171 → 176 (+5), whole-suite every-rule 356 → 358 (+2), hard 25 20 → 19 of 59 (−1), corpus 438 → 441 citations and 372 → 374 cases, bench@5 128 → 127 (−1). Each entry alone (check / tuning, every-rule check / tuning, hard 25, corpus, bench@5): 79 553 / 532, 184 / 174, 20, 438 / 372, 127; 80 540 / 528, 185 / 171, 20, 438 / 372, 128; 81 542 / 531, 182 / 174, 20, 441 / 374, 128; 82 540 / 529, 185 / 171, 20, 438 / 372, 128; 83 538 / 528, 184 / 171, 20, 438 / 372, 128; 84 540 / 530, 185 / 171, 20, 438 / 372, 128. Step 5 re-measures, the 14 labelled checks and the built-prompt checks did not run.
 - Driver reading: the bench@5 point is entry 79's (it matches about 40% of cards, so the benchmark's unrelated cards add its term), the same mechanism the brief recorded for 79 with mana value. The every-rule check −3 is offset by tuning +5 (whole suite +2). The hard-25 −1 appears only for the set, not for any entry alone. Every loss is one question or rule against a gain of 26 suite citations; the probe's own folds showed no drop, so the losses are fold-specific at this size.
@@ -295,6 +297,38 @@ Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed
 
 Report back: per slice, status and criteria earned; the measured numbers; any park with its evidence; the PR URL; the final commit sha and push result; and the complete list of paths you wrote, as absolute paths.
 
+### build (attempt 3)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
+
+You are node 6 (`build`), attempt 3, of graph run `graph-20261013-054503`. Run the `thejudge-implement-all` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries/.claude/skills/thejudge-implement-all/SKILL.md` and its reference files) in graph mode on `PRD/work/concept-map-wording-entries/`. Shared branch: `thejudge-auto/concept-map-wording-entries-work` (already checked out in the working directory; work in it in place, no second worktree, no contributor branch). Copy the Working directory line above, unchanged, into any prompt you write.
+
+Resume, do not restart. Attempt 2 parked slice A at brief step 4; the owner has resolved it (see `## Open gate` in `GRAPH-RUN.md` and the note at the top of `slice-a-measure.md`): ship the six entries as measured, unchanged; never narrow or drop one. The adopted baseline folds `output/rule-search-model/onnx/F-fold0..4` stay; do not retrain them. Continue at slice A step 5, then step 6, then slices B and C in order.
+
+Step 5: re-measure the `attached` tweak to entry 81 and the type-setting narrowing (m-1) one at a time on the same folds, each with the six on, and compare against the accepted set result (check 558, tuning 536, every-rule check 182 / tuning 176, hard 25 19, corpus 441 / 372 → 374, bench@5 127). Keep a tweak only if no figure drops against that set result; report each either way. This is a keep-or-drop rule, not a park.
+
+Keep per-question results for the overnight analysis that follows this build, git-ignored only: before reverting the harness, run the set scoring once more and save its per-question file as `output/rule-search-eval/percase-cv-set.json` (the baseline's is already `percase-cv-baseline.json`). After slice C's retrain, keep the retrained model's cross-validated per-question file as `output/rule-search-eval/percase-cv-retrained.json`. Never commit these.
+
+Criteria evidence is keyed by run id; earlier attempts' evidence may not carry over. Earn each criterion under this run by issuing its evidence command or path again where that is cheap. Never retrain a model only to earn evidence.
+
+Open the code PR `thejudge-auto/concept-map-wording-entries-work → main` with `gh pr create --base main --head thejudge-auto/concept-map-wording-entries-work`, titled `[THEJUDGE-AUTO][READY] Six concept-map wording entries and retrain (concept-map-wording-entries)` once ready, and post the registration marker the skill's reference names (`<!-- thejudge-auto:v1:registered:concept-map-wording-entries -->`). Never merge or close a PR. The PR body opens with the plain-language block from `PRD/instructions/plain-language-standard.md` and carries the measured numbers (the adopted baseline and why, the set result the owner accepted and its one-question losses, the retrain figures), lost hits, upload step and In-Depth figures (counts only) that `close` copies into the receipt; do not write a receipt yourself.
+
+Apply product truth by intent: REQ-234 (in slice B, with the owner's edit) and REQ-236 (in slice C) in `PRD/sections/functional-requirements.md`, re-derived from the finalized `GATE-QUESTIONS.md` and `DESIGN-BRIEF.md` against current text, together with the code. Record the measured numbers truthfully, including the accepted losses.
+
+Write scope: every file you create or change lies inside the working directory above. Read-only sources in the launch checkout, by absolute path, are allowed: `/Users/chrismiho/Coding/Projects/TheJudge/output/practice-suite/` and the harness patch `/Users/chrismiho/Coding/Projects/TheJudge/PRD/work/probe-concept-map-wording/concept-map-candidates.patch`. Never write, move or delete anything in the launch checkout. All package bookkeeping (slice status, criteria files, `STATUS.*` marker, `PRD/work/STATUS.md` board row) is written in the worktree's own `PRD/work/` copy, committed and pushed on the shared branch.
+
+Park points: the remaining stop conditions in slice C (brief steps 7 and 8) are genuine owner gates. When one fires, stop building, record the numbers in the slice doc, commit and push, and report the park with its evidence. Never change the recipe or lower a bar on your own.
+
+Long commands: training and cross-validation scoring take a while. Run them with the Bash tool's `run_in_background` option and wait for the completion notification, or with a foreground timeout up to 600000 ms; never `nohup`, a trailing `&`, sleep loops or polling. Check each scorer run used the local embedder and the intended model, not a silent lexical fallback, before trusting its numbers. Do not end your turn while a background command of yours is still running.
+
+Privacy: practice-suite counts only in every committed file, PR body and comment; never the suite's source name; `node scripts/privacy-scan.mjs` before every commit.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Do not modify any skill, `.claude/settings*.json`, or `CLAUDE.md`. Do not upload, deploy, or spend; no data refresh.
+
+Report back: per slice, status and criteria earned; the measured numbers; any park with its evidence; the PR URL; the final commit sha and push result; and the complete list of paths you wrote, as absolute paths.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -302,3 +336,4 @@ Report back: per slice, status and criteria earned; the measured numbers; any pa
 | "Six more card-wording entries in the concept map so rule search reaches triggered-ability, cost, casting, layer and toughness rules, with a model retrain" | answered-once | shape | — |
 | "fill in your suggestions, ask me for ones you truly cant answer" | answered-once | owner-action | — |
 | "agreed, i follow your recommendation" | answered-once | build | — |
+| "i want to follow your recommendations, but i also want to express that if the updates are fixing in some areas and not in others, then id like to investigate that overnight while i sleep" | answered-once | build | — |
