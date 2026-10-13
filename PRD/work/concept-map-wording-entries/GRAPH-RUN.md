@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/concept-map-wording-entries/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 5 | gate-review | sonnet | ok | `0 → 28` | build half run `graph-20261013-042008`: kickoff worktree removed clean (`git worktree remove`); claim commit `89f07d3f` on `thejudge-auto/concept-map-wording-entries-work` cut from `origin/main` `f9fefe0c` (docs PR #300 merge), pushed; lock taken from the launch root; universal canary `rm -rf .worktrees/.graph-canary-nonexistent` and graph canary `nohup true` both denied; `graph-gate-review` commit `f8c6980d` pushed (`git ls-remote` → `f8c6980d`): 1 accept / 1 edit / 0 reject, `### Brief reconciliation` 3 passages (`DESIGN-BRIEF.md:72, 74, 94`); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-13 |
 | 4 | gate-qc | sonnet | ok | `0 → 13` | re-grade after verdicts, PASS attempt 1, findings none — `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md`, commit `9439bb66` pushed (`git ls-remote` → `9439bb66`); REQ-234 edit carried in the diff and `DESIGN-BRIEF.md:72, 74, 94`; 61 removed/context lines exact; no new IDs; amendment grep 75 = 75 rows; privacy scan 0 matches; `STATUS.refined` only marker; README `## Preparation gate` PASS rewritten by the driver | 2026-10-13 |
 | 5 | plan | sonnet | failed | `0 → 28` | attempt 1, failed by the driver's return-side check: commit `609071a7` pushed with `GAMEPLAN.md`, three slices (A measure 8 criteria, B map change 11, C retrain 12), `STATUS.active`, board row under active; but `slice-c-retrain.md` requirement 7 and its criterion have the builder write the receipt under `PRD/instructions/receipts/`, which `thejudge-cleanup` writes at `close` (same `<slug>-<date>.md` path) — placement fix, no product truth involved; re-dispatched as attempt 2 | 2026-10-13 |
+| 5 | plan | sonnet | ok | `0 → 19` | attempt 2, commit `6893486a` pushed (`git ls-remote` → `6893486a`): `slice-c-retrain.md` requirements 4 and 7, two criteria, files touched, `slice-c.criteria.json` C6/C9 and three `GAMEPLAN.md` rows now send figures to the code PR body plus a git-ignored `output/rule-search-eval/` log, `close` writes the receipt; `grep -i receipt` over slices and GAMEPLAN shows no builder-written receipt; criteria A 8 / B 11 / C 12, all `false`; no deliverable under `PRD/work/`; `STATUS.active` only marker; board row under active; privacy scan 0 matches | 2026-10-13 |
 
 ## Open gate
 
@@ -229,6 +230,30 @@ Attempt 1 (commit `609071a7`) is sound except for one placement error. In a grap
 Rules: do not write code, tests, data, `PRD/sections/`, or any skill. Change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Run `node scripts/privacy-scan.mjs` before committing. Spawn no subagents; no sleeping or polling. Stay well under 40 tool calls.
 
 Report back: each file changed with the passage changed, the criteria count per slice, the commit sha, and the push result.
+
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
+
+You are node 6 (`build`), attempt 1, of graph run `graph-20261013-042008`. Run the `thejudge-implement-all` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries/.claude/skills/thejudge-implement-all/SKILL.md` and its reference files) in graph mode on `PRD/work/concept-map-wording-entries/`. Shared branch: `thejudge-auto/concept-map-wording-entries-work` (already checked out in the working directory; work in it in place, no second worktree, no contributor branch). Copy the Working directory line above, unchanged, into any prompt you write.
+
+Implement slices A, B and C of `GAMEPLAN.md` in order, each against its own slice doc and `slice-<letter>.criteria.json`. Open the code PR `thejudge-auto/concept-map-wording-entries-work → main` with `gh pr create --base main --head thejudge-auto/concept-map-wording-entries-work`, titled `[THEJUDGE-AUTO][READY] Six concept-map wording entries and retrain (concept-map-wording-entries)` once ready, and post the registration marker the skill's reference names (`<!-- thejudge-auto:v1:registered:concept-map-wording-entries -->`). Never merge or close a PR. The PR body opens with the plain-language block from `PRD/instructions/plain-language-standard.md` and carries the measured numbers, lost hits, upload step and In-Depth figures (counts only) that `close` copies into the receipt; do not write a receipt yourself.
+
+Apply product truth by intent: REQ-234 (in slice B, with the owner's edit) and REQ-236 (in slice C) in `PRD/sections/functional-requirements.md`, re-derived from the finalized `GATE-QUESTIONS.md` and `DESIGN-BRIEF.md` against current text, together with the code.
+
+Write scope: every file you create or change lies inside the working directory above. Read-only sources in the launch checkout, by absolute path, are allowed: `/Users/chrismiho/Coding/Projects/TheJudge/output/rule-search-eval/` (split.json, hard25.json), `/Users/chrismiho/Coding/Projects/TheJudge/output/practice-suite/`, `/Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/models/`, and the harness patch `/Users/chrismiho/Coding/Projects/TheJudge/PRD/work/probe-concept-map-wording/concept-map-candidates.patch`. Copy them into the worktree; never write, move or delete anything in the launch checkout. All package bookkeeping (slice status, criteria files, `STATUS.*` marker, `PRD/work/STATUS.md` board row) is written in the worktree's own `PRD/work/` copy, committed and pushed on the shared branch.
+
+Park points: the stop conditions quoted in the slice docs (brief steps 2, 4, 7 and 8) are genuine owner gates. When one fires, stop building, record the numbers in the slice doc, commit and push, and report the park with its evidence. Never drop, narrow or re-tune an entry, change the recipe, or lower a bar on your own.
+
+Long commands: training and cross-validation scoring take a while. Run them with the Bash tool's `run_in_background` option and wait for the completion notification, or with a foreground timeout up to 600000 ms; never `nohup`, a trailing `&`, sleep loops or polling. Check each scorer run used the local embedder and the intended model, not a silent lexical fallback, before trusting its numbers.
+
+Privacy: practice-suite counts only in every committed file, PR body and comment; never the suite's source name; `node scripts/privacy-scan.mjs` before every commit.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Do not modify any skill, `.claude/settings*.json`, or `CLAUDE.md`. Do not upload, deploy, or spend; no data refresh.
+
+Report back: per slice, status and criteria earned; the measured numbers; any park with its evidence; the PR URL; the final commit sha and push result; and the complete list of paths you wrote, as absolute paths.
 
 ## Instruction ledger
 
