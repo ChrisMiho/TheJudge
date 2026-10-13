@@ -2,7 +2,12 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
 
-## Status: planned
+## Status: blocked
+
+### Handoff
+- Done: preconditions (split.json, hard25.json, local models copied; Python toolchain and base model set up). Training pairs re-exported (suite 1181, corpus 415, 277 rule-book example pairs). Five baseline fold models trained with the unchanged recipe and scored with `EMBEDDING_PROVIDER=local npx tsx scripts/score-rule-search.mjs --cv`. Baseline figures (counts only): check half 539, tuning half 529, every-rule check 185 and tuning 171, hard 25 20 of 59, corpus 438 citations and 372 cases with every deciding rule, bench@5 128 of 156, rule characters 7,171 per practice question and 4,313 per corpus question. REQ-236 recorded 522 / 511 / 175 / 21, corpus 442 / 377, bench@5 130.
+- Next: owner decision. Check half is +17, tuning half +18 against REQ-236 (corpus citations -4 is inside the limit). The brief's step 2 stop condition says more than 5 on any of check half, tuning half or corpus citations means the split, the hard-25 list or the recipe is not the one REQ-236 measured. Nothing in steps 3-5 has run. Options for the owner: confirm these fold models as the new baseline and let the set re-check run against them, or find what differs from the 2026-10-12 build (the training run was on CPU/MPS with the pinned requirements; the suite counts match the export log).
+- Stopped because: brief step 2 park point (baseline outside the 5-citation tolerance). Full log: git-ignored `output/rule-search-eval/baseline-cv.log` in this worktree.
 
 ## Goal
 
