@@ -55,8 +55,8 @@ Each diff is against `PRD/sections/functional-requirements.md` at `0135580e`. Li
 +  - measured at build, <date> (`concept-map-wording-entries`, on the baseline folds retrained with the unchanged recipe; counts only): baseline reproduced as <check> / <tuning> / <every-rule check> / <hard 25>, corpus <citations> / <every-rule cases>, bench@5 <n>; with the six <…>; the `attached` skip <kept | dropped> (<figures>); the type-setting `except` and counter-subject exclusions <kept | dropped> (<figures>, <n> of 372 card matches removed); In-Depth corpus cases whose curated topics change: <n> of the In-Depth cases, adding <n> topics in all
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: Accept the six entries, the type-setting clean-up and the added-words rule as written. One addition to the last `measured at build` note: after the curated-topics count, also record the curated-topic rule characters per In-Depth corpus case, before → after. Five of the six terms pull extra In-Depth topics for about 3,000 cards, and nothing else in this change measures how much longer those prompts get. In-Depth answers already run close to the 30-second budget. Record it only; no new bar, because there is no measurement to set one from.
 
 ## REQ-236 — retrain the search model for the new map, and re-check the rules once per retrain
 
@@ -110,5 +110,5 @@ Each diff is against `PRD/sections/functional-requirements.md` at `0135580e`. Li
 +  - the rules gate was re-baselined once, after that retrain, with `--allow-regressions`: deciding rules reaching the prompt (search excerpts or a curated topic) <before> → <after> across the 415 cases; lost hits <none | n, listed by case and rule in the pull request body and the receipt>
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:

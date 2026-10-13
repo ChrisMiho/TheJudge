@@ -22,7 +22,8 @@
 
 - Terminal state: PARKED at `owner-action` after gate-qc PASS (attempt 1).
 - Question: answer `PRD/work/concept-map-wording-entries/GATE-QUESTIONS.md` (2 slots: REQ-234, REQ-236), then merge the docs PR to build.
-- Owner precondition before the build: restore `output/rule-search-eval/split.json` and `hard25.json` in the launch checkout; the brief parks the build at step 1 without them.
+- Owner precondition before the build: restore `output/rule-search-eval/split.json` and `hard25.json` in the launch checkout; the brief parks the build at step 1 without them. Resolved 2026-10-13: rebuilt from `.worktrees/probe-pft/output/practice-suite/` (cases under the original ids plus `reports/pft-hard25.json`), mapping each original id to its current id by identical question text (1,485 of 1,485, one-to-one); `split.json` = the `pft-split-1` hash of the original id, `hard25.json` = the 25 mapped ids. Checks: all 25 hard picks fall in the tuning half under the original-id split (13 of 25 under current ids), and they carry 59 deciding rules, matching REQ-236's hard 25 of 59.
+- Verdicts drafted by the driver at the owner's request on 2026-10-13: REQ-234 edit (record In-Depth curated-topic characters per corpus case before → after), REQ-236 accept. The owner confirms by merging the docs PR.
 - Evidence: `QUALITY-CHECK.md` (PASS, findings none); README `## Preparation gate`; docs PR https://github.com/ChrisMiho/TheJudge/pull/300.
 - Resume: `/graph-implement PRD/work/concept-map-wording-entries/` (the background build loop picks it up after the merge).
 
@@ -133,3 +134,4 @@ Report back: PASS or FAIL, the complete findings list, the marker, the commit sh
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Six more card-wording entries in the concept map so rule search reaches triggered-ability, cost, casting, layer and toughness rules, with a model retrain" | answered-once | shape | — |
+| "fill in your suggestions, ask me for ones you truly cant answer" | answered-once | owner-action | — |
