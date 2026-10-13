@@ -13,7 +13,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| concept-map-wording-entries | Mapped 2026-10-13: slices A measure, B map change, C retrain. Run graph-20261013-042008 |
 
 ## refined
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| concept-map-wording-entries | Build parked 2026-10-13 at slice A step 2: retrained baseline folds score check 539 / tuning 529 vs REQ-236's 522 / 511 (tolerance 5). Owner decides whether these folds become the baseline. Run graph-20261013-042008 |
 
 ## deferred
 

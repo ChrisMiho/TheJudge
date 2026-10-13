@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
-- Current node: `build`
+- Current node: `owner-action` (build parked at slice A step 2)
 - Next action: `/graph-implement PRD/work/concept-map-wording-entries/`
 
 ## Node ledger
@@ -21,17 +21,17 @@
 | 4 | gate-qc | sonnet | ok | `0 → 13` | re-grade after verdicts, PASS attempt 1, findings none — `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md`, commit `9439bb66` pushed (`git ls-remote` → `9439bb66`); REQ-234 edit carried in the diff and `DESIGN-BRIEF.md:72, 74, 94`; 61 removed/context lines exact; no new IDs; amendment grep 75 = 75 rows; privacy scan 0 matches; `STATUS.refined` only marker; README `## Preparation gate` PASS rewritten by the driver | 2026-10-13 |
 | 5 | plan | sonnet | failed | `0 → 28` | attempt 1, failed by the driver's return-side check: commit `609071a7` pushed with `GAMEPLAN.md`, three slices (A measure 8 criteria, B map change 11, C retrain 12), `STATUS.active`, board row under active; but `slice-c-retrain.md` requirement 7 and its criterion have the builder write the receipt under `PRD/instructions/receipts/`, which `thejudge-cleanup` writes at `close` (same `<slug>-<date>.md` path) — placement fix, no product truth involved; re-dispatched as attempt 2 | 2026-10-13 |
 | 5 | plan | sonnet | ok | `0 → 19` | attempt 2, commit `6893486a` pushed (`git ls-remote` → `6893486a`): `slice-c-retrain.md` requirements 4 and 7, two criteria, files touched, `slice-c.criteria.json` C6/C9 and three `GAMEPLAN.md` rows now send figures to the code PR body plus a git-ignored `output/rule-search-eval/` log, `close` writes the receipt; `grep -i receipt` over slices and GAMEPLAN shows no builder-written receipt; criteria A 8 / B 11 / C 12, all `false`; no deliverable under `PRD/work/`; `STATUS.active` only marker; board row under active; privacy scan 0 matches | 2026-10-13 |
+| 6 | build | sonnet | parked | `0 → 59` (includes the driver's post-return checks: the hook denied the run-state flip, see `## Open gate`) | slice A parked at brief step 2: baseline folds check 539 / tuning 529 vs REQ-236 522 / 511 (tolerance 5); commit `3e0ff920` pushed (slice A status `blocked` with handoff); slices B and C not started; no PR (no code changed); harness patch only `git apply --check`ed, never applied; return-side: launch checkout `git status --porcelain` identical before and after, every reported path inside `.worktrees/implement-concept-map-wording-entries/`; privacy scan 0 matches | 2026-10-13 |
 
 ## Open gate
 
-**RESOLVED 2026-10-13** — 2 verdicts applied (0 reject, 1 edit, 1 accept); `STATUS.refined` restored; the run resumes at `gate-qc`.
-
-- Terminal state (historical): PARKED at `owner-action` after gate-qc PASS (attempt 1).
-- Question: answer `PRD/work/concept-map-wording-entries/GATE-QUESTIONS.md` (2 slots: REQ-234, REQ-236), then merge the docs PR to build.
-- Owner precondition before the build: restore `output/rule-search-eval/split.json` and `hard25.json` in the launch checkout; the brief parks the build at step 1 without them. Resolved 2026-10-13: rebuilt from `.worktrees/probe-pft/output/practice-suite/` (cases under the original ids plus `reports/pft-hard25.json`), mapping each original id to its current id by identical question text (1,485 of 1,485, one-to-one); `split.json` = the `pft-split-1` hash of the original id, `hard25.json` = the 25 mapped ids. Checks: all 25 hard picks fall in the tuning half under the original-id split (13 of 25 under current ids), and they carry 59 deciding rules, matching REQ-236's hard 25 of 59.
-- Verdicts drafted by the driver at the owner's request on 2026-10-13: REQ-234 edit (record In-Depth curated-topic characters per corpus case before → after), REQ-236 accept. The owner confirms by merging the docs PR.
-- Evidence: `QUALITY-CHECK.md` (PASS, findings none); README `## Preparation gate`; docs PR https://github.com/ChrisMiho/TheJudge/pull/300.
-- Resume: `/graph-implement PRD/work/concept-map-wording-entries/` (the background build loop picks it up after the merge).
+- Terminal state: PARKED at `owner-action`, node `build` attempt 1, slice A, brief step 2 (the earlier `define` gate was resolved 2026-10-13; see `## Gate verdicts`).
+- Question: the freshly trained baseline folds score above REQ-236's recorded figures by more than the brief's 5-citation tolerance. Should these fold models become the baseline the six entries are re-checked against?
+- Evidence (counts only; `output/rule-search-eval/baseline-cv.log` in the build worktree, git-ignored): retrained on unchanged code with the unchanged recipe, scored with `EMBEDDING_PROVIDER=local` (no fallback warning). Check half 539 vs 522 (+17), tuning half 529 vs 511 (+18), every-rule check / tuning 185 / 171 vs 175 / 166, hard 25 20 vs 21 of 59, corpus 438 / 372 vs 442 / 377 (−4, inside tolerance), bench@5 128 vs 130; rule characters per question 7,171 practice / 4,313 corpus vs 7,478 / 4,412.
+- Driver diagnosis: (1) no leakage — the trainer and `scripts/score-rule-search.mjs --cv` read the same `fold` from `output/rule-search-model/data/cases.jsonl`; (2) the split file is not the cause — a wrong split moves citations between the halves, but both halves rose together (total 1,068 vs 1,033); (3) the suite is unchanged — 0 files in `output/practice-suite/cases` newer than the 2026-10-12 receipt; (4) the trainer runs on `mps` (`scripts/train-rule-search-model.py:62`), which is not bit-reproducible under seed 13, and REQ-236's own record shows retrain swings of this size (previous model 530 / 526 → 522 / 511 after one entry). Conclusion: training noise exceeds the tolerance the brief assumed (assumption A4); the inputs are the ones REQ-236 measured.
+- Recommendation: adopt these fold models as the baseline. The set re-check (step 3) scores the six entries on these same fold models, query side only, so the comparison stays like-for-like; the step 7 retrain park (check half below 522) stays as written.
+- Resume: answer the question above, then `/graph-implement PRD/work/concept-map-wording-entries/`. The build resumes at slice A step 3 on the existing fold models in `.worktrees/implement-concept-map-wording-entries/output/rule-search-model/onnx/F-fold0..4`.
+- Lock not released (guardrail gap): the hook's `build-write-outside-worktree` rule (`scripts/lib/boundary-rules.mjs`, added in #298) denies every absolute write outside the build worktree while the run state names `build`, including the driver's own `.worktrees/.graph-run-state.json` flip and the `.worktrees/.graph-run-release.json` record the lock removal needs. The driver did not route around it. Owner step: `rm .worktrees/.graph-run-state.json .worktrees/.graph-run.lock` from the launch root.
 
 ## Gate verdicts
 
