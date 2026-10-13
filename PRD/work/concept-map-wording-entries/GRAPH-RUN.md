@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS attempt 1, findings none — `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md`, commit `c7efc2c0` pushed; 61 removed/context diff lines exact over 2 slots; amendment grep re-run 75 hits = 75 rows; no new IDs (origin/main ends at REQ-247); privacy scan 0 matches; README `## Preparation gate` PASS written by the driver; parked `owner-action` (marker and board row moved, commit `72f7dd69`); docs PR https://github.com/ChrisMiho/TheJudge/pull/300 | 2026-10-13 |
 | 5 | gate-review | sonnet | ok | `0 → 28` | build half run `graph-20261013-042008`: kickoff worktree removed clean (`git worktree remove`); claim commit `89f07d3f` on `thejudge-auto/concept-map-wording-entries-work` cut from `origin/main` `f9fefe0c` (docs PR #300 merge), pushed; lock taken from the launch root; universal canary `rm -rf .worktrees/.graph-canary-nonexistent` and graph canary `nohup true` both denied; `graph-gate-review` commit `f8c6980d` pushed (`git ls-remote` → `f8c6980d`): 1 accept / 1 edit / 0 reject, `### Brief reconciliation` 3 passages (`DESIGN-BRIEF.md:72, 74, 94`); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-13 |
 | 4 | gate-qc | sonnet | ok | `0 → 13` | re-grade after verdicts, PASS attempt 1, findings none — `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md`, commit `9439bb66` pushed (`git ls-remote` → `9439bb66`); REQ-234 edit carried in the diff and `DESIGN-BRIEF.md:72, 74, 94`; 61 removed/context lines exact; no new IDs; amendment grep 75 = 75 rows; privacy scan 0 matches; `STATUS.refined` only marker; README `## Preparation gate` PASS rewritten by the driver | 2026-10-13 |
+| 5 | plan | sonnet | failed | `0 → 28` | attempt 1, failed by the driver's return-side check: commit `609071a7` pushed with `GAMEPLAN.md`, three slices (A measure 8 criteria, B map change 11, C retrain 12), `STATUS.active`, board row under active; but `slice-c-retrain.md` requirement 7 and its criterion have the builder write the receipt under `PRD/instructions/receipts/`, which `thejudge-cleanup` writes at `close` (same `<slug>-<date>.md` path) — placement fix, no product truth involved; re-dispatched as attempt 2 | 2026-10-13 |
 
 ## Open gate
 
@@ -211,6 +212,23 @@ Carry these facts from the brief into the slice docs so the builder does not red
 Rules: do not write code, tests, data, `PRD/sections/`, or any skill; this node plans only. No training, scoring, long measurement, paid, network, or data-refresh calls. Change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Spawn no subagents; no sleeping or polling. Stay well under 120 tool calls.
 
 Report back: the slice list with one line each, the criteria count per slice, where every deliverable lands (confirm none under `PRD/work/`), the marker, the commit sha, and the push result.
+
+### plan (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
+
+You are node 5 (`plan`), attempt 2, of graph run `graph-20261013-042008`, in graph mode under the `thejudge-map-out` skill (`/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries/.claude/skills/thejudge-map-out/SKILL.md`). Copy the Working directory line above, unchanged, into any prompt you write. Work only inside that worktree, on branch `thejudge-auto/concept-map-wording-entries-work`; never write to the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+Attempt 1 (commit `609071a7`) is sound except for one placement error. In a graph run the receipt under `PRD/instructions/receipts/` is written by `thejudge-cleanup` at the `close` node, at the same `<slug>-<date>.md` path, so the build must not write it. Make this bounded fix and nothing else:
+- In `PRD/work/concept-map-wording-entries/slice-c-retrain.md`, the builder does not write a receipt. Every place the slice sends a figure or list to the receipt (requirement 4 lost hits, requirement 7, the matching acceptance criteria) sends it instead to the code PR body, and also to a git-ignored log under `output/rule-search-eval/`; state that `close` copies them from the PR body into the receipt. Remove `PRD/instructions/receipts/` from the slice's files touched.
+- Update `slice-c.criteria.json` to match: the receipt criterion becomes one whose evidence is the PR body carrying the measured numbers, lost hits, upload step and slice B's In-Depth figures; keep every criterion `false`.
+- Check `GAMEPLAN.md`, `slice-a-measure.md` and `slice-b-map-change.md` for the same instruction (any builder-written receipt) and fix it the same way; touch nothing else.
+
+Rules: do not write code, tests, data, `PRD/sections/`, or any skill. Change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Run `node scripts/privacy-scan.mjs` before committing. Spawn no subagents; no sleeping or polling. Stay well under 40 tool calls.
+
+Report back: each file changed with the passage changed, the criteria count per slice, the commit sha, and the push result.
 
 ## Instruction ledger
 
