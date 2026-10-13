@@ -34,7 +34,7 @@
     },
     {
       "id": "C6",
-      "statement": "The rules gate is re-baselined exactly once, deciding rules reaching the prompts not lower, every lost hit listed by case and rule in the PR body and receipt",
+      "statement": "The rules gate is re-baselined exactly once, deciding rules reaching the prompts not lower, every lost hit listed by case and rule in the PR body and the git-ignored log under output/rule-search-eval/",
       "value": false,
       "evidence": { "command": "eval:rules-gate:baseline", "paths": ["apps/backend/src/eval/rules-gate/baseline.json"] }
     },
@@ -52,7 +52,7 @@
     },
     {
       "id": "C9",
-      "statement": "The receipt exists under PRD/instructions/receipts/ with counts only",
+      "statement": "The code PR body carries the measured numbers, lost hits, upload step and slice B's In-Depth figures, counts only, for close to copy into the receipt (the build writes no receipt)",
       "value": false,
       "evidence": { "manual": true }
     },

@@ -14,7 +14,7 @@ Cards worded with "whenever", "rather than pay its mana cost", "gain control of"
 | --- | --- | --- | --- |
 | A — Measure | Preconditions, baseline folds, set re-check, two one-entry re-measures. Numbers only. | none | no (numbers kept in git-ignored `output/`, restated in B and C) |
 | B — Map change | Six entries, narrowing, header, tests, goldens, REQ-234 applied | A | yes |
-| C — Retrain | Re-export, train, vectors, manifest, upload doc, single re-baseline, REQ-236 applied, m-3/m-4/m-5, receipt | B | yes |
+| C — Retrain | Re-export, train, vectors, manifest, upload doc, single re-baseline, REQ-236 applied, m-3/m-4/m-5, numbers in PR body | B | yes |
 
 Sequential: B needs A's keep/drop decisions on the `attached` tweak and the type-setting narrowing; C needs B's committed map. If the map change alone fails the rules gate on the current model, B and C land as one slice (C absorbs B's commit; the single re-baseline follows the retrain).
 
@@ -45,7 +45,7 @@ Card text -> concept map patterns -> added rule-book terms -> search query -> ru
 | Rules-gate re-baseline | `apps/backend/src/eval/rules-gate/baseline.json` | C |
 | Upload instructions | `docs/aws/model-upload.md` | C |
 | Product truth | REQ-234 (B), REQ-236 (C) in `PRD/sections/functional-requirements.md` | B, C |
-| Measured numbers | REQ-234 and REQ-236 notes; PR body; receipt under `PRD/instructions/receipts/` | B, C |
+| Measured numbers | REQ-234 and REQ-236 notes; PR body and git-ignored `output/rule-search-eval/` log; `close` writes the receipt (`PRD/instructions/receipts/<slug>-<date>.md`) from the PR body, the build does not | B, C |
 | Weights, pairs, fold models, per-question results | git-ignored `output/rule-search-model/`, `output/rule-search-eval/`; upload copy staged by `scripts/package-embedding-model.mjs` under `output/rule-search-model/upload/<id>` | A, C |
 | Measurement harness | never committed | A |
 
@@ -53,6 +53,6 @@ Card text -> concept map patterns -> added rule-book terms -> search query -> ru
 
 - [ ] Slice A: baseline within 5 of REQ-236 figures; set re-check meets the bar; both one-entry re-measures reported
 - [ ] Slice B: 84 entries, tests green, goldens reviewed, REQ-234 applied
-- [ ] Slice C: floors met, check half >= 522, vectors/manifest consistent, one re-baseline, REQ-236 applied, receipt written
+- [ ] Slice C: floors met, check half >= 522, vectors/manifest consistent, one re-baseline, REQ-236 applied, numbers in the PR body (no builder receipt)
 - [ ] `npm run quality:check`, `npm test`, `node scripts/privacy-scan.mjs` green at the end of each committing slice
 - [ ] No harness patch in any commit; nothing kept under `PRD/work/`
