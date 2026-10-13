@@ -5,49 +5,49 @@
     {
       "id": "A1",
       "statement": "split.json and hard25.json are present in the worktree's output/rule-search-eval/, copied from the launch checkout",
-      "value": false,
+      "value": true,
       "evidence": { "command": "output/rule-search-eval/(split|hard25)\\.json", "paths": ["output/rule-search-eval/split.json", "output/rule-search-eval/hard25.json"] }
     },
     {
       "id": "A2",
       "statement": "apps/backend/data/models/ (local embedder and rule-search-d2c2e500a4c6) is present in the worktree, copied read-only from the launch checkout",
-      "value": false,
+      "value": true,
       "evidence": { "command": "apps/backend/data/models", "paths": ["apps/backend/data/models/rule-search-d2c2e500a4c6"] }
     },
     {
       "id": "A3",
       "statement": "Baseline folds trained and scored; check half, tuning half and corpus citations each within 5 of 522 / 511 / 442, all baseline figures recorded, else parked",
-      "value": false,
+      "value": true,
       "evidence": { "command": "score-rule-search\\.mjs --cv" }
     },
     {
       "id": "A4",
       "statement": "Set re-check recorded: check half up, no other figure down, 14 of 14 labelled checks, built-prompt checks pass; or each entry measured alone and parked with the numbers",
-      "value": false,
+      "value": true,
       "evidence": { "command": "CONCEPT_CANDIDATES=.*score-rule-search\\.mjs" }
     },
     {
       "id": "A5",
       "statement": "The attached tweak and the type-setting narrowing are re-measured on the same folds, with keep/drop decision and figures recorded for each",
-      "value": false,
+      "value": true,
       "evidence": { "command": "score-rule-search\\.mjs --cv" }
     },
     {
       "id": "A6",
       "statement": "Harness patch reverted: git diff --stat shows no harness edit and no tracked change outside PRD/work/concept-map-wording-entries/",
-      "value": false,
+      "value": true,
       "evidence": { "command": "git diff --stat" }
     },
     {
       "id": "A7",
       "statement": "The harness patch file is not copied under PRD/work/ and nothing from this slice is stored there except status text",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "A8",
       "statement": "node scripts/privacy-scan.mjs passes before the status commit",
-      "value": false,
+      "value": true,
       "evidence": { "command": "node scripts/privacy-scan\\.mjs" }
     }
   ]

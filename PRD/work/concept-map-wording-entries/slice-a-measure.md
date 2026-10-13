@@ -2,7 +2,19 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
 
-## Status: in-progress
+## Status: done
+
+### Handoff (attempt 3): steps 5 and 6 (counts only)
+
+Same adopted baseline folds, local embedder, six entries on in every row. The set was re-scored once more and reproduced exactly (558 / 536 / 182 / 176 / 19 / 441 / 374 / 127); its per-question file is saved git-ignored as `output/rule-search-eval/percase-cv-set.json`.
+
+| Run | check | tuning | every-rule | hard 25 | corpus | bench@5 |
+|---|---|---|---|---|---|---|
+| The six (set), accepted | 558 | 536 | 182 / 176 | 19 | 441 / 374 | 127 |
+| Set + `attached` skipped in entry 81 | 558 | 536 | 182 / 176 | 19 | 441 / 374 | 127 |
+| Set + type-setting narrowing (m-1: skip `except` wording and counter-subject wording) | 558 | 536 | 182 / 176 | 19 | 441 / 374 | 127 |
+
+No figure drops for either tweak, so keep both (slice B applies them). The narrowing moves rule characters per practice question 7,205 to 7,204 (it fires). Harness reverted with `git checkout`; `git diff --stat` empty. The 14 labelled checks and built-prompt checks run in slices B and C against the committed code and vectors. Raw logs: git-ignored `output/rule-search-eval/set-cv2.log`, `tweak-attached-cv.log`, `tweak-typesetting-cv.log`.
 
 Owner decision 2026-10-13 (step 4 park): ship the six entries as measured, unchanged. The set result below (check 558, tuning 536, every-rule 182 / 176, hard 25 19, corpus 441 / 374, bench@5 127) is accepted; do not narrow or drop any entry. Resume at step 5 (the two one-entry re-measures against the same baseline folds), then step 6, then slices B and C. Slice C's step 7 and step 8 retrain parks still bind.
 
