@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| concept-map-wording-entries | Gate answered 2026-10-13 (REQ-234 edit, REQ-236 accept) and applied to `GATE-QUESTIONS.md`; resumes at `gate-qc`. `split.json` and `hard25.json` restored to the launch checkout's `output/rule-search-eval/` on 2026-10-13. Run graph-20261013-042008 |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| concept-map-wording-entries | Quality check PASS. Answer `GATE-QUESTIONS.md` (2 slots: REQ-234 concept map, REQ-236 retrain) in the docs PR, then merge to build. `split.json` and `hard25.json` restored to the launch checkout's `output/rule-search-eval/` on 2026-10-13. Run graph-20261013-034606 |
 
 ## deferred
 

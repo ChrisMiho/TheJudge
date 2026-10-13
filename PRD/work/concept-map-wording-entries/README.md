@@ -1,5 +1,5 @@
 ---
-status: owner-action
+status: refined
 ---
 
 # concept-map-wording-entries
@@ -12,7 +12,7 @@ Six more card-wording entries in the concept map so rule search reaches triggere
 - Proposed product truth: `GATE-QUESTIONS.md` (REQ-234, REQ-236 amended; 2 slots)
 - Amendment grep: `evidence/amendment-grep.md`
 - Quality check: `QUALITY-CHECK.md`
-- Next: the owner answers `GATE-QUESTIONS.md` in the docs PR and merges it; `graph-implement` builds it
+- Next: gate answered (REQ-234 edit, REQ-236 accept) and applied; the run resumes at `gate-qc`, then `graph-implement` builds it
 
 ## Autonomous metadata
 

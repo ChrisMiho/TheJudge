@@ -20,12 +20,32 @@
 
 ## Open gate
 
-- Terminal state: PARKED at `owner-action` after gate-qc PASS (attempt 1).
+**RESOLVED 2026-10-13** — 2 verdicts applied (0 reject, 1 edit, 1 accept); `STATUS.refined` restored; the run resumes at `gate-qc`.
+
+- Terminal state (historical): PARKED at `owner-action` after gate-qc PASS (attempt 1).
 - Question: answer `PRD/work/concept-map-wording-entries/GATE-QUESTIONS.md` (2 slots: REQ-234, REQ-236), then merge the docs PR to build.
 - Owner precondition before the build: restore `output/rule-search-eval/split.json` and `hard25.json` in the launch checkout; the brief parks the build at step 1 without them. Resolved 2026-10-13: rebuilt from `.worktrees/probe-pft/output/practice-suite/` (cases under the original ids plus `reports/pft-hard25.json`), mapping each original id to its current id by identical question text (1,485 of 1,485, one-to-one); `split.json` = the `pft-split-1` hash of the original id, `hard25.json` = the 25 mapped ids. Checks: all 25 hard picks fall in the tuning half under the original-id split (13 of 25 under current ids), and they carry 59 deciding rules, matching REQ-236's hard 25 of 59.
 - Verdicts drafted by the driver at the owner's request on 2026-10-13: REQ-234 edit (record In-Depth curated-topic characters per corpus case before → after), REQ-236 accept. The owner confirms by merging the docs PR.
 - Evidence: `QUALITY-CHECK.md` (PASS, findings none); README `## Preparation gate`; docs PR https://github.com/ChrisMiho/TheJudge/pull/300.
 - Resume: `/graph-implement PRD/work/concept-map-wording-entries/` (the background build loop picks it up after the merge).
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-234` | edit | "Accept the six entries, the type-setting clean-up and the added-words rule as written. One addition to the last `measured at build` note: after the curated-topics count, also record the curated-topic rule characters per In-Depth corpus case, before → after. Five of the six terms pull extra In-Depth topics for about 3,000 cards, and nothing else in this change measures how much longer those prompts get. In-Depth answers already run close to the 30-second budget. Record it only; no new bar, because there is no measurement to set one from." |
+| `REQ-236` | accept | — |
+
+Applied inside `GATE-QUESTIONS.md`: the last `measured at build` note of REQ-234 now ends with the curated-topic rule characters per In-Depth corpus case, before → after, recorded only with no bar.
+
+### Brief reconciliation
+
+- grep: `grep -nE 'curated|In-Depth topic|gain a topic|topic additions|topics in all' DESIGN-BRIEF.md README.md`
+- `DESIGN-BRIEF.md:72` (side effects, In-Depth curated topics) — said the build records how many corpus cases gain a topic → now also records curated-topic rule characters per In-Depth corpus case, before → after, no bar (REQ-234 edit)
+- `DESIGN-BRIEF.md:74` (side effects, prompt size) — said the build records In-Depth topic additions → now includes the same characters figure (REQ-234 edit)
+- `DESIGN-BRIEF.md:94` (build step 9) — listed In-Depth topic additions on the corpus → now adds the characters before → after, recorded only (REQ-234 edit)
+- `README.md` pointer — no passage contradicts the verdict; `intake/` states no superseded behaviour (the edit adds a measurement); no supersession note needed
+- Re-run of the grep: remaining hits (`DESIGN-BRIEF.md:38, 67, 133, 141`) state design facts the edit does not contradict; the assumption row A6 stays valid (new topic picks recorded, not blocked)
 
 ## Dispatch prompts
 
