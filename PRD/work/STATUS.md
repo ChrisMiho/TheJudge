@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| concept-map-wording-entries | Built and ready for review: six card-wording entries plus retrained model `rule-search-adfcdcb59aef` (owner uploads it before merge). Run graph-20261013-054503 |
 
 ## active
 
