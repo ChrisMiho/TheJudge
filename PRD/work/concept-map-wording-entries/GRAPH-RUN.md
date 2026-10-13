@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
-- Current node: `build` (attempt 3, resuming at slice A step 5)
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/concept-map-wording-entries/`
 
 ## Node ledger
@@ -22,7 +22,8 @@
 | 5 | plan | sonnet | failed | `0 → 28` | attempt 1, failed by the driver's return-side check: commit `609071a7` pushed with `GAMEPLAN.md`, three slices (A measure 8 criteria, B map change 11, C retrain 12), `STATUS.active`, board row under active; but `slice-c-retrain.md` requirement 7 and its criterion have the builder write the receipt under `PRD/instructions/receipts/`, which `thejudge-cleanup` writes at `close` (same `<slug>-<date>.md` path) — placement fix, no product truth involved; re-dispatched as attempt 2 | 2026-10-13 |
 | 5 | plan | sonnet | ok | `0 → 19` | attempt 2, commit `6893486a` pushed (`git ls-remote` → `6893486a`): `slice-c-retrain.md` requirements 4 and 7, two criteria, files touched, `slice-c.criteria.json` C6/C9 and three `GAMEPLAN.md` rows now send figures to the code PR body plus a git-ignored `output/rule-search-eval/` log, `close` writes the receipt; `grep -i receipt` over slices and GAMEPLAN shows no builder-written receipt; criteria A 8 / B 11 / C 12, all `false`; no deliverable under `PRD/work/`; `STATUS.active` only marker; board row under active; privacy scan 0 matches | 2026-10-13 |
 | 6 | build | sonnet | parked | `0 → 59` (includes the driver's post-return checks: the hook denied the run-state flip, see `
-| 6 | build | sonnet | parked | `0 → 20` | attempt 2, run `graph-20261013-054503`: slice A parked at brief step 4 (set misses the step 3 bar: check +19, tuning +7, corpus +3; every-rule check −3, hard 25 −1, bench@5 −1); each entry measured alone (`output/rule-search-eval/alone-*.log`); harness applied then reverted, `git diff --stat` empty; commit `aacc7aa9` pushed; no PR; return-side: launch checkout porcelain identical, every reported path inside `.worktrees/implement-concept-map-wording-entries/`; criteria not earned under this run; driver run-state flip after return allowed (#301 exemption live) | 2026-10-13 |## Open gate`) | slice A parked at brief step 2: baseline folds check 539 / tuning 529 vs REQ-236 522 / 511 (tolerance 5); commit `3e0ff920` pushed (slice A status `blocked` with handoff); slices B and C not started; no PR (no code changed); harness patch only `git apply --check`ed, never applied; return-side: launch checkout `git status --porcelain` identical before and after, every reported path inside `.worktrees/implement-concept-map-wording-entries/`; privacy scan 0 matches | 2026-10-13 |
+| 6 | build | sonnet | parked | `0 → 20` | attempt 2, run `graph-20261013-054503`: slice A parked at brief step 4 (set misses the step 3 bar: check +19, tuning +7, corpus +3; every-rule check −3, hard 25 −1, bench@5 −1); each entry measured alone (`output/rule-search-eval/alone-*.log`); harness applied then reverted, `git diff --stat` empty; commit `aacc7aa9` pushed; no PR; return-side: launch checkout porcelain identical, every reported path inside `.worktrees/implement-concept-map-wording-entries/`; criteria not earned under this run; driver run-state flip after return allowed (#301 exemption live) | 2026-10-13 |
+| 6 | build | sonnet | ok | `0 → 141` | attempt 3, run `graph-20261013-054503`: slices A, B and C done (B and C landed together: the map change alone fails `npm test` until the vectors are rebuilt); commits `9dc2fe88` (A) and `30e95ad9` (B+C), pushed (`origin` tip `30e95ad9`); PR https://github.com/ChrisMiho/TheJudge/pull/302 open into main, registration marker in the body; criteria A 8/8, B 11/11, C 12/12 `true`; `STATUS.ship-ready`, board row under ship-ready; step 5 tweaks both kept (no figure moved); retrained model `rule-search-adfcdcb59aef` CV 538 / 525, every-rule 177 / 171, hard 25 21, corpus 440 / 373, bench@5 128 (floors met, step 7 park not fired); rules gate 472 → 473, 6 lost hits listed in the PR (step 8 park not fired); `quality:check` and `npm test` green per the node; return-side: launch checkout porcelain identical, every reported path inside `.worktrees/implement-concept-map-wording-entries/` | 2026-10-13 |## Open gate`) | slice A parked at brief step 2: baseline folds check 539 / tuning 529 vs REQ-236 522 / 511 (tolerance 5); commit `3e0ff920` pushed (slice A status `blocked` with handoff); slices B and C not started; no PR (no code changed); harness patch only `git apply --check`ed, never applied; return-side: launch checkout `git status --porcelain` identical before and after, every reported path inside `.worktrees/implement-concept-map-wording-entries/`; privacy scan 0 matches | 2026-10-13 |
 
 ## Open gate
 
@@ -328,6 +329,59 @@ Privacy: practice-suite counts only in every committed file, PR body and comment
 Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Do not modify any skill, `.claude/settings*.json`, or `CLAUDE.md`. Do not upload, deploy, or spend; no data refresh.
 
 Report back: per slice, status and criteria earned; the measured numbers; any park with its evidence; the PR URL; the final commit sha and push result; and the complete list of paths you wrote, as absolute paths.
+
+### review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
+
+You are node 7 (`review`), attempt 1, of graph run `graph-20261013-054503`: a fresh-context, no-write reviewer. You have no Write, Edit or NotebookEdit tool and must not change any file, commit, push, or comment on the PR. Copy the Working directory line above, unchanged, into any prompt you write. Spawn no subagents; no sleeping or polling; stay well under 120 tool calls.
+
+What to review: the code PR https://github.com/ChrisMiho/TheJudge/pull/302 (`thejudge-auto/concept-map-wording-entries-work` into `main`, head `30e95ad9`). Read the diff with `git diff origin/main...HEAD` from the working directory, the PR body with `gh pr view 302`, and the package artifacts in `PRD/work/concept-map-wording-entries/`: `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md`, `GAMEPLAN.md`, the three slice docs and their `.criteria.json` files, and `GRAPH-RUN.md` (its `## Open gate` records two owner decisions: the fresh baseline folds were adopted as the baseline, and the six entries ship as measured despite one-question losses; criteria whose park branch the owner resolved count as satisfied by that decision). Git-ignored logs under `output/rule-search-eval/` and `output/rule-search-model/` are evidence you may read.
+
+Rubric: the slices' own acceptance criteria, quoted here, and nothing else.
+
+Slice A:
+- `output/rule-search-eval/split.json` and `hard25.json` are present in the worktree, copied from the launch checkout (launch checkout untouched)
+- `apps/backend/data/models/` (local embedder and `rule-search-d2c2e500a4c6`) is present in the worktree, copied read-only from the launch checkout
+- Baseline folds trained and scored; check half, tuning half and corpus citations each within 5 of 522 / 511 / 442, with all baseline figures recorded; otherwise the slice is parked, not passed
+- Set re-check recorded: check half up, no other figure down, 14 of 14 labelled checks, built-prompt checks pass; or each entry measured alone and parked for the owner with the numbers
+- `attached` tweak and type-setting narrowing re-measured on the same folds; keep/drop decision and figures recorded for each
+- Harness patch reverted: `git diff --stat` shows no harness edit and no tracked change outside `PRD/work/concept-map-wording-entries/`
+- The harness patch file is not copied under `PRD/work/` and nothing from this slice is stored under `PRD/work/` except status text
+- `node scripts/privacy-scan.mjs` passes before the status commit
+Slice B:
+- `gameRulesConceptMap.ts` has 84 oracle-text entries whose patterns and terms match the brief's table, with no harness code or `CONCEPT_CANDIDATES` reference
+- `attached` tweak and type-setting narrowing are applied exactly when slice A recorded keep, and not otherwise
+- `gameRulesConceptMap.test.ts` has at least 6 match and 6 non-match tests for each of the six entries and passes with pins 84 entries and 165 words over 89 entries
+- The Ephemeral Hydra upkeep example expects `handling triggered abilities`
+- The file header says 77 ported, the 78th and 79th-84th owner-reviewed additions
+- Changed eval goldens are re-recorded under `apps/backend/src/eval/fixtures/` and each diff reviewed as an expected concept-term or topic change
+- In-Depth topic additions on the corpus and curated-topic rule characters per In-Depth corpus case, before -> after, are recorded in the REQ-234 build note (counts only, no bar)
+- `inDepthTopicGuard.test.ts` passes at or above 17 of 30
+- REQ-234 in `PRD/sections/functional-requirements.md` matches the finalized `GATE-QUESTIONS.md` block including the owner's edit; no other REQ changed
+- `npm run quality:check` and `npm test` are green (or, if the rules gate fails on the current model, the slice is merged with C per requirement 6)
+- `git diff --stat` before commit shows no harness change; `node scripts/privacy-scan.mjs` passes; nothing kept lives under `PRD/work/`
+Slice C:
+- Training pairs re-exported and the five fold models plus the 100% model trained with the unchanged recipe on the committed map
+- Retrained check half is at least 522 and every REQ-236 floor is met (check >= 430, tuning >= 410, every-rule check >= 140, hard 25 >= 15; 100% model corpus >= 410 and >= 355, bench@5 >= 118, Necropotence top ten in both modes); any figure below the previous model's is reported
+- 14 of 14 labelled checks and the benchmark recall@5 floors pass on the retrained model
+- All five vector files and `embeddingModel.manifest.json` name the new model id and `embeddingModel.test.ts` passes
+- `docs/aws/model-upload.md` names the new id and size; the upload copy is staged under `output/rule-search-model/upload/<id>` and not committed
+- The rules gate is re-baselined exactly once in `apps/backend/src/eval/rules-gate/baseline.json`, with the total of deciding rules reaching the prompts not lower, and every lost hit listed by case and rule in the PR body and the git-ignored log under `output/rule-search-eval/`
+- Rule characters per prompt recorded for the new model and backfilled for the previous model (7,478 practice, 4,412 corpus); built-prompt corpus sizes recorded; leak check re-run and passing on the retrained model
+- REQ-236 in `PRD/sections/functional-requirements.md` matches the finalized `GATE-QUESTIONS.md` block; no other REQ changed in this slice
+- The code PR body carries the measured numbers, lost hits, upload step and slice B's In-Depth figures, counts only, for `close` to copy into the receipt (no receipt written by the build)
+- `inDepthTopicGuard.test.ts` still at or above 17 of 30
+- `npm run quality:check` and `npm test` are green and `node scripts/privacy-scan.mjs` passes
+- No weights, pairs, fold models or per-question results are tracked, and nothing kept lives under `PRD/work/`
+
+Check each criterion against the diff and the evidence, not against the builder's narration. Run cheap read-only checks where useful (for example `npx vitest run apps/backend/src/gameRulesConceptMap.test.ts` from `apps/backend`, `node scripts/privacy-scan.mjs`, `git ls-files output`, grep of the REQ-234 and REQ-236 text against `GATE-QUESTIONS.md`); do not retrain or run long scoring.
+
+Severity: Critical or Important only for a gap against a quoted criterion or a correctness defect in the changed code or product truth. A preference, a style note, or an improvement outside these criteria is never Critical or Important and must be rated Minor. Do not manufacture findings.
+
+Report back: APPROVE or CHANGES REQUESTED; then findings, each with severity (Critical / Important / Minor), the criterion it maps to, file and line, and the evidence; then one line per criterion with met or not met.
 
 ## Instruction ledger
 
