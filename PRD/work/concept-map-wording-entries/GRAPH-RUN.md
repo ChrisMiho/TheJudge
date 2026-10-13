@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
-- Current node: `owner-action`
-- Next action: `/graph-implement PRD/work/concept-map-wording-entries/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
+- Current node: `gate-qc`
+- Next action: `/graph-implement PRD/work/concept-map-wording-entries/`
 
 ## Node ledger
 
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 13` | `PRD/work/concept-map-wording-entries/` (IDEA.md, README.md, STATUS.ideation, `intake/GRAPH-BRIEF.md` byte-identical to the staged copy, `cmp` clean); board row under ideation; commit `6ca6788b` pushed (`git ls-remote` → `6ca6788b`); 2 prior-run receipts in IDEA.md; driver added `## Autonomous metadata` to README; launch checkout porcelain unchanged | 2026-10-13 |
 | 3 | define | opus | ok | `0 → 81` | `PRD/work/concept-map-wording-entries/DESIGN-BRIEF.md` (156 lines), `GATE-QUESTIONS.md` (2 slots, 2 blank verdicts: amended REQ-234, REQ-236; no new IDs; no blocker questions), `evidence/amendment-grep.md` (75 hits = 5 amend / 70 no change, plus one ungreppable REQ-236 line noted); `STATUS.refined` only marker, board row under refined; commit `9651e2f2` pushed (`git ls-remote` → `9651e2f2`); `git diff --stat 6ca6788b HEAD -- PRD/sections apps scripts docs .gitignore` empty; `node scripts/privacy-scan.mjs` 0 matches; owner precondition found: `output/rule-search-eval/split.json` and `hard25.json` absent locally (driver `find` under `~/Coding/Projects` also finds none) — brief parks the build at step 1 without them | 2026-10-13 |
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS attempt 1, findings none — `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md`, commit `c7efc2c0` pushed; 61 removed/context diff lines exact over 2 slots; amendment grep re-run 75 hits = 75 rows; no new IDs (origin/main ends at REQ-247); privacy scan 0 matches; README `## Preparation gate` PASS written by the driver; parked `owner-action` (marker and board row moved, commit `72f7dd69`); docs PR https://github.com/ChrisMiho/TheJudge/pull/300 | 2026-10-13 |
+| 5 | gate-review | sonnet | ok | `0 → 28` | build half run `graph-20261013-042008`: kickoff worktree removed clean (`git worktree remove`); claim commit `89f07d3f` on `thejudge-auto/concept-map-wording-entries-work` cut from `origin/main` `f9fefe0c` (docs PR #300 merge), pushed; lock taken from the launch root; universal canary `rm -rf .worktrees/.graph-canary-nonexistent` and graph canary `nohup true` both denied; `graph-gate-review` commit `f8c6980d` pushed (`git ls-remote` → `f8c6980d`): 1 accept / 1 edit / 0 reject, `### Brief reconciliation` 3 passages (`DESIGN-BRIEF.md:72, 74, 94`); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-13 |
 
 ## Open gate
 
@@ -162,6 +163,28 @@ The owner answered both slots in `GATE-QUESTIONS.md` and merged docs PR #300: RE
 Rules: do not edit `PRD/sections/`, code, tests, data, or any skill. Change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Spawn no subagents; no sleeping or polling. Stay well under 60 tool calls.
 
 Report back: verdict counts (accept / edit / reject), the `### Brief reconciliation` list (each passage changed, or none), the marker, the commit sha, and the push result.
+
+### gate-qc (re-grade after verdicts)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
+
+You are node 4 (`gate-qc`), attempt 1 of the build half, graph run `graph-20261013-042008`. Run the `thejudge-quality-check` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries/.claude/skills/thejudge-quality-check/SKILL.md` and any reference files beside it) in graph mode on `PRD/work/concept-map-wording-entries/DESIGN-BRIEF.md`, together with the package's finalized `GATE-QUESTIONS.md`, the `## Gate verdicts` section of `GRAPH-RUN.md`, `evidence/amendment-grep.md`, `intake/GRAPH-BRIEF.md`, and `README.md`. Copy the Working directory line above, unchanged, into any prompt you write. Work only inside that worktree, on branch `thejudge-auto/concept-map-wording-entries-work`; never write to the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+This is a re-grade after the owner's verdicts (REQ-234 edit, REQ-236 accept) were applied. Check, among the skill's own criteria:
+- the finalized REQ-234 diff carries the owner's edit (curated-topic rule characters per In-Depth corpus case, before → after, recorded only, no bar), and `DESIGN-BRIEF.md` states the same rule everywhere it touches the In-Depth measurement;
+- every `-` and context line in each `GATE-QUESTIONS.md` diff still matches current `PRD/sections/` text on this branch exactly;
+- no new stable ID collides with one in use on `origin/main`;
+- the amendment grep, re-run as recorded, still yields the recorded hit count with one disposition row per hit;
+- no build deliverable lands under `PRD/work/`;
+- `node scripts/privacy-scan.mjs` reports 0 matches.
+
+Write the verdict to `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md` as PASS or FAIL with the complete findings list. On FAIL set `STATUS.refining` as the only marker and move the board row fully; on PASS leave `STATUS.refined`. Do not write the README `## Preparation gate` section; the driver owns it.
+
+Rules: verify directly with reads, greps, and quick commands; spawn no subagents or forks; no sleeping or polling; no retrain, fold scoring, long measurement, paid, network, or data-refresh calls. Do not edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, tests, data, or any skill. Change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Stay well under 60 tool calls.
+
+Report back: PASS or FAIL, the complete findings list, the marker, the commit sha, and the push result.
 
 ## Instruction ledger
 
