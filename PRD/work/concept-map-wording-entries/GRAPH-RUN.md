@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
-- Current node: `gate-qc`
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/concept-map-wording-entries/`
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 81` | `PRD/work/concept-map-wording-entries/DESIGN-BRIEF.md` (156 lines), `GATE-QUESTIONS.md` (2 slots, 2 blank verdicts: amended REQ-234, REQ-236; no new IDs; no blocker questions), `evidence/amendment-grep.md` (75 hits = 5 amend / 70 no change, plus one ungreppable REQ-236 line noted); `STATUS.refined` only marker, board row under refined; commit `9651e2f2` pushed (`git ls-remote` → `9651e2f2`); `git diff --stat 6ca6788b HEAD -- PRD/sections apps scripts docs .gitignore` empty; `node scripts/privacy-scan.mjs` 0 matches; owner precondition found: `output/rule-search-eval/split.json` and `hard25.json` absent locally (driver `find` under `~/Coding/Projects` also finds none) — brief parks the build at step 1 without them | 2026-10-13 |
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS attempt 1, findings none — `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md`, commit `c7efc2c0` pushed; 61 removed/context diff lines exact over 2 slots; amendment grep re-run 75 hits = 75 rows; no new IDs (origin/main ends at REQ-247); privacy scan 0 matches; README `## Preparation gate` PASS written by the driver; parked `owner-action` (marker and board row moved, commit `72f7dd69`); docs PR https://github.com/ChrisMiho/TheJudge/pull/300 | 2026-10-13 |
 | 5 | gate-review | sonnet | ok | `0 → 28` | build half run `graph-20261013-042008`: kickoff worktree removed clean (`git worktree remove`); claim commit `89f07d3f` on `thejudge-auto/concept-map-wording-entries-work` cut from `origin/main` `f9fefe0c` (docs PR #300 merge), pushed; lock taken from the launch root; universal canary `rm -rf .worktrees/.graph-canary-nonexistent` and graph canary `nohup true` both denied; `graph-gate-review` commit `f8c6980d` pushed (`git ls-remote` → `f8c6980d`): 1 accept / 1 edit / 0 reject, `### Brief reconciliation` 3 passages (`DESIGN-BRIEF.md:72, 74, 94`); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree porcelain empty | 2026-10-13 |
+| 4 | gate-qc | sonnet | ok | `0 → 13` | re-grade after verdicts, PASS attempt 1, findings none — `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md`, commit `9439bb66` pushed (`git ls-remote` → `9439bb66`); REQ-234 edit carried in the diff and `DESIGN-BRIEF.md:72, 74, 94`; 61 removed/context lines exact; no new IDs; amendment grep 75 = 75 rows; privacy scan 0 matches; `STATUS.refined` only marker; README `## Preparation gate` PASS rewritten by the driver | 2026-10-13 |
 
 ## Open gate
 
@@ -185,6 +186,31 @@ Write the verdict to `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md` as 
 Rules: verify directly with reads, greps, and quick commands; spawn no subagents or forks; no sleeping or polling; no retrain, fold scoring, long measurement, paid, network, or data-refresh calls. Do not edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, tests, data, or any skill. Change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Stay well under 60 tool calls.
 
 Report back: PASS or FAIL, the complete findings list, the marker, the commit sha, and the push result.
+
+### plan
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
+
+You are node 5 (`plan`), attempt 1, of graph run `graph-20261013-042008`. Run the `thejudge-map-out` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries/.claude/skills/thejudge-map-out/SKILL.md` and its `reference.md`) in graph mode on `PRD/work/concept-map-wording-entries/`. The README `## Preparation gate` records Quality-check PASS. Copy the Working directory line above, unchanged, into any prompt you write. Work only inside that worktree, on branch `thejudge-auto/concept-map-wording-entries-work`; never write to the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+Inputs: `DESIGN-BRIEF.md` (its build steps, stop conditions, deliverable table and suggested slices A measure / B map change / C retrain), the finalized `GATE-QUESTIONS.md` (REQ-234 with the owner's edit, REQ-236 accepted), the `## Gate verdicts` section of `GRAPH-RUN.md`, and `README.md`.
+
+Write `GAMEPLAN.md`, one `slice-<letter>.md` per slice, and one `slice-<letter>.criteria.json` per slice (every criterion `false`, each with an evidence block, per the map-out reference). Set `STATUS.active` as the only marker and move the `PRD/work/STATUS.md` board row fully (removed from refined, added under active).
+
+Carry these facts from the brief into the slice docs so the builder does not rediscover them:
+- Preconditions belong to the first slice: copy `output/rule-search-eval/split.json` and `hard25.json` read-only from the launch checkout (both exist there now) into the worktree's `output/rule-search-eval/`; park if either is missing. Linked worktrees lack git-ignored caches, so the first slice also copies `apps/backend/data/models/` read-only from the launch checkout into the worktree (the local embedder and the previous model `rule-search-d2c2e500a4c6`), or local scoring silently falls back.
+- The measurement harness patch is read by absolute path from the launch checkout and applied in the worktree only, then reverted before every commit with a `git diff --stat` check; never committed, never copied under `PRD/work/`.
+- The stop conditions in brief steps 2, 4, 7 and 8 are park points, quoted into the slice that runs them.
+- The owner's REQ-234 edit: record curated-topic rule characters per In-Depth corpus case, before → after, recorded only with no bar.
+- Product truth (REQ-234, REQ-236 in `PRD/sections/functional-requirements.md`) is applied by intent in the slice that lands the matching code.
+- Every deliverable lands where the brief's deliverable table says. Nothing the build keeps may live under `PRD/work/`, which close deletes.
+- Practice-suite privacy: counts only in every committed file, PR body and comment; never the suite's source name; `node scripts/privacy-scan.mjs` before every commit.
+
+Rules: do not write code, tests, data, `PRD/sections/`, or any skill; this node plans only. No training, scoring, long measurement, paid, network, or data-refresh calls. Change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Spawn no subagents; no sleeping or polling. Stay well under 120 tool calls.
+
+Report back: the slice list with one line each, the criteria count per slice, where every deliverable lands (confirm none under `PRD/work/`), the marker, the commit sha, and the push result.
 
 ## Instruction ledger
 
