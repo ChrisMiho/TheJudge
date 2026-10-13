@@ -1,10 +1,10 @@
 # Graph run — concept-map-wording-entries
 
-- Run ID: `graph-20261013-034606`
-- Profile: `loaded (env sentinel)`
+- Run ID: `graph-20261013-042008` (build half; spec-forming half was `graph-20261013-034606`)
+- Profile: `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/concept-map-wording-entries` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-concept-map-wording-entries` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries` by the build half's claim)
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
 - Current node: `owner-action`
 - Next action: `/graph-implement PRD/work/concept-map-wording-entries/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)

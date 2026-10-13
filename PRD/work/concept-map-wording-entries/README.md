@@ -16,7 +16,7 @@ Six more card-wording entries in the concept map so rule search reaches triggere
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/concept-map-wording-entries
+- Autonomous base: origin/main
 
 ## Preparation gate
 
