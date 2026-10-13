@@ -115,19 +115,32 @@ Zones and Zone Changes
 400.7m Stickers on an object in a public zone are retained as it moves to another public zone (see rule 123.5 [Stickers on an object are not retained as that object moves to a hidden zone.]). Any effects from stickers continue to apply to the new object it becomes in that zone.
 
 ADDITIONAL RELEVANT RULE EXCERPTS
+Game Concepts › Timing and Priority
+117.5. Each time a player would get priority, the game first performs all applicable state-based actions as a single event (see rule 704, “State-Based Actions”), then repeats this process until no state-based actions are performed. Then triggered abilities are put on the stack (see rule 603, “Handling Triggered Abilities”). These steps repeat in order until no further state-based actions are performed and no abilities trigger. Then the player who would have received priority does so.
+
 Game Concepts › Counters
 122.1i One or more rad counters on a player cause a triggered ability to trigger at the beginning of that player’s precombat main phase. See rule 728, “Rad Counters.”
 
+Spells, Abilities, and Effects › Handling Triggered Abilities
+603.10. Normally, objects that exist immediately after an event are checked to see if the event matched any trigger conditions, and continuous effects that exist at that time are used to determine what the trigger conditions are and what the objects involved in the event look like. However, some triggered abilities are exceptions to this rule; the game “looks back in time” to determine if those abilities trigger, using the existence of those abilities and the appearance of objects immediately prior to the event. The list of exceptions is as follows:
+
+603.10a Some zone-change triggers look back in time. These are leaves-the-battlefield abilities, abilities that trigger when a player sacrifices a permanent, abilities that trigger when a card leaves a graveyard, and abilities that trigger when an object that all players can see is put into a hand or library.
+Example: Two creatures are on the battlefield along with an artifact that has the ability “Whenever a creature dies, you gain 1 life.” Someone casts a spell that destroys all artifacts, creatures, and enchantments. The artifact’s ability triggers twice, even though the artifact goes to its owner’s graveyard at the same time as the creatures.
+
+603.10b Abilities that trigger when a permanent phases out look back in time.
+
+603.10c Abilities that trigger specifically when an object becomes unattached look back in time.
+
+603.10d Abilities that trigger when a player loses control of an object or when a player’s opponent gains control of an object from that player look back in time.
+
+603.10e Abilities that trigger when a spell is countered look back in time.
+
+603.10f Abilities that trigger when a player loses the game look back in time.
+
+603.10g Abilities that trigger when a player planeswalks away from a plane look back in time.
+
 Additional Rules › Keyword Abilities
-702.26d The phasing event doesn’t actually cause a permanent to change zones or control, even though it’s treated as though it’s not on the battlefield and not under its controller’s control while it’s phased out. Zone-change triggers don’t trigger when a permanent phases in or out. Tokens continue to exist on the battlefield while phased out. Counters and stickers remain on a permanent while it’s phased out. Effects that check a phased-in permanent’s history won’t treat the phasing event as having caused the permanent to leave or enter the battlefield or its controller’s control.
-
 702.192a Paradigm represents two spell abilities, one of which creates a delayed triggered ability. Paradigm means “If this is the first time a spell you control with this spell’s name has resolved this game, at the beginning of each of your precombat main phases for the rest of the game, create a copy of this object in exile. You may cast the copy without paying its mana cost” and “Exile this spell.” See rule 707.10 [To copy a spell, activated ability, or triggered ability means to put a copy of it onto the stack; a copy of a spell isn’t cast and a copy of an activated ability isn’t activated.].
-
-Additional Rules › Rad Counters
-728.1. Rad counters are a kind of counter a player can have (see rule 122, “Counters”). There is an inherent triggered ability associated with rad counters. This ability has no source and is controlled by the active player. This is an exception to rule 113.8. The full text of this ability is “At the beginning of each player’s precombat main phase, if that player has one or more rad counters, that player mills a number of cards equal to the number of rad counters they have. For each nonland card milled this way, that player loses 1 life and removes one rad counter from themselves.”
-
-Casual Variants › Archenemy
-904.9. Immediately after the archenemy’s precombat main phase begins during each of their turns, that player moves the top card of their scheme deck off that scheme deck and turns it face up. This is called “setting that scheme in motion.” (See rule 701.32.) This turn-based action doesn’t use the stack. Abilities of that scheme card that trigger “When you set this scheme in motion” trigger.
 
 COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED
 - This is community-maintained catalog data from Commander Spellbook. It is not official WotC rules, not legality validation, and not proof that a combo can actually be executed in this game state.

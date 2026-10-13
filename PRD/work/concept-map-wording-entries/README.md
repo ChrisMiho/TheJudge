@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # concept-map-wording-entries
@@ -19,9 +19,9 @@ Six more card-wording entries in the concept map so rule search reaches triggere
 
 | Slice | Doc | Depends on |
 | --- | --- | --- |
-| A — Measure | `slice-a-measure.md` | none |
-| B — Map change | `slice-b-map-change.md` | A |
-| C — Retrain | `slice-c-retrain.md` | B |
+| A — Measure | `slice-a-measure.md` (done) | none |
+| B — Map change | `slice-b-map-change.md` (done, landed with C) | A |
+| C — Retrain | `slice-c-retrain.md` (done) | B |
 
 ## Autonomous metadata
 

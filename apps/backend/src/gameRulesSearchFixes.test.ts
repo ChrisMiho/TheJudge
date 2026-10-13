@@ -245,8 +245,8 @@ describe("REQ-178 / REQ-234 the main query", () => {
       },
       resourcesWith()
     );
-    expect(query.conceptTerms).toEqual(["upkeep step triggered ability", "draw card"]);
-    expect(query.queryText).toBe("What happens? Test Card Creature upkeep step triggered ability, draw card");
+    expect(query.conceptTerms).toEqual(["upkeep step triggered ability", "draw card", "handling triggered abilities"]);
+    expect(query.queryText).toBe("What happens? Test Card Creature upkeep step triggered ability, draw card, handling triggered abilities");
     expect(query.tokens.find((token) => token.token === "upkeep")).toMatchObject({ source: "concept" });
   });
 

@@ -1,8 +1,11 @@
 // REQ-234: the fixed concept map. General phrase-to-concept rules, one per common card templating, that
-// turn a card's wording into rule-book concept terms for System 3's search. Ported verbatim from the
-// `right-rules-in-order` intake appendix (every pattern and every term); after this change this module
-// is the only copy. Entries stay general, never one per test case, and no model ever produces search
-// terms at request time. Any change to this table is a separate, owner-reviewed edit.
+// turn a card's wording into rule-book concept terms for System 3's search. The first 77 entries were
+// ported verbatim from the `right-rules-in-order` intake appendix (every pattern and every term); the 78th
+// (type-setting wording) and the 79th to 84th (six card-wording entries, `concept-map-wording-entries`) are
+// owner-reviewed additions. This module is the only copy. Entries stay general, never one per test case, and
+// no model ever produces search terms at request time. Any change to this table is a separate,
+// owner-reviewed edit. A term is words existing entries already use or a rule-book section title copied
+// word for word.
 //
 // Each entry is [pattern, terms]: the pattern runs on the card's oracle text lower-cased, with curly
 // apostrophes turned into "'" and the card's own name (each face of a "//" name) replaced by "~"; every
@@ -13,10 +16,11 @@ export type ConceptEntry = readonly [pattern: RegExp, terms: string];
 const EVERGREEN = "(?:flying|first strike|double strike|deathtouch|haste|hexproof|indestructible|lifelink|menace|reach|trample|vigilance|defender|shroud|protection|ward|flash)";
 // Type-setting templating (owner-reviewed 2026-10-12): "in addition to its other types", or a subject followed by
 // is/are and a card type, subtype or basic land type ("Nonbasic lands are Mountains", "is an artifact creature").
-// The subject may not carry conditional or targeting wording (if, that, target, when, unless, where, equal), "as long as", or text in parentheses (reminder text).
+// The subject may not carry conditional or targeting wording (if, that, target, when, unless, where, equal), "except" wording,
+// counter-subject wording ("each +1/+1 counter on a creature you control is also a Food"), "as long as", or text in parentheses (reminder text).
 const TYPE_WORDS = "(?:artifacts?|creatures?|enchantments?|lands?|planeswalkers?|battles?|instants?|sorcery|sorceries|kindred|tribal|plains|islands?|swamps?|mountains?|forests?|auras?|equipment|vehicles?|sagas?|treasures?|clues?|foods?)";
 const TYPE_SETTING = new RegExp(
-  `in addition to (?:its|their|his or her) other (?:land )?types|(?:^|[.,\\n]\\s*)(?<!\\bas long as [^.\\n]*)(?<!\\([^)]*)(?:(?!\\b(?:if|that|target|when|whenever|unless|where|equal)\\b|as long as)[^.\\n,;()])*?\\b(?:is|are) (?:an? )?(?:[a-z-]+ ){0,2}${TYPE_WORDS}\\b`
+  `in addition to (?:its|their|his or her) other (?:land )?types|(?:^|[.,\\n]\\s*)(?<!\\bas long as [^.\\n]*)(?<!\\([^)]*)(?:(?!\\b(?:if|that|target|when|whenever|unless|where|equal|except|counters?)\\b|as long as)[^.\\n,;()])*?\\b(?:is|are) (?:an? )?(?:[a-z-]+ ){0,2}${TYPE_WORDS}\\b`
 );
 export const CONCEPT_MAP: readonly ConceptEntry[] = [
   [/at the beginning of [^.]*?upkeep/, "upkeep step triggered ability"],
@@ -96,7 +100,14 @@ export const CONCEPT_MAP: readonly ConceptEntry[] = [
   [/can't lose the game|win the game|loses? the game/, "losing the game winning state-based action"],
   [/\bloyalty\b/, "loyalty abilities planeswalker"],
   [/lore counter|\bchapter\b/, "saga lore counters chapter"],
-  [/play (?:an additional|additional|two additional) lands?|play lands? from/, "play land special action"]
+  [/play (?:an additional|additional|two additional) lands?|play lands? from/, "play land special action"],
+  // 79th to 84th: owner-reviewed card-wording entries (concept-map-wording-entries). Reminder text in parentheses is skipped where noted.
+  [/(?<!\([^)]*)(?:\bwhenever\b|\bwhen\b|\bat the beginning of\b)/, "handling triggered abilities"],
+  [/rather than pay(?:ing)? [^.]*?mana cost/, "alternative cost casting"],
+  [/(?<!\([^)]*)(?:\bbecomes? (?:an? )?(?:(?!(?:blocked|target|the target|tapped|untapped|day|night|equal|attached)\b)[\w-]+ )*?(?:creature|artifact|land|enchantment|planeswalker)\b|gains? control|exchange control|\blose all abilities|\bloses all abilities|in addition to (?:its|their) other)/, "interaction of continuous effects"],
+  [/(?<!\([^)]*)\bgets? -(?:\d+|x)\/-(?:[1-9]\d*|x)\b/, "toughness state-based action"],
+  [/(?:^|\n)[^"\n:]*\bsacrifice (?:~|this (?:creature|artifact|enchantment|permanent|land))[^"\n:]*:/, "activated ability cost"],
+  [/as an additional cost to cast|(?:^|\n)choose (?:one|two|three|one or more|one or both|any number)\b|rather than pay(?:ing)? [^.]*?mana cost/, "casting spells"]
 ];
 export const TYPE_MAP: readonly ConceptEntry[] = [
   [/\blegendary\b/, "legend rule"],

@@ -2,7 +2,9 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
 
-## Status: planned
+## Status: done
+
+Retrained 2026-10-13 with the unchanged recipe on the committed map; model `rule-search-adfcdcb59aef` (23.0 MB, 4 files, upload copy staged git-ignored). Cross-validated: check 538, tuning 525, every-rule 177 / 171, hard 25 21 of 59, corpus 440 / 373, bench@5 128 (no park: check half is above 522; corpus citations, corpus cases and bench@5 sit below the previous model's 442 / 377 / 130, reported). 100% model: corpus 471 / 392, bench@5 128, Necropotence Quick 1/4/5, In-Depth 2/4/3; recall@5 0.9231 clean, 0.9167 polluted. Rule characters per prompt 7,174 practice, 4,262 corpus (previous 7,478 / 4,412). Rules gate re-baselined once: reaching 472 to 473, six hits lost (listed in the PR body), seven new. Leak check, quality:check, npm test and privacy scan pass. REQ-236 applied. Per-question files are git-ignored under `output/rule-search-eval/`.
 
 ## Goal
 

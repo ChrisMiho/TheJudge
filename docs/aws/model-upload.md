@@ -5,7 +5,7 @@ The Magic-trained search model (REQ-236, REQ-237) is not in git. The code PR car
 The weights live in the private artifact bucket under `models/<model-id>/`, and the package step fetches them
 into the Lambda bundle (`scripts/fetch-embedding-model.mjs`). Upload them once, **before** merging the code PR.
 
-Model id for this build: `rule-search-d2c2e500a4c6` (4 files, about 23.7 MB).
+Model id for this build: `rule-search-adfcdcb59aef` (4 files, about 23.7 MB).
 
 ## Upload (owner, profile `thejudge-admin`)
 
@@ -21,9 +21,9 @@ Then, from the checkout that holds `output/rule-search-model/`:
 ```bash
 export AWS_PROFILE=thejudge-admin
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-aws s3 cp output/rule-search-model/upload/rule-search-d2c2e500a4c6 \
-  "s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-d2c2e500a4c6/" --recursive
-aws s3 ls "s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-d2c2e500a4c6/" --recursive
+aws s3 cp output/rule-search-model/upload/rule-search-adfcdcb59aef \
+  "s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-adfcdcb59aef/" --recursive
+aws s3 ls "s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-adfcdcb59aef/" --recursive
 ```
 
 The listing must show `config.json`, `tokenizer.json`, `tokenizer_config.json` and
@@ -32,7 +32,7 @@ The listing must show `config.json`, `tokenizer.json`, `tokenizer_config.json` a
 ## Check before merging
 
 ```bash
-node scripts/fetch-embedding-model.mjs --source "s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-d2c2e500a4c6"
+node scripts/fetch-embedding-model.mjs --source "s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-adfcdcb59aef"
 ```
 
 The fetch copies the model into the git-ignored `apps/backend/data/models/` and checks every file against the manifest. A hash mismatch fails it, and a deploy built from a missing or altered model

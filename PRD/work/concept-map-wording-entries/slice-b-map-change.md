@@ -2,7 +2,9 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
 
-## Status: planned
+## Status: done
+
+Landed together with slice C in one commit set (requirement 6): the map change alone cannot pass `npm test`, because every changed query leaves its frozen vector awaiting a re-freeze, the case falls back to words only, and the built-prompt size bound fails (Quick Lookup search excerpts 8,552 against the 7,500 bound with the old model). Entries 79-84 are in with the `attached` skip and the type-setting `except` and counter-subject exclusions (slice A: no figure moved for either). Tests: 101 in `gameRulesConceptMap.test.ts` (six match and six non-match per new entry; pins 84 entries, 165 words over 89 entries; Ephemeral Hydra example). Goldens re-recorded after the retrain (rule excerpts only: more 603.x text, a few keyword and combat rules out). In-Depth effect (counts only): 0 of the 9 In-Depth corpus cases change curated topics (0 topics added); curated-topic rule characters per In-Depth case 14,875 to 14,875; Quick Lookup 8,529 to 8,529 over 415 cases. `inDepthTopicGuard`: 29 of 30. REQ-234 applied.
 
 ## Goal
 

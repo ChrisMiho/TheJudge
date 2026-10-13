@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| concept-map-wording-entries | Built and ready for review: six card-wording entries plus retrained model `rule-search-adfcdcb59aef` (owner uploads it before merge). Run graph-20261013-054503 |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| concept-map-wording-entries | Building: owner shipped the six as measured 2026-10-13 (check +19, tuning +7, corpus +3; one-question losses accepted); resumes at slice A step 5, then B and C. Run graph-20261013-054503 |
 
 ## refined
 
