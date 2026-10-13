@@ -9,3 +9,7 @@ Six more card-wording entries in the concept map so rule search reaches triggere
 - Idea: `IDEA.md`
 - Intake (evidence only): `intake/GRAPH-BRIEF.md`
 - Next: `thejudge-refinement PRD/work/concept-map-wording-entries/`
+
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/concept-map-wording-entries
