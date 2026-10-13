@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/concept-map-wording-entries` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-concept-map-wording-entries` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | `npm run graph:preflight -- --branch thejudge-auto/concept-map-wording-entries --slug concept-map-wording-entries --run-id graph-20261013-034606 --pid 27897` exit 0 (dry run exit 0 first); shape root; base `origin/main` `bc41a92c`; branch pushed (`git ls-remote --heads origin thejudge-auto/concept-map-wording-entries` → `bc41a92c`) from `.worktrees/kickoff-concept-map-wording-entries`; launch checkout still on `main`, untouched; lock `.worktrees/.graph-run.lock` (pid 27897, 2026-10-13T03:46:28.552Z); canary and graph canary both denied | 2026-10-13 |
 | 2 | shape | sonnet | ok | `0 → 13` | `PRD/work/concept-map-wording-entries/` (IDEA.md, README.md, STATUS.ideation, `intake/GRAPH-BRIEF.md` byte-identical to the staged copy, `cmp` clean); board row under ideation; commit `6ca6788b` pushed (`git ls-remote` → `6ca6788b`); 2 prior-run receipts in IDEA.md; driver added `## Autonomous metadata` to README; launch checkout porcelain unchanged | 2026-10-13 |
+| 3 | define | opus | ok | `0 → 81` | `PRD/work/concept-map-wording-entries/DESIGN-BRIEF.md` (156 lines), `GATE-QUESTIONS.md` (2 slots, 2 blank verdicts: amended REQ-234, REQ-236; no new IDs; no blocker questions), `evidence/amendment-grep.md` (75 hits = 5 amend / 70 no change, plus one ungreppable REQ-236 line noted); `STATUS.refined` only marker, board row under refined; commit `9651e2f2` pushed (`git ls-remote` → `9651e2f2`); `git diff --stat 6ca6788b HEAD -- PRD/sections apps scripts docs .gitignore` empty; `node scripts/privacy-scan.mjs` 0 matches; owner precondition found: `output/rule-search-eval/split.json` and `hard25.json` absent locally (driver `find` under `~/Coding/Projects` also finds none) — brief parks the build at step 1 without them | 2026-10-13 |
 
 ## Open gate
 
@@ -99,6 +100,28 @@ Ground rules:
 - Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Spawn no subagents. Stay well under 150 tool calls.
 
 Report back: the brief's path and line count, the stable IDs proposed (new and amended) with slot count, any blocker questions, the amendment-grep hit count and dispositions, the marker, the commit sha, and the push result.
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-concept-map-wording-entries
+
+You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261013-034606`. Run the `thejudge-quality-check` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-concept-map-wording-entries/.claude/skills/thejudge-quality-check/SKILL.md` and any reference files beside it) in graph mode on `PRD/work/concept-map-wording-entries/DESIGN-BRIEF.md`, together with the package's `GATE-QUESTIONS.md`, `evidence/amendment-grep.md`, `intake/GRAPH-BRIEF.md`, and `README.md`. Copy the Working directory line above, unchanged, into any prompt you write. Work only inside that worktree; never write to the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+Check, among the skill's own criteria:
+- every `-` and context line in each `GATE-QUESTIONS.md` diff matches current `PRD/sections/` text exactly, and each block opens with the three plain-language lines and has blank `- Verdict:` and `- Reason:` slots;
+- every stable ID the brief changes has a slot, and no new ID collides with one in use on `origin/main`;
+- the amendment grep, re-run as recorded, yields the recorded hit count with one disposition row per hit;
+- the brief's stated current-state numbers (concept map entry count, pinned test counts, model id) match the code;
+- no build deliverable lands under `PRD/work/`;
+- `node scripts/privacy-scan.mjs` reports 0 matches.
+
+Write the verdict to `PRD/work/concept-map-wording-entries/QUALITY-CHECK.md` as PASS or FAIL with the complete findings list. On FAIL set `STATUS.refining` as the only marker and move the board row fully; on PASS leave `STATUS.refined`. Do not write the README `## Preparation gate` section; the driver owns it.
+
+Rules: verify directly with reads, greps, and quick commands; spawn no subagents or forks; no sleeping or polling; no retrain, fold scoring, long measurement, paid, network, or data-refresh calls. Do not edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, tests, data, or any skill. Change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Stay well under 60 tool calls.
+
+Report back: PASS or FAIL, the complete findings list, the marker, the commit sha, and the push result.
 
 ## Instruction ledger
 
