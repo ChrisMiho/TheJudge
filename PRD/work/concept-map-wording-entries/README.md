@@ -1,5 +1,5 @@
 ---
-status: refined
+status: active
 ---
 
 # concept-map-wording-entries
@@ -12,7 +12,16 @@ Six more card-wording entries in the concept map so rule search reaches triggere
 - Proposed product truth: `GATE-QUESTIONS.md` (REQ-234, REQ-236 amended; 2 slots)
 - Amendment grep: `evidence/amendment-grep.md`
 - Quality check: `QUALITY-CHECK.md`
-- Next: gate answered (REQ-234 edit, REQ-236 accept) and applied; the run resumes at `gate-qc`, then `graph-implement` builds it
+- Gameplan: `GAMEPLAN.md`
+- Next (superseded history): gate answered (REQ-234 edit, REQ-236 accept) and applied; the run resumes at `gate-qc`, then `graph-implement` builds it
+
+## Slices
+
+| Slice | Doc | Depends on |
+| --- | --- | --- |
+| A — Measure | `slice-a-measure.md` | none |
+| B — Map change | `slice-b-map-change.md` | A |
+| C — Retrain | `slice-c-retrain.md` | B |
 
 ## Autonomous metadata
 

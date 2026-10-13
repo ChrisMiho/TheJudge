@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| concept-map-wording-entries | Mapped 2026-10-13: slices A measure, B map change, C retrain. Run graph-20261013-042008 |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| concept-map-wording-entries | Gate answered 2026-10-13 (REQ-234 edit, REQ-236 accept) and applied to `GATE-QUESTIONS.md`; resumes at `gate-qc`. `split.json` and `hard25.json` restored to the launch checkout's `output/rule-search-eval/` on 2026-10-13. Run graph-20261013-042008 |
 
 ## refining
 
