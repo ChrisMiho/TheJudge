@@ -1,5 +1,5 @@
 {
-  "modelId": "rule-search-adfcdcb59aef",
+  "modelId": "rule-search-d2c2e500a4c6",
   "baseModel": "sentence-transformers/all-MiniLM-L6-v2",
   "files": [
     {
@@ -19,7 +19,7 @@
     },
     {
       "path": "onnx/model_quantized.onnx",
-      "sha256": "a2defd0aa59ce5202e24c99f6935134e646eb0a1a0520e458bfc4b26fe673b5d",
+      "sha256": "89567d8336bfa2ae49ffa08d94891b808b5d9a89eb6c3a3eed56d0e62aaba45f",
       "bytes": 22977247
     }
   ]

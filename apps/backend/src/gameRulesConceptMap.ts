@@ -10,8 +10,14 @@
 // Each entry is [pattern, terms]: the pattern runs on the card's oracle text lower-cased, with curly
 // apostrophes turned into "'" and the card's own name (each face of a "//" name) replaced by "~"; every
 // matching entry adds its terms. TYPE_MAP runs the same way on the lower-cased type line.
+//
+// An entry marked { searchOnly: true } (the 79th to 84th) adds its terms to live search but not to the search
+// model's training questions: `scripts/export-rule-search-training.mjs` turns it off before it builds them, so a
+// retrain cannot learn to ignore its words. Measured: about +18 deciding rules on three models trained without
+// the six; no gain on three trained with them (probe-rule-search-noise-and-misses, 2026-10-13).
 
-export type ConceptEntry = readonly [pattern: RegExp, terms: string];
+export type ConceptEntry = readonly [pattern: RegExp, terms: string, options?: { readonly searchOnly: true }];
+const SEARCH_ONLY = { searchOnly: true } as const;
 
 const EVERGREEN = "(?:flying|first strike|double strike|deathtouch|haste|hexproof|indestructible|lifelink|menace|reach|trample|vigilance|defender|shroud|protection|ward|flash)";
 // Type-setting templating (owner-reviewed 2026-10-12): "in addition to its other types", or a subject followed by
@@ -101,13 +107,13 @@ export const CONCEPT_MAP: readonly ConceptEntry[] = [
   [/\bloyalty\b/, "loyalty abilities planeswalker"],
   [/lore counter|\bchapter\b/, "saga lore counters chapter"],
   [/play (?:an additional|additional|two additional) lands?|play lands? from/, "play land special action"],
-  // 79th to 84th: owner-reviewed card-wording entries (concept-map-wording-entries). Reminder text in parentheses is skipped where noted.
-  [/(?<!\([^)]*)(?:\bwhenever\b|\bwhen\b|\bat the beginning of\b)/, "handling triggered abilities"],
-  [/rather than pay(?:ing)? [^.]*?mana cost/, "alternative cost casting"],
-  [/(?<!\([^)]*)(?:\bbecomes? (?:an? )?(?:(?!(?:blocked|target|the target|tapped|untapped|day|night|equal|attached)\b)[\w-]+ )*?(?:creature|artifact|land|enchantment|planeswalker)\b|gains? control|exchange control|\blose all abilities|\bloses all abilities|in addition to (?:its|their) other)/, "interaction of continuous effects"],
-  [/(?<!\([^)]*)\bgets? -(?:\d+|x)\/-(?:[1-9]\d*|x)\b/, "toughness state-based action"],
-  [/(?:^|\n)[^"\n:]*\bsacrifice (?:~|this (?:creature|artifact|enchantment|permanent|land))[^"\n:]*:/, "activated ability cost"],
-  [/as an additional cost to cast|(?:^|\n)choose (?:one|two|three|one or more|one or both|any number)\b|rather than pay(?:ing)? [^.]*?mana cost/, "casting spells"]
+  // 79th to 84th: owner-reviewed card-wording entries (concept-map-wording-entries), search-only. Reminder text in parentheses is skipped where noted.
+  [/(?<!\([^)]*)(?:\bwhenever\b|\bwhen\b|\bat the beginning of\b)/, "handling triggered abilities", SEARCH_ONLY],
+  [/rather than pay(?:ing)? [^.]*?mana cost/, "alternative cost casting", SEARCH_ONLY],
+  [/(?<!\([^)]*)(?:\bbecomes? (?:an? )?(?:(?!(?:blocked|target|the target|tapped|untapped|day|night|equal|attached)\b)[\w-]+ )*?(?:creature|artifact|land|enchantment|planeswalker)\b|gains? control|exchange control|\blose all abilities|\bloses all abilities|in addition to (?:its|their) other)/, "interaction of continuous effects", SEARCH_ONLY],
+  [/(?<!\([^)]*)\bgets? -(?:\d+|x)\/-(?:[1-9]\d*|x)\b/, "toughness state-based action", SEARCH_ONLY],
+  [/(?:^|\n)[^"\n:]*\bsacrifice (?:~|this (?:creature|artifact|enchantment|permanent|land))[^"\n:]*:/, "activated ability cost", SEARCH_ONLY],
+  [/as an additional cost to cast|(?:^|\n)choose (?:one|two|three|one or more|one or both|any number)\b|rather than pay(?:ing)? [^.]*?mana cost/, "casting spells", SEARCH_ONLY]
 ];
 export const TYPE_MAP: readonly ConceptEntry[] = [
   [/\blegendary\b/, "legend rule"],
@@ -119,6 +125,16 @@ export const TYPE_MAP: readonly ConceptEntry[] = [
 
 export type ConceptCard = { name?: string; oracleText?: string; typeLine?: string };
 
+let searchOnlyEntriesOn = true;
+
+/**
+ * REQ-234 / REQ-236: turns the search-only entries off for the rest of the process. Only the training export
+ * calls this, before it builds any question; live search never does.
+ */
+export function turnOffSearchOnlyEntriesForTraining(): void {
+  searchOnlyEntriesOn = false;
+}
+
 /** The de-duplicated concept terms for one card (REQ-234). */
 export function conceptTermsForCard(card: ConceptCard): string[] {
   let text = (card.oracleText ?? "").toLowerCase().replace(/[\u2018\u2019]/g, "'");
@@ -128,7 +144,10 @@ export function conceptTermsForCard(card: ConceptCard): string[] {
     }
   }
   const terms: string[] = [];
-  for (const [pattern, entryTerms] of CONCEPT_MAP) if (pattern.test(text)) terms.push(entryTerms);
+  for (const [pattern, entryTerms, options] of CONCEPT_MAP) {
+    if (options?.searchOnly && !searchOnlyEntriesOn) continue;
+    if (pattern.test(text)) terms.push(entryTerms);
+  }
   const typeLine = (card.typeLine ?? "").toLowerCase();
   for (const [pattern, entryTerms] of TYPE_MAP) if (pattern.test(typeLine)) terms.push(entryTerms);
   return [...new Set(terms)];

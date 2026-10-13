@@ -3,7 +3,8 @@
 // `npm run quality:check`.
 //
 // Writes only under a git-ignored folder (default output/rule-search-model/data/):
-//   cases.jsonl     practice and corpus questions: the retrieval query the SHIPPED query builder makes
+//   cases.jsonl     practice and corpus questions: the retrieval query the SHIPPED query builder makes, less the
+//                   search-only concept-map entries (REQ-234)
 //                   (question, card signal, concept terms, In-Depth turn step: REQ-178, 233, 234), the
 //                   deciding rules, a fold, the tuning/check half, the hard-25 flag, and hard negatives
 //                   (the shipped search's top 40 that are not deciding, whole rule family removed)
@@ -47,6 +48,9 @@ const { preparePromptInput, buildRetrievalQueryText } = await imp("apps/backend/
 const { buildPromptContext, buildLookupPromptContext } = await imp("apps/backend/src/prompt/context.ts");
 const { askAiRequestSchema } = await imp("apps/backend/src/validation/askAiRequest.ts");
 const R = await imp("apps/backend/src/gameRulesRetrieval.ts");
+// REQ-234 / REQ-236: training questions, their hard negatives and their curated topics are built without the
+// search-only concept-map entries, so a retrain cannot learn to ignore those entries' words.
+(await imp("apps/backend/src/gameRulesConceptMap.ts")).turnOffSearchOnlyEntriesForTraining();
 
 const env = evalMod.resolveRunEnv({ processEnv: process.env, confirmed: true });
 if (fid.resolveEmbeddingProviderMode(env) !== "local") throw new Error("EMBEDDING_PROVIDER is not local");

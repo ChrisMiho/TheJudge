@@ -5,13 +5,13 @@ wording ("whenever", "rather than pay its mana cost", "gain control of", "gets
 -2/-2", "Sacrifice this creature:", "Choose two -") and pulls in the matching
 rule-book rules more often: triggered abilities (603), alternative costs
 (118.9), layers (613), the toughness checks (704.5f/g), activated-ability costs
-(602) and casting (601). The search model was retrained once on the new
-queries. Code PR: https://github.com/ChrisMiho/TheJudge/pull/302 (open, not yet
+(602) and casting (601). The six ship on today's search model,
+`rule-search-d2c2e500a4c6`: a retrain on the new queries was measured and erased
+their gain, so it was dropped, and the six are kept out of future training. Code PR: https://github.com/ChrisMiho/TheJudge/pull/302 (open, not yet
 merged).
 
-**What it means for you:** Before you merge, upload the new search model, or
-the deploy refuses. Then merge PR #302 and cards with those six kinds of
-wording bring their deciding rules in more often. In-Depth prompts do not get
+**What it means for you:** Merge PR #302; there is nothing to upload. Cards with
+those six kinds of wording bring their deciding rules in more often. In-Depth prompts do not get
 longer, and Quick Lookup prompts are unchanged in curated-topic size.
 
 - Date: 2026-10-13
@@ -21,7 +21,22 @@ longer, and Quick Lookup prompts are unchanged in curated-topic size.
 
 ## Owner step before merge
 
-Upload the staged model `rule-search-adfcdcb59aef` per `docs/aws/model-upload.md`: set `AWS_PROFILE=thejudge-admin`, then `aws s3 cp` the staged folder `output/rule-search-model/upload/rule-search-adfcdcb59aef` (4 files, 23.7 MB) to `s3://thejudge-lambda-artifacts-$ACCOUNT/models/rule-search-adfcdcb59aef/` and `aws s3 ls` it to check. The staged copy lives in the build worktree `.worktrees/implement-concept-map-wording-entries/` (git-ignored); the weights are not in the PR. Nothing was uploaded, deployed or spent by the run.
+None. The PR ships on the model already in the private bucket and in production (`rule-search-d2c2e500a4c6`); `docs/aws/model-upload.md` is unchanged from `main`. The retrained model `rule-search-adfcdcb59aef` was never uploaded and is not shipped. Nothing was uploaded, deployed or spent.
+
+## Amendment after close (owner-approved, 2026-10-13): search-only, no retrain
+
+An overnight probe (`PRD/work/probe-rule-search-noise-and-misses/PROBE.md` on branch `probe/rule-search-noise-and-misses`) trained three seeds per arm. One retrain swings the check half by about ±10. Retrained, the six gain nothing (baseline and six-entry arms both 1,071 practice citations, mean of seeds 13–15). On the baseline-map models with the six on at the query side only, they gain on all three (+26, +16, +12; check / tuning means 553.7 / 535.3 against 545.3 / 525.7), at bench@5 −1 each. The probe's reading: the trigger words land in about 60% of training questions, so a retrain learns to ignore them.
+
+The owner approved, after close: drop the retrain, ship on `rule-search-d2c2e500a4c6`, mark entries 79–84 search-only so the training export builds its questions without them, and the REQ-234 / REQ-236 wording below.
+
+- Code: `CONCEPT_MAP` entries 79–84 carry `{ searchOnly: true }`; `turnOffSearchOnlyEntriesForTraining()` in `gameRulesConceptMap.ts`, called once by `scripts/export-rule-search-training.mjs` before it builds anything (questions, hard negatives, curated topics); new test `gameRulesConceptMapTraining.test.ts`.
+- Reverted to `main`: `embeddingModel.manifest.json`, `gameRulesRuleEmbeddings.json`, `frozen-card-vectors.json`, `preparation.crossReferenceQueryEmbedding.json`, `benchmark/semantic-results.json`, `docs/aws/model-upload.md`. Re-frozen with today's model: `frozen-query-embeddings.json` (9 fixtures), `rules-gate/frozen-query-vectors.json` (192 of 415 re-embedded). Goldens re-recorded: no change.
+- Shipped search with the six (corpus / every-rule cases / bench@5): 473 / 395 / 127, against 472 / 395 / 126 without. Necropotence 514.1 / 514.2 / 514.3a ranks 1 / 6 / 5 (Quick Lookup) and 2 / 4 / 3 (In-Depth), unchanged. Rule text per corpus question 4,035 → 4,054 characters. Benchmark recall@5 0.9103 clean and 0.8846 polluted, unchanged. Logs: `output/rule-search-eval/searchonly-shipped.log` (this worktree) and `main-shipped.log` (probe worktree).
+- Rules gate re-baselined once against `main`'s baseline, no `--allow-regressions` needed: hits 438 → 439, 0 lost, 1 new (layers-mycosynth-lattice-march-dependency 613.1d).
+- REQ-234 gains the search-only criterion; REQ-236 gains "ships on `rule-search-d2c2e500a4c6` without a retrain" and "a retrain is judged on the mean of three seeds", and its retrained-model notes are replaced by the not-shipped record and the search-only figures.
+- Verification: `npm test` (1,559 + 891 tests), `npm run quality:check` and `node scripts/privacy-scan.mjs` pass.
+
+The sections below are the original build record. Its retrained-model figures and rules-gate list describe `rule-search-adfcdcb59aef`, which does not ship.
 
 ## Actions taken
 
