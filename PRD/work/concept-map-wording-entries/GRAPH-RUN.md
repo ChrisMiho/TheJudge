@@ -1,6 +1,6 @@
 # Graph run — concept-map-wording-entries
 
-- Run ID: `graph-20261013-042008` (build half; spec-forming half was `graph-20261013-034606`)
+- Run ID: `graph-20261013-054503` (build half from build attempt 2; `graph-20261013-042008` ran the claim through build attempt 1; spec-forming half was `graph-20261013-034606`)
 - Profile: `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
 - Autonomous base: `origin/main`
@@ -26,6 +26,8 @@
 ## Open gate
 
 **RESOLVED 2026-10-13** — the owner adopted the recommendation: the fresh fold models `F-fold0..4` (check 539 / tuning 529) are the baseline for the set re-check; the step 7 retrain park (check half below 522) stays as written. The owner removed the lock and run-state by hand; guardrail fix PR https://github.com/ChrisMiho/TheJudge/pull/301. The build resumes at slice A step 3.
+
+Run ID rotated 2026-10-13 05:45Z: after #301 merged, the driver re-took the lock under `graph-20261013-042008` and its run-state writes were refused by `denied-command-retry`, which keys a file write on its path and still held the pre-fix `build-write-outside-worktree` denial of `.worktrees/.graph-run-state.json`. The driver wrote `.worktrees/.graph-run-release.json` as `PROMPTED` for that run id, removed the lock and the run-state file (both allowed under the #301 exemption), and re-took the lock as `graph-20261013-054503`. Follow-up, not fixed here: `build-write-outside-worktree` depends on the current node, so like `run-lock-removal` it arguably belongs in `REMEDIABLE_RULES`.
 
 - Terminal state (historical): PARKED at `owner-action`, node `build` attempt 1, slice A, brief step 2 (the earlier `define` gate was resolved 2026-10-13; see `## Gate verdicts`).
 - Question: the freshly trained baseline folds score above REQ-236's recorded figures by more than the brief's 5-citation tolerance. Should these fold models become the baseline the six entries are re-checked against?
@@ -250,6 +252,34 @@ Write scope: every file you create or change lies inside the working directory a
 Park points: the stop conditions quoted in the slice docs (brief steps 2, 4, 7 and 8) are genuine owner gates. When one fires, stop building, record the numbers in the slice doc, commit and push, and report the park with its evidence. Never drop, narrow or re-tune an entry, change the recipe, or lower a bar on your own.
 
 Long commands: training and cross-validation scoring take a while. Run them with the Bash tool's `run_in_background` option and wait for the completion notification, or with a foreground timeout up to 600000 ms; never `nohup`, a trailing `&`, sleep loops or polling. Check each scorer run used the local embedder and the intended model, not a silent lexical fallback, before trusting its numbers.
+
+Privacy: practice-suite counts only in every committed file, PR body and comment; never the suite's source name; `node scripts/privacy-scan.mjs` before every commit.
+
+Mechanics: change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Do not modify any skill, `.claude/settings*.json`, or `CLAUDE.md`. Do not upload, deploy, or spend; no data refresh.
+
+Report back: per slice, status and criteria earned; the measured numbers; any park with its evidence; the PR URL; the final commit sha and push result; and the complete list of paths you wrote, as absolute paths.
+
+### build (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
+
+You are node 6 (`build`), attempt 2, of graph run `graph-20261013-054503`. Run the `thejudge-implement-all` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries/.claude/skills/thejudge-implement-all/SKILL.md` and its reference files) in graph mode on `PRD/work/concept-map-wording-entries/`. Shared branch: `thejudge-auto/concept-map-wording-entries-work` (already checked out in the working directory; work in it in place, no second worktree, no contributor branch). Copy the Working directory line above, unchanged, into any prompt you write.
+
+Resume, do not restart. Attempt 1 parked slice A at brief step 2; the owner has resolved it (see `## Open gate` in `GRAPH-RUN.md` and the note at the top of `slice-a-measure.md`): the five fold models already trained in `output/rule-search-model/onnx/F-fold0..4` are the baseline (check 539, tuning 529, every-rule check 185 / tuning 171, hard 25 20 of 59, corpus 438 / 372, bench@5 128; full log `output/rule-search-eval/baseline-cv.log`). Do not retrain them. Continue slice A at step 3 (set re-check on those folds, every bar compared against those baseline figures), then steps 4 to 6, then slices B and C in order. The step 7 retrain park in slice C (retrained check half below 522) stays exactly as written. The git-ignored inputs (split.json, hard25.json, `apps/backend/data/models/`, the venv and base model) are already in the worktree.
+
+Criteria evidence is keyed by run id, and attempt 1 ran under `graph-20261013-042008`, so none of it carries over. Earn each criterion under this run by issuing its evidence command or path again where that is cheap (a copy, a file check, a scoring run on the existing folds). Never retrain a model only to earn evidence.
+
+Open the code PR `thejudge-auto/concept-map-wording-entries-work → main` with `gh pr create --base main --head thejudge-auto/concept-map-wording-entries-work`, titled `[THEJUDGE-AUTO][READY] Six concept-map wording entries and retrain (concept-map-wording-entries)` once ready, and post the registration marker the skill's reference names (`<!-- thejudge-auto:v1:registered:concept-map-wording-entries -->`). Never merge or close a PR. The PR body opens with the plain-language block from `PRD/instructions/plain-language-standard.md` and carries the measured numbers (including the adopted baseline and why), lost hits, upload step and In-Depth figures (counts only) that `close` copies into the receipt; do not write a receipt yourself.
+
+Apply product truth by intent: REQ-234 (in slice B, with the owner's edit) and REQ-236 (in slice C) in `PRD/sections/functional-requirements.md`, re-derived from the finalized `GATE-QUESTIONS.md` and `DESIGN-BRIEF.md` against current text, together with the code.
+
+Write scope: every file you create or change lies inside the working directory above. Read-only sources in the launch checkout, by absolute path, are allowed: `/Users/chrismiho/Coding/Projects/TheJudge/output/practice-suite/` and the harness patch `/Users/chrismiho/Coding/Projects/TheJudge/PRD/work/probe-concept-map-wording/concept-map-candidates.patch`. Never write, move or delete anything in the launch checkout. All package bookkeeping (slice status, criteria files, `STATUS.*` marker, `PRD/work/STATUS.md` board row) is written in the worktree's own `PRD/work/` copy, committed and pushed on the shared branch.
+
+Park points: the remaining stop conditions quoted in the slice docs (brief steps 4, 7 and 8) are genuine owner gates. When one fires, stop building, record the numbers in the slice doc, commit and push, and report the park with its evidence. Never drop, narrow or re-tune an entry, change the recipe, or lower a bar on your own.
+
+Long commands: training and cross-validation scoring take a while. Run them with the Bash tool's `run_in_background` option and wait for the completion notification, or with a foreground timeout up to 600000 ms; never `nohup`, a trailing `&`, sleep loops or polling. Check each scorer run used the local embedder and the intended model, not a silent lexical fallback, before trusting its numbers. Do not end your turn while a background command of yours is still running.
 
 Privacy: practice-suite counts only in every committed file, PR body and comment; never the suite's source name; `node scripts/privacy-scan.mjs` before every commit.
 
