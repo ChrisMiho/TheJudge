@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| concept-map-wording-entries | Six card-wording concept-map entries plus model retrain; brief and 2 gate slots (REQ-234, REQ-236); graph run graph-20261013-034606 |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| concept-map-wording-entries | Six card-wording concept-map entries plus model retrain; graph run graph-20261013-034606 |
 
 ## owner-action
 

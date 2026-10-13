@@ -1,5 +1,5 @@
 ---
-status: ideation
+status: refined
 ---
 
 # concept-map-wording-entries
@@ -8,7 +8,10 @@ Six more card-wording entries in the concept map so rule search reaches triggere
 
 - Idea: `IDEA.md`
 - Intake (evidence only): `intake/GRAPH-BRIEF.md`
-- Next: `thejudge-refinement PRD/work/concept-map-wording-entries/`
+- Design brief: `DESIGN-BRIEF.md`
+- Proposed product truth: `GATE-QUESTIONS.md` (REQ-234, REQ-236 amended; 2 slots)
+- Amendment grep: `evidence/amendment-grep.md`
+- Next: `thejudge-quality-check PRD/work/concept-map-wording-entries/`
 
 ## Autonomous metadata
 
