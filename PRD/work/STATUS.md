@@ -13,7 +13,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| concept-map-wording-entries | Building: slices A measure, B map change, C retrain. Owner adopted the fresh baseline folds (539 / 529) 2026-10-13; resumes at slice A step 3. Run graph-20261013-042008 |
 
 ## refined
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| concept-map-wording-entries | Build parked 2026-10-13 at slice A step 4: the six as a set gain check +19 / tuning +7 / corpus +3 but lose every-rule check −3, hard 25 −1, bench@5 −1. Owner decides: ship as measured, or narrow entries 79 and 81 first. Run graph-20261013-054503 |
 
 ## deferred
 
