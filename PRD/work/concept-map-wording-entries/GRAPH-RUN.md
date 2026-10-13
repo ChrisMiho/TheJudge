@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261013-034606/`
-- Current node: `build` (attempt 4, review loop 1 fixes)
+- Current node: `review` (attempt 2)
 - Next action: `/graph-implement PRD/work/concept-map-wording-entries/`
 
 ## Node ledger
@@ -24,7 +24,8 @@
 | 6 | build | sonnet | parked | `0 → 59` (includes the driver's post-return checks: the hook denied the run-state flip, see `
 | 6 | build | sonnet | parked | `0 → 20` | attempt 2, run `graph-20261013-054503`: slice A parked at brief step 4 (set misses the step 3 bar: check +19, tuning +7, corpus +3; every-rule check −3, hard 25 −1, bench@5 −1); each entry measured alone (`output/rule-search-eval/alone-*.log`); harness applied then reverted, `git diff --stat` empty; commit `aacc7aa9` pushed; no PR; return-side: launch checkout porcelain identical, every reported path inside `.worktrees/implement-concept-map-wording-entries/`; criteria not earned under this run; driver run-state flip after return allowed (#301 exemption live) | 2026-10-13 |
 | 6 | build | sonnet | ok | `0 → 141` | attempt 3, run `graph-20261013-054503`: slices A, B and C done (B and C landed together: the map change alone fails `npm test` until the vectors are rebuilt); commits `9dc2fe88` (A) and `30e95ad9` (B+C), pushed (`origin` tip `30e95ad9`); PR https://github.com/ChrisMiho/TheJudge/pull/302 open into main, registration marker in the body; criteria A 8/8, B 11/11, C 12/12 `true`; `STATUS.ship-ready`, board row under ship-ready; step 5 tweaks both kept (no figure moved); retrained model `rule-search-adfcdcb59aef` CV 538 / 525, every-rule 177 / 171, hard 25 21, corpus 440 / 373, bench@5 128 (floors met, step 7 park not fired); rules gate 472 → 473, 6 lost hits listed in the PR (step 8 park not fired); `quality:check` and `npm test` green per the node; return-side: launch checkout porcelain identical, every reported path inside `.worktrees/implement-concept-map-wording-entries/` | 2026-10-13 |
-| 7 | review | opus | failed | `0 → 47` | CHANGES REQUESTED, loop 1 of 2: no-write `Plan`-type reviewer on head `30e95ad9`; 2 Important — REQ-234 build note (`functional-requirements.md:6229`) lacks the type-setting narrowing's card-match count (`<n> of 372 card matches removed`, `GATE-QUESTIONS.md:55`); REQ-236 build note (`:6293`) lacks q8 latency (`<n> ms per query`, `GATE-QUESTIONS.md:109`; reviewer measured 2.7 ms read-only with `scripts/latency-q8check.mjs`); 1 Minor — PR body's below-previous sentence omits the 100% model's corpus 471 vs 472 and 392 vs 395; every other criterion met (tests, privacy, tracked files, model ids, upload hash, logs, rules gate, leak check re-run) | 2026-10-13 |## Open gate`) | slice A parked at brief step 2: baseline folds check 539 / tuning 529 vs REQ-236 522 / 511 (tolerance 5); commit `3e0ff920` pushed (slice A status `blocked` with handoff); slices B and C not started; no PR (no code changed); harness patch only `git apply --check`ed, never applied; return-side: launch checkout `git status --porcelain` identical before and after, every reported path inside `.worktrees/implement-concept-map-wording-entries/`; privacy scan 0 matches | 2026-10-13 |
+| 7 | review | opus | failed | `0 → 47` | CHANGES REQUESTED, loop 1 of 2: no-write `Plan`-type reviewer on head `30e95ad9`; 2 Important — REQ-234 build note (`functional-requirements.md:6229`) lacks the type-setting narrowing's card-match count (`<n> of 372 card matches removed`, `GATE-QUESTIONS.md:55`); REQ-236 build note (`:6293`) lacks q8 latency (`<n> ms per query`, `GATE-QUESTIONS.md:109`; reviewer measured 2.7 ms read-only with `scripts/latency-q8check.mjs`); 1 Minor — PR body's below-previous sentence omits the 100% model's corpus 471 vs 472 and 392 vs 395; every other criterion met (tests, privacy, tracked files, model ids, upload hash, logs, rules gate, leak check re-run) | 2026-10-13 |
+| 6 | build | sonnet | ok | `0 → 30` | attempt 4 (review loop 1 fixes): commit `2e98f872` pushed (`origin` tip `2e98f872`), only `PRD/sections/functional-requirements.md` (2 lines): REQ-234 note adds `3 of 372 card matches removed` (372 on origin/main, 369 on branch, counted over `cardDetailByOracleId.json.br` with name replacement); REQ-236 note adds `median 2.6 ms per query (stock q8 2.7 ms)` from `scripts/latency-q8check.mjs`; PR #302 body below-previous sentence names the 100% model's 471 vs 472 and 392 vs 395, marker still first line; `gameRulesConceptMap.test.ts` 101/101, privacy 0, `format:check` ok; return-side: launch porcelain identical, writes inside the build worktree | 2026-10-13 |## Open gate`) | slice A parked at brief step 2: baseline folds check 539 / tuning 529 vs REQ-236 522 / 511 (tolerance 5); commit `3e0ff920` pushed (slice A status `blocked` with handoff); slices B and C not started; no PR (no code changed); harness patch only `git apply --check`ed, never applied; return-side: launch checkout `git status --porcelain` identical before and after, every reported path inside `.worktrees/implement-concept-map-wording-entries/`; privacy scan 0 matches | 2026-10-13 |
 
 ## Open gate
 
@@ -399,6 +400,29 @@ You are node 6 (`build`), attempt 4, of graph run `graph-20261013-054503`, in gr
 Then run `npx vitest run src/gameRulesConceptMap.test.ts` from `apps/backend`, `node scripts/privacy-scan.mjs`, and `npm run format:check`; commit only `PRD/sections/functional-requirements.md` with an explicit `git add`; push. Do not retrain, re-score, or touch any other file. Write scope: inside the working directory only. Mechanics: Write and Edit tools only for file changes, no heredocs, no `sed -i`; git as short separate calls; never `git add -A` or `git add .`. Spawn no subagents; no sleeping or polling; stay well under 60 tool calls.
 
 Report back: the two counts and the removed figure, the latency figure, the exact new text of both note fragments, the PR body edit, test and scan results, the commit sha and push result, and every path you wrote, as absolute paths.
+
+### review (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
+
+You are node 7 (`review`), attempt 2, of graph run `graph-20261013-054503`: a fresh-context, no-write reviewer. You have no Write, Edit or NotebookEdit tool and must not change any file, commit, push, or comment on the PR. Copy the Working directory line above, unchanged, into any prompt you write. Spawn no subagents; no sleeping or polling; stay well under 60 tool calls.
+
+Review loop 1 on head `30e95ad9` of PR https://github.com/ChrisMiho/TheJudge/pull/302 found every acceptance criterion met except two, both Important, both in `PRD/sections/functional-requirements.md`:
+- Slice B criterion: REQ-234 in `PRD/sections/functional-requirements.md` matches the finalized `GATE-QUESTIONS.md` block including the owner's edit; no other REQ changed. Gap: the REQ-234 build note lacked the type-setting exclusions' `<n> of 372 card matches removed` that `PRD/work/concept-map-wording-entries/GATE-QUESTIONS.md` line 55 requires.
+- Slice C criterion: REQ-236 in `PRD/sections/functional-requirements.md` matches the finalized `GATE-QUESTIONS.md` block; no other REQ changed in this slice. Gap: the REQ-236 build note lacked the q8 latency `<n> ms per query` that `GATE-QUESTIONS.md` line 109 requires.
+A Minor note asked the PR body to name the 100% model's corpus 471 vs 472 and 392 vs 395 among figures below the previous model's.
+
+The fix is commit `2e98f872`. Check, against ground truth rather than the commit message:
+1. `git diff 30e95ad9 2e98f872` touches only those two notes, and each now carries a measured figure in the shape its `GATE-QUESTIONS.md` line requires. Verify the figures cheaply and read-only: the latency with `npx tsx scripts/latency-q8check.mjs --model output/rule-search-model/onnx/R-foldall --data output/rule-search-model/data-retrain`; the card-match counts by any read-only means you trust (the 78th concept-map entry's pattern on `origin/main` versus this branch, over the committed card data with each card's name replaced by `~`), or say plainly if you could not reproduce them.
+2. REQ-234 and REQ-236 now match their finalized `GATE-QUESTIONS.md` blocks in full, and no other REQ changed.
+3. `gh pr view 302` body still opens with the `thejudge-auto:v1:registered:concept-map-wording-entries` marker.
+4. `node scripts/privacy-scan.mjs` reports 0 matches.
+
+Severity: Critical or Important only for a gap against those two quoted criteria or a correctness defect the fix introduced. Anything else is Minor and never loops the build. Do not manufacture findings.
+
+Report back: APPROVE or CHANGES REQUESTED; findings with severity, criterion, file and line, and evidence; and met or not met for the two criteria.
 
 ## Instruction ledger
 
