@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| concept-map-wording-entries | Six card-wording concept-map entries plus model retrain; brief and 2 gate slots (REQ-234, REQ-236); graph run graph-20261013-034606 |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| concept-map-wording-entries | Quality check PASS. Answer `GATE-QUESTIONS.md` (2 slots: REQ-234 concept map, REQ-236 retrain) in the docs PR, then merge to build. Before the build: put `split.json` and `hard25.json` back in `output/rule-search-eval/`. Run graph-20261013-034606 |
 
 ## deferred
 

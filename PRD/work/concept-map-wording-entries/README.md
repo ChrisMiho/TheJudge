@@ -1,5 +1,5 @@
 ---
-status: refined
+status: owner-action
 ---
 
 # concept-map-wording-entries
@@ -11,8 +11,15 @@ Six more card-wording entries in the concept map so rule search reaches triggere
 - Design brief: `DESIGN-BRIEF.md`
 - Proposed product truth: `GATE-QUESTIONS.md` (REQ-234, REQ-236 amended; 2 slots)
 - Amendment grep: `evidence/amendment-grep.md`
-- Next: `thejudge-quality-check PRD/work/concept-map-wording-entries/`
+- Quality check: `QUALITY-CHECK.md`
+- Next: the owner answers `GATE-QUESTIONS.md` in the docs PR and merges it; `graph-implement` builds it
 
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/concept-map-wording-entries
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/concept-map-wording-entries/DESIGN-BRIEF.md`
+- Findings: none
