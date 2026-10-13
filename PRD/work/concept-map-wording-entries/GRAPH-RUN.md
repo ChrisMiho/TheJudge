@@ -129,6 +129,20 @@ Rules: verify directly with reads, greps, and quick commands; spawn no subagents
 
 Report back: PASS or FAIL, the complete findings list, the marker, the commit sha, and the push result.
 
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
+
+You are the gate-resolution step of graph run `graph-20261013-042008` (the build half). Run the `graph-gate-review` skill (read `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries/.claude/skills/graph-gate-review/SKILL.md` and follow it) on `PRD/work/concept-map-wording-entries/`. Copy the Working directory line above, unchanged, into any prompt you write. Work only inside that worktree, on branch `thejudge-auto/concept-map-wording-entries-work`; never write to the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+The owner answered both slots in `GATE-QUESTIONS.md` and merged docs PR #300: REQ-234 `edit`, REQ-236 `accept`. Apply each verdict exactly as written in its `- Reason:` line to the proposed diff inside `GATE-QUESTIONS.md`. Reconcile `DESIGN-BRIEF.md` (and the README's intake pointer, if any passage contradicts a verdict) to the REQ-234 edit, so the brief and the finalized proposal state one rule; leave `intake/` verbatim. Write `## Gate verdicts` into `GRAPH-RUN.md`, resolve `## Open gate`, and restore `STATUS.refined` as the only marker with the `PRD/work/STATUS.md` board row moved fully (removed from its old section, added under refined).
+
+Rules: do not edit `PRD/sections/`, code, tests, data, or any skill. Change files with the Write and Edit tools only; no heredocs, no `sed -i`. Run git as short separate calls from the worktree: `git add <explicit paths>`, then `git commit -m ...`, then `git push`. Never `git add -A` or `git add .`. Spawn no subagents; no sleeping or polling. Stay well under 60 tool calls.
+
+Report back: verdict counts (accept / edit / reject), the `### Brief reconciliation` list (each passage changed, or none), the marker, the commit sha, and the push result.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
