@@ -2,7 +2,26 @@
 
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-concept-map-wording-entries
 
-## Status: in-progress
+## Status: blocked (parked at brief step 4: the set misses the bar)
+
+### Handoff (attempt 2): step 3 and step 4 numbers (counts only)
+
+Same adopted baseline folds (F-fold0..4), local embedder, harness patch applied then reverted (`git diff --stat` empty). Order: check / tuning, every-rule check / tuning, hard 25 (of 59), corpus citations / every-rule cases, bench@5 (of 156).
+
+| Run | check | tuning | every-rule | hard 25 | corpus | bench@5 |
+|---|---|---|---|---|---|---|
+| Baseline | 539 | 529 | 185 / 171 | 20 | 438 / 372 | 128 |
+| The six (set) | 558 (+19) | 536 (+7) | 182 (-3) / 176 (+5) | 19 (-1) | 441 (+3) / 374 (+2) | 127 (-1) |
+| 79 triggered alone | 553 (+14) | 532 (+3) | 184 (-1) / 174 (+3) | 20 | 438 / 372 | 127 (-1) |
+| 80 alternative cost alone | 540 (+1) | 528 (-1) | 185 / 171 | 20 | 438 / 372 | 128 |
+| 81 layer wording alone | 542 (+3) | 531 (+2) | 182 (-3) / 174 (+3) | 20 | 441 (+3) / 374 (+2) | 128 |
+| 82 -N/-N alone | 540 (+1) | 529 | 185 / 171 | 20 | 438 / 372 | 128 |
+| 83 sacrifice cost alone | 538 (-1) | 528 (-1) | 184 (-1) / 171 | 20 | 438 / 372 | 128 |
+| 84 casting choices alone | 540 (+1) | 530 (+1) | 185 / 171 | 20 | 438 / 372 | 128 |
+
+Check half rises (+19), but three other figures fall on the set: every-rule check -3, hard 25 -1, bench@5 -1. Entry 79 alone costs one bench@5 point and one every-rule check; entry 81 alone costs three every-rule check; entries 80 and 83 each lose one tuning citation alone. The probe measured the set without any drop on its own baseline (522 / 511 / 175 / 166 / 21 / 442 / 377 / 130), so the adopted folds differ in detail from the probe's. Brief step 4 fires: park for the owner. Nothing dropped or narrowed. Steps 5 and 6 (one-entry `attached` and type-setting re-measures) were not run. The 14 labelled checks and built-prompt checks were not run (the bar already fails). Raw logs: git-ignored `output/rule-search-eval/set-cv.log`, `alone-*.log`, `baseline-cv.keep.log`.
+
+Owner choices: accept the set as is (every-rule check -3, hard 25 -1, bench@5 -1 against +19 check half), or apply the probe's narrowing lead on entry 79 ("dies / leaves the battlefield" -> 603.10, two or more trigger sources -> 603.3b) and entry 81, then re-measure.
 
 Owner decision 2026-10-13: the step 2 park is resolved. The fresh fold models `output/rule-search-model/onnx/F-fold0..4` (check 539 / tuning 529) are the baseline for steps 3-5; do not retrain them. Every bar in step 3 compares against these baseline figures. The step 7 retrain park (check half below 522) in slice C stays as written. Resume at step 3.
 
