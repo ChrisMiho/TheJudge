@@ -1,29 +1,29 @@
 # Quality check — small-fixes-cats-menu-white
 
-Run `graph-20261014-225350`, node `gate-qc`, attempt 3, 2026-10-14. Mode: graph is controlling.
+Run `graph-20261014-234321`, node `gate-qc`, attempt 1 of the build half (re-grade after gate resolution), 2026-10-14. Mode: graph is controlling.
 
 **Verdict: PASS** — no findings. `STATUS.refined` stays; map-out owns the move to active.
 
-## Attempt 2 findings: both verified resolved in the files
+Graded: `DESIGN-BRIEF.md`, finalized `GATE-QUESTIONS.md` (all six accepted), `evidence/measurements.md`, `IDEA.md`, `intake/`, against `PRD/sections/` on this branch (cut from today's `origin/main`).
 
-A. `:root` block order. The brief now says the new White `:root` block stays first, where the combined block sits today, before `[data-profile="blue"]` and every other colour block, and explains why (equal specificity, later wins). It adds an offset order test and a live check that Blue (#0050d8) and Red (#c10230) keep their own values. Checked against `tokens.css`: line 41-42 is the combined block, profile blocks follow at 51-87, the shared `:root, [data-profile]` block at 110 defines none of the six colour values (only derives from them), and no other `:root {` text exists in the file, so the test's text lookup is unambiguous. Resolved.
+## Owner revision of REQ-207 (after attempt 3's PASS, commit `a6ad4515`): graded
 
-B. Ambient scene Blue fallback. The brief now changes `AmbientScene.tsx` lines 550-552 to read `DEFAULT_PALETTE_ID`, adds the file to Touches, and specifies a still-frame test in `AmbientScene.test.tsx` (file exists). Lines 550-552 and the observer at 622 match the code. Resolved.
+- Brief section 2, A4, A11, the REQ-207 slot and `measurements.md` all state one look: 45px bars, 2.5px thick, 7px apart, desktop only (`768px`+); ~6px glow in `--accent` mixed ~55% with white at every width; phone keeps 50px box and 1.4rem glyph and gains the glow; 54px desktop box and 68px header unchanged; no box, fill or outline. No contradiction between the four places.
+- Testable: a stylesheet assertion names the desktop rule (45px bars, glow), the phone rule (50px, 1.4rem, glow), the 54px box, and rule order; live checks name box sizes, header height, six colours, hover and focus fill. Accessible name "Switch feature" and the "☰" text stay in the DOM (`FeaturePortalMenu.tsx:334-339`), which existing tests rely on (`FeaturePortalMenu.test.tsx:77`, `App.responsive-presentation.test.tsx:77`).
+- Files and selectors exist: `shell.css` `.app-header .menu-toggle` at 183, 304 (50px / 1.4rem), the `min-width: 768px` block at 309-315 (54px / 1.5rem), shared `.menu-toggle, .icon-btn` at 287; `index.css` `.menu-toggle[aria-hidden="true"]` at 53 is the only other `.menu-toggle` stylesheet rule; the hover/focus rule is at 318-322 (the brief's "317-323" includes the blank line). The existing `OverlayCloseButton.test.tsx:23` regex targets only the shared 44px rule and is unaffected.
+- Hover-order assumption holds for the new rules: the new look sets no border or fill, sits in the existing block before the hover rule, and the glow is on the bars only. The bars' pseudo-element rules have higher specificity than the box rule they decorate, so they do not compete with the hover fill.
+- Not findings: the preview drew bars with a pseudo-element and the brief explicitly leaves the drawing method to the build within the measurements.
 
-## New assumption A11 (desktop ☰ hover order): verified
+## Diff anchors in `GATE-QUESTIONS.md`: all still match
 
-`shell.css` has the `min-width: 768px` `.app-header .menu-toggle` block at 309-315 and the hover/focus rule at 317-323, so the claim holds; both are two-class specificity, so the existing block sits earlier and the hover rule wins. Putting the chip edge and fill inside that block, with a stylesheet order assertion and a live hover/focus check, is sound.
+Checked each hunk's line and removed text against current `PRD/sections/`: `functional-requirements.md` 5228 (REQ-203 notes), 5383, 5396, 5421 (REQ-207), 2408, 2424, 2426, 2450 (REQ-099), 918, 921, 939 (REQ-044), 2796-2797, 2812 (REQ-113); `user-flows.md` 168, 176, 185; `system-map.md` 221, 228; `in-depth/README.md` 529; `shared-chrome/README.md` 109-112, 118, 187, 196, 434-437. All line numbers and `-` lines match today's text.
 
-## Fresh whole-package grade
+## Carried forward from attempt 3 (unchanged parts re-checked)
 
-- Product truth: GATE-QUESTIONS covers REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113 as amendments; no new ID. The brief's PRD alignment section matches the six slots. No contradiction with the current specs beyond the amended lines.
-- Tray fix: `.menu-tray` has `overflow-y: auto` (line 362) and `.menu-tray::after` has `right: -1px` (line 415-421), as the brief states. Fix and test are specified.
-- Default pin: `DEFAULT_PALETTE_ID = "blue"` at `palettes.ts:28`; tests, `appliedTheme.ts`, first-paint surfaces and the `index.html` placeholder exception (REQ-219/REQ-216) are all dispositioned.
-- Technical-design rules: frontend and presentation only. Screen-layout catalog: no new screen or overlay (cat picture is an in-page element on existing screens), no row needed.
-- Agent-readiness: files, lines, tests and live checks are named; open questions are none; assumptions A1-A11 are laddered.
+- Cats, default colour (first-paint split, order test, ambient fallback, default-pin tests) and tray scrollbar sections unchanged since the PASS; product-truth slots cover REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113 as amendments with no new ID.
+- Technical-design rules respected (frontend and presentation only); no new screen or overlay, so no screen-layout row.
 
 ## Not findings
 
-- `PRD/sections/` unchanged: by design (refinement proposes, build applies).
-- Desktop tray shape gap (full height versus floating card): recorded in non-goals as a pre-existing follow-up.
-- DEC-119 row still says "fall back to Blue": retired log, left as history.
+- `PRD/sections/` unchanged: by design (build applies the approved proposal).
+- Desktop tray shape gap and the retired DEC-119 "fall back to Blue" row: recorded as non-goals.
