@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # small-fixes-cats-menu-white
 
@@ -7,6 +7,18 @@ Four small fixes: cats Easter egg, bigger desktop menu button, White as the defa
 - Design brief: `DESIGN-BRIEF.md`
 - Proposed product truth (owner answers): `GATE-QUESTIONS.md` — REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113
 - Live measurements: `evidence/measurements.md` (screenshots in `.playwright-mcp/`, local only)
+
+## Slices
+
+Plan: `GAMEPLAN.md`. All three are independent; C runs last for the whole-package check.
+
+| Slice | Doc | Criteria | Goal | Depends on |
+| --- | --- | --- | --- | --- |
+| A | `slice-a-cats-everywhere.md` | `slice-a.criteria.json` | Cats Easter egg on every in-scope screen (REQ-203) | none |
+| B | `slice-b-menu-button-and-tray.md` | `slice-b.criteria.json` | Glowing wider desktop ☰; no sideways menu scrollbar (REQ-207, REQ-113) | none |
+| C | `slice-c-white-default.md` | `slice-c.criteria.json` | White default colour (REQ-099, REQ-044, FLOW-007); final slice with ship gates | none |
+
+Each slice applies its share of the accepted `PRD/sections/` amendments by intent, with the code, in the same PR.
 
 ## Autonomous metadata
 

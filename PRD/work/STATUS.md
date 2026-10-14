@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| small-fixes-cats-menu-white | Mapped into 3 slices: A cats everywhere, B glowing desktop ☰ + no sideways menu scrollbar, C White default. Next: slice A. |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| small-fixes-cats-menu-white | Cats Easter egg on every screen, quiet visible desktop ☰ (45px bars, soft glow), White default colour, no sideways menu scrollbar. Owner accepted all six slots; gate resolved, resumes at gate-qc. |
 
 ## refining
 

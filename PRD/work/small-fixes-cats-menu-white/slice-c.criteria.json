@@ -1,0 +1,17 @@
+{
+  "slug": "small-fixes-cats-menu-white",
+  "slice": "C",
+  "criteria": [
+    {"id": "C1", "statement": "palettes.test.ts default test asserts DEFAULT_PALETTE_ID is white and the default palette name contains white (test)", "value": false, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/lib/theme/palettes.test.ts"]}},
+    {"id": "C2", "statement": "First-paint test: :root block equals the white block; index.html theme-color and favicon fill equal White's accent; Blue block keeps Blue's six values (test)", "value": false, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/lib/theme/applyPalette.test.ts"]}},
+    {"id": "C3", "statement": "Order test: :root { precedes each of the six data-profile blocks in tokens.css (test)", "value": false, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/lib/theme/applyPalette.test.ts"]}},
+    {"id": "C4", "statement": "AmbientScene test: with no data-profile and reduced motion the still frame equals White's and differs from Blue's; golden test stays green (test)", "value": false, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/components/AmbientScene.test.tsx"]}},
+    {"id": "C5", "statement": "App.mtg-color-themes fallback test says White and passes; appliedTheme.ts follows the constant", "value": false, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/test/appliedTheme.ts"]}},
+    {"id": "C6", "statement": "Frontend test suite passes and npm run quality:check is green for touched areas", "value": false, "evidence": {"command": "quality:check|npm.*(workspace apps/frontend run test|run test)"}},
+    {"id": "C7", "statement": "Live with fresh storage: first paint and settled page are White", "value": false, "evidence": {"manual": true}},
+    {"id": "C8", "statement": "Live: Blue reads --accent #0050d8 and Red #c10230 after picking and after reload", "value": false, "evidence": {"manual": true}},
+    {"id": "C9", "statement": "The REQ-099, REQ-044 and FLOW-007 amendments from GATE-QUESTIONS.md are applied to PRD/sections/ in this PR", "value": false, "evidence": {"paths": ["PRD/sections"]}},
+    {"id": "C10", "statement": "Browser closed, owned server(s) stopped, ports released; captures under PRD/work/small-fixes-cats-menu-white/.playwright-mcp/", "value": false, "evidence": {"manual": true}},
+    {"id": "C11", "statement": "Whole-package check: slice A and B criteria all true and ship gates met", "value": false, "evidence": {"manual": true}}
+  ]
+}
