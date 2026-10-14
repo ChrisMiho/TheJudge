@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill`
 - Branch: `thejudge-auto/card-search-and-send-pill-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-031636/`
-- Current node: `review`
+- Current node: `build` (attempt 2)
 - Next action: `/graph-implement PRD/work/card-search-and-send-pill/`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 9` | build-half re-grade PASS, findings none (two cosmetic non-blocking notes recorded); all five `GATE-QUESTIONS.md` anchors match `PRD/sections/functional-requirements.md` on `573ef8df`; node wrote nothing (porcelain empty, HEAD unchanged); driver rewrote `README.md` `## Preparation gate` | 2026-10-13 |
 | 5 | plan | sonnet | ok | `0 → 11` | commit `0a7b1fe0`: `GAMEPLAN.md`, `slice-a-card-search-punctuation.md` + `slice-a.criteria.json` (8 criteria, all false), `slice-b-no-mic-send-pill.md` + `slice-b.criteria.json` (7, all false); `STATUS.active` only marker; board row under active; every file the slices name exists on the branch; no deliverable planned inside `PRD/work/`; process note: node edited with Bash heredocs instead of Write/Edit (self-reported; diff limited to the package and `PRD/work/STATUS.md`) | 2026-10-13 |
 | 6 | build | sonnet | ok | `0 → 90` | PR https://github.com/ChrisMiho/TheJudge/pull/305 (`thejudge-auto/card-search-and-send-pill-work → main`, OPEN, READY title, registration marker in body); head `d2b12df3` = `origin/thejudge-auto/card-search-and-send-pill-work` (slice A `2f8d5270`); 22 files vs `9aac0d23` (12 frontend, 3 `PRD/sections/`, package + board); `slice-a.criteria.json` 8/8 and `slice-b.criteria.json` 7/7 true — self-reported (hook evidence log does not see worktree criteria files), evidence quoted in slice status notes; node reports `npm run quality:check` exit 0 and 1595 frontend tests passing; launch-checkout `git status --porcelain` identical before/after (empty); `classifyBuildWrites` over every reported path → `outcome ok, outside []`; worktree porcelain empty; `STATUS.ship-ready` only marker | 2026-10-13 |
+| 7 | review | opus | failed | `0 → 34` | CHANGES REQUIRED (loop 1 of 2 to `build`): Important 1 — `search.ts:18` maps U+2010–U+2015 dashes to a space beyond accepted REQ-002 (hyphen or slash only), A4 first-two-words 7,051 of 7,288 vs floor 7,052 on the refinement method (miss: Human—Time Lord Meta-Crisis); Important 2 — threshold counted on raw text at `TradeSide.tsx:99` and `QuickLookupApp.tsx:376` (REQ-002: counted after the rule), so `,` / `,,,` open a no-match panel; Minor — Escape inert in Cards step while no-match shows (`ZoneCollectionStep.tsx:303-306, 419-424`), 60 ms no-match flash, tabs/NBSP dropped not spaced (`search.ts:19-20`), REQ-002 note build numbers on non-refinement denominators; slice B approved; reviewer re-ran frontend suite 148 files / 1,595 tests exit 0; driver confirmed both Important findings against the code and `GATE-QUESTIONS.md` lines 39, 41 | 2026-10-13 |
 
 ## Gate verdicts
 
@@ -219,6 +220,27 @@ Severity rule: flag only gaps against these stated criteria or correctness defec
 Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: a verdict (APPROVE, or CHANGES REQUIRED), then each finding with severity (Critical, Important, Minor), the criterion it breaks, file and line, and the evidence; then what you independently re-ran and its result.
+
+### build (attempt 2)
+
+graph is controlling. You are node 6 (`build`), attempt 2, of the build half of graph run `graph-20261014-034941`, fixing review findings on slice A. Slice B was approved; do not change it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill
+
+Shared branch: `thejudge-auto/card-search-and-send-pill-work` (checked out in that worktree; code PR https://github.com/ChrisMiho/TheJudge/pull/305 already open). Work in place; create no worktree or branch. Never write to /Users/chrismiho/Coding/Projects/TheJudge itself or anywhere outside the worktree. `node_modules` is already installed.
+
+Invoke the `thejudge-implement-all` skill (Skill tool) in graph mode on `PRD/work/card-search-and-send-pill/` and resume slice A with these fixes. Each states the behavior the code must have, taken from the accepted REQ-002 text in `GATE-QUESTIONS.md` (line 39: a hyphen or slash counts as a space, every other character that is not a letter, digit, space or underscore is ignored, and a run of spaces counts as one; line 41: each threshold is counted on the typed text after the rule is applied; line 44: the no-match message shows only when the typed text reaches its threshold and nothing matches).
+
+1. `apps/frontend/src/lib/search.ts` `normalize`: only the ASCII hyphen-minus and the slash become a space. Every other dash (U+2010 to U+2015, including the em dash in Human—Time Lord Meta-Crisis) is ignored like any other mark. Any whitespace character (tab, non-breaking space) counts as a space: collapse whitespace runs to one space before dropping other characters, so the input a, tab, b becomes `a b`, not `ab`. Add tests for the em dash and the tab case.
+2. Trade Balancer (`apps/frontend/src/components/trade/TradeSide.tsx` line 99) and Ask a Question's Add card (`apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx` line 376) decide whether the suggestion panel opens from `normalize(typed text).length`, as `ZoneCollectionStep.tsx` already does. So typing `,` in Ask a Question, or `,,,` or `ur,` in Trade Balancer, opens no panel and shows no message. Add a test for each.
+3. In-depth details Cards step (`ZoneCollectionStep.tsx`): while the no-match message shows, Escape closes the search exactly as it did before this PR (as Ask a Question does). Add a test for Escape with a no-match query.
+4. Re-run criterion A4 on the refinement method in `evidence/measurements.md` section 1: the same name set refinement used, which leaves out underscore-named cards, so the denominators are 7,324 whole names and 7,288 first-two-words. Whole-name must be 7,324 of 7,324 and first-two-words at or above 7,052 of 7,288. Rewrite the build numbers in the REQ-002 note in `PRD/sections/functional-requirements.md` to those refinement-method figures and say they are on that method.
+
+Leave the 60 ms no-match flash alone (it matches existing Ask a Question behavior). Update slice A's status notes and `slice-a.criteria.json` with the new evidence; a criterion stays true only after its check passed again. Run `npm --workspace apps/frontend run test` and `npm run quality:check` before the final push. If you open a browser, write captures only under `PRD/work/card-search-and-send-pill/.playwright-mcp/`, call `browser_close`, and stop any server you started with plain `kill <pid>`. Keep `STATUS.ship-ready` as the only marker and the PR title READY.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling loops. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>` (never `-A`, `--all` or `.`), then `git commit -m ...`, then `git push origin thejudge-auto/card-search-and-send-pill-work`. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: each fix with the file and line changed and its test, the A4 figures with the command you ran, the test and quality-check results, the final commit hash, and the complete list of every file path you wrote or created (absolute paths).
 
 ## Instruction ledger
 
