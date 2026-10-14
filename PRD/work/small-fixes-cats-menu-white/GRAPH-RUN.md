@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white`
 - Branch: `thejudge-auto/small-fixes-cats-menu-white-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-225350/`
-- Current node: `gate-qc`
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/small-fixes-cats-menu-white/`
 
 ## Node ledger
@@ -23,6 +23,7 @@
 | 7 | define | opus | ok | `0 → 47` | attempt 3: A (`:root` block order + order test + live Blue/Red check) and B (`AmbientScene.tsx` fallback reads `DEFAULT_PALETTE_ID`, added to Touches with a test) resolved; full re-read added the ☰ hover-rule order (A11); no other Blue fallbacks; GATE-QUESTIONS.md unchanged; `STATUS.refined` committed `73852494` | 2026-10-14 |
 | 8 | gate-qc | sonnet | ok | `0 → 14` | PASS (attempt 3), no findings — `QUALITY-CHECK.md` committed `a6ad4515`; run stops at gate-qc PASS: proposal pushed to `origin/thejudge-auto/small-fixes-cats-menu-white`, docs PR into `main` opened, parked `STATUS.owner-action` | 2026-10-14 |
 | 9 | gate-review | sonnet | ok | `0 → 14` | build half run `graph-20261014-234321`: kickoff worktree removed clean (`git worktree remove`); claim commit `bbb74297` on `thejudge-auto/small-fixes-cats-menu-white-work` cut from `origin/main` `3c937d37` (docs PR #307 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `5fa333bb`: 6 accept / 0 edit / 0 reject, `### Brief reconciliation` none, REQ-207 slot and brief agree (45px bars, glow, no box); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-14 |
+| 10 | gate-qc | sonnet | ok | `0 → 16` | build-half re-grade PASS, findings none — `QUALITY-CHECK.md` committed `0ae0d9ba`; owner's REQ-207 park revision graded (brief §2, A4, A11, slot, `evidence/measurements.md` agree; selectors exist in `shell.css` 183/287/304/309-315/318-322); all `GATE-QUESTIONS.md` diff anchors match current `PRD/sections/`; `STATUS.refined` kept; driver rewrote README `## Preparation gate` | 2026-10-14 |
 
 ## Open gate
 
@@ -249,6 +250,22 @@ Produce the PASS/FAIL report the skill prescribes (replace or update `QUALITY-CH
 Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 60 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: PASS or FAIL, the complete findings list (none if PASS), files written (if any), and the commit hash (if any).
+
+### plan
+
+graph is controlling. You are node 5 (`plan`), attempt 1, of the build half of graph run `graph-20261014-234321`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/small-fixes-cats-menu-white-work`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-map-out` skill (Skill tool) in graph mode on `PRD/work/small-fixes-cats-menu-white/`. The README's `## Preparation gate` records `Quality-check: PASS` (driver-written, 2026-10-14 build-half re-grade); verify it there before writing anything. Slice the approved `DESIGN-BRIEF.md` and the finalized `GATE-QUESTIONS.md` (REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113 accepted) into `GAMEPLAN.md`, lettered `slice-<letter>.md` docs, and one `slice-<letter>.criteria.json` beside each slice with every criterion `false` and an evidence block, as the skill and its reference prescribe. The package is four small, independent player-facing fixes (cats Easter egg, desktop menu button, White default colour, menu sideways scrollbar); size the slices to the work rather than one per fix by default. Each slice that changes product behavior must say that `build` applies its share of the accepted `PRD/sections/` amendments by intent, together with the code, in the same PR. Set `STATUS.active` as the only marker and move the `PRD/work/STATUS.md` board row to match (remove from the old section, add to the new one).
+
+Placement rule: node 8 deletes `PRD/work/small-fixes-cats-menu-white/` before the merge, so no deliverable (code, test, doc, screenshot meant to ship) may be planned to land inside `PRD/work/`. Disposable verification captures may go under `PRD/work/small-fixes-cats-menu-white/.playwright-mcp/`.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: the slices (letter, one plain sentence each, files they touch), the criteria count per slice, files written, and the commit hash.
 
 ## Instruction ledger
 
