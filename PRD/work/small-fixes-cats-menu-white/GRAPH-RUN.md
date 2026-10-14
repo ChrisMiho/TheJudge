@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/small-fixes-cats-menu-white` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-225350/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/small-fixes-cats-menu-white/`
+- Current node: `owner-action`
+- Next action: `/graph-implement PRD/work/small-fixes-cats-menu-white/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
 
 ## Node ledger
 
@@ -20,10 +20,14 @@
 | 5 | define | opus | ok | `0 → 31` | attempt 2: four findings resolved in `DESIGN-BRIEF.md` (assumptions A8, A9 updated), GATE-QUESTIONS.md unchanged, `STATUS.refined` committed `800be810` | 2026-10-14 |
 | 6 | gate-qc | sonnet | failed | `0 → 28` | FAIL 2 of 3 — attempt-1 findings verified resolved; two new brief fixes (A: `:root` block order in `tokens.css`; B: `AmbientScene.tsx:550` Blue fallback) in `QUALITY-CHECK.md` committed `b384808f`; GATE-QUESTIONS.md needs no change; `STATUS.refining`; loop to define | 2026-10-14 |
 | 7 | define | opus | ok | `0 → 47` | attempt 3: A (`:root` block order + order test + live Blue/Red check) and B (`AmbientScene.tsx` fallback reads `DEFAULT_PALETTE_ID`, added to Touches with a test) resolved; full re-read added the ☰ hover-rule order (A11); no other Blue fallbacks; GATE-QUESTIONS.md unchanged; `STATUS.refined` committed `73852494` | 2026-10-14 |
+| 8 | gate-qc | sonnet | ok | `0 → 14` | PASS (attempt 3), no findings — `QUALITY-CHECK.md` committed `a6ad4515`; run stops at gate-qc PASS: proposal pushed to `origin/thejudge-auto/small-fixes-cats-menu-white`, docs PR into `main` opened, parked `STATUS.owner-action` | 2026-10-14 |
 
 ## Open gate
 
-- None
+- Gate: `define` product truth, parked at `owner-action` after gate-qc PASS (attempt 3). Terminal state `PARKED`.
+- Question: answer `PRD/work/small-fixes-cats-menu-white/GATE-QUESTIONS.md` — one accept/edit/reject verdict (with a reason for edit or reject) for each of REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113 — then merge the docs PR to build.
+- Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `QUALITY-CHECK.md` (PASS), `evidence/measurements.md`; docs PR: see the PR line below.
+- Resume: the owner's merge of the docs PR is the build signal; `graph-implement` picks it up (`/graph-implement PRD/work/small-fixes-cats-menu-white/`). The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white` stays until `graph-implement` claims the spec.
 
 ## Dispatch prompts
 

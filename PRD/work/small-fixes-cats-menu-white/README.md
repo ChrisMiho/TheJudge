@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # small-fixes-cats-menu-white
 
@@ -14,6 +14,6 @@ Four small fixes: cats Easter egg, bigger desktop menu button, White as the defa
 
 ## Preparation gate
 
-- Quality-check: PASS (attempt 3)
+- Quality-check: PASS
 - Checked artifact: `PRD/work/small-fixes-cats-menu-white/DESIGN-BRIEF.md`
-- Findings: none. Attempt 2's two findings (`:root` block order; `AmbientScene.tsx` Blue fallback) and the new ☰ hover-order assumption A11 are verified resolved against the files. Full report: `QUALITY-CHECK.md`.
+- Findings: none (attempt 3). Attempt 2's two findings (`:root` block order; `AmbientScene.tsx` Blue fallback) and the new ☰ hover-order assumption A11 are verified resolved against the files. Full report: `QUALITY-CHECK.md`.
