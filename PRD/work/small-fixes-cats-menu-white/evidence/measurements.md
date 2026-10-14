@@ -34,7 +34,24 @@ cause. Numbers below back the proposals in `GATE-QUESTIONS.md`.
 
 ## 2. Desktop ☰ Menu button (1440×900, 100% zoom)
 
-| Measure | Today | Proposal preview (CSS injected live) |
+**Superseded proposal.** The chip proposal measured in the table below was
+previewed by the owner on 2026-10-14 and declined. The owner then picked a look
+from three more rounds of live previews (CSS injected into the running app, no
+code change; screenshots in `.playwright-mcp/`):
+
+- Round 1, desktop, no box, three drawn bars with a glow of the colour's
+  `--accent` mixed 55% with white: A 30px bars and a 5px glow, B 34px bars and a
+  3px + 10px glow, C 40px bars, 2.5px thick, 7px apart, and a 6px glow
+  (`12-menu-button-wider-glow-options.png`, `13-option-B-1440-*.png`). Owner
+  chose C's style.
+- Round 2, C at 40, 45 and 50px bars in all six colours and across the full
+  header (`14-menu-button-C-40-45-50.png`, `15-menu-button-C-header-white.png`).
+  Button box measured 54×54px with every width. Owner chose **45px**.
+- Round 3, phone at 390×844: today's 50px box and 22.4px glyph with the same
+  6px glow added (`16-phone-390-menu-glow.png`, `17-phone-390-glow-white.png`).
+  Owner chose to add the glow and keep the size.
+
+| Measure | Today | Superseded chip preview (CSS injected live) |
 | --- | --- | --- |
 | Button box | 54×54px at x=9.6, y=6.5 | 54×54px, same spot |
 | Glyph font size | 24px (1.5rem) | 33.6px (2.1rem) |
@@ -50,7 +67,8 @@ Green 14.26:1, Colorless 15.04:1. Proposal: Blue 15.02:1, White 14.24:1, Red
 Reference: the Add card / Scan chips (`.icon-chip`) are 44px tall with fill
 `color-mix(--surface-panel 80%)` and a 1px `--surface-edge` border.
 
-Phone (390×844) today: 50×50px box, 22.4px glyph — unchanged by the proposal.
+Phone (390×844) today: 50×50px box, 22.4px glyph. The chosen design keeps that
+size and adds the glow.
 
 Before/after strip, all six colours: `05-menu-button-before-after-strip.png`
 (top row today, bottom row proposal). Full-page previews:

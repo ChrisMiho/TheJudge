@@ -5,7 +5,8 @@
 REQ-099, REQ-044 and FLOW-007 are one decision (White as the default) written
 in three places. No blocker.
 **What it changes:** the cats come back on every screen that shows the title;
-the desktop ☰ becomes a visible quiet button; first-time visitors land on White;
+the ☰ gets wider bars on desktop and a soft glow everywhere; first-time
+visitors land on White;
 the open menu stops scrolling sideways.
 
 Inputs: `IDEA.md`, `intake/owner-request.md` (evidence, not authority), the
@@ -25,11 +26,19 @@ re-read for the same kind of gap. Section 3 now fixes the order of the new
 White `:root` block (before every colour's block) and tests it; the ambient
 scene's own Blue fallback now follows the default too (new file in Touches,
 with a test). The re-read also pinned two more stylesheet-order assumptions:
-the desktop ☰ chip must sit before the hover rule (section 2), and the tray fix
+the desktop ☰ rule must sit before the hover rule (section 2), and the tray fix
 notes how its two overflow settings combine (section 4). Every other place that
 picks a colour before the saved choice applies was checked and already follows
 the default (section 3, "Checked and already following the default").
 `GATE-QUESTIONS.md` is unchanged.
+
+Revised after quality-check attempt 3's PASS, at the owner's direction
+(2026-10-14). The owner previewed the proposed desktop ☰ chip live, declined it
+("not the vibe"), and chose from further live previews: no box, bars 45px wide
+with a soft colour-tinted glow on desktop, and the same glow at today's size on
+a phone. Section 2, assumptions A4 and A11, and the REQ-207 slot in
+`GATE-QUESTIONS.md` are rewritten to match; the build half's re-grade at
+`gate-qc` covers the change.
 
 ## 1. Cats Easter egg
 
@@ -88,49 +97,64 @@ no page scroll; Trade Balancer's side panel gets shorter to make room.
 - The three existing tests in `App.interaction-flows.presentation.test.tsx`
   keep passing.
 
-## 2. Desktop ☰ Menu button
+## 2. ☰ Menu button: wider on desktop, a soft glow everywhere
 
 **What the player sees today.** At 1440×900 and 100% zoom the ☰ draws only
 14×12 pixels of light — 84 lit pixels inside a 54px button whose fill and edge
 are fully transparent until hovered. It is bright enough in every colour
 (12.3:1 to 15.1:1 against the header), so contrast is not the problem: the mark
-is tiny and the button around it is invisible.
+is tiny. On a phone (390×844) it is a 1.4rem glyph (22.4px font) in a 50px box.
 
-**Proposal (owner's call — REQ-207 block).** At `768px` and wider, the ☰ rests
-as a quiet chip: the same faint panel fill and thin colour-tinted edge as the
-Add card and Scan buttons beside the question box, and the three bars drawn
-about 40% larger (font 1.5rem → 2.1rem, 20×17px of light, 179 lit pixels). The
-button stays in the far-left corner, stays 54×54px, and the header stays 68px
-tall. Previewed live in all six colours; before/after strip at
-`.playwright-mcp/05-menu-button-before-after-strip.png`.
+**Proposal (owner-chosen — REQ-207 block).**
+- **Desktop (`768px`+):** the ☰ glyph is replaced by three drawn bars, 45px
+  wide, 2.5px thick, 7px apart (21.5px tall overall), centred in the button.
+  No box, fill or outline at rest. The button stays 54×54px in the far-left
+  corner, so the header stays 68px tall.
+- **Every width:** the bars carry a soft glow behind them, about 6px, in the
+  colour's `--accent` mixed about 55% with white, so the glow is tinted by the
+  colour: cream in White, light blue in Blue, pink in Red, mint in Green,
+  lavender in Black, grey-white in Colorless. The glow is on the bars only,
+  never on the button box, so the hover and focus fill does not glow. It is
+  static, so reduced motion needs nothing extra.
+- **Phone (`< 768px`):** size unchanged (50px box, 1.4rem glyph); it gains the
+  same glow.
 
-Why this shape: the owner asked for "wider or stand out more while still
-subtle". Showing the button's own edge turns an invisible 54px target into a
-visible 54px chip — the biggest gain for the least change — and borrowing the
-Add card / Scan look keeps it in the app's existing vocabulary instead of a new
-loud control. A larger box (56px was tried) grows the header for little gain.
+**How it was chosen.** The first proposal (an Add card / Scan-style box around
+a 2.1rem glyph) was previewed live and the owner declined it as "not the vibe",
+asking instead to make the mark wider with a little glow. Live previews in all
+six colours compared 30, 34 and 40px bars with glow, then 40, 45 and 50px; the
+owner chose 45px. 50px nearly filled the 54px box and would have cramped the
+hover fill. Previews (local): `.playwright-mcp/12-menu-button-wider-glow-options.png`,
+`14-menu-button-C-40-45-50.png`, `15-menu-button-C-header-white.png`,
+`16-phone-390-menu-glow.png`, `17-phone-390-glow-white.png`. The preview drew
+the bars with a pseudo-element over a transparent glyph; the build may draw
+them any way that matches the measurements, as long as the button keeps its
+accessible name ("Switch feature") and its 54px / 50px box.
 
-**Build outcome.** Desktop-only CSS in `shell.css` (`.app-header .menu-toggle`
-inside the existing `min-width: 768px` block); hover and focus keep today's
-accent fill. Phone (`< 768px`) unchanged: 50px, 1.4rem. The hit box still equals
-the painted box (REQ-114) — now visibly so. Test: a stylesheet assertion that the
-desktop rule carries the edge, fill and glyph size; live check at 1440×900 that
-the box is 54px and the header 68px.
+**Build outcome.** CSS in `shell.css` only. The desktop bar drawing goes in the
+existing `.app-header .menu-toggle` rule inside the `min-width: 768px` block;
+the glow goes on the bars (desktop) and on the glyph (phone), for example a
+`drop-shadow` on the drawn bars and a `text-shadow` on the phone glyph. Hover
+and focus keep today's accent fill. The hit box still equals the painted box
+(REQ-114); the glow is decoration and takes no pointer events.
+
+**Tests.** A stylesheet assertion that reads `shell.css` as text: the desktop
+rule draws bars 45px wide and carries the glow; the phone rule keeps the 50px
+box and 1.4rem glyph and carries the glow; the desktop box stays 54px. Live
+check at 1440×900 and 390×844: box 54px / 50px, header height unchanged (68px
+on desktop), glow visible in all six colours, hover and keyboard focus still
+show the accent fill.
 
 **Rule order matters here.** The desktop rule `.app-header .menu-toggle` and
 the hover/focus rule `.menu-toggle:hover, … .menu-toggle:focus-visible`
-(`shell.css` lines 317-323) have equal specificity (two classes, or a class
-and a pseudo-class), so whichever comes later in the file wins. Today the
-`min-width: 768px` block (lines 309-315) sits before the hover rule. The new
-resting edge and fill go **inside that existing block**, never in a new block
-placed after line 317 — otherwise the resting chip would override hover and
-focus, and the ☰ would stop lighting up. The stylesheet assertion also checks
-that the desktop `.app-header .menu-toggle` rule's position in `shell.css`
-comes before the `.menu-toggle:hover` rule. Live check at 1440×900: hovering
-and keyboard-focusing the ☰ still shows the accent fill. (Checked: no other
-stylesheet styles `.menu-toggle` except `index.css`'s
-`.menu-toggle[aria-hidden="true"]`, which only hides it while the tray is
-open.)
+(`shell.css` lines 317-323) have equal specificity, so whichever comes later in
+the file wins. The new look sets no border or background, so it cannot override
+the hover fill today; it still goes **inside the existing `min-width: 768px`
+block** (lines 309-315), before the hover rule, so a later change to the
+resting look cannot silently disable hover. The stylesheet assertion checks
+that order. (Checked: no other stylesheet styles `.menu-toggle` except
+`index.css`'s `.menu-toggle[aria-hidden="true"]`, which only hides it while the
+tray is open.)
 
 ## 3. White as the default colour
 
@@ -338,21 +362,22 @@ shown) scrollbars forced on, open the tray and confirm `scrollWidth` equals
 | A1 | Does the egg need new product truth? | No for the trigger; REQ-203 already describes it | REQ-203 acceptance criteria (rung 1) |
 | A2 | Where does the picture show off the Game step? | Under the banner header, centred, 224px, every in-scope screen; recorded in REQ-203's notes at the gate | REQ-203 leaves it open; live fit probe at 390/1440 (rungs 3–4) |
 | A3 | Does the loading placeholder count taps? | No | Not in REQ-203's screen list; transient (rung 4) |
-| A4 | Desktop ☰ size and look | Proposed, not decided: 54px box, resting chip edge+fill, glyph 2.1rem; desktop only | Owner reserved size/look; existing `.icon-chip` pattern (rung 3); owner scoped "desktop" |
+| A4 | ☰ size and look | Owner-chosen from live previews: desktop bars 45px × 2.5px, 7px apart, no box, 54px button; soft colour-tinted glow at every width; phone keeps 50px / 1.4rem | Owner direction 2026-10-14 after previewing the chip, 30/34/40px and 40/45/50px options (rung 1: owner decision, to be confirmed at the REQ-207 slot) |
 | A5 | Fallback for broken/retired saved colour | Follows the default (White) | REQ-099 and FLOW-007 tie fallback to the default (rung 1) |
 | A6 | Never-chose returning players | See White | No saved key exists to distinguish them (rung 2) |
 | A7 | Fix first paint too | Yes — split `tokens.css`'s combined `:root, [data-profile="blue"]` block (Blue keeps its values, `:root` takes White's, and the `:root` block stays before every colour block); theme-color and favicon to White's accent; guarded by a first-paint test and an order test | Otherwise a first visit flashes Blue (rung 5); equal specificity means file order decides (rung 2); `tokens.css:41-94`, `index.html:7-8` |
 | A8 | Scrollbar fix mechanism | Line drawn inside the tray box and the tray's x-axis clipped; stylesheet assertion plus live measurement | Measured cause; jsdom has no layout, so the automated form must read the stylesheet (rung 4) |
 | A9 | `index.html` hard-coded hex vs REQ-219/REQ-216 | Keep it as a deliberate pre-script placeholder (as Blue's hex is today), switched to White, pinned to the token layer by test; no product-truth change | HTML paints before the token layer can run; `applyPalette` overwrites it on mount (rung 2: existing precedent) |
 | A10 | Ambient scene's Blue fallback before `applyPalette` | Change it to follow `DEFAULT_PALETTE_ID`, with a still-frame test; not left as a transient | Code read says it never reaches the screen today, but other fallbacks already read the default (`useActiveThemeMotif.ts`, `FeaturePortalMenu.tsx`), so one default is the existing pattern and the change is tiny (rungs 2–3); `AmbientScene.tsx:550-552, 622` |
-| A11 | Desktop ☰ chip vs hover/focus | Resting edge and fill go in the existing `min-width: 768px` block, before the hover rule; order asserted by test, hover checked live | Equal specificity, later rule wins; `shell.css:309-323` (rung 2) |
+| A11 | Desktop ☰ look vs hover/focus | The new look sets no border or fill and sits in the existing `min-width: 768px` block, before the hover rule; glow on the bars only, so the hover fill never glows; order asserted by test, hover checked live | Equal specificity, later rule wins; `shell.css:309-323` (rung 2) |
 
 ## PRD alignment and proposed product truth
 
 Proposed in `GATE-QUESTIONS.md`, never written to `PRD/sections/` here:
 
 - **REQ-203** — record the picture's placement; refresh In-depth's spec line.
-- **REQ-207** — the desktop ☰ rests as a quiet chip with a larger glyph.
+- **REQ-207** — the ☰ gets 45px bars on desktop and a soft colour-tinted glow
+  at every width; phone size unchanged.
 - **REQ-099** — White is the default and the fallback (plus the shared-chrome
   spec and system-map lines that say "Blue default").
 - **REQ-044**, **FLOW-007** — the same default, where they repeat it.
@@ -378,8 +403,9 @@ presentation only: no request contract, prompt, backend, or data change.
   order check) and the tray stylesheet assertion.
 - Live at 390×844 and 1440×900: ten taps on Ask a Question reveal the picture;
   it holds on Trade Balancer and In-depth; Life Tracker shows none.
-- Live at 1440×900: ☰ box 54px, header 68px, chip edge visible in all six
-  colours; hover and keyboard focus still show the accent fill.
+- Live at 1440×900 and 390×844: ☰ box 54px / 50px, header 68px on desktop,
+  45px bars on desktop, glow visible in all six colours at both widths; hover
+  and keyboard focus still show the accent fill, with no glow on the box.
 - Fresh storage: first paint and settled page are White.
 - Each colour keeps its own look: pick Blue, then Red, in Theme. The page
   repaints in that colour, and `getComputedStyle(document.documentElement)`

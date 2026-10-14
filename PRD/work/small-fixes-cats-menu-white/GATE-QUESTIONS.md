@@ -7,7 +7,9 @@ How the slots hang together:
 
 - **REQ-203** is the cats Easter egg. The trigger is already fully described;
   this slot only records where the picture shows.
-- **REQ-207** is the desktop ☰ button. Its size and look are your call.
+- **REQ-207** is the ☰ button. Revised to the look you picked from the live
+  previews on 2026-10-14: wider bars and a soft glow on desktop, the same glow
+  at today's size on a phone, no box.
 - **REQ-099**, **REQ-044** and **FLOW-007** are one decision — White as the
   default — written in three places. Answer REQ-099; the other two follow it.
 - **REQ-113** is the menu scrollbar.
@@ -84,40 +86,40 @@ it instead (for example, a pop-up over the page).
 - Verdict:
 - Reason:
 
-## REQ-207 — the desktop ☰ rests as a quiet, visible button with bigger bars
+## REQ-207 — the ☰ gets wider bars and a soft glow on desktop, and the same glow on a phone
 
-**What this decides:** how big and how noticeable the ☰ Menu button is on a
-desktop screen.
+**What this decides:** how the ☰ Menu button looks: wider and glowing on a
+desktop, glowing at today's size on a phone.
 
 **In plain terms:** the ☰ in the top-left corner is the only way into the menu
-(REQ-207 sets its size: at least 44 pixels, today 54 on desktop). Measured at
-normal 100% zoom, the three bars draw only 14 by 12 pixels of light, and the
-54-pixel button around them is fully transparent until the mouse is over it —
-so you see a tiny mark floating in a dark corner. Its brightness is fine in
-every colour (12 to 15 times brighter than the header behind it); size and an
-invisible outline are the problem. This change gives the desktop button, at
-rest, the same faint dark fill and thin colour-tinted outline as the Add card
-and Scan buttons beside the question box, and draws the bars about 40% larger
-(20 by 17 pixels of light, twice the lit area). It stays in the far-left corner
-and keeps its 54-pixel size, so the header does not grow. Phones (narrower than
-768 pixels) are unchanged. Previewed live in all six colours: top row today,
-bottom row proposed, in `.playwright-mcp/05-menu-button-before-after-strip.png`.
-Recommendation: accept. To go bigger, edit the "about 40%" figure; to drop the
-outline and only enlarge the bars, edit out the chip clause.
+(REQ-207 sets its size: at least 44 pixels, today 54 on desktop and 50 on a
+phone). Measured at normal 100% zoom on a desktop, its three bars draw only 14
+by 12 pixels of light in a dark corner. The brightness is fine (12 to 15 times
+brighter than the header behind it); the mark is just too small. On desktop
+(768 pixels wide and up) the three bars become 45 pixels wide, about three times
+today's width, drawn thin (2.5 pixels each, 7 pixels apart). A soft glow
+sits behind them, tinted by your colour: cream in White, light blue in Blue,
+pink in Red, mint in Green, lavender in Black. There is no box or outline; the
+button stays the same 54-pixel square in the same far-left corner, so the
+header does not move, and hover still lights it up as today. On a phone the ☰
+keeps today's size and gets the same glow. You picked this from live previews:
+`.playwright-mcp/14-menu-button-C-40-45-50.png` (45-pixel row),
+`15-menu-button-C-header-white.png`, and `16-phone-390-menu-glow.png`
+(local). Recommendation: accept.
 
-**What happens if you say no:** the desktop ☰ stays a 14-by-12-pixel mark with
-no visible button around it until hover.
+**What happens if you say no:** the ☰ stays a 14-by-12-pixel mark with no glow
+on desktop and no glow on a phone.
 
 ```diff
 @@ functional-requirements.md:5383 — REQ-207 @@
 -  - the header is a banner: ☰ at the left (at least 44px; about a quarter larger than today's trigger on a phone and a third on desktop), the brand centred (a breathing orb holding the colour's badge, the wordmark, "MTG Assistant") on a lit band with a hairline of the colour's light along its foot, and each profile's element drawn across the band (White low-sun rays at half strength; Blue a scatter of arcane shapes; Black fog pooling at the ends; Red a hot band with embers; Green a scatter of leaf and tree shapes; Colorless small triangles, rings, arcs, dots and crosses); the right-hand slot shows Trade Balancer's price date at `768px`+; the brand keeps the cat-wizard Easter egg (REQ-203)
-+  - the header is a banner: ☰ at the left (at least 44px; about a quarter larger than today's trigger on a phone and a third on desktop; at `768px`+ it rests as a quiet chip — the same faint panel fill and thin colour-tinted edge as the Add card and Scan buttons — with its three bars drawn about 40% larger than before, and it stays in the far-left corner at the same box size, so the header's height is unchanged; below `768px` it is unchanged), the brand centred (a breathing orb holding the colour's badge, the wordmark, "MTG Assistant") on a lit band with a hairline of the colour's light along its foot, and each profile's element drawn across the band (White low-sun rays at half strength; Blue a scatter of arcane shapes; Black fog pooling at the ends; Red a hot band with embers; Green a scatter of leaf and tree shapes; Colorless small triangles, rings, arcs, dots and crosses); the right-hand slot shows Trade Balancer's price date at `768px`+; the brand keeps the cat-wizard Easter egg (REQ-203)
++  - the header is a banner: ☰ at the left (at least 44px; about a quarter larger than today's trigger on a phone and a third on desktop; at `768px`+ its three bars are drawn 45px wide and thin, with no box or outline at rest, and it stays in the far-left corner at the same box size, so the header's height is unchanged; at every width the bars carry a soft glow tinted by the colour's light, and below `768px` the ☰ keeps its size), the brand centred (a breathing orb holding the colour's badge, the wordmark, "MTG Assistant") on a lit band with a hairline of the colour's light along its foot, and each profile's element drawn across the band (White low-sun rays at half strength; Blue a scatter of arcane shapes; Black fog pooling at the ends; Red a hot band with embers; Green a scatter of leaf and tree shapes; Colorless small triangles, rings, arcs, dots and crosses); the right-hand slot shows Trade Balancer's price date at `768px`+; the brand keeps the cat-wizard Easter egg (REQ-203)
 @@ functional-requirements.md:5396 — REQ-207 @@
 -  - tests cover the band's cell floor and arrows at 280px and 390px, the tray's close paths, reduced motion stopping the scene, the header's top edge at 0 at 390×844 and 1440×900, the font loading from the app's own origin, the contrast floors per profile, and the Green scene on a phone (390×844) staying a quiet backdrop clear of the content column, confirmed by a before/after screenshot pair on Ask a Question, In-depth, and the Menu tray
-+  - tests cover the band's cell floor and arrows at 280px and 390px, the tray's close paths, reduced motion stopping the scene, the header's top edge at 0 at 390×844 and 1440×900, the font loading from the app's own origin, the contrast floors per profile, the desktop ☰'s resting chip (edge, fill and larger bars at `768px`+, box and header height unchanged at 1440×900), and the Green scene on a phone (390×844) staying a quiet backdrop clear of the content column, confirmed by a before/after screenshot pair on Ask a Question, In-depth, and the Menu tray
++  - tests cover the band's cell floor and arrows at 280px and 390px, the tray's close paths, reduced motion stopping the scene, the header's top edge at 0 at 390×844 and 1440×900, the font loading from the app's own origin, the contrast floors per profile, the ☰'s wider bars and glow (45px bars and the colour-tinted glow at `768px`+, the glow at today's size below it, box and header height unchanged at 390×844 and 1440×900), and the Green scene on a phone (390×844) staying a quiet backdrop clear of the content column, confirmed by a before/after screenshot pair on Ask a Question, In-depth, and the Menu tray
 @@ functional-requirements.md:5421 — REQ-207 Notes (append) @@
    - amended by `ui-look-translation` (2026-10-02): the header sits at the top edge outside the page padding (the first build's reviews measured a band of about 20px at 390×844 and 48px at 1440×900 above it), and panels take the mockup's glass surfaces instead of solid fills
-+  - amended by `small-fixes-cats-menu-white` (2026-10-14): the owner found the desktop ☰ "almost invisible" at normal zoom. Measured live at 1440×900, 100% zoom: the glyph painted 14×12px of light (84 lit pixels) inside a 54px box with a transparent fill and edge; contrast was 12.3:1–15.1:1 across the six profiles, so size and the invisible box were the cause. The resting chip borrows the `.icon-chip` look (panel fill at 80%, 1px `--surface-edge`) and the glyph goes from 1.5rem to 2.1rem (20×17px, 179 lit pixels); a 56px box was tried and grew the header to 69.8px, so the box stays 54px
++  - amended by `small-fixes-cats-menu-white` (2026-10-14): the owner found the desktop ☰ "almost invisible" at normal zoom. Measured live at 1440×900, 100% zoom: the glyph painted 14×12px of light (84 lit pixels) inside a 54px box with a transparent fill and edge; contrast was 12.3:1–15.1:1 across the six profiles, so size was the cause. A first proposal (an `.icon-chip`-style box around a 2.1rem glyph) was previewed and declined by the owner ("not the vibe"); from live previews of 30/34/40px bars with glow, then 40/45/50px, the owner chose 45px bars, 2.5px thick and 7px apart, with a soft glow (about 6px, the colour's `--accent` mixed about half with white) on the bars only, and the same glow at today's size on a phone. 50px was not chosen: it nearly filled the 54px box
 ```
 
 ```diff
@@ -126,16 +128,18 @@ no visible button around it until hover.
    left of a banner header flush with the top edge of the screen (outside the page
    padding) — at least 44px, about a quarter larger than the former
 -  corner rail on a phone and a third on desktop — with the brand centred (a
-+  corner rail on a phone and a third on desktop, and at `768px`+ resting as a
-+  quiet chip (the Add card / Scan buttons' faint panel fill and colour-tinted
-+  edge) with its bars drawn about 40% larger — with the brand centred (a
++  corner rail on a phone and a third on desktop, its bars drawn 45px wide at
++  `768px`+ and carrying a soft colour-tinted glow at every width — with the
++  brand centred (a
 @@ shared-chrome/README.md:434 @@
  - Menu trigger: the ☰ button at the banner's left, at least 44px, interactive box
    equal to its painted bounds; the banner's band and element art take no pointer
 -  events. Superseded geometry: the single-zone corner rail (`5.5rem × 3.5rem`
-+  events. At `768px`+: a 54px box with a 1px `--surface-edge` border and an 80%
-+  `--surface-panel` fill at rest, glyph 2.1rem (about 20×17px of light at 100%
-+  zoom); below `768px`: 50px, glyph 1.4rem, transparent at rest. Superseded
++  events. At `768px`+: a 54px box, transparent at rest, with three bars drawn
++  45px wide, 2.5px thick and 7px apart; below `768px`: 50px, glyph 1.4rem,
++  transparent at rest. At every width the bars (not the box) carry a soft glow,
++  about 6px, in the colour's `--accent` mixed about half with white; hover and
++  focus keep today's accent fill. Superseded
 +  geometry: the single-zone corner rail (`5.5rem × 3.5rem`
 ```
 

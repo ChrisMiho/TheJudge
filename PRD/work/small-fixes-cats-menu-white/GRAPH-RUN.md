@@ -28,6 +28,7 @@
 - Question: answer `PRD/work/small-fixes-cats-menu-white/GATE-QUESTIONS.md` — one accept/edit/reject verdict (with a reason for edit or reject) for each of REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113 — then merge the docs PR to build.
 - Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `QUALITY-CHECK.md` (PASS), `evidence/measurements.md`.
 - PR: https://github.com/ChrisMiho/TheJudge/pull/307 (docs-only, `thejudge-auto/small-fixes-cats-menu-white → main`).
+- Owner revision during the park (2026-10-14, after the lock was released): the owner previewed the REQ-207 chip live, declined it, and chose from live previews 45px desktop bars with a soft colour-tinted glow, plus the same glow at today's size on a phone. The REQ-207 slot, `DESIGN-BRIEF.md` section 2 (A4, A11) and `evidence/measurements.md` were rewritten to that choice; the verdict slot stays blank for the owner. The build half's re-grade at `gate-qc` covers the revision.
 - Resume: the owner's merge of the docs PR is the build signal; `graph-implement` picks it up (`/graph-implement PRD/work/small-fixes-cats-menu-white/`). The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white` stays until `graph-implement` claims the spec.
 
 ## Dispatch prompts
@@ -203,3 +204,6 @@ Report back plainly: PASS or FAIL, the complete findings list (none if PASS), th
 | "I'd like to see how we can maybe widen it or make it stand out more while still being subtle like it is" | answered-once | shape | — |
 | "Id also like to change the default color that users arrive too as White instead blue" | answered-once | shape | — |
 | "we need to check mobile to make sure it isnt there either, we should have enough space to not need it" | answered-once | shape | — |
+| "instead of adding a box around the menu, can we make the thing wider? and maybe add a little glow too maybe?" | answered-once | owner-action | — |
+| "I think C is what im looking for, but can we compare 40 vs 45 vs 50 px?" | answered-once | owner-action | — |
+| "45 for sure, can we also add the same level of glow to mobile? but keep the size its at right now" | answered-once | owner-action | — |
