@@ -19,8 +19,21 @@
 | 3 | define | opus | ok | `0 → 113` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-002, REQ-212, REQ-206 amendments; no blocker), `evidence/measurements.md`, `STATUS.refined` committed `0e7cb914`; no `PRD/sections/` or code diff vs `181b829f` | 2026-10-13 |
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS, findings none; `## Preparation gate` in `README.md` committed `7a75d962`; run stops here and parks at `owner-action` | 2026-10-13 |
 
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-002` | accept | — |
+| `REQ-212` | accept | — |
+| `REQ-206` | accept | — |
+
+### Brief reconciliation
+
+none — all three verdicts are accept, so no `edit` or `reject` needs carrying into `DESIGN-BRIEF.md`, and the README intake pointer needs no supersession note.
+
 ## Open gate
 
+- Status: RESOLVED 2026-10-13 — 3 verdicts applied (3 accept, 0 edit, 0 reject); proposal in `GATE-QUESTIONS.md` stands as written.
 - Question: answer `GATE-QUESTIONS.md` (`PRD/work/card-search-and-send-pill/GATE-QUESTIONS.md`), then merge to build — three verdict slots: REQ-002 (card search ignores punctuation and accents), REQ-212 (no-mic send pill is one round arrow), REQ-206 (budget ring starts at the top of that round arrow).
 - Evidence: gate-qc PASS (`7a75d962`); docs PR: https://github.com/ChrisMiho/TheJudge/pull/304 (`thejudge-auto/card-search-and-send-pill → main`). Terminal state: PARKED.
 - Resume: the owner merges the docs PR; `graph-implement` (or `/graph-implement PRD/work/card-search-and-send-pill/`) builds it.
@@ -101,6 +114,20 @@ Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/wor
 Write the report and any status marker change the skill prescribes inside the package. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: PASS or FAIL, the complete findings list, files written, and the commit hash.
+
+### gate-review
+
+graph is controlling. You are the gate-resolution step (before node 5) of the build half of graph run `graph-20261014-034941`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/card-search-and-send-pill-work`, cut from `origin/main`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `graph-gate-review` skill (Skill tool) on `PRD/work/card-search-and-send-pill/`. The owner answered `GATE-QUESTIONS.md` in docs PR #304 and merged it: REQ-002, REQ-212 and REQ-206 are each marked accept. Apply those verdicts inside `GATE-QUESTIONS.md` as the skill prescribes (finalize the proposal in the work folder; never edit `PRD/sections/` or code), record the verdicts, and reconcile `DESIGN-BRIEF.md` and the README's intake pointer to every edit or reject — with three accepts, the reconciliation is expected to be empty; say so explicitly. Restore `STATUS.refined` as the only marker and move the `PRD/work/STATUS.md` board row to match (remove from the old section, add to the new one). In `GRAPH-RUN.md`, write only what the skill prescribes there (`## Gate verdicts` with its `### Brief reconciliation` list, and `## Open gate` marked resolved); leave the header, `## Node ledger`, `## Dispatch prompts` and `## Instruction ledger` to the driver.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: the verdict per ID, the `### Brief reconciliation` list (or none), files written, and the commit hash.
 
 ## Instruction ledger
 
