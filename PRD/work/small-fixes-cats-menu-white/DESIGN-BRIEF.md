@@ -20,6 +20,17 @@ split, adds a first-paint test and records the `index.html` placeholder
 exception; section 4 names the stylesheet assertion and keeps the live
 measurement as the verification step. `GATE-QUESTIONS.md` is unchanged.
 
+Revised after quality-check attempt 2 (FAIL, two brief fixes), with a full
+re-read for the same kind of gap. Section 3 now fixes the order of the new
+White `:root` block (before every colour's block) and tests it; the ambient
+scene's own Blue fallback now follows the default too (new file in Touches,
+with a test). The re-read also pinned two more stylesheet-order assumptions:
+the desktop ☰ chip must sit before the hover rule (section 2), and the tray fix
+notes how its two overflow settings combine (section 4). Every other place that
+picks a colour before the saved choice applies was checked and already follows
+the default (section 3, "Checked and already following the default").
+`GATE-QUESTIONS.md` is unchanged.
+
 ## 1. Cats Easter egg
 
 **What the player sees today.** The app opens on Ask a Question. There the
@@ -106,6 +117,21 @@ the painted box (REQ-114) — now visibly so. Test: a stylesheet assertion that 
 desktop rule carries the edge, fill and glyph size; live check at 1440×900 that
 the box is 54px and the header 68px.
 
+**Rule order matters here.** The desktop rule `.app-header .menu-toggle` and
+the hover/focus rule `.menu-toggle:hover, … .menu-toggle:focus-visible`
+(`shell.css` lines 317-323) have equal specificity (two classes, or a class
+and a pseudo-class), so whichever comes later in the file wins. Today the
+`min-width: 768px` block (lines 309-315) sits before the hover rule. The new
+resting edge and fill go **inside that existing block**, never in a new block
+placed after line 317 — otherwise the resting chip would override hover and
+focus, and the ☰ would stop lighting up. The stylesheet assertion also checks
+that the desktop `.app-header .menu-toggle` rule's position in `shell.css`
+comes before the `.menu-toggle:hover` rule. Live check at 1440×900: hovering
+and keyboard-focusing the ☰ still shows the accent fill. (Checked: no other
+stylesheet styles `.menu-toggle` except `index.css`'s
+`.menu-toggle[aria-hidden="true"]`, which only hides it while the tray is
+open.)
+
 ## 3. White as the default colour
 
 **What the player sees today.** A first visit lands on Blue. Nothing is saved
@@ -130,7 +156,8 @@ and it matches the owner's ask.
 - `DEFAULT_PALETTE_ID` becomes `"white"` in `apps/frontend/src/lib/theme/palettes.ts`
   (and its comment "`blue` remains the app default").
 - First paint matches, so a first visit never flashes blue before the app
-  starts. Three surfaces paint before `applyPalette` sets `data-profile`:
+  starts. Three surfaces paint before `applyPalette` sets `data-profile`, and
+  one more (the ambient scene, below) picks a colour before it:
   - `tokens.css` lines 41-42 today read `:root, [data-profile="blue"] { … }` —
     one block serving both the default and Blue. The build **splits it in two**:
     `[data-profile="blue"]` keeps every Blue value exactly as today (`--motif`
@@ -142,6 +169,20 @@ and it matches the owner's ask.
     #09090b, `--wash-tint` #120e08). The later shared surface-role block
     (`:root, [data-profile] { … }`, line 110) is not touched. Choosing Blue
     still looks exactly as it does today.
+  - **The new White `:root` block stays first**, where the combined block sits
+    today (line 41): before `[data-profile="blue"]` and before every other
+    `[data-profile="…"]` block. Why it matters: `data-profile` is set on
+    `<html>`, the same element `:root` matches, and `:root` and
+    `[data-profile="red"]` have equal specificity (one pseudo-class versus one
+    attribute), so the rule later in the file wins. Put the White block after
+    the colour blocks and every colour would paint White. The shared block at
+    line 110 comes after all of them but sets none of the six colour values
+    (only fonts, surfaces derived from them, focus ring and text), so it does
+    not interfere. `tokens.css` is also the first token file loaded
+    (`main.tsx` imports it before `glows.css`, `shell.css`, `ambience.css`,
+    `flow.css`, `index.css`); the two later `:root` blocks (`glows.css` line
+    8, `index.css` line 2651) only reference these values or set spacing, and
+    redefine none of the six.
   - `index.html`'s `theme-color` meta (`content`) and placeholder favicon
     (`fill` in the inline data URI) change from #0050d8 to White's accent,
     #ede7d6.
@@ -157,13 +198,50 @@ and it matches the owner's ask.
   "active profile's" colour REQ-219 governs, and the build leaves REQ-219's
   `applyPalette` path unchanged.
 - First-paint test (new, in `applyPalette.test.ts`, which already reads
-  `tokens.css` and `index.html` as text): every custom property in the lone
-  `:root { … }` block of `tokens.css` equals the same property in the
-  `[data-profile="white"] { … }` block (same set of properties, same values);
-  `index.html`'s `theme-color` `content` equals White's `--accent` from
-  `tokens.css`; and the decoded favicon data URI's `fill` equals that same
-  accent. A companion assertion checks the `[data-profile="blue"]` block still
-  carries Blue's six values, so the split cannot silently break Blue.
+  `tokens.css` and `index.html` as text): every custom property in the
+  `:root { … }` block of `tokens.css` — the one rule whose selector is
+  `:root` alone, opened by the text `:root {`, not the shared
+  `:root,\n[data-profile] {` block at line 110 — equals the same property in
+  the `[data-profile="white"] { … }` block (same set of properties, same
+  values); `index.html`'s `theme-color` `content` equals White's `--accent`
+  from `tokens.css`; and the decoded favicon data URI's `fill` equals that
+  same accent. A companion assertion checks the `[data-profile="blue"]` block
+  still carries Blue's six values, so the split cannot silently break Blue.
+- Order test (new, same file, same text read): the offset of `:root {` in
+  `tokens.css` is smaller than the offset of each of the six
+  `[data-profile="<id>"] {` blocks (white, blue, black, red, green,
+  colorless). jsdom applies no cascade, so this text check is the automated
+  guard; the live check under Verification confirms the cascade in a real
+  browser.
+- **The ambient scene follows the default too.** `AmbientScene.tsx` lines
+  550-552 pick the scene from `data-profile` and fall back to Blue when it is
+  not set yet (`dataset.profile || 'blue'`, `RECIPES.blue`, `SCENES.blue`).
+  That happens on every first load: the page and tray scenes start in their
+  own mount effect, which React runs before the app's `useThemePalette`
+  effect (`App.tsx` line 40) calls `applyPalette`. The scene's
+  `MutationObserver` (line 622) then restarts it in the right colour. Read
+  from the code, the Blue start never reaches the screen — the restart runs
+  in the same task and cancels the queued frame — so this is not a visible
+  flash today. The build changes it anyway, so the app has one default and
+  no stale Blue: the three fallbacks read `DEFAULT_PALETTE_ID` from
+  `palettes.ts` (the way `useActiveThemeMotif.ts` and `FeaturePortalMenu.tsx`
+  already fall back to `DEFAULT_PALETTE`). Scenes and recipes are unchanged.
+  Test (new, `AmbientScene.test.tsx`): with no `data-profile` set and reduced
+  motion on, the still frame's fingerprint equals White's still frame at the
+  same size (the existing `paintStill`/`fingerprint` helpers), and differs
+  from Blue's. The existing per-colour golden test stays green.
+- **Checked and already following the default** (no change):
+  `themePrefs.ts` (returns `DEFAULT_PALETTE_ID` for missing or bad saved
+  values), `useThemePalette.ts` and `FeaturePortalMenu.tsx` (fall back to
+  `DEFAULT_PALETTE`), and `useActiveThemeMotif.ts` (falls back to
+  `DEFAULT_PALETTE.motif`). The colour-specific decorations keyed on
+  `[data-profile="…"]` (`shell.css` header art lines 104-153, `ambience.css`
+  haze lines 143-149) match no colour until `applyPalette` runs, for every
+  colour, today and after — no Blue there. The tab title in `index.html` is
+  the same for every colour. There is no web manifest with a theme colour.
+  A grep of the frontend source for `|| 'blue'`, `?? "blue"`, `.blue` and the
+  Blue hex values found only the items handled in this section and Blue's own
+  catalog entry and motif art.
 - Tests that pin the default, and what each becomes:
   - `apps/frontend/src/lib/theme/palettes.test.ts` lines 76-80 — the whole
     test, not one line. Its title "includes a default blue palette matching
@@ -178,7 +256,11 @@ and it matches the owner's ask.
   - `themePrefs.test.ts`, `useThemePalette.test.ts` and the rest of
     `App.mtg-color-themes.test.tsx` use the constant and follow it.
   - `apps/frontend/src/test/appliedTheme.ts` line 20 falls back to `"blue"`
-    when no profile is set; it becomes `"white"` to follow the new default.
+    when no profile is set; it reads `DEFAULT_PALETTE_ID` instead, so it
+    follows the new default (White) and any later one. Its
+    `[data-profile="<id>"] {` text lookup, like the ones in
+    `applyPalette.test.ts` and `palettes.tokens.test.ts`, still finds Blue's
+    block after the split, because that block keeps its own header line.
   - Fixtures that merely pass `"blue"` as an input (`FeaturePortalMenu.test.tsx`,
     `ThemeSection.test.tsx`, `applyPalette.test.ts`, `AmbientScene.test.tsx`,
     and `palettes.test.ts`'s "looks up a palette by id") are not default pins
@@ -208,6 +290,17 @@ negative `right` offset, for example `right: 0`), and the tray stops scrolling
 sideways (`.menu-tray` declares `overflow-x: hidden` or `clip` beside its
 `overflow-y: auto`). Drawing the line inside keeps it from being clipped;
 clipping the x-axis stops any future one-pixel overhang from earning a bar.
+
+How the two overflow settings combine (checked, so the build is not
+surprised): because `.menu-tray` already has `overflow-y: auto`, its x-axis
+already clips today — CSS turns a `visible` partner of `auto` into `auto`.
+So `overflow-x: hidden` adds no new clipping of the tray's rows or focus
+rings; it only removes the sideways scroll. `overflow-x: clip` beside
+`overflow-y: auto` is also turned into `hidden` by CSS, so the two allowed
+values behave the same. The line at `right: 0` sits just inside the tray's
+1px right border, one pixel left of today, instead of over the border. The
+only other `.menu-tray` rules (`index.css` line 61, `background-color`; line
+5378, reduced-motion `transition`) touch neither overflow nor the line.
 Product truth: one new acceptance criterion on REQ-113 (REQ-113 block) so the
 regression is tested.
 
@@ -248,9 +341,11 @@ shown) scrollbars forced on, open the tray and confirm `scrollWidth` equals
 | A4 | Desktop ☰ size and look | Proposed, not decided: 54px box, resting chip edge+fill, glyph 2.1rem; desktop only | Owner reserved size/look; existing `.icon-chip` pattern (rung 3); owner scoped "desktop" |
 | A5 | Fallback for broken/retired saved colour | Follows the default (White) | REQ-099 and FLOW-007 tie fallback to the default (rung 1) |
 | A6 | Never-chose returning players | See White | No saved key exists to distinguish them (rung 2) |
-| A7 | Fix first paint too | Yes — split `tokens.css`'s combined `:root, [data-profile="blue"]` block (Blue keeps its values, `:root` takes White's); theme-color and favicon to White's accent; guarded by a first-paint test | Otherwise a first visit flashes Blue (rung 5); `tokens.css:41-50`, `index.html:7-8` |
+| A7 | Fix first paint too | Yes — split `tokens.css`'s combined `:root, [data-profile="blue"]` block (Blue keeps its values, `:root` takes White's, and the `:root` block stays before every colour block); theme-color and favicon to White's accent; guarded by a first-paint test and an order test | Otherwise a first visit flashes Blue (rung 5); equal specificity means file order decides (rung 2); `tokens.css:41-94`, `index.html:7-8` |
 | A8 | Scrollbar fix mechanism | Line drawn inside the tray box and the tray's x-axis clipped; stylesheet assertion plus live measurement | Measured cause; jsdom has no layout, so the automated form must read the stylesheet (rung 4) |
 | A9 | `index.html` hard-coded hex vs REQ-219/REQ-216 | Keep it as a deliberate pre-script placeholder (as Blue's hex is today), switched to White, pinned to the token layer by test; no product-truth change | HTML paints before the token layer can run; `applyPalette` overwrites it on mount (rung 2: existing precedent) |
+| A10 | Ambient scene's Blue fallback before `applyPalette` | Change it to follow `DEFAULT_PALETTE_ID`, with a still-frame test; not left as a transient | Code read says it never reaches the screen today, but other fallbacks already read the default (`useActiveThemeMotif.ts`, `FeaturePortalMenu.tsx`), so one default is the existing pattern and the change is tiny (rungs 2–3); `AmbientScene.tsx:550-552, 622` |
+| A11 | Desktop ☰ chip vs hover/focus | Resting edge and fill go in the existing `min-width: 768px` block, before the hover rule; order asserted by test, hover checked live | Equal specificity, later rule wins; `shell.css:309-323` (rung 2) |
 
 ## PRD alignment and proposed product truth
 
@@ -268,20 +363,27 @@ Touches: `apps/frontend/src/components/{BrandMark,StagedStepHeader}.tsx`,
 `components/portal/{MtgAssistantApp,DestinationOutlet}.tsx`,
 `components/portal/quick-lookup/QuickLookupApp.tsx`,
 `components/{ZoneCollectionStep,ZoneConfirmStep,EnrichmentStep}.tsx`,
-`components/trade/TradeBalancer.tsx`, `styles/shell.css`, `styles/tokens.css`,
-`lib/theme/palettes.ts`, `index.html`, `src/test/appliedTheme.ts`, and the
-tests named above. Frontend and
+`components/trade/TradeBalancer.tsx`, `components/AmbientScene.tsx`,
+`styles/shell.css`, `styles/tokens.css`, `lib/theme/palettes.ts`,
+`index.html`, `src/test/appliedTheme.ts`, and the tests named above
+(including `components/AmbientScene.test.tsx` and
+`lib/theme/applyPalette.test.ts`). Frontend and
 presentation only: no request contract, prompt, backend, or data change.
 
 ## Verification for the build
 
 - `npm test` (frontend) green, with the new REQ-203 tests (including the
-  placement test), the updated default-pin tests, the first-paint test and the
-  tray stylesheet assertion.
+  placement test), the updated default-pin tests, the first-paint and order
+  tests, the ambient-scene default test, the ☰ stylesheet assertion (with its
+  order check) and the tray stylesheet assertion.
 - Live at 390×844 and 1440×900: ten taps on Ask a Question reveal the picture;
   it holds on Trade Balancer and In-depth; Life Tracker shows none.
 - Live at 1440×900: ☰ box 54px, header 68px, chip edge visible in all six
-  colours.
+  colours; hover and keyboard focus still show the accent fill.
 - Fresh storage: first paint and settled page are White.
+- Each colour keeps its own look: pick Blue, then Red, in Theme. The page
+  repaints in that colour, and `getComputedStyle(document.documentElement)`
+  reads `--accent` #0050d8 for Blue and #c10230 for Red (not White's
+  #ede7d6). Reload with each saved and check again.
 - Open tray: scrollWidth equals clientWidth at 390×844 and 1440×900, with
   classic scrollbars forced on; the right-edge line still paints.
