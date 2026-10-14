@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white`
 - Branch: `thejudge-auto/small-fixes-cats-menu-white-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-225350/`
-- Current node: `gate-review`
+- Current node: `gate-qc`
 - Next action: `/graph-implement PRD/work/small-fixes-cats-menu-white/`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | 6 | gate-qc | sonnet | failed | `0 → 28` | FAIL 2 of 3 — attempt-1 findings verified resolved; two new brief fixes (A: `:root` block order in `tokens.css`; B: `AmbientScene.tsx:550` Blue fallback) in `QUALITY-CHECK.md` committed `b384808f`; GATE-QUESTIONS.md needs no change; `STATUS.refining`; loop to define | 2026-10-14 |
 | 7 | define | opus | ok | `0 → 47` | attempt 3: A (`:root` block order + order test + live Blue/Red check) and B (`AmbientScene.tsx` fallback reads `DEFAULT_PALETTE_ID`, added to Touches with a test) resolved; full re-read added the ☰ hover-rule order (A11); no other Blue fallbacks; GATE-QUESTIONS.md unchanged; `STATUS.refined` committed `73852494` | 2026-10-14 |
 | 8 | gate-qc | sonnet | ok | `0 → 14` | PASS (attempt 3), no findings — `QUALITY-CHECK.md` committed `a6ad4515`; run stops at gate-qc PASS: proposal pushed to `origin/thejudge-auto/small-fixes-cats-menu-white`, docs PR into `main` opened, parked `STATUS.owner-action` | 2026-10-14 |
+| 9 | gate-review | sonnet | ok | `0 → 14` | build half run `graph-20261014-234321`: kickoff worktree removed clean (`git worktree remove`); claim commit `bbb74297` on `thejudge-auto/small-fixes-cats-menu-white-work` cut from `origin/main` `3c937d37` (docs PR #307 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `5fa333bb`: 6 accept / 0 edit / 0 reject, `### Brief reconciliation` none, REQ-207 slot and brief agree (45px bars, glow, no box); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-14 |
 
 ## Open gate
 
@@ -230,6 +231,24 @@ Invoke the `graph-gate-review` skill (Skill tool) on `PRD/work/small-fixes-cats-
 Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 40 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: the verdict per ID, the `### Brief reconciliation` list (or none), whether any chip-look passage remains, files written, and the commit hash.
+
+### gate-qc (build half, attempt 1)
+
+graph is controlling. You are node 4 (`gate-qc`), attempt 1, of the build half of graph run `graph-20261014-234321`, re-grading after gate resolution.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/small-fixes-cats-menu-white-work`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/work/small-fixes-cats-menu-white/DESIGN-BRIEF.md`. Grade the brief together with the finalized `GATE-QUESTIONS.md` (the owner accepted all six: REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113), `evidence/measurements.md`, `IDEA.md` and `intake/`, against current `PRD/sections/` truth on this branch and agent-readiness. `PRD/sections/` is unchanged by design: `build` applies the approved proposal later, so a missing live edit is not a finding.
+
+This re-grade matters for one reason in particular: after the spec-forming half passed quality-check (attempt 3, commit `a6ad4515`), the owner revised REQ-207 during the park, and the REQ-207 slot, `DESIGN-BRIEF.md` section 2 (assumptions A4 and A11) and `evidence/measurements.md` were rewritten to that choice (45px desktop bars, 2.5px thick, 7px gap, a soft glow at every width, phone size unchanged, no box). That revision has not been graded. Grade it fully: the acceptance criteria for the menu button are testable, every file and selector the brief names for it exists, and the hover-rule order assumption still holds for the new rules. Also check that every diff anchor in `GATE-QUESTIONS.md` still matches current `PRD/sections/` text (the branch is cut from today's `origin/main`). A finding must be a real gap in correctness or agent-readiness, not a preference.
+
+Produce the PASS/FAIL report the skill prescribes (replace or update `QUALITY-CHECK.md`) and set the status marker it prescribes on FAIL (`STATUS.refining`); leave `STATUS.refined` on PASS. Do not write a GAMEPLAN or slice docs, and do not edit the brief, `GATE-QUESTIONS.md`, `PRD/sections/`, code, or the README's `## Preparation gate` section (the driver owns it).
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 60 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: PASS or FAIL, the complete findings list (none if PASS), files written (if any), and the commit hash (if any).
 
 ## Instruction ledger
 
