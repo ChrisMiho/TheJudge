@@ -14,6 +14,6 @@ Four small fixes: cats Easter egg, bigger desktop menu button, White as the defa
 
 ## Preparation gate
 
-- Quality-check: FAIL
+- Quality-check: PASS (attempt 3)
 - Checked artifact: `PRD/work/small-fixes-cats-menu-white/DESIGN-BRIEF.md`
-- Findings (attempt 2; attempt 1's four are verified resolved): (A) the new `:root` block in `tokens.css` must stay before every `[data-profile]` block (equal specificity, later wins) — say so, assert the order in a stylesheet test and live-check Blue and one other colour; (B) `AmbientScene.tsx:550` still falls back to `'blue'` before `applyPalette` runs — change it to White (add to Touches with a test) or record it as a one-frame transient the observer corrects. Full report: `QUALITY-CHECK.md`.
+- Findings: none. Attempt 2's two findings (`:root` block order; `AmbientScene.tsx` Blue fallback) and the new ☰ hover-order assumption A11 are verified resolved against the files. Full report: `QUALITY-CHECK.md`.
