@@ -409,6 +409,20 @@ describe("QuickLookupApp", () => {
     expect(onSubmit).toHaveBeenLastCalledWith("a".repeat(300), []);
   });
 
+  it("shows the arrow alone with no empty half where the browser has no speech recognition (REQ-212)", async () => {
+    const user = userEvent.setup();
+    render(<QuickLookupApp />);
+    await openCardSearch(user);
+
+    await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+
+    const pill = screen.getByTestId("composer-pill");
+    expect(pill.querySelector(".send-wrap")).toHaveClass("arrow-only");
+    expect(screen.queryByTestId("dictation-mic")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-ring")).toHaveAttribute("viewBox", "0 0 48 48");
+  });
+
   it("counts the editable text rather than the silent card fallback", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);

@@ -5,7 +5,7 @@
     {
       "id": "B1",
       "statement": "ComposerPill tests: no speech gives one 44px round control, no mic; with speech unchanged",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/ComposerPill.test.tsx"
@@ -15,7 +15,7 @@
     {
       "id": "B2",
       "statement": "Component tests for the four boxes without speech show no empty half",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/FollowUpComposer.test.tsx",
@@ -26,7 +26,7 @@
     {
       "id": "B3",
       "statement": "Ring is a circle from the top clockwise without speech; stadium unchanged with it",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/ComposerPill.tsx"
@@ -36,7 +36,7 @@
     {
       "id": "B4",
       "statement": "The frontend test suite passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm (--workspace apps/frontend run|run) test"
       }
@@ -44,7 +44,7 @@
     {
       "id": "B5",
       "statement": "REQ-212, REQ-206 and the quick-lookup ring line carry the accepted amendments",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",
@@ -55,7 +55,7 @@
     {
       "id": "B6",
       "statement": "Browser measurement of four boxes with and without speech, screenshots recorded",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -63,7 +63,7 @@
     {
       "id": "B7",
       "statement": "Browser closed, servers stopped, ports released, captures path recorded",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

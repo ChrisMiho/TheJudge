@@ -149,6 +149,7 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
   });
 
   it("starts the ring at the top of the mic|send seam and runs it clockwise round the pill (the mockup's path)", () => {
+    const uninstallSpeech = installStubSpeechRecognition();
     render(
       <ComposerPill
         value="x"
@@ -165,6 +166,7 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     const ring = screen.getByTestId("composer-pill-ring");
     expect(ring).toHaveAttribute("viewBox", "0 0 88 48");
     expect(ring.querySelector("path.fill")).toHaveAttribute("d", "M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z");
+    uninstallSpeech();
   });
 
   it("is the follow-up box (.followup, no In-depth chip) in the followup variant", () => {
@@ -510,6 +512,53 @@ describe("Frontend - ComposerPill dictation (REQ-212)", () => {
 
     it("falls to the shortest tier in a very narrow box", () => {
       expect(placeholderAtWidth(40)).toBe("Ask…");
+    });
+  });
+});
+
+describe("Frontend - ComposerPill send shape (REQ-212, REQ-206)", () => {
+  const props = {
+    value: "",
+    onChange: vi.fn(),
+    onSubmit: vi.fn(),
+    maxLength: 300,
+    placeholder: "What would you like to know?",
+    textareaAriaLabel: "Magic question",
+    submitLabel: "Ask TheJudge",
+    pendingLabel: "Asking…"
+  };
+
+  it("without speech recognition is one round arrow: no mic, arrow-only wrapper, circle ring from the top clockwise", () => {
+    render(<ComposerPill {...props} />);
+    const pill = screen.getByTestId("composer-pill");
+    const wrap = pill.querySelector(".send-wrap");
+    expect(wrap).toHaveClass("arrow-only");
+    expect(pill.querySelector(".send-pair")).toBeInTheDocument();
+    expect(screen.queryByTestId("dictation-mic")).not.toBeInTheDocument();
+    const ring = screen.getByTestId("composer-pill-ring");
+    expect(ring).toHaveAttribute("viewBox", "0 0 48 48");
+    expect(ring.querySelector("path.track")).toHaveAttribute("d", "M24 4 A20 20 0 0 1 24 44 A20 20 0 0 1 24 4 Z");
+    expect(ring.querySelector("path.fill")).toHaveAttribute("d", "M24 4 A20 20 0 0 1 24 44 A20 20 0 0 1 24 4 Z");
+    expect(appCss).toMatch(/\.send-wrap\.arrow-only\s*\{\s*width:\s*44px/);
+  });
+
+  describe("with speech recognition", () => {
+    let uninstall: () => void;
+    beforeEach(() => {
+      uninstall = installStubSpeechRecognition();
+    });
+    afterEach(() => {
+      uninstall();
+    });
+
+    it("keeps the two-half pill and the stadium ring", () => {
+      render(<ComposerPill {...props} />);
+      const pill = screen.getByTestId("composer-pill");
+      expect(pill.querySelector(".send-wrap")).not.toHaveClass("arrow-only");
+      expect(screen.getByTestId("dictation-mic")).toBeInTheDocument();
+      const ring = screen.getByTestId("composer-pill-ring");
+      expect(ring).toHaveAttribute("viewBox", "0 0 88 48");
+      expect(ring.querySelector("path.track")).toHaveAttribute("d", "M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z");
     });
   });
 });

@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| card-search-and-send-pill | Both slices built (PR #305): punctuation-blind card search, no-mic round send arrow; ready for review and cleanup |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| card-search-and-send-pill | Mapped: slice A card search (REQ-002), slice B no-mic send pill (REQ-212, REQ-206); build next |
 
 ## refined
 

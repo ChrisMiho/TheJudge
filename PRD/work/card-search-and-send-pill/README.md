@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # card-search-and-send-pill
 
@@ -12,8 +12,8 @@ Quality-check PASS 2026-10-13. Owner accepted all three gate questions (docs PR 
 
 | Slice | Doc | Goal | Depends on |
 | --- | --- | --- | --- |
-| A | `slice-a-card-search-punctuation.md` | Card search ignores punctuation and accents (REQ-002) | none |
-| B | `slice-b-no-mic-send-pill.md` | No-mic send pill is one round arrow (REQ-212, REQ-206) | none |
+| A | `slice-a-card-search-punctuation.md` | Card search ignores punctuation and accents (REQ-002) (done) | none |
+| B | `slice-b-no-mic-send-pill.md` | No-mic send pill is one round arrow (REQ-212, REQ-206) (done) | none |
 
 Plan: `GAMEPLAN.md`. Each slice's `build` applies its share of the accepted `PRD/sections/` amendments with the code. No deliverable lands in `PRD/work/`.
 
