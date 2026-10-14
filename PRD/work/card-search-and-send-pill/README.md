@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # card-search-and-send-pill
 
@@ -7,6 +7,15 @@ Two player-facing defects from `PRD/ideasForLater/hardtofind/hardtosearch.md`: c
 Refined 2026-10-13: `DESIGN-BRIEF.md` (scope, decisions, assumptions) and `GATE-QUESTIONS.md` (amendments to REQ-002, REQ-212, REQ-206; no new stable ID; no blocker).
 
 Quality-check PASS 2026-10-13. Owner accepted all three gate questions (docs PR #304, merged). Build half claimed on `thejudge-auto/card-search-and-send-pill-work`; re-graded PASS after gate resolution.
+
+## Slices
+
+| Slice | Doc | Goal | Depends on |
+| --- | --- | --- | --- |
+| A | `slice-a-card-search-punctuation.md` | Card search ignores punctuation and accents (REQ-002) | none |
+| B | `slice-b-no-mic-send-pill.md` | No-mic send pill is one round arrow (REQ-212, REQ-206) | none |
+
+Plan: `GAMEPLAN.md`. Each slice's `build` applies its share of the accepted `PRD/sections/` amendments with the code. No deliverable lands in `PRD/work/`.
 
 ## Autonomous metadata
 

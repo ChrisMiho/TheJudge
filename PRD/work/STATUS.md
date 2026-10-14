@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| card-search-and-send-pill | Mapped: slice A card search (REQ-002), slice B no-mic send pill (REQ-212, REQ-206); build next |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| card-search-and-send-pill | Card search ignores punctuation/accents (REQ-002); no-mic send pill is one round arrow (REQ-212, REQ-206) — gate answered (3 accept); resumes at gate-qc |
 
 ## refining
 
