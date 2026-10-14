@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| small-fixes-cats-menu-white | Cats Easter egg on every screen, quiet visible desktop ☰, White default colour, no sideways menu scrollbar; six gate slots. Brief revised for the four quality-check findings; awaiting re-check. |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| small-fixes-cats-menu-white | Cats Easter egg on every screen, quiet visible desktop ☰, White default colour, no sideways menu scrollbar; six gate slots. Quality-check FAIL attempt 2 (2 small brief fixes), see QUALITY-CHECK.md. |
 
 ## ideation
 
