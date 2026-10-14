@@ -1,4 +1,4 @@
-status: refining
+status: refined
 
 # small-fixes-cats-menu-white
 

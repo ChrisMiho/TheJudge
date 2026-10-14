@@ -13,6 +13,13 @@ Inputs: `IDEA.md`, `intake/owner-request.md` (evidence, not authority), the
 was taken live in the running app; the full record is
 `evidence/measurements.md`, screenshots in `.playwright-mcp/` (local, ignored).
 
+Revised after quality-check attempt 1 (`QUALITY-CHECK.md`, FAIL, four brief
+fixes): section 1 adds a cat placement test; section 3 names the whole
+default-pin test and the Blue-fallback title, spells out the `tokens.css`
+split, adds a first-paint test and records the `index.html` placeholder
+exception; section 4 names the stylesheet assertion and keeps the live
+measurement as the verification step. `GATE-QUESTIONS.md` is unchanged.
+
 ## 1. Cats Easter egg
 
 **What the player sees today.** The app opens on Ask a Question. There the
@@ -60,7 +67,14 @@ no page scroll; Trade Balancer's side panel gets shorter to make room.
 - Tests (REQ-203's own list): the count adds up across two different screens;
   the reveal holds after a destination switch; a fresh mount (reload) starts
   hidden; Life Tracker has no tap target and no picture; nine taps show nothing.
-  The three existing tests in `App.interaction-flows.presentation.test.tsx`
+- Placement test (new): after the reveal, on Ask a Question and on Trade
+  Balancer, the picture (the `img` named "Cat wizard") comes after the banner
+  header in document order and before that screen's page content (the
+  question box on Ask a Question, the trade panels on Trade Balancer), checked
+  with `compareDocumentPosition`. That proves the picture sits directly under
+  the header, not inside or below the content. The live 390×844 / 1440×900
+  check below confirms it looks right.
+- The three existing tests in `App.interaction-flows.presentation.test.tsx`
   keep passing.
 
 ## 2. Desktop ☰ Menu button
@@ -115,17 +129,60 @@ and it matches the owner's ask.
 **Build outcome.**
 - `DEFAULT_PALETTE_ID` becomes `"white"` in `apps/frontend/src/lib/theme/palettes.ts`
   (and its comment "`blue` remains the app default").
-- First paint matches: `tokens.css`'s `:root` default block carries White's
-  values instead of Blue's, and `index.html`'s `theme-color` meta and
-  placeholder favicon use White's accent, so a first visit never flashes blue
-  before the app starts.
-- Tests that pin the default: `palettes.test.ts` line 77 (asserts `"blue"`);
-  `themePrefs.test.ts`, `useThemePalette.test.ts` and
-  `App.mtg-color-themes.test.tsx` use the constant and follow it;
-  `src/test/appliedTheme.ts` falls back to `"blue"` when no profile is set and
-  follows the new default. Fixtures that merely pass `"blue"` as an input
-  (`FeaturePortalMenu.test.tsx`, `ThemeSection.test.tsx`, `applyPalette.test.ts`,
-  `AmbientScene.test.tsx`) are not default pins and stay.
+- First paint matches, so a first visit never flashes blue before the app
+  starts. Three surfaces paint before `applyPalette` sets `data-profile`:
+  - `tokens.css` lines 41-42 today read `:root, [data-profile="blue"] { … }` —
+    one block serving both the default and Blue. The build **splits it in two**:
+    `[data-profile="blue"]` keeps every Blue value exactly as today (`--motif`
+    blue.svg, `--accent` #0050d8, `--accent-strong` #1e3a9c, `--accent-soft`
+    #38e1ff, `--accent-contrast` #ffffff, `--wash-tint` #05070d), and a
+    separate `:root` block takes White's six values (the same as
+    `[data-profile="white"]`: `--motif` white.svg, `--accent` #ede7d6,
+    `--accent-strong` #b0a382, `--accent-soft` #faf8f2, `--accent-contrast`
+    #09090b, `--wash-tint` #120e08). The later shared surface-role block
+    (`:root, [data-profile] { … }`, line 110) is not touched. Choosing Blue
+    still looks exactly as it does today.
+  - `index.html`'s `theme-color` meta (`content`) and placeholder favicon
+    (`fill` in the inline data URI) change from #0050d8 to White's accent,
+    #ede7d6.
+- **A deliberate exception to the no-hard-coded-hex rule.** REQ-219 says the
+  favicon colour and `theme-color` are never a per-profile hex hard-coded
+  outside the token layer, and REQ-216 says no colour value lives outside it.
+  `index.html` cannot read the token layer: it paints before any script runs.
+  So its two hex values are a placeholder that `applyPalette` overwrites on
+  mount — they already are one today, with Blue's hex. This build keeps that
+  exception, only switching it to White, and makes it safe with the first-paint
+  test below, which fails if the placeholder ever drifts from the token layer.
+  No product-truth change is proposed for it: the placeholder is not the
+  "active profile's" colour REQ-219 governs, and the build leaves REQ-219's
+  `applyPalette` path unchanged.
+- First-paint test (new, in `applyPalette.test.ts`, which already reads
+  `tokens.css` and `index.html` as text): every custom property in the lone
+  `:root { … }` block of `tokens.css` equals the same property in the
+  `[data-profile="white"] { … }` block (same set of properties, same values);
+  `index.html`'s `theme-color` `content` equals White's `--accent` from
+  `tokens.css`; and the decoded favicon data URI's `fill` equals that same
+  accent. A companion assertion checks the `[data-profile="blue"]` block still
+  carries Blue's six values, so the split cannot silently break Blue.
+- Tests that pin the default, and what each becomes:
+  - `apps/frontend/src/lib/theme/palettes.test.ts` lines 76-80 — the whole
+    test, not one line. Its title "includes a default blue palette matching
+    DEFAULT_PALETTE_ID" becomes a White title; line 77
+    `expect(DEFAULT_PALETTE_ID).toBe("blue")` becomes `"white"`; line 80
+    `expect(defaultPalette?.name.toLowerCase()).toContain("blue")` becomes
+    `"white"`.
+  - `apps/frontend/src/App.mtg-color-themes.test.tsx:171` — the test title
+    "removes an unsupported stored palette id and falls back to Blue" becomes
+    "…falls back to White". Its body already uses `DEFAULT_PALETTE_ID` and
+    follows the constant.
+  - `themePrefs.test.ts`, `useThemePalette.test.ts` and the rest of
+    `App.mtg-color-themes.test.tsx` use the constant and follow it.
+  - `apps/frontend/src/test/appliedTheme.ts` line 20 falls back to `"blue"`
+    when no profile is set; it becomes `"white"` to follow the new default.
+  - Fixtures that merely pass `"blue"` as an input (`FeaturePortalMenu.test.tsx`,
+    `ThemeSection.test.tsx`, `applyPalette.test.ts`, `AmbientScene.test.tsx`,
+    and `palettes.test.ts`'s "looks up a palette by id") are not default pins
+    and stay.
 
 ## 4. No sideways scrollbar in the open menu
 
@@ -145,11 +202,28 @@ until you scroll, so it shows as a brief bar or a one-pixel sideways drag rather
 than a resting bar. The fix covers both.
 
 **Build outcome.** The tray never scrolls sideways at any width, and the
-right-edge light line stays visible. The build picks the mechanism and proves
-both halves (scrollWidth equals clientWidth on desktop and phone; the line still
-paints) — for example drawing the line inside the tray's box, or clipping the
-x-axis without clipping the line. Product truth: one new acceptance criterion on
-REQ-113 (REQ-113 block) so the regression is tested.
+right-edge light line stays visible. Two changes in `shell.css`, both needed:
+the line is drawn inside the tray's box (`.menu-tray::after` loses its
+negative `right` offset, for example `right: 0`), and the tray stops scrolling
+sideways (`.menu-tray` declares `overflow-x: hidden` or `clip` beside its
+`overflow-y: auto`). Drawing the line inside keeps it from being clipped;
+clipping the x-axis stops any future one-pixel overhang from earning a bar.
+Product truth: one new acceptance criterion on REQ-113 (REQ-113 block) so the
+regression is tested.
+
+**Automated test.** jsdom does no layout, so `scrollWidth` cannot be measured
+in the test suite. The test is a stylesheet assertion that reads `shell.css`
+as text, the way `ambient-accent-foundation.test.ts` reads `index.css`:
+- the `.menu-tray::after` rule has no negative `right` or `left` offset — the
+  line no longer overhangs the tray;
+- the same rule still has `content`, a 1px `width` and its `background`, so
+  the line still paints;
+- the `.menu-tray` rule declares `overflow-x: hidden` or `overflow-x: clip` —
+  the tray cannot scroll sideways.
+
+**Live verification step.** At 390×844 and 1440×900, with classic (always
+shown) scrollbars forced on, open the tray and confirm `scrollWidth` equals
+`clientWidth`, no horizontal bar shows, and the right-edge line still paints.
 
 ## Non-goals
 
@@ -174,8 +248,9 @@ REQ-113 (REQ-113 block) so the regression is tested.
 | A4 | Desktop ☰ size and look | Proposed, not decided: 54px box, resting chip edge+fill, glyph 2.1rem; desktop only | Owner reserved size/look; existing `.icon-chip` pattern (rung 3); owner scoped "desktop" |
 | A5 | Fallback for broken/retired saved colour | Follows the default (White) | REQ-099 and FLOW-007 tie fallback to the default (rung 1) |
 | A6 | Never-chose returning players | See White | No saved key exists to distinguish them (rung 2) |
-| A7 | Fix first paint too | Yes — `:root` tokens, theme-color, favicon | Otherwise a first visit flashes Blue (rung 5) |
-| A8 | Scrollbar fix mechanism | Build's choice, bounded by "no sideways scroll, line stays" | Measured cause; smallest reversible scope (rung 4) |
+| A7 | Fix first paint too | Yes — split `tokens.css`'s combined `:root, [data-profile="blue"]` block (Blue keeps its values, `:root` takes White's); theme-color and favicon to White's accent; guarded by a first-paint test | Otherwise a first visit flashes Blue (rung 5); `tokens.css:41-50`, `index.html:7-8` |
+| A8 | Scrollbar fix mechanism | Line drawn inside the tray box and the tray's x-axis clipped; stylesheet assertion plus live measurement | Measured cause; jsdom has no layout, so the automated form must read the stylesheet (rung 4) |
+| A9 | `index.html` hard-coded hex vs REQ-219/REQ-216 | Keep it as a deliberate pre-script placeholder (as Blue's hex is today), switched to White, pinned to the token layer by test; no product-truth change | HTML paints before the token layer can run; `applyPalette` overwrites it on mount (rung 2: existing precedent) |
 
 ## PRD alignment and proposed product truth
 
@@ -194,13 +269,15 @@ Touches: `apps/frontend/src/components/{BrandMark,StagedStepHeader}.tsx`,
 `components/portal/quick-lookup/QuickLookupApp.tsx`,
 `components/{ZoneCollectionStep,ZoneConfirmStep,EnrichmentStep}.tsx`,
 `components/trade/TradeBalancer.tsx`, `styles/shell.css`, `styles/tokens.css`,
-`lib/theme/palettes.ts`, `index.html`, and the tests named above. Frontend and
+`lib/theme/palettes.ts`, `index.html`, `src/test/appliedTheme.ts`, and the
+tests named above. Frontend and
 presentation only: no request contract, prompt, backend, or data change.
 
 ## Verification for the build
 
-- `npm test` (frontend) green, with the new REQ-203 tests and the updated
-  default pin.
+- `npm test` (frontend) green, with the new REQ-203 tests (including the
+  placement test), the updated default-pin tests, the first-paint test and the
+  tray stylesheet assertion.
 - Live at 390×844 and 1440×900: ten taps on Ask a Question reveal the picture;
   it holds on Trade Balancer and In-depth; Life Tracker shows none.
 - Live at 1440×900: ☰ box 54px, header 68px, chip edge visible in all six
