@@ -109,13 +109,21 @@ language live here.
 - Built: the suite's single navigation affordance is the **☰ Menu button** at the
   left of a banner header flush with the top edge of the screen (outside the page
   padding) — at least 44px, about a quarter larger than the former
-  corner rail on a phone and a third on desktop — with the brand centred (a
+  corner rail on a phone and a third on desktop, its bars drawn 45px wide at
+  `768px`+ and carrying a soft colour-tinted glow at every width — with the
+  brand centred (a
   breathing orb with the colour's badge, the wordmark, "MTG Assistant") on a lit
   band carrying a hairline of the colour's light and the profile's own element.
   Selecting ☰ opens the Menu tray, which slides in from the left: full height of
   the visible shell side below `768px`, a floating inset rounded card sized to its
   content at `768px`+. The step-name text renders as an in-flow eyebrow above each
   step's own content, not in header chrome. (REQ-207, DEC-109, DEC-133)
+- Built: the brand title is a tap target on every in-scope screen (Ask a
+  Question before and after an answer, every In-depth step and its answered
+  workspace, Trade Balancer) driven by one in-memory, session-wide count held
+  above the destinations; the tenth tap reveals the cat-wizard picture under
+  the banner header on all of them until reload. Life Tracker's title stays
+  a plain heading. No storage key. (REQ-203, REQ-056)
 - Built: the tray lists **Ask a Question, Question History, Life Tracker, Trade
   Balancer** — then the **Send feedback** action entry (which opens the feedback
   modal without switching the active destination), then the palette-only Theme
@@ -185,7 +193,7 @@ language live here.
   fit; it takes a normal inset rather than the rail-clearing row inset. (REQ-131,
   REQ-207, DEC-135)
 - Built: the catalog is six globally shared MTG-color profiles, ordered **White,
-  Blue, Black, Red, Green, Colorless**, with Blue the default; each supplies curated
+  Blue, Black, Red, Green, Colorless**, with White the default; each supplies curated
   `accent` / `accent-strong` / `accent-soft` / `accent-contrast` values through the
   existing four-token contract, and each Theme cell's light shows that profile's
   `accent-soft` value. Colorless alone exposes an inline full-spectrum custom-color
@@ -194,7 +202,7 @@ language live here.
   correction, and it persists independently of the fixed catalog, surviving switches
   to other profiles and back. Loading a retired or otherwise unsupported stored
   palette ID (the former Violet/Emerald/Amber/Rose catalog) deletes that stored
-  value and falls back to Blue. (DEC-119, REQ-099)
+  value and falls back to White. (DEC-119, REQ-099)
 - Built: an unchosen cell is a faint wash of its colour with its symbol in the
   colour's light; the chosen cell is filled with the colour's light, the symbol
   dark on it, with a small glow; no colour names or blurb (hover titles and
@@ -433,7 +441,12 @@ not product truth.
   `screen-layout.md`)
 - Menu trigger: the ☰ button at the banner's left, at least 44px, interactive box
   equal to its painted bounds; the banner's band and element art take no pointer
-  events. Superseded geometry: the single-zone corner rail (`5.5rem × 3.5rem`
+  events. At `768px`+: a 54px box, transparent at rest, with three bars drawn
+  45px wide, 2.5px thick and 7px apart; below `768px`: 50px, glyph 1.4rem,
+  transparent at rest. At every width the bars (not the box) carry a soft glow,
+  about 6px, in the colour's `--accent` mixed about half with white; hover and
+  focus keep today's accent fill. Superseded
+  geometry: the single-zone corner rail (`5.5rem × 3.5rem`
   interactive, gradient painted at `5.5rem × 10.5rem`). (REQ-114, REQ-207)
 - Superseded geometry: the split Menu+History rail (In-Depth, Quick Question) —
   two zones side-by-side, each `2.75rem × 2.75rem`, in one `2.75rem` band. REQ-213

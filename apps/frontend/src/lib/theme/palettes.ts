@@ -25,7 +25,7 @@ export interface Palette {
   motif: "beams" | "runes" | "fog" | "embers" | "leaves" | "geometry";
 }
 
-export const DEFAULT_PALETTE_ID = "blue";
+export const DEFAULT_PALETTE_ID = "white";
 
 const WHITE_CONTRAST = "255 255 255";
 
@@ -42,7 +42,7 @@ const PANEL_EDGE = "63 63 70";
 
 /**
  * Ordered, named palette list. Six globally shared Magic-inspired profiles in
- * WUBRGC order; `blue` remains the app default.
+ * WUBRGC order; `white` is the app default.
  */
 export const PALETTES: Palette[] = [
   {

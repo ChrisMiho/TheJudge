@@ -73,11 +73,11 @@ describe("palettes", () => {
     expect(motifs.size).toBe(6);
   });
 
-  it("includes a default blue palette matching DEFAULT_PALETTE_ID", () => {
-    expect(DEFAULT_PALETTE_ID).toBe("blue");
+  it("includes a default white palette matching DEFAULT_PALETTE_ID", () => {
+    expect(DEFAULT_PALETTE_ID).toBe("white");
     const defaultPalette = getPaletteById(DEFAULT_PALETTE_ID);
     expect(defaultPalette).toBeDefined();
-    expect(defaultPalette?.name.toLowerCase()).toContain("blue");
+    expect(defaultPalette?.name.toLowerCase()).toContain("white");
   });
 
   it("looks up a palette by id", () => {

@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { DEFAULT_PALETTE_ID } from "../lib/theme/palettes";
 
 const tokensCss = readFileSync(resolve(process.cwd(), "src/styles/tokens.css"), "utf8");
 
@@ -17,7 +18,7 @@ export function appliedAccentTriple(name: "--accent" | "--accent-strong" | "--ac
   const root = document.documentElement;
   const inline = root.style.getPropertyValue(name);
   if (inline) return hexToTriple(inline);
-  const profile = root.getAttribute("data-profile") ?? "blue";
+  const profile = root.getAttribute("data-profile") ?? DEFAULT_PALETTE_ID;
   const marker = `[data-profile="${profile}"] {`;
   const start = tokensCss.indexOf(marker);
   const block = tokensCss.slice(start, tokensCss.indexOf("}", start));

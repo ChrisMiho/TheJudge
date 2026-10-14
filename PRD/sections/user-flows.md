@@ -165,7 +165,7 @@
   - app is loaded
 - Main Flow:
   1. User opens the feature-portal Menu and finds its palette-only **Theme** section.
-  2. App shows White, Blue, Black, Red, Green, and Colorless in that order as a six-cell Theme band — each cell its colour's wash and symbol, named by its hover title and accessible name rather than a visible label — with the current profile lit and Blue as the default (REQ-207).
+  2. App shows White, Blue, Black, Red, Green, and Colorless in that order as a six-cell Theme band — each cell its colour's wash and symbol, named by its hover title and accessible name rather than a visible label — with the current profile lit and White as the default (REQ-207).
   3. User selects a profile.
   4. App immediately applies the selected profile to the whole surface — the flat ground, the colour's ambient scene (REQ-207), panel fills and edges, focus rings, the Ask AI waiting panel, and the card-detail box — plus primary accents and the resting/hover/focus/current treatments on REQ-060's inventory, all without leaving the current workflow step (REQ-200). Player Life Tracker's table keeps its present-day appearance; the shared chrome and sheets it inherits pick up the profile like every other destination, reviewed by a screenshot pair rather than pinned (REQ-202).
   5. If the user selects Colorless, the Theme section exposes an inline full-spectrum color input and `Reset to gray`.
@@ -173,7 +173,7 @@
   7. App stores the selected profile for the browser.
   8. On later reloads, app restores the selected profile and any remembered Colorless custom RGB before or during initial render without resetting user workflow state.
 - Edge Cases:
-  - if the stored profile id is missing or corrupt, app falls back to Blue; if it is Violet, Emerald, Amber, Rose, or otherwise unsupported, app deletes that selected-profile value and falls back to Blue
+  - if the stored profile id is missing or corrupt, app falls back to White; if it is Violet, Emerald, Amber, Rose, or otherwise unsupported, app deletes that selected-profile value and falls back to White
   - if a saved custom RGB is malformed, app deletes the custom value and uses fixed Colorless gray
   - if browser storage is unavailable or write fails, the selected profile/custom RGB may apply for the current session but app continues normally
   - selecting the current fixed profile is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
@@ -183,6 +183,7 @@
   - REQ-060's inventory is the minimum that carries the restrained ambient hierarchy from DEC-081; under REQ-200 static chrome and the dominant page background are profile-driven too, bounded by REQ-200's measured contrast floors. Card-identity rings (REQ-058) stay outside the profile; Life Tracker (REQ-202) inherits the profile through shared chrome like every other destination
   - DEC-119 / REQ-099 define the exact fixed token matrix and Colorless persistence/reset contract
   - dark values only in this pass; no theme-mode control exists and none is added (REQ-200)
+  - amended by `small-fixes-cats-menu-white` (2026-10-14): the default and the fallback move from Blue to White with REQ-099
 
 ### FLOW-008
 - Name: Retired — choose and persist layout density

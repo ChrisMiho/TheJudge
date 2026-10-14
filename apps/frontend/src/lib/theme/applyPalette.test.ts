@@ -24,7 +24,52 @@ function themeColor(): string | null {
   return document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content ?? null;
 }
 
+/** The body of the rule opened by exactly `header` (e.g. `:root {`), as a property map. */
+function tokenBlock(header: string): Record<string, string> {
+  const start = tokensCss.indexOf(header);
+  expect(start, `${header} exists in tokens.css`).toBeGreaterThanOrEqual(0);
+  const body = tokensCss.slice(start + header.length, tokensCss.indexOf("}", start));
+  return Object.fromEntries(
+    [...body.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((match) => [match[1], match[2].trim()])
+  );
+}
+
 describe("Frontend - Theme", () => {
+describe("first paint follows the default (White)", () => {
+  it("C2: the :root block of tokens.css equals the White block, property for property", () => {
+    const rootBlock = tokenBlock("\n:root {");
+    expect(Object.keys(rootBlock).sort()).toEqual(Object.keys(tokenBlock('[data-profile="white"] {')).sort());
+    expect(rootBlock).toEqual(tokenBlock('[data-profile="white"] {'));
+  });
+
+  it("C2: index.html theme-color and the favicon fill equal White's --accent", () => {
+    const accent = tokenAccent("white");
+    expect(/<meta name="theme-color" content="(#[0-9a-fA-F]{6})"/.exec(indexHtml)![1].toLowerCase()).toBe(accent);
+    const favicon = /<link rel="icon"[^>]*href="([^"]+)"/.exec(indexHtml)![1];
+    expect(/fill='(#[0-9a-fA-F]{6})'/.exec(decodeURIComponent(favicon))![1].toLowerCase()).toBe(accent);
+  });
+
+  it("C2: the Blue block still carries Blue's six values", () => {
+    expect(tokenBlock('[data-profile="blue"] {')).toEqual({
+      "--motif": 'url("../lib/theme/motifs/blue.svg")',
+      "--accent": "#0050d8",
+      "--accent-strong": "#1e3a9c",
+      "--accent-soft": "#38e1ff",
+      "--accent-contrast": "#ffffff",
+      "--wash-tint": "#05070d"
+    });
+  });
+
+  it("C3: the :root block comes before every [data-profile] block (equal specificity: the later rule wins)", () => {
+    const rootAt = tokensCss.indexOf("\n:root {");
+    expect(rootAt).toBeGreaterThanOrEqual(0);
+    for (const id of ["white", "blue", "black", "red", "green", "colorless"]) {
+      const at = tokensCss.indexOf(`[data-profile="${id}"] {`);
+      expect(at, id).toBeGreaterThan(rootAt);
+    }
+  });
+});
+
 describe("applyPalette", () => {
   afterEach(() => {
     const root = document.documentElement;

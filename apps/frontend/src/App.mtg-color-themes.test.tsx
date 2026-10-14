@@ -168,7 +168,7 @@ describe("Global theme reach across destinations", () => {
     expect(screen.getAllByTestId(/^life-card-Player /)).toHaveLength(3);
   });
 
-  it("removes an unsupported stored palette id and falls back to Blue", () => {
+  it("removes an unsupported stored palette id and falls back to White", () => {
     localStorage.setItem("thejudge.theme.paletteId", "emerald");
     render(<App />);
 

@@ -1,6 +1,18 @@
 # Slice C — White is the default colour
 
-## Status: planned
+## Status: done
+
+### Status notes (evidence, self-reported)
+
+- C1, C5: `npx vitest run src/lib/theme src/components/AmbientScene.test.tsx src/App.mtg-color-themes.test.tsx` — 7 files, 112 tests passed (palettes.test default is white; mtg-color-themes title says White; `appliedTheme.ts` reads `DEFAULT_PALETTE_ID`).
+- C2, C3: `applyPalette.test.ts` new "first paint follows the default (White)" block: `:root` equals White block, `index.html` theme-color and decoded favicon fill equal #ede7d6, Blue block keeps its six values, `:root` precedes all six profile blocks. Pass.
+- C4: `AmbientScene.test.tsx` new test (no data-profile = White frame, not Blue's); 29 tests pass incl. golden.
+- C6: `npm --workspace apps/frontend run test` — 150 files, 1615 tests; `npm run quality:check` exit 0 (scripts suite: tests 1059, pass 1059, fail 0).
+- C7: live, fresh browser context: `--accent` #ede7d6, `data-profile` white, theme-color meta #ede7d6, nothing saved. Capture `.playwright-mcp/c-fresh-white-1440.png`. Retired saved id "emerald": falls back to White and the key is deleted. Note: the dev server injects CSS with script, so a no-script first-paint probe cannot run there; the first paint is guarded by the `:root` tests above.
+- C8: picked Blue then Red in the Theme band: `--accent` #0050d8 / #c10230 after the pick and again after reload (saved ids blue, red).
+- C9: REQ-099 (3 lines + note), REQ-044 (2 lines + note), FLOW-007 (2 lines + note), shared-chrome and system-map "Blue default" lines applied. `decisions.md` left as retired history.
+- C10: browser closed, server stopped, port 5391 released.
+- C11: slices A and B criteria all true (see their notes); ship gates below met. Durable PRD truth for all six slots is in `PRD/sections/`.
 
 ## Goal
 

@@ -526,9 +526,12 @@ outcome-validated, not product truth.
   an explicit `Unset` option; three expanded players occupy 720px of
   secondary-detail height; commander damage stays a free-typed unbounded numeric
   input. (REQ-137, REQ-138, REQ-139, REQ-144, `screen-layout.md`)
-- Cat-wizard hero image (game-context step) is hidden on initial render and
-  revealed session-only after 10 clicks on the `TheJudge` brand title. (DEC-076,
-  REQ-056)
+- Cat-wizard image is hidden on initial render and revealed session-only after
+  10 taps on the `TheJudge` brand title, counted once across Ask a Question,
+  every In-depth step and its answered workspace, and Trade Balancer; it then
+  shows under the banner header on each of those screens until reload. Life
+  Tracker shows the title but never counts or reveals. (DEC-076, REQ-056,
+  REQ-203)
 - Layout/fit: the Game, Zones, and Cards steps are content-sized vertically
   (no stretch to fill lower viewport, DEC-145); the Enrichment surface is the
   In-depth end of the `100dvh` anchored Ask-screen frame (REQ-218) — the per-card
