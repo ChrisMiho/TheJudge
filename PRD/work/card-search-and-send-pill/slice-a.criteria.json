@@ -35,7 +35,8 @@
       "statement": "Corpus recall re-run meets 7,052/7,288 first-two-words and 7,324/7,324 whole-name",
       "value": true,
       "evidence": {
-        "manual": true
+        "manual": true,
+        "note": "Re-run after review on the refinement method (npx tsx .tmp/recall2.ts): whole name 7324/7324; first two words 7052/7288 with long dashes as spaces (7051/7288 dash-dropping prototype; Human—Time Lord Meta-Crisis is the one difference)"
       }
     },
     {

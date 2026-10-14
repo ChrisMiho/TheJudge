@@ -17,7 +17,7 @@ import { apiBaseUrl } from "../../../lib/env";
 import { deriveCardImageUrl } from "../../../lib/cardImage";
 import { useInDepthCarry } from "../../../lib/portal/inDepthCarryContext";
 import { useAssistantSeed } from "../../../lib/portal/seedContext";
-import { NO_MATCH_COPY } from "../../../lib/search";
+import { NO_MATCH_COPY, normalize } from "../../../lib/search";
 import { MAX_LOOKUP_CARDS } from "../../../lib/stackLimits";
 import type { CardMetadataItem } from "../../../types";
 import { AskAiWaitingPanel } from "../../AskAiWaitingPanel";
@@ -373,7 +373,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   });
   closeScanRef.current = scanCapture.closeScan;
 
-  const normalizedSearchLength = searchInput.trim().length;
+  const normalizedSearchLength = normalize(searchInput).length;
   const showSuggestionPanel =
     normalizedSearchLength >= ADD_CARD_MIN_QUERY_LENGTH &&
     (isMetadataLoading || keyboard.isOpen || suggestions.length === 0);

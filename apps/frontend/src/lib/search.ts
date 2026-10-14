@@ -6,8 +6,9 @@ const MAX_TYPO_DISTANCE = 2;
 
 /**
  * REQ-002: the one shared card-name rule. Lower-cases, folds accents to plain letters, turns
- * hyphens and slashes into spaces, drops every other character that is not a letter, digit,
- * space or underscore, and collapses runs of spaces. Underscores stay so the blank-named
+ * hyphens, long dashes (U+2010 to U+2015) and slashes into spaces, counts any whitespace as a
+ * space, drops every other character that is not a letter, digit, space or underscore, and
+ * collapses runs of spaces. Underscores stay so the blank-named
  * Un-set cards remain findable.
  */
 export function normalize(input: string): string {
@@ -15,9 +16,10 @@ export function normalize(input: string): string {
     .normalize("NFD")
     .replace(/\p{M}+/gu, "")
     .toLowerCase()
-    .replace(/[-/\u2010-\u2015]/g, " ")
-    .replace(/[^\p{L}\p{N} _]/gu, "")
+    .replace(/[-/‐-―]/g, " ")
     .replace(/\s+/g, " ")
+    .replace(/[^\p{L}\p{N} _]/gu, "")
+    .replace(/ +/g, " ")
     .trim();
 }
 

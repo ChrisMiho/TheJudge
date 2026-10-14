@@ -188,6 +188,15 @@ describe("REQ-002 punctuation- and accent-blind card search", () => {
     expect(normalize(",,,")).toBe("");
   });
 
+  it("counts long dashes as a space like a hyphen, and any whitespace as a space", () => {
+    expect(normalize("Human—Time Lord Meta-Crisis")).toBe("human time lord meta crisis");
+    expect(normalize("a–b‐c―d")).toBe("a b c d");
+    const emDashCards = [{ cardId: "h", name: "Human—Time Lord Meta-Crisis" }] as never;
+    expect(getSuggestions(emDashCards, "human time lord").map((c) => c.name)).toEqual(["Human—Time Lord Meta-Crisis"]);
+    expect(normalize("a\tb")).toBe("a b");
+    expect(normalize("a   b")).toBe("a b");
+  });
+
   it("reaches no search with only punctuation", () => {
     expect(getSuggestions(punctuationCards, ",,,", 1)).toEqual([]);
     expect(getSuggestions(punctuationCards, ",,,")).toEqual([]);

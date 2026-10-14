@@ -304,6 +304,9 @@ export function ZoneCollectionStep({
     normalize(searchInput).length >= 3 &&
     (keyboard.isOpen || suggestions.length === 0) &&
     searchInput !== selectedCard?.name;
+  // Escape dismisses only a list of real suggestions; the no-match message is not one, so Escape
+  // with a no-match query closes the whole search as it did before REQ-002.
+  const suggestionListOpen = suggestionsVisible && keyboard.isOpen;
 
   return (
     <PageShell variant="narrow">
@@ -417,7 +420,7 @@ export function ZoneCollectionStep({
               // list closed it closes the whole search, the same as the Close-search chip — parity
               // with Ask a Question's card search (QuickLookupApp).
               onSearchKeyDown={(event) => {
-                if (event.key === "Escape" && !suggestionsVisible) {
+                if (event.key === "Escape" && !suggestionListOpen) {
                   setIsSearchOpen(false);
                   return;
                 }

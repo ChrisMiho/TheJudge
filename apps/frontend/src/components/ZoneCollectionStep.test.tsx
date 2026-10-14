@@ -276,6 +276,23 @@ describe("ZoneCollectionStep scan focus", () => {
     expect(await screen.findByText("No matching card found")).toBeInTheDocument();
   });
 
+  it("closes the search on Escape while the no-match message shows (REQ-002)", async () => {
+    const user = userEvent.setup();
+    mockScanCapture(false);
+    renderStep([makeZoneCard("opt", "Opt")], null, ["stack", "battlefield"]);
+
+    await user.click(screen.getByRole("button", { name: "Zone tab: Battlefield" }));
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
+    const search = screen.getByLabelText("Battlefield search input");
+    await user.type(search, "zzqx");
+    expect(await screen.findByText("No matching card found")).toBeInTheDocument();
+
+    await user.type(search, "{Escape}");
+
+    expect(screen.queryByLabelText("Battlefield search input")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add a card to Battlefield" })).toBeInTheDocument();
+  });
+
   it("puts the selected card's exact canonical name into the search field", async () => {
     const user = userEvent.setup();
     mockScanCapture(false);

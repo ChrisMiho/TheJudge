@@ -361,6 +361,17 @@ describe("QuickLookupApp", () => {
     expect(await screen.findByText(NO_MATCH_COPY)).toBeInTheDocument();
   });
 
+  it("opens no suggestion panel and shows no message for a lone comma (REQ-002)", async () => {
+    const user = userEvent.setup();
+    render(<QuickLookupApp />);
+    await openCardSearch(user);
+
+    await user.type(screen.getByRole("textbox", { name: "Card search" }), ",");
+
+    expect(screen.queryByText(NO_MATCH_COPY)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+  });
+
   it("uses palette-driven styling for the Scan and Ask controls, not a fixed hue (look-matching pass, slice M)", async () => {
     render(<QuickLookupApp />);
 
