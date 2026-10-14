@@ -11,3 +11,17 @@ Next: `/thejudge-quality-check PRD/work/card-search-and-send-pill/`
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/card-search-and-send-pill
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/card-search-and-send-pill/DESIGN-BRIEF.md`
+- Findings: none
+
+Graded 2026-10-13 (graph node `gate-qc`, attempt 1) together with `GATE-QUESTIONS.md`, `evidence/measurements.md`, `IDEA.md` and `intake/`. Checked against current `PRD/sections/` and the code:
+
+- Diff anchors match: REQ-002 (line 19), REQ-206 ring criterion (5331), REQ-212 criteria (5534, 5539) and Notes, all as quoted.
+- Code claims hold: `normalize` in `lib/search.ts` has one other caller (`components/trade/oracleSearch.ts`); the list is capped at 3 and 8; In-depth details' Cards step passes `NO_MATCH_COPY` to its picker; Ask a Question's threshold is set by `minQueryLength` (REQ-167).
+- Corpus check: after accent stripping, no card name holds a non-decomposing non-ASCII letter (no Æ or ß case), so the accent wording is complete.
+- Amendment set is enumerated by quoted grep with a disposition per hit; no new stable ID, no DEC, no screen-layout row needed (no new screen).
+- Open verdict slots on the three gate questions are expected at this stage and are not findings.
