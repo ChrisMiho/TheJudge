@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| small-fixes-cats-menu-white | Cats Easter egg on every screen, quiet visible desktop ☰ (45px bars, soft glow), White default colour, no sideways menu scrollbar. Owner accepted all six slots; gate resolved, resumes at gate-qc. |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| small-fixes-cats-menu-white | Cats Easter egg on every screen, quiet visible desktop ☰, White default colour, no sideways menu scrollbar. Quality check passed; answer the six slots in `GATE-QUESTIONS.md`, then merge the docs PR to build. |
 
 ## deferred
 

@@ -33,6 +33,25 @@
 - Verdicts (2026-10-14): the owner took the recommendation on all six slots in session; all six recorded `accept` in `GATE-QUESTIONS.md`, each attributed to the owner. This answers the six named slots only; it is not a standing authorization for any later product decision. Remaining owner step: merge PR #307.
 - Resume: the owner's merge of the docs PR is the build signal; `graph-implement` picks it up (`/graph-implement PRD/work/small-fixes-cats-menu-white/`). The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white` stays until `graph-implement` claims the spec.
 
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-203` | accept | — |
+| `REQ-207` | accept | — |
+| `REQ-099` | accept | — |
+| `REQ-044` | accept | — |
+| `FLOW-007` | accept | — |
+| `REQ-113` | accept | — |
+
+### Brief reconciliation
+
+none — six accepts, so the proposal in `GATE-QUESTIONS.md`, `DESIGN-BRIEF.md` and the README intake pointer are untouched. Check: the REQ-207 slot (45px desktop bars, soft glow at every width, phone size unchanged, no box) and `DESIGN-BRIEF.md` section 2, A4 and A11 agree. Grep `grep -niE 'chip|box' DESIGN-BRIEF.md GATE-QUESTIONS.md`: remaining hits are either the "no box" statements or history of the declined chip (`DESIGN-BRIEF.md:36`, `:122`, A-table), none describing it as the current look.
+
+## Open gate (resolved)
+
+Resolved 2026-10-14: 6 verdicts, 6 accept, 0 edit, 0 reject. Status restored to `refined`; the run resumes at `gate-qc` (the build half's re-grade covers the REQ-207 revision).
+
 ## Dispatch prompts
 
 ### preflight
