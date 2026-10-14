@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white`
 - Branch: `thejudge-auto/small-fixes-cats-menu-white-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-225350/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/small-fixes-cats-menu-white/`
 
 ## Node ledger
@@ -24,6 +24,7 @@
 | 8 | gate-qc | sonnet | ok | `0 → 14` | PASS (attempt 3), no findings — `QUALITY-CHECK.md` committed `a6ad4515`; run stops at gate-qc PASS: proposal pushed to `origin/thejudge-auto/small-fixes-cats-menu-white`, docs PR into `main` opened, parked `STATUS.owner-action` | 2026-10-14 |
 | 9 | gate-review | sonnet | ok | `0 → 14` | build half run `graph-20261014-234321`: kickoff worktree removed clean (`git worktree remove`); claim commit `bbb74297` on `thejudge-auto/small-fixes-cats-menu-white-work` cut from `origin/main` `3c937d37` (docs PR #307 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `5fa333bb`: 6 accept / 0 edit / 0 reject, `### Brief reconciliation` none, REQ-207 slot and brief agree (45px bars, glow, no box); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-14 |
 | 10 | gate-qc | sonnet | ok | `0 → 16` | build-half re-grade PASS, findings none — `QUALITY-CHECK.md` committed `0ae0d9ba`; owner's REQ-207 park revision graded (brief §2, A4, A11, slot, `evidence/measurements.md` agree; selectors exist in `shell.css` 183/287/304/309-315/318-322); all `GATE-QUESTIONS.md` diff anchors match current `PRD/sections/`; `STATUS.refined` kept; driver rewrote README `## Preparation gate` | 2026-10-14 |
+| 11 | plan | sonnet | ok | `0 → 23` | `thejudge-map-out` commit `be9331e1`: `GAMEPLAN.md`, slices A (cats everywhere, 12 criteria), B (menu button and tray, 9), C (White default, final slice with ship gates, 11), each `slice-<letter>.criteria.json` all `false`; `STATUS.active` only marker; board row under active; no `PRD/sections`/code diff vs `origin/main`; no deliverable planned inside `PRD/work/` (driver placement check) | 2026-10-14 |
 
 ## Open gate
 
@@ -266,6 +267,24 @@ Placement rule: node 8 deletes `PRD/work/small-fixes-cats-menu-white/` before th
 Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: the slices (letter, one plain sentence each, files they touch), the criteria count per slice, files written, and the commit hash.
+
+### build
+
+graph is controlling. You are node 6 (`build`), attempt 1, of the build half of graph run `graph-20261014-234321`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white
+
+Shared branch: `thejudge-auto/small-fixes-cats-menu-white-work` (already checked out in that worktree; autonomous base `origin/main`). Work in place in that worktree: create no second worktree and no contributor branch. Never write to /Users/chrismiho/Coding/Projects/TheJudge itself or anywhere outside the worktree; every absolute path you write must start with the Working directory above, and the package folder is `PRD/work/small-fixes-cats-menu-white/` inside it.
+
+Invoke the `thejudge-implement-all` skill (Skill tool) in graph mode on `PRD/work/small-fixes-cats-menu-white/` and complete slices A, B and C in order, per `GAMEPLAN.md` and each slice doc. Apply product truth at build: each slice writes its share of the accepted `PRD/sections/` amendments by intent (re-derived from the finalized `GATE-QUESTIONS.md` diff and `DESIGN-BRIEF.md` against current truth, never a blind replay), together with the code, in the same PR. The menu button look is the owner's live-preview choice recorded in the REQ-207 slot, `DESIGN-BRIEF.md` section 2 and `evidence/measurements.md` (45px bars, 2.5px thick, 7px gap on desktop; soft glow at every width; phone size unchanged; no box); build exactly that. Open the code PR `thejudge-auto/small-fixes-cats-menu-white-work` into `main` as the skill prescribes, with the `thejudge-auto:v1:registered:small-fixes-cats-menu-white` registration marker in the body and a `[THEJUDGE-AUTO]` title in the reference format; set the title to READY when all three slices are done. Never merge or close a PR. When all slices are complete, set `STATUS.ship-ready` as the only marker and move the `PRD/work/STATUS.md` board row to match (remove from the old section, add to the new one).
+
+Setup: the worktree has no `node_modules`; run `npm ci` at the worktree root first. Browser checks (Playwright MCP): start your own dev server on a free port from inside the worktree, write captures only under `PRD/work/small-fixes-cats-menu-white/.playwright-mcp/`, call `browser_close` when done, and stop the server you started with plain `kill <pid>`. For the White-default checks use a fresh browser storage state so no saved colour is present.
+
+Criteria: the hook-side evidence log does not see this worktree's criteria files, so a criterion flipped to true here is self-reported. For every criterion, run the real check and keep its actual output (command and result line, or the capture path and the measured value); quote that evidence in the slice doc's status notes. Set a criterion true only after its check passed, never on a check that merely ran. Run `npm run quality:check` before the final push.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling loops. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>` (never `-A`, `--all` or `.`), then `git commit -m ...`, then `git push -u origin thejudge-auto/small-fixes-cats-menu-white-work`. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: per slice, what a player now sees, the files changed, each criterion with its evidence, the PR URL, the final commit hash, and the complete list of every file path you wrote or created (absolute paths).
 
 ## Instruction ledger
 
