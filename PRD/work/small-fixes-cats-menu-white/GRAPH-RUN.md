@@ -198,6 +198,20 @@ Produce the PASS/FAIL report the skill prescribes (replace or update `QUALITY-CH
 
 Report back plainly: PASS or FAIL, the complete findings list (none if PASS), the report path, and the commit hash if you committed.
 
+### gate-review
+
+graph is controlling. You are the gate-resolution step (before node 5) of the build half of graph run `graph-20261014-234321`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/small-fixes-cats-menu-white-work`, cut from `origin/main`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `graph-gate-review` skill (Skill tool) on `PRD/work/small-fixes-cats-menu-white/`. The owner answered `GATE-QUESTIONS.md` in docs PR #307 and merged it: REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007 and REQ-113 are each marked accept. Apply those verdicts inside `GATE-QUESTIONS.md` as the skill prescribes (finalize the proposal in the work folder; never edit `PRD/sections/` or code), record the verdicts, and reconcile `DESIGN-BRIEF.md` and the README's intake pointer to every edit or reject. With six accepts the reconciliation is expected to be empty; say so explicitly. Note that the REQ-207 slot was rewritten during the park to the owner's live-preview choice (45px desktop bars, soft glow at every width, phone size unchanged) and the brief was rewritten with it; confirm the brief and the slot agree, and report any passage that still describes the declined box (chip) look. Restore `STATUS.refined` as the only marker (replacing `STATUS.owner-action`), set the README status line to match, and move the `PRD/work/STATUS.md` board row (remove from the old section, add to the new one). In `GRAPH-RUN.md`, write only what the skill prescribes there (`## Gate verdicts` with its `### Brief reconciliation` list, and `## Open gate` marked resolved); leave the header, `## Node ledger`, `## Dispatch prompts` and `## Instruction ledger` to the driver.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 40 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: the verdict per ID, the `### Brief reconciliation` list (or none), whether any chip-look passage remains, files written, and the commit hash.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
