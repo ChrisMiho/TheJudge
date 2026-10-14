@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill`
 - Branch: `thejudge-auto/card-search-and-send-pill-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-031636/`
-- Current node: `gate-qc`
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/card-search-and-send-pill/`
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 3 | define | opus | ok | `0 → 113` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-002, REQ-212, REQ-206 amendments; no blocker), `evidence/measurements.md`, `STATUS.refined` committed `0e7cb914`; no `PRD/sections/` or code diff vs `181b829f` | 2026-10-13 |
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS, findings none; `## Preparation gate` in `README.md` committed `7a75d962`; run stops here and parks at `owner-action` | 2026-10-13 |
 | 5 | gate-review | sonnet | ok | `0 → 14` | build half run `graph-20261014-034941`: kickoff worktree removed clean (`git worktree remove`); claim commit `6cfd3493` on `thejudge-auto/card-search-and-send-pill-work` cut from `origin/main` `f84e22b1` (docs PR #304 merge), pushed; lock taken from the launch root; universal canary `rm -rf .worktrees/.graph-canary-nonexistent` and graph canary `nohup true` both denied; `graph-gate-review` commit `607591e5`: 3 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-13 |
+| 4 | gate-qc | sonnet | ok | `0 → 9` | build-half re-grade PASS, findings none (two cosmetic non-blocking notes recorded); all five `GATE-QUESTIONS.md` anchors match `PRD/sections/functional-requirements.md` on `573ef8df`; node wrote nothing (porcelain empty, HEAD unchanged); driver rewrote `README.md` `## Preparation gate` | 2026-10-13 |
 
 ## Gate verdicts
 
@@ -143,6 +144,22 @@ Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/wor
 Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 60 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: PASS or FAIL, the complete findings list, files written (if any), and the commit hash (if any).
+
+### plan
+
+graph is controlling. You are node 5 (`plan`), attempt 1, of the build half of graph run `graph-20261014-034941`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/card-search-and-send-pill-work`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-map-out` skill (Skill tool) in graph mode on `PRD/work/card-search-and-send-pill/`. The README's `## Preparation gate` records `Quality-check: PASS` (driver-written, 2026-10-13 re-grade); verify it there before writing anything. Slice the approved `DESIGN-BRIEF.md` and the finalized `GATE-QUESTIONS.md` (REQ-002, REQ-212, REQ-206 accepted) into `GAMEPLAN.md`, lettered `slice-<letter>.md` docs, and one `slice-<letter>.criteria.json` beside each slice with every criterion `false` and an evidence block, as the skill and its reference prescribe. Each slice that changes product behavior must say that `build` applies its share of the accepted `PRD/sections/` amendments by intent, together with the code, in the same PR. Set `STATUS.active` as the only marker and move the `PRD/work/STATUS.md` board row to match (remove from the old section, add to the new one).
+
+Placement rule: `node 8` deletes `PRD/work/card-search-and-send-pill/` before the merge, so no deliverable (code, test, doc, screenshot meant to ship) may be planned to land inside `PRD/work/`. Disposable verification captures may go under `PRD/work/card-search-and-send-pill/.playwright-mcp/`.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: the slices (letter, one plain sentence each, files they touch), the criteria count per slice, files written, and the commit hash.
 
 ## Instruction ledger
 

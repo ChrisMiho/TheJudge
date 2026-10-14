@@ -6,7 +6,7 @@ Two player-facing defects from `PRD/ideasForLater/hardtofind/hardtosearch.md`: c
 
 Refined 2026-10-13: `DESIGN-BRIEF.md` (scope, decisions, assumptions) and `GATE-QUESTIONS.md` (amendments to REQ-002, REQ-212, REQ-206; no new stable ID; no blocker).
 
-Quality-check PASS 2026-10-13. Next: the owner answers `GATE-QUESTIONS.md` in the docs PR, then merges it; `graph-implement` builds it.
+Quality-check PASS 2026-10-13. Owner accepted all three gate questions (docs PR #304, merged). Build half claimed on `thejudge-auto/card-search-and-send-pill-work`; re-graded PASS after gate resolution.
 
 ## Autonomous metadata
 
@@ -18,10 +18,9 @@ Quality-check PASS 2026-10-13. Next: the owner answers `GATE-QUESTIONS.md` in th
 - Checked artifact: `PRD/work/card-search-and-send-pill/DESIGN-BRIEF.md`
 - Findings: none
 
-Graded 2026-10-13 (graph node `gate-qc`, attempt 1) together with `GATE-QUESTIONS.md`, `evidence/measurements.md`, `IDEA.md` and `intake/`. Checked against current `PRD/sections/` and the code:
+Re-graded 2026-10-13 (graph node `gate-qc`, build half `graph-20261014-034941`, attempt 1) after gate resolution, with the finalized `GATE-QUESTIONS.md` (REQ-002, REQ-212, REQ-206 accepted), `evidence/measurements.md`, `IDEA.md` and `intake/`, against `PRD/sections/` on the branch (cut from `origin/main` `f84e22b1`):
 
-- Diff anchors match: REQ-002 (line 19), REQ-206 ring criterion (5331), REQ-212 criteria (5534, 5539) and Notes, all as quoted.
-- Code claims hold: `normalize` in `lib/search.ts` has one other caller (`components/trade/oracleSearch.ts`); the list is capped at 3 and 8; In-depth details' Cards step passes `NO_MATCH_COPY` to its picker; Ask a Question's threshold is set by `minQueryLength` (REQ-167).
-- Corpus check: after accent stripping, no card name holds a non-decomposing non-ASCII letter (no Æ or ß case), so the accent wording is complete.
-- Amendment set is enumerated by quoted grep with a disposition per hit; no new stable ID, no DEC, no screen-layout row needed (no new screen).
-- Open verdict slots on the three gate questions are expected at this stage and are not findings.
+- All five diff anchors still match `PRD/sections/functional-requirements.md` verbatim (REQ-002 line 19; REQ-206 ring criterion 5331 and Notes insertion after 5361; REQ-212 criteria 5534, 5539 and Notes after the slice K note).
+- Cited REQ-001, REQ-065, REQ-167 content and the `system-map.md` Fuzzy autocomplete heading (line 260) are real; the Trade Balancer `Lives in` omission of `oracleSearch.ts` matches the brief's build-time amendment row.
+- No new stable ID, DEC or screen-layout row; nothing guessed into scope.
+- Two cosmetic, non-blocking notes: the REQ-002 gate text calls the list-length line the fourth new line of the diff (it is the fifth `+` line, the fourth added criterion); the `DESIGN-BRIEF.md` header still asks the owner to answer the gate questions.
