@@ -72,6 +72,7 @@ In-depth details' Cards step keeps showing nothing on a miss.
 
 - Verdict: accept
 - Reason: owner, 2026-10-13: "accept all three"
+- Owner amendment at build, 2026-10-13: long dashes (U+2010 to U+2015, such as the em dash in Human—Time Lord Meta-Crisis) count as a space, the same as a hyphen, so the rule reads: a hyphen, a dash or a slash counts as a space. Asked in session after review found the build already treated dashes that way; recorded in `GRAPH-RUN.md` `## Instruction ledger` (node build). Every other clause stands as accepted. A4's 7,052 floor is measured with a typed query that also treats dashes as spaces.
 
 ## REQ-212 — without a microphone, the send pill is one round arrow
 

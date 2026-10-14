@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill`
 - Branch: `thejudge-auto/card-search-and-send-pill-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-031636/`
-- Current node: `build` (attempt 2)
+- Current node: `review` (attempt 2)
 - Next action: `/graph-implement PRD/work/card-search-and-send-pill/`
 
 ## Node ledger
@@ -23,6 +23,7 @@
 | 5 | plan | sonnet | ok | `0 → 11` | commit `0a7b1fe0`: `GAMEPLAN.md`, `slice-a-card-search-punctuation.md` + `slice-a.criteria.json` (8 criteria, all false), `slice-b-no-mic-send-pill.md` + `slice-b.criteria.json` (7, all false); `STATUS.active` only marker; board row under active; every file the slices name exists on the branch; no deliverable planned inside `PRD/work/`; process note: node edited with Bash heredocs instead of Write/Edit (self-reported; diff limited to the package and `PRD/work/STATUS.md`) | 2026-10-13 |
 | 6 | build | sonnet | ok | `0 → 90` | PR https://github.com/ChrisMiho/TheJudge/pull/305 (`thejudge-auto/card-search-and-send-pill-work → main`, OPEN, READY title, registration marker in body); head `d2b12df3` = `origin/thejudge-auto/card-search-and-send-pill-work` (slice A `2f8d5270`); 22 files vs `9aac0d23` (12 frontend, 3 `PRD/sections/`, package + board); `slice-a.criteria.json` 8/8 and `slice-b.criteria.json` 7/7 true — self-reported (hook evidence log does not see worktree criteria files), evidence quoted in slice status notes; node reports `npm run quality:check` exit 0 and 1595 frontend tests passing; launch-checkout `git status --porcelain` identical before/after (empty); `classifyBuildWrites` over every reported path → `outcome ok, outside []`; worktree porcelain empty; `STATUS.ship-ready` only marker | 2026-10-13 |
 | 7 | review | opus | failed | `0 → 34` | CHANGES REQUIRED (loop 1 of 2 to `build`): Important 1 — `search.ts:18` maps U+2010–U+2015 dashes to a space beyond accepted REQ-002 (hyphen or slash only), A4 first-two-words 7,051 of 7,288 vs floor 7,052 on the refinement method (miss: Human—Time Lord Meta-Crisis); Important 2 — threshold counted on raw text at `TradeSide.tsx:99` and `QuickLookupApp.tsx:376` (REQ-002: counted after the rule), so `,` / `,,,` open a no-match panel; Minor — Escape inert in Cards step while no-match shows (`ZoneCollectionStep.tsx:303-306, 419-424`), 60 ms no-match flash, tabs/NBSP dropped not spaced (`search.ts:19-20`), REQ-002 note build numbers on non-refinement denominators; slice B approved; reviewer re-ran frontend suite 148 files / 1,595 tests exit 0; driver confirmed both Important findings against the code and `GATE-QUESTIONS.md` lines 39, 41 | 2026-10-13 |
+| 6 | build (attempt 2) | sonnet | ok | `0 → 61` | commit `cf3065e7` = `origin/thejudge-auto/card-search-and-send-pill-work` (PR #305): owner amendment relayed mid-node (long dashes U+2010–U+2015 count as a space; instruction ledger row, `GATE-QUESTIONS.md` REQ-002 amendment line) — `normalize` keeps `[-/‐-―]` → space and now collapses whitespace before dropping marks (`search.ts:13-23`); panel gate `normalize(...).length` at `TradeSide.tsx:99` and `QuickLookupApp.tsx:376`; Escape closes the Cards step search while no-match shows (`ZoneCollectionStep.tsx`); tests added in `search.test.ts`, `TradeSide.test.tsx`, `QuickLookupApp.test.tsx`, `ZoneCollectionStep.test.tsx`; A4 refinement method: whole name 7,324/7,324, first-two-words 7,052/7,288 dash-as-space (7,051 prototype; only difference Human—Time Lord Meta-Crisis); REQ-002 wording and note updated; node reports 1,599 frontend tests and `npm run quality:check` exit 0; criteria 8/8 + 7/7 true (self-reported); launch porcelain identical (empty); `classifyBuildWrites` → `ok, outside []`; old-rule draft reverted before any commit (node report) | 2026-10-13 |
 
 ## Gate verdicts
 
@@ -242,6 +243,69 @@ Verify directly; spawn no subagents or forks, and do no sleeping or polling loop
 
 Report back plainly: each fix with the file and line changed and its test, the A4 figures with the command you ran, the test and quality-check results, the final commit hash, and the complete list of every file path you wrote or created (absolute paths).
 
+### build (attempt 2) — owner amendment relayed mid-node
+
+Sent to the running attempt-2 builder by SendMessage after the owner, in session on 2026-10-13, decided to make the long-dash change part of this PR (instruction ledger row, node build).
+
+Owner decision, replaces fix 1's dash rule: long dashes now count as a space, the same as hyphens, in this PR.
+
+graph is controlling. This is the driver relaying a product decision the owner made in the session on 2026-10-13: make the long-dash change part of this PR. It supersedes the dash half of fix 1 in your dispatch. Everything else in your dispatch stands.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill
+
+Revised fix 1, as behavior:
+- In `normalize`, the ASCII hyphen-minus, the slash, and every Unicode dash U+2010 to U+2015 (hyphen, non-breaking hyphen, figure dash, en dash, em dash, horizontal bar) become a space. Keep the existing `[-/‐-―]` mapping, or an equivalent. Do not narrow it to `[-/]`.
+- The whitespace half of fix 1 stands: tab and non-breaking space count as a space (collapse whitespace before dropping other characters). Add tests for the tab case and for the em dash: `human time lord` must find Human—Time Lord Meta-Crisis.
+
+REQ-002 wording: in `PRD/sections/functional-requirements.md`, the REQ-002 rule now reads that a hyphen, a dash or a slash counts as a space (an amendment to the accepted text, by the owner, 2026-10-13). Keep every other clause as accepted. Say in the REQ-002 note that the owner widened hyphen to include long dashes on 2026-10-13.
+
+Revised fix 4 (A4): the 7,052 floor came from refinement's prototype rule, which dropped dashes. That is why the em-dash card counts as one miss under the new rule; the check was built on the old rule. Run the refinement method in `evidence/measurements.md` section 1 (same name set, underscore names left out, denominators 7,324 and 7,288), with one change: the simulated typed query treats dashes as spaces too, matching the owner's rule. Report the first-two-words count for both query generators (prototype dash-dropping and dash-as-space). The criterion passes when whole-name is 7,324 of 7,324 and the dash-as-space first-two-words count is at or above 7,052, with any difference from the prototype count named card by card. Write those figures into the REQ-002 note and into slice A's status notes, saying which method each figure uses.
+
+Do not edit `GRAPH-RUN.md` or `GATE-QUESTIONS.md`; the driver records the owner's amendment there. Include in your report what you had already changed under the old instruction and whether you reverted any of it.
+
+### review (attempt 2)
+
+graph is controlling. You are node 7 (`review`), attempt 2, of the build half of graph run `graph-20261014-034941`: a fresh-context, no-write reviewer.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill
+
+You hold no write tools and must create, modify or delete nothing: no file writes through Bash either, no git commits, no pushes, no PR comments. Reading, searching, `git diff`/`git log`/`git show`, and running tests are allowed.
+
+What to review: the code PR https://github.com/ChrisMiho/TheJudge/pull/305, code head `cf3065e7` (the driver's ledger commit sits on top) on branch `thejudge-auto/card-search-and-send-pill-work`. The whole PR is `git diff 9aac0d23 cf3065e7`; the fixes since the first review are `git diff d2b12df3 cf3065e7`. Read the slice docs `PRD/work/card-search-and-send-pill/slice-a-card-search-punctuation.md` and `slice-b-no-mic-send-pill.md`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, and `evidence/measurements.md`.
+
+Owner decision you must treat as product truth, not a finding: on 2026-10-13, after the first review, the owner amended REQ-002 so that long dashes (U+2010 to U+2015, such as the em dash) count as a space, the same as a hyphen; the rule now reads that a hyphen, a dash or a slash counts as a space. It is recorded under REQ-002 in `GATE-QUESTIONS.md` and in the `GRAPH-RUN.md` instruction ledger. A4's 7,052 floor is now measured with a simulated typed query that also treats dashes as spaces.
+
+The first review found, and this pass was asked to fix: (1) dash and whitespace handling in `normalize` (whitespace such as a tab or non-breaking space must count as a space); (2) the suggestion-panel threshold at `TradeSide.tsx` and `QuickLookupApp.tsx` must be counted on `normalize(typed text).length`, so `,` in Ask a Question, or `,,,` or `ur,` in Trade Balancer, opens no panel and no message; (3) Escape in the In-depth Cards step must close the search while the no-match message shows, as before this PR; (4) A4 re-run on the refinement method with the REQ-002 note restated on it.
+
+Rubric: each slice's own acceptance criteria, quoted here.
+
+Slice A:
+- A1 `search.test.ts` covers `urborg tomb` and `urborg t` returning Urborg, Tomb of Yawgmoth first; `jace the mind`, `atraxa praetors`, `will o the wisp`, `lim dul`, `fire ice` finding their card; `sol ring`, `lightning bolt`, `urborg`, `urborg, tomb`, `lim-dûl` unchanged; `_____` still finding the blank-named card; `,,,` reaching no search
+- A2 `oracleSearch.test.ts` covers the same queries on the Trade Balancer search with its list of eight, and imports `normalize` rather than copying it
+- A3 `ZoneCollectionStep.test.tsx` shows 'No matching card found' at threshold with no match
+- A4 Corpus re-run: first-two-words recall at or above 7,052 of 7,288 and whole-name 7,324 of 7,324 (method in `evidence/measurements.md` section 1; typed query treats dashes as spaces per the owner amendment)
+- A5 Frontend test suite passes
+- A6 REQ-002 in `PRD/sections/functional-requirements.md` carries the accepted amendment (as amended by the owner for dashes) and `system-map.md` names the rule and `oracleSearch.ts`
+- A7 Browser: In-depth details Cards step shows Urborg, Tomb of Yawgmoth for `urborg tomb` and 'No matching card found' for a nonsense name; Ask a Question and Trade Balancer also find it
+- A8 Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/card-search-and-send-pill/.playwright-mcp/`
+
+Slice B (approved at the first review; check only that the fixes did not regress it):
+- B1 `ComposerPill.test.tsx` without the speech API: one 44px round send control, wrapper 44px, no microphone control; with the API: unchanged
+- B2 Component tests for each of the four boxes without the speech API (FollowUpComposer, EnrichmentStep, quick-lookup, conversation workspace) show no empty half
+- B3 Ring path without speech is a circle starting at the top, clockwise; with speech the stadium path is unchanged
+- B4 Frontend test suite passes
+- B5 REQ-212 and REQ-206 in `PRD/sections/functional-requirements.md` and the `quick-lookup/README.md` ring line carry the accepted amendments
+- B6 Browser with both speech objects removed before load: in all four boxes the send control and its wrapper are each 44px wide, ring circles the arrow; with speech the pill is 88x44 mic left, arrow right; screenshots recorded
+- B7 Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/card-search-and-send-pill/.playwright-mcp/`
+
+Distrust the `true` marks in the criteria files: they are self-reported. Re-verify independently: run `npm --workspace apps/frontend run test`; re-run the A4 corpus count yourself on the real `apps/frontend/public/data/cardMetadata.json` with the shipped `normalize`; confirm each of the four fixes in code and in a test; and compare the REQ-002 edit against the accepted `GATE-QUESTIONS.md` diff plus the owner's dash amendment, by intent.
+
+Severity rule: flag only gaps against these stated criteria or correctness defects that affect them. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important and never loops the run back to `build`; list such items as Minor at most.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: a verdict (APPROVE, or CHANGES REQUIRED), then each finding with severity (Critical, Important, Minor), the criterion it breaks, file and line, and the evidence; then what you independently re-ran and its result.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -249,3 +313,4 @@ Report back plainly: each fix with the file and line changed and its test, the A
 | "i want to fix @PRD/ideasForLater/hardtofind/hardtosearch.md" | answered-once | shape | — |
 | "the button that is broken is the voice button in the question box, it just doesnt show" | answered-once | shape | — |
 | "so the issue is that the button looks like its there, but the text/icon on the box isnt there, is there anyway we can confirm this on our end?" | answered-once | shape | — |
+| "make the long-dash change part of this PR" | answered-once | build | — |
