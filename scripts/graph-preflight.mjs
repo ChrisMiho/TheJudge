@@ -291,6 +291,12 @@ export function parseLockFile(contents) {
  */
 export const LOCK_FRESH_MS = 30 * 60 * 1000
 
+// Every held-lock refusal ends with the way to run a second idea at the same
+// time: a new session rooted in its own worktree (REQ-170).
+export const CONCURRENT_HINT =
+  "To work on another idea at the same time, open a session in its own " +
+  "worktree from a terminal: npm run graph:session -- <name>"
+
 /**
  * What a run should do about the lock it found — the whole decision, as a pure
  * function over the file's contents.
@@ -326,7 +332,7 @@ export function classifyLock({ contents, isAlive = isPidAlive, now = Date.now() 
         `graph run lock at ${LOCK_PATH} is held by ${who}` +
         `${holder.startedAt ? `, started ${holder.startedAt}` : ""}. ` +
         `Refusing: two runs cannot share one root. Wait for that run ` +
-        `to reach a terminal state, which releases the lock.`
+        `to reach a terminal state, which releases the lock. ${CONCURRENT_HINT}`
     }
   }
 
@@ -344,7 +350,7 @@ export function classifyLock({ contents, isAlive = isPidAlive, now = Date.now() 
         `— within the freshness window, so it is treated as held even though its ` +
         `recorded process has exited (a preflight subagent exits early in a run it ` +
         `does not own). Refusing: two runs cannot share one root. For a concurrent ` +
-        `idea, launch it from a separate checkout.`
+        `idea: ${CONCURRENT_HINT}`
     }
   }
 

@@ -107,6 +107,13 @@ Without that flag the profile is inert: nothing loads it, nothing detects its
 absence, and every boundary it encodes falls back to convention. Launch graph
 runs with it.
 
+To run a second idea while one is already going, open a session in its own
+worktree from a terminal; it loads the profile for you:
+
+```bash
+npm run graph:session -- <name>
+```
+
 Full contract, node table, model map, and boundaries:
 `PRD/instructions/graph-workflow-contract.md`.
 
