@@ -1,6 +1,7 @@
 // Free, local scorer (no API calls, no LLM) for the rule search: how many of the rules that decide a
 // ruling reach the answering model's top ten. Ported from the probe at
-// PRD/work/probe-prompt-format-tuning/runs/search-trained-embedder/score-trained.mjs, and run through the
+// PRD/work/probe-prompt-format-tuning/runs/search-trained-embedder/score-trained.mjs (removed 2026-10-14;
+// see git history at 16d51806), and run through the
 // SHIPPED search code (`retrieveRulesForQuery` with the shipped query builder and per-card slots), never a
 // reimplementation of it. Prints counts only: never a question, an id, an answer or a card.
 //

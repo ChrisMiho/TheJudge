@@ -1,9 +1,0 @@
-questions: suite 1181, corpus 415; skipped 3
-citations: suite 2469, corpus 494; positives in the rule index: 2963
-groups 1570 (largest 3); fold citation load 592 / 592 / 592 / 591 / 596
-  fold 0: suite 243 q, corpus 92 q, hard25 1
-  fold 1: suite 236 q, corpus 93 q, hard25 6
-  fold 2: suite 224 q, corpus 76 q, hard25 10
-  fold 3: suite 233 q, corpus 86 q, hard25 3
-  fold 4: suite 245 q, corpus 68 q, hard25 5
-rule-book examples: 277 pairs over 215 rules

@@ -1,3 +1,0 @@
-prod q8: median 2.7 ms/query (200 single-text embeds)
-F-foldall q8: median 2.8 ms/query; size 23.0 MB (fp32 90.4 MB)
-F-foldall q8 vs fp32: mean cosine docs 0.9961, queries 0.9957; meaning top-10 overlap 93.3% over 200 example queries
