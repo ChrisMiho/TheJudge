@@ -1,12 +1,13 @@
 # Graph run — card-search-and-send-pill
 
-- Run ID: `graph-20261014-031636`
+- Run ID: `graph-20261014-031636` (spec-forming half); build half `graph-20261014-034941`
 - Profile: `loaded (env sentinel)` — printed by `npm run graph:preflight` at node 1
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/card-search-and-send-pill` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-card-search-and-send-pill` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill` by the build half's claim)
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill`
+- Branch: `thejudge-auto/card-search-and-send-pill-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-031636/`
-- Current node: `owner-action`
+- Current node: `gate-review`
 - Next action: `/graph-implement PRD/work/card-search-and-send-pill/`
 
 ## Node ledger

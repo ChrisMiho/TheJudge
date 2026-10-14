@@ -10,7 +10,7 @@ Quality-check PASS 2026-10-13. Next: the owner answers `GATE-QUESTIONS.md` in th
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/card-search-and-send-pill
+- Autonomous base: origin/main
 
 ## Preparation gate
 
