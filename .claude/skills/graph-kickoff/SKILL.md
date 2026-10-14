@@ -49,8 +49,8 @@ works. The owner's checkout is never switched, committed to, or stashed.
 **Running ideas in parallel.** One after another needs nothing: a parked run
 holds no lock and the checkout was never touched, so `/graph-kickoff` runs
 again while the first idea's docs PR waits. Two at the same moment need two
-sessions rooted in two checkouts — `graph-preflight`'s `## Running two ideas at
-once` has the `git worktree add --detach` recipe. Never fan several ideas out
+sessions rooted in two checkouts — `npm run graph:session -- <name>`, run from a
+terminal, opens one (`graph-preflight`'s `## Running two ideas at once`). Never fan several ideas out
 inside one root: the hook counts every session's tool calls in a root against
 the live node's cap.
 

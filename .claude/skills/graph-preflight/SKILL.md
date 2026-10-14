@@ -182,12 +182,20 @@ again while the first idea's docs PR waits.
 **Two ideas at the same moment** need two sessions rooted in two checkouts,
 because the hook counts every session's tool calls in one root against the
 live node's cap and applies the run's denies to any session in that root.
-Create a throwaway session worktree and launch the second session there:
+From a terminal, open the second session in its own worktree:
 
 ```
-git worktree add --detach .worktrees/session-<name> origin/main
-# launch the second session with that directory as its root, then /graph-kickoff
+npm run graph:session -- <name>
+# then /graph-kickoff inside the session it opens
 ```
+
+`scripts/graph-session.mjs` fetches `origin/main`, runs
+`git worktree add --detach .worktrees/session-<name> origin/main` under the
+main checkout, and starts `claude --settings .claude/graph-profile.json` with
+that directory as its root. It does nothing else: no kickoff, no lock. The
+worktree outlives the session; remove it with
+`git worktree remove .worktrees/session-<name>` when done. A held-lock refusal
+prints this command.
 
 Inside it, preflight sees a linked worktree and works in place from the
 detached HEAD (the in-place shape above). `--detach` is deliberate: a hand-made

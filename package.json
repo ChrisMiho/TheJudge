@@ -61,7 +61,8 @@
     "skills:ai-sync": "node scripts/sync-agent-skills.mjs",
     "graph:preflight": "node scripts/graph-preflight.mjs",
     "graph:digest": "node scripts/graph-digest.mjs",
-    "graph:prune": "node scripts/graph-prune.mjs"
+    "graph:prune": "node scripts/graph-prune.mjs",
+    "graph:session": "node scripts/graph-session.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

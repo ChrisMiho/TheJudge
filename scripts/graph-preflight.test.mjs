@@ -396,6 +396,8 @@ test("graph-preflight - lock - a live holder refuses and names slug, run id, and
   assert.match(result.message, /run id graph-20260818-120000/)
   assert.match(result.message, /pid 4242/)
   assert.match(result.message, /Refusing: two runs cannot share one root/)
+  // A refusal points at the way to run a second idea alongside (REQ-170).
+  assert.match(result.message, /npm run graph:session -- <name>/)
 })
 
 test("graph-preflight - lock - a dead holder past the freshness window is reported stale, never silently stolen", () => {
@@ -424,7 +426,7 @@ test("graph-preflight - lock - a fresh lock is held even when its recorded proce
   const result = classifyLock({ contents: fresh, isAlive: () => false, now })
   assert.equal(result.state, "held")
   assert.match(result.message, /Refusing: two runs cannot share one root/)
-  assert.match(result.message, /separate checkout/)
+  assert.match(result.message, /npm run graph:session -- <name>/)
 })
 
 test("graph-preflight - lock - the freshness window has an edge: dead-pid held just inside, stale just past", () => {
