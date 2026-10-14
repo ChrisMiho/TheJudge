@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill`
 - Branch: `thejudge-auto/card-search-and-send-pill-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-031636/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/card-search-and-send-pill/`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 5 | gate-review | sonnet | ok | `0 → 14` | build half run `graph-20261014-034941`: kickoff worktree removed clean (`git worktree remove`); claim commit `6cfd3493` on `thejudge-auto/card-search-and-send-pill-work` cut from `origin/main` `f84e22b1` (docs PR #304 merge), pushed; lock taken from the launch root; universal canary `rm -rf .worktrees/.graph-canary-nonexistent` and graph canary `nohup true` both denied; `graph-gate-review` commit `607591e5`: 3 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-13 |
 | 4 | gate-qc | sonnet | ok | `0 → 9` | build-half re-grade PASS, findings none (two cosmetic non-blocking notes recorded); all five `GATE-QUESTIONS.md` anchors match `PRD/sections/functional-requirements.md` on `573ef8df`; node wrote nothing (porcelain empty, HEAD unchanged); driver rewrote `README.md` `## Preparation gate` | 2026-10-13 |
 | 5 | plan | sonnet | ok | `0 → 11` | commit `0a7b1fe0`: `GAMEPLAN.md`, `slice-a-card-search-punctuation.md` + `slice-a.criteria.json` (8 criteria, all false), `slice-b-no-mic-send-pill.md` + `slice-b.criteria.json` (7, all false); `STATUS.active` only marker; board row under active; every file the slices name exists on the branch; no deliverable planned inside `PRD/work/`; process note: node edited with Bash heredocs instead of Write/Edit (self-reported; diff limited to the package and `PRD/work/STATUS.md`) | 2026-10-13 |
+| 6 | build | sonnet | ok | `0 → 90` | PR https://github.com/ChrisMiho/TheJudge/pull/305 (`thejudge-auto/card-search-and-send-pill-work → main`, OPEN, READY title, registration marker in body); head `d2b12df3` = `origin/thejudge-auto/card-search-and-send-pill-work` (slice A `2f8d5270`); 22 files vs `9aac0d23` (12 frontend, 3 `PRD/sections/`, package + board); `slice-a.criteria.json` 8/8 and `slice-b.criteria.json` 7/7 true — self-reported (hook evidence log does not see worktree criteria files), evidence quoted in slice status notes; node reports `npm run quality:check` exit 0 and 1595 frontend tests passing; launch-checkout `git status --porcelain` identical before/after (empty); `classifyBuildWrites` over every reported path → `outcome ok, outside []`; worktree porcelain empty; `STATUS.ship-ready` only marker | 2026-10-13 |
 
 ## Gate verdicts
 
@@ -179,6 +180,45 @@ Criteria: the hook-side evidence log does not see this worktree's criteria files
 Verify directly; spawn no subagents or forks, and do no sleeping or polling loops. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>` (never `-A`, `--all` or `.`), then `git commit -m ...`, then `git push -u origin thejudge-auto/card-search-and-send-pill-work`. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: per slice, what a player now sees, the files changed, each criterion with its evidence, the PR URL, the final commit hash, and the complete list of every file path you wrote or created (absolute paths).
+
+### review
+
+graph is controlling. You are node 7 (`review`), attempt 1, of the build half of graph run `graph-20261014-034941`: a fresh-context, no-write reviewer.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill
+
+You hold no write tools and must create, modify or delete nothing: no file writes through Bash either, no git commits, no pushes, no PR comments. Reading, searching, `git diff`/`git log`/`git show`, and running tests are allowed.
+
+What to review: the code PR https://github.com/ChrisMiho/TheJudge/pull/305, which is `git diff 9aac0d23 d2b12df3` in that worktree (branch `thejudge-auto/card-search-and-send-pill-work`). Read the slice docs `PRD/work/card-search-and-send-pill/slice-a-card-search-punctuation.md` and `slice-b-no-mic-send-pill.md`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (REQ-002, REQ-212, REQ-206 accepted by the owner), and `evidence/measurements.md`.
+
+Rubric: each slice's own acceptance criteria, quoted here.
+
+Slice A:
+- A1 `search.test.ts` covers `urborg tomb` and `urborg t` returning Urborg, Tomb of Yawgmoth first; `jace the mind`, `atraxa praetors`, `will o the wisp`, `lim dul`, `fire ice` finding their card; `sol ring`, `lightning bolt`, `urborg`, `urborg, tomb`, `lim-dûl` unchanged; `_____` still finding the blank-named card; `,,,` reaching no search
+- A2 `oracleSearch.test.ts` covers the same queries on the Trade Balancer search with its list of eight, and imports `normalize` rather than copying it
+- A3 `ZoneCollectionStep.test.tsx` shows 'No matching card found' at threshold with no match
+- A4 Corpus re-run: first-two-words recall at or above 7,052 of 7,288 and whole-name 7,324 of 7,324 (method in `evidence/measurements.md` section 1)
+- A5 Frontend test suite passes
+- A6 REQ-002 in `PRD/sections/functional-requirements.md` carries the accepted amendment and `system-map.md` names the rule and `oracleSearch.ts`
+- A7 Browser: In-depth details Cards step shows Urborg, Tomb of Yawgmoth for `urborg tomb` and 'No matching card found' for a nonsense name; Ask a Question and Trade Balancer also find it
+- A8 Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/card-search-and-send-pill/.playwright-mcp/`
+
+Slice B:
+- B1 `ComposerPill.test.tsx` without the speech API: one 44px round send control, wrapper 44px, no microphone control; with the API: unchanged
+- B2 Component tests for each of the four boxes without the speech API (FollowUpComposer, EnrichmentStep, quick-lookup, conversation workspace) show no empty half
+- B3 Ring path without speech is a circle starting at the top, clockwise; with speech the stadium path is unchanged
+- B4 Frontend test suite passes
+- B5 REQ-212 and REQ-206 in `PRD/sections/functional-requirements.md` and the `quick-lookup/README.md` ring line carry the accepted amendments
+- B6 Browser with both speech objects removed before load: in all four boxes the send control and its wrapper are each 44px wide, ring circles the arrow; with speech the pill is 88x44 mic left, arrow right; screenshots recorded
+- B7 Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/card-search-and-send-pill/.playwright-mcp/`
+
+Distrust the `true` marks in `slice-a.criteria.json` and `slice-b.criteria.json`: they are self-reported by the builder. Re-verify independently: run `npm --workspace apps/frontend run test` yourself; read the `normalize` change and check each accepted REQ-002 rule (lower-case, accents folded, hyphen and slash to space, other non letter/digit/space/underscore characters dropped, spaces collapsed, underscore kept, thresholds counted after normalization, ranking and list lengths unchanged); confirm `oracleSearch.ts` shares the rule rather than copying it; read the ComposerPill and CSS change against REQ-212/REQ-206 for both the no-speech and speech paths; and compare each `PRD/sections/` edit against the accepted `GATE-QUESTIONS.md` diff by intent. The PNG captures under `.playwright-mcp/` are gitignored and present on disk; you may view them.
+
+Severity rule: flag only gaps against these stated criteria or correctness defects that affect them. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important and never loops the run back to `build`; list such items as Minor at most.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: a verdict (APPROVE, or CHANGES REQUIRED), then each finding with severity (Critical, Important, Minor), the criterion it breaks, file and line, and the evidence; then what you independently re-ran and its result.
 
 ## Instruction ledger
 
