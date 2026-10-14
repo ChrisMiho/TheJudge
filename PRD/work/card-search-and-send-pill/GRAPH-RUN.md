@@ -21,7 +21,7 @@
 ## Open gate
 
 - Question: answer `GATE-QUESTIONS.md` (`PRD/work/card-search-and-send-pill/GATE-QUESTIONS.md`), then merge to build — three verdict slots: REQ-002 (card search ignores punctuation and accents), REQ-212 (no-mic send pill is one round arrow), REQ-206 (budget ring starts at the top of that round arrow).
-- Evidence: gate-qc PASS (`7a75d962`); docs PR: (recorded below once opened).
+- Evidence: gate-qc PASS (`7a75d962`); docs PR: https://github.com/ChrisMiho/TheJudge/pull/304 (`thejudge-auto/card-search-and-send-pill → main`). Terminal state: PARKED.
 - Resume: the owner merges the docs PR; `graph-implement` (or `/graph-implement PRD/work/card-search-and-send-pill/`) builds it.
 
 ## Dispatch prompts
