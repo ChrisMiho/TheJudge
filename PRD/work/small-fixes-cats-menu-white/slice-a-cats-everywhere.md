@@ -1,6 +1,16 @@
 # Slice A — Cats Easter egg on every in-scope screen
 
-## Status: planned
+## Status: done
+
+### Status notes (evidence, self-reported; hook log does not see this worktree)
+
+- A1-A6: `npx vitest run src/App.brand-tap-egg.test.tsx` — 6 tests pass (nine/ten taps, cross-screen count, hold after switch incl. In-depth, Life Tracker none, fresh mount hidden, compareDocumentPosition placement on Ask a Question and Trade Balancer).
+- A7: `npx vitest run src/App.interaction-flows.presentation` — 12 passed (incl. the three cat tests).
+- A8: `grep -rnE "brandClickCount|setBrandClickCount|EMPTY_STATE_IMAGE_URL" src` finds nothing outside tests; the one picture source is `components/CatWizardPicture.tsx`, count in `lib/portal/brandTapContext.tsx`.
+- A9: `npm --workspace apps/frontend run test` — Test Files 150 passed, Tests 1615 passed. Four answered-state tests now query the title as a button (REQ-203: it is a tap target there).
+- A10: live (own dev server 127.0.0.1:5391): at 390x844 and 1440x900, ten taps on Ask a Question show 1 "Cat wizard" img; Trade Balancer 1; In-depth after switch 1; Life Tracker 0 imgs and 0 title buttons; reload clears. scrollHeight vs innerHeight: [844,844] and [900,900] on Ask and Trade at both widths (no page scroll). Captures `.playwright-mcp/a-{ask,trade}-{390,1440}.png`.
+- A11: REQ-203 block applied to `functional-requirements.md`, `in-depth/README.md`, `shared-chrome/README.md`.
+- A12: browser closed (`browser_close`), vite pid stopped with `kill`, `lsof -ti tcp:5391` returns nothing.
 
 ## Goal
 

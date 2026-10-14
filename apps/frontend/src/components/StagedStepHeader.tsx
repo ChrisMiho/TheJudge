@@ -1,13 +1,18 @@
 import { useContext, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { BrandMark } from "./BrandMark";
+import { CatWizardPicture } from "./CatWizardPicture";
+import { useBrandTaps } from "../lib/portal/brandTapContext";
 import { MockModeBanner } from "./MockModeBanner";
 import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
 import { PageShellHeaderSlotContext } from "./pageShellContext";
 import { PortalSlot } from "./portal/PortalSlot";
 
 type StagedStepHeaderProps = {
+  /** Overrides the session-wide tap count (REQ-203); unset, the title counts taps there. */
   onBrandClick?: () => void;
+  /** The loading placeholder: a plain heading that neither counts taps nor shows the picture. */
+  plainBrand?: boolean;
   historyTrigger?: ConversationHistoryTriggerDescriptor;
   /** REQ-215: an optional right-hand slot at `768px`+ — Trade Balancer's price
    * date, hidden below `768px` (where it moves under the title instead) so the
@@ -23,14 +28,21 @@ type StagedStepHeaderProps = {
  * shell's header slot, at the top edge of the page and outside the column's
  * padding, in the mockup's DOM order; with no shell above they render inline.
  */
-export function StagedStepHeader({ onBrandClick, historyTrigger, rightSlot }: StagedStepHeaderProps): JSX.Element | null {
+export function StagedStepHeader({
+  onBrandClick,
+  plainBrand = false,
+  historyTrigger,
+  rightSlot
+}: StagedStepHeaderProps): JSX.Element | null {
   const slot = useContext(PageShellHeaderSlotContext);
+  const taps = useBrandTaps();
+  const handleBrandClick = plainBrand ? undefined : (onBrandClick ?? taps?.onTap);
 
   const header = (
     <>
       <header className="app-header">
         <PortalSlot historyTrigger={historyTrigger} />
-        <BrandMark onClick={onBrandClick} />
+        <BrandMark onClick={handleBrandClick} />
         {rightSlot ? (
           <div className="hidden justify-self-end md:block">{rightSlot}</div>
         ) : (
@@ -38,6 +50,7 @@ export function StagedStepHeader({ onBrandClick, historyTrigger, rightSlot }: St
         )}
       </header>
       <MockModeBanner />
+      {!plainBrand && taps?.revealed && <CatWizardPicture />}
     </>
   );
 

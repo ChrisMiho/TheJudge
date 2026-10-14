@@ -221,7 +221,7 @@ describe("Answered-state layout integration", () => {
     // `.app-header` (brand + tagline, same as every other destination) plus its own
     // `.chat-head` "Ask a Question" — the old header that hid the tagline here alone is
     // retired.
-    expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "TheJudge" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
   });

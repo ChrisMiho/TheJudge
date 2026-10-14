@@ -51,7 +51,6 @@ import type {
 const RETRY_COOLDOWN_SECONDS = 13;
 const FLOW_LABEL = "In-Depth Question";
 const METADATA_URL = "/data/cardMetadata.json";
-const EMPTY_STATE_IMAGE_URL = "/assets/cats-homescreen.png";
 const MIN_PLAYERS = MIN_PLAYER_ROSTER_SIZE;
 const MAX_PLAYERS = MAX_PLAYER_ROSTER_SIZE;
 const DUEL_STARTING_LIFE_TOTAL = "20";
@@ -184,9 +183,6 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   const [zoneCardsByZone, setZoneCardsByZone] = useState<Partial<Record<ZoneId, ZoneCardItem[]>>>({});
   const [question, setQuestion] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [emptyStateImageFailed, setEmptyStateImageFailed] = useState(false);
-  const [brandClickCount, setBrandClickCount] = useState(0);
-  const showCatEasterEgg = brandClickCount >= 10;
   const [playersDetailsExpanded, setPlayersDetailsExpanded] = useState(false);
   const [secondaryDetailsExpanded, setSecondaryDetailsExpanded] = useState(false);
   const [displayNamesByPlayer, setDisplayNamesByPlayer] =
@@ -875,23 +871,9 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   if (flowStep === "game-context") {
     content = (
       <PageShell variant="narrow">
-        <StagedStepHeader onBrandClick={() => setBrandClickCount((c) => c + 1)} />
+        <StagedStepHeader />
         <section className="idq">
           {stationsRail}
-          {showCatEasterEgg && (
-            <div className="p-2 text-center">
-              {emptyStateImageFailed ? (
-                <p className="text-2xl font-semibold">Cat wizard</p>
-              ) : (
-                <img
-                  src={EMPTY_STATE_IMAGE_URL}
-                  alt="Cat wizard"
-                  onError={() => setEmptyStateImageFailed(true)}
-                  className="mx-auto w-56 max-w-full rounded-xl"
-                />
-              )}
-            </div>
-          )}
           {/* `in-depth-question.html`'s step 1: Players in game and Turn phase/Active player
               share one `.plate`, with `.plate-next` as the only way forward. */}
           <section className="idq-step" aria-label="Game context">

@@ -134,7 +134,7 @@ describe("Frontend - UI flare chat motion integration", () => {
     await clickDecryptStack(user);
 
     expect(await screen.findByText(inDepthAnswer)).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "TheJudge" })).toBeInTheDocument();
     // REQ-025 (amended): the player's own question — including the silent fallback — opens
     // the thread as the first visible bubble, before the assistant's answer.
     expect(screen.getByText("Resolve the stack")).toBeInTheDocument();
