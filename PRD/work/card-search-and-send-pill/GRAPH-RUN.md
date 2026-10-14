@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/card-search-and-send-pill` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-card-search-and-send-pill` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-031636/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/card-search-and-send-pill/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/card-search-and-send-pill` pushed (`git ls-remote` → `181b829f`) from `.worktrees/kickoff-card-search-and-send-pill`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261014-031636` | 2026-10-13 |
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/card-search-and-send-pill/` (IDEA.md, README.md, STATUS.ideation, intake/ ×3) committed `e8af34af`; board row in `PRD/work/STATUS.md` | 2026-10-13 |
+| 3 | define | opus | ok | `0 → 113` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-002, REQ-212, REQ-206 amendments; no blocker), `evidence/measurements.md`, `STATUS.refined` committed `0e7cb914`; no `PRD/sections/` or code diff vs `181b829f` | 2026-10-13 |
 
 ## Open gate
 
@@ -82,6 +83,20 @@ Apply the assumption ladder per question as it arises; decide nothing on the own
 Set the package status marker the skill prescribes (`STATUS.refined` when the brief is complete). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: outcome (ok/failed), files written, the stable IDs proposed (with one plain sentence each), the measurements you took, and the commit hash.
+
+### gate-qc
+
+graph is controlling. You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261014-031636`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-card-search-and-send-pill
+
+Work only inside that directory (the run's kickoff worktree, on branch `thejudge-auto/card-search-and-send-pill`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/work/card-search-and-send-pill/DESIGN-BRIEF.md`. Grade the brief together with `GATE-QUESTIONS.md` (the proposed amendments to REQ-002, REQ-212 and REQ-206, still unanswered by the owner — an unanswered verdict slot is expected at this stage, not a finding), `evidence/measurements.md`, `IDEA.md` and `intake/`, against current `PRD/sections/` truth and agent-readiness. Produce the PASS/FAIL report the skill prescribes, with the complete findings list on FAIL. Do not write a GAMEPLAN or slice docs, and do not edit `PRD/sections/` or code.
+
+Write the report and any status marker change the skill prescribes inside the package. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: PASS or FAIL, the complete findings list, files written, and the commit hash.
 
 ## Instruction ledger
 
