@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/small-fixes-cats-menu-white` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-225350/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff PRD/work/small-fixes-cats-menu-white/`
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/small-fixes-cats-menu-white` pushed (`git ls-remote` → `3664f1db`) from `.worktrees/kickoff-small-fixes-cats-menu-white`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261014-225350` | 2026-10-14 |
 | 2 | shape | sonnet | ok | `0 → 27` | `PRD/work/small-fixes-cats-menu-white/` (IDEA.md, README.md, STATUS.ideation, intake/owner-request.md) committed `1d28d20c`; board row in `PRD/work/STATUS.md`; staged intake copy deleted | 2026-10-14 |
 | 3 | define | opus | ok | `0 → 99` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113; no new IDs; no blockers), `evidence/measurements.md`, `STATUS.refined` committed `a709b4b6`; GATE-QUESTIONS.md present → product truth proposed, continue to gate-qc | 2026-10-14 |
+| 4 | gate-qc | sonnet | failed | `0 → 31` | FAIL 1 of 3 — `QUALITY-CHECK.md` committed `cc40503a`: four brief fixes (test pin scope, tokens.css selector split, first-paint assertion, two untestable criteria); GATE-QUESTIONS.md needs no change; `STATUS.refining`; loop to define | 2026-10-14 |
 
 ## Open gate
 
@@ -115,6 +116,26 @@ Check in particular: every claim the brief makes about current code or requireme
 Produce the PASS/FAIL report the skill prescribes and set the status marker it prescribes on FAIL (`STATUS.refining`); leave `STATUS.refined` on PASS. Do not edit the brief, GATE-QUESTIONS.md, `PRD/sections/`, or any code. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: PASS or FAIL, the complete findings list (none if PASS), the report path, and the commit hash if you committed.
+
+### define (attempt 2)
+
+graph is controlling. You are node 3 (`define`), attempt 2, of graph run `graph-20261014-225350`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white
+
+Work only inside that directory (the run's kickoff worktree, on branch `thejudge-auto/small-fixes-cats-menu-white`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-refinement` skill (Skill tool) in graph mode on `PRD/work/small-fixes-cats-menu-white/` to resolve the quality-check FAIL. Read `QUALITY-CHECK.md` and the `## Preparation gate` section of the package `README.md` first; they list four findings, all fixable in `DESIGN-BRIEF.md`. The quality check found the proposed product truth in `GATE-QUESTIONS.md` sound, so change it only if a fix genuinely requires it (and if you do, keep every block in the contract's format with blank Verdict and Reason slots).
+
+Fix each finding in the brief, verifying against the files rather than the report's word:
+1. Name the whole default-palette test in `apps/frontend/src/lib/theme/palettes.test.ts` (lines 76-80, including the blue-name assertion and the test title) and the Blue-fallback test title at `App.mtg-color-themes.test.tsx:171` as things the build changes.
+2. State that the combined `:root, [data-profile="blue"]` selector in `tokens.css` is split: `[data-profile="blue"]` keeps every Blue value (including `--motif` and `--wash-tint`) and `:root` takes White's.
+3. Add an automated first-paint check (the `:root` tokens, the theme-color tag and the favicon fill equal White's values), and record the hard-coded hex in `index.html` as a deliberate placeholder exception to the no-hard-coded-per-profile-hex rule in REQ-219/REQ-216.
+4. Make the two flagged acceptance criteria testable: an automated assertion that the cats picture sits directly under the header on the non-Game screens, and for the menu scrollbar the automated form (a stylesheet assertion that the right-edge line no longer overhangs the tray and that the tray does not scroll sideways), keeping the live 390×844 and 1440×900 measurement as the verification step.
+
+Apply the assumption ladder per question as it arises; decide nothing on the owner's behalf that the genuine-blocker test reserves for them. Do not edit `PRD/sections/` or any code. Set `STATUS.refined` (replacing `STATUS.refining`; exactly one marker), the README status line, and the board row in `PRD/work/STATUS.md` as the skill prescribes when the brief is complete. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: outcome (ok/failed), how each finding was resolved (one line each), whether GATE-QUESTIONS.md changed, and the commit hash.
 
 ## Instruction ledger
 
