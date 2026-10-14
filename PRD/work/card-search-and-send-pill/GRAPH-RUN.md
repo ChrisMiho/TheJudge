@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill`
 - Branch: `thejudge-auto/card-search-and-send-pill-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-031636/`
-- Current node: `review` (attempt 2)
+- Current node: `close`
 - Next action: `/graph-implement PRD/work/card-search-and-send-pill/`
 
 ## Node ledger
@@ -24,6 +24,7 @@
 | 6 | build | sonnet | ok | `0 → 90` | PR https://github.com/ChrisMiho/TheJudge/pull/305 (`thejudge-auto/card-search-and-send-pill-work → main`, OPEN, READY title, registration marker in body); head `d2b12df3` = `origin/thejudge-auto/card-search-and-send-pill-work` (slice A `2f8d5270`); 22 files vs `9aac0d23` (12 frontend, 3 `PRD/sections/`, package + board); `slice-a.criteria.json` 8/8 and `slice-b.criteria.json` 7/7 true — self-reported (hook evidence log does not see worktree criteria files), evidence quoted in slice status notes; node reports `npm run quality:check` exit 0 and 1595 frontend tests passing; launch-checkout `git status --porcelain` identical before/after (empty); `classifyBuildWrites` over every reported path → `outcome ok, outside []`; worktree porcelain empty; `STATUS.ship-ready` only marker | 2026-10-13 |
 | 7 | review | opus | failed | `0 → 34` | CHANGES REQUIRED (loop 1 of 2 to `build`): Important 1 — `search.ts:18` maps U+2010–U+2015 dashes to a space beyond accepted REQ-002 (hyphen or slash only), A4 first-two-words 7,051 of 7,288 vs floor 7,052 on the refinement method (miss: Human—Time Lord Meta-Crisis); Important 2 — threshold counted on raw text at `TradeSide.tsx:99` and `QuickLookupApp.tsx:376` (REQ-002: counted after the rule), so `,` / `,,,` open a no-match panel; Minor — Escape inert in Cards step while no-match shows (`ZoneCollectionStep.tsx:303-306, 419-424`), 60 ms no-match flash, tabs/NBSP dropped not spaced (`search.ts:19-20`), REQ-002 note build numbers on non-refinement denominators; slice B approved; reviewer re-ran frontend suite 148 files / 1,595 tests exit 0; driver confirmed both Important findings against the code and `GATE-QUESTIONS.md` lines 39, 41 | 2026-10-13 |
 | 6 | build (attempt 2) | sonnet | ok | `0 → 61` | commit `cf3065e7` = `origin/thejudge-auto/card-search-and-send-pill-work` (PR #305): owner amendment relayed mid-node (long dashes U+2010–U+2015 count as a space; instruction ledger row, `GATE-QUESTIONS.md` REQ-002 amendment line) — `normalize` keeps `[-/‐-―]` → space and now collapses whitespace before dropping marks (`search.ts:13-23`); panel gate `normalize(...).length` at `TradeSide.tsx:99` and `QuickLookupApp.tsx:376`; Escape closes the Cards step search while no-match shows (`ZoneCollectionStep.tsx`); tests added in `search.test.ts`, `TradeSide.test.tsx`, `QuickLookupApp.test.tsx`, `ZoneCollectionStep.test.tsx`; A4 refinement method: whole name 7,324/7,324, first-two-words 7,052/7,288 dash-as-space (7,051 prototype; only difference Human—Time Lord Meta-Crisis); REQ-002 wording and note updated; node reports 1,599 frontend tests and `npm run quality:check` exit 0; criteria 8/8 + 7/7 true (self-reported); launch porcelain identical (empty); `classifyBuildWrites` → `ok, outside []`; old-rule draft reverted before any commit (node report) | 2026-10-13 |
+| 7 | review (attempt 2) | opus | ok | `0 → 35` | APPROVE, no Critical or Important; all four fixes confirmed in code and test; REQ-002 matches the accepted diff plus the owner dash amendment (`GATE-QUESTIONS.md:75`); slice B unchanged since `d2b12df3`; reviewer re-ran `npm --workspace apps/frontend run test` (148 files, 1,599 tests, exit 0), `typecheck` exit 0, eslint on 8 changed files exit 0, its own A4 count on `cardMetadata.json` → whole name 7,324/7,324, first-two-words 7,052/7,288; Minor only: A7 captures predate `cf3065e7` (behaviours unchanged), no NBSP unit test (verified on real list), 60 ms no-match flash, prettier drift outside `format:check` scope; worktree clean, HEAD `11f47a48` unchanged | 2026-10-13 |
 
 ## Gate verdicts
 
@@ -305,6 +306,22 @@ Severity rule: flag only gaps against these stated criteria or correctness defec
 Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: a verdict (APPROVE, or CHANGES REQUIRED), then each finding with severity (Critical, Important, Minor), the criterion it breaks, file and line, and the evidence; then what you independently re-ran and its result.
+
+### close
+
+graph is controlling. You are node 8 (`close`), attempt 1, of the build half of graph run `graph-20261014-034941`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill
+
+Shared branch: `thejudge-auto/card-search-and-send-pill-work`, code PR https://github.com/ChrisMiho/TheJudge/pull/305 (open, into `main`, registration marker `thejudge-auto:v1:registered:card-search-and-send-pill` in its body). Work only inside that worktree; never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-cleanup` skill (Skill tool) in graph mode on `PRD/work/card-search-and-send-pill/` (`STATUS.ship-ready`), on the PR-ready path: on the code branch, before the owner merges. Review approved on attempt 2 with Minor findings only (recorded in `GRAPH-RUN.md`). Build already applied the durable `PRD/sections/` truth (REQ-002 as amended by the owner for long dashes on 2026-10-13, REQ-212, REQ-206, `system-map.md`, `quick-lookup/README.md`): confirm it is present and promote only a leftover, never re-write it. Write the receipt under `PRD/instructions/receipts/` with the plain-language opening block, a `- PR:` line, the `## Graph run` section folding `GRAPH-RUN.md` `## Node ledger` and `## Instruction ledger` verbatim (every row, byte for byte), the `## Intake` section naming each staged intake file and its origin, and the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/305`. Record the owner's dash amendment to REQ-002 in the receipt. Update the `PRD/work/STATUS.md` board as the skill prescribes, then delete the package with `git rm -r PRD/work/card-search-and-send-pill` (tracked files only; the gitignored `.playwright-mcp/` captures stay on disk, which is expected).
+
+Do not write the driver's `close` row; the driver appends it to the receipt after you return. Do not merge or close the PR.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>` (never `-A`, `--all` or `.`), `git rm -r <path>`, then `git commit -m ...`, then `git push origin thejudge-auto/card-search-and-send-pill-work`. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: the receipt path, whether every ledger row was folded verbatim, what you confirmed or promoted in `PRD/sections/`, the board change, the commit hash, and the push result.
 
 ## Instruction ledger
 
