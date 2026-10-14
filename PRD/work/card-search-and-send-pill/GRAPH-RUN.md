@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill`
 - Branch: `thejudge-auto/card-search-and-send-pill-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-031636/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/card-search-and-send-pill/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS, findings none; `## Preparation gate` in `README.md` committed `7a75d962`; run stops here and parks at `owner-action` | 2026-10-13 |
 | 5 | gate-review | sonnet | ok | `0 → 14` | build half run `graph-20261014-034941`: kickoff worktree removed clean (`git worktree remove`); claim commit `6cfd3493` on `thejudge-auto/card-search-and-send-pill-work` cut from `origin/main` `f84e22b1` (docs PR #304 merge), pushed; lock taken from the launch root; universal canary `rm -rf .worktrees/.graph-canary-nonexistent` and graph canary `nohup true` both denied; `graph-gate-review` commit `607591e5`: 3 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-13 |
 | 4 | gate-qc | sonnet | ok | `0 → 9` | build-half re-grade PASS, findings none (two cosmetic non-blocking notes recorded); all five `GATE-QUESTIONS.md` anchors match `PRD/sections/functional-requirements.md` on `573ef8df`; node wrote nothing (porcelain empty, HEAD unchanged); driver rewrote `README.md` `## Preparation gate` | 2026-10-13 |
+| 5 | plan | sonnet | ok | `0 → 11` | commit `0a7b1fe0`: `GAMEPLAN.md`, `slice-a-card-search-punctuation.md` + `slice-a.criteria.json` (8 criteria, all false), `slice-b-no-mic-send-pill.md` + `slice-b.criteria.json` (7, all false); `STATUS.active` only marker; board row under active; every file the slices name exists on the branch; no deliverable planned inside `PRD/work/`; process note: node edited with Bash heredocs instead of Write/Edit (self-reported; diff limited to the package and `PRD/work/STATUS.md`) | 2026-10-13 |
 
 ## Gate verdicts
 
@@ -160,6 +161,24 @@ Placement rule: `node 8` deletes `PRD/work/card-search-and-send-pill/` before th
 Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: the slices (letter, one plain sentence each, files they touch), the criteria count per slice, files written, and the commit hash.
+
+### build
+
+graph is controlling. You are node 6 (`build`), attempt 1, of the build half of graph run `graph-20261014-034941`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill
+
+Shared branch: `thejudge-auto/card-search-and-send-pill-work` (already checked out in that worktree; autonomous base `origin/main`). Work in place in that worktree: create no second worktree and no contributor branch. Never write to /Users/chrismiho/Coding/Projects/TheJudge itself or anywhere outside the worktree; every absolute path you write must start with the Working directory above, and the package folder is `PRD/work/card-search-and-send-pill/` inside it.
+
+Invoke the `thejudge-implement-all` skill (Skill tool) in graph mode on `PRD/work/card-search-and-send-pill/` and complete slices A and B in order, per `GAMEPLAN.md` and each slice doc. Apply product truth at build: each slice writes its share of the accepted `PRD/sections/` amendments by intent (re-derived from the finalized `GATE-QUESTIONS.md` diff and `DESIGN-BRIEF.md` against current truth, never a blind replay), together with the code, in the same PR. Open the code PR `thejudge-auto/card-search-and-send-pill-work` into `main` as the skill prescribes, with the `thejudge-auto:v1:registered:card-search-and-send-pill` registration marker in the body and a `[THEJUDGE-AUTO]` title in the reference format; set the title to READY when both slices are done. Never merge or close a PR. When both slices are complete, set `STATUS.ship-ready` as the only marker and move the `PRD/work/STATUS.md` board row to match (remove from the old section, add to the new one).
+
+Setup: the worktree has no `node_modules`; run `npm ci` at the worktree root first. Browser checks (Playwright MCP): start your own dev server on a free port from inside the worktree, write captures only under `PRD/work/card-search-and-send-pill/.playwright-mcp/`, call `browser_close` when done, and stop the server you started with plain `kill <pid>`. To test the no-speech path in Chromium, set both SpeechRecognition globals to undefined with an init script before page load (see `evidence/measurements.md`).
+
+Criteria: the hook-side evidence log does not see this worktree's criteria files, so a criterion flipped to true here is self-reported. For every criterion, run the real check and keep its actual output (command and result line, or the capture path and the measured value); quote that evidence in the slice doc's status notes. Set a criterion true only after its check passed, never on a check that merely ran. Run `npm run quality:check` before the final push.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling loops. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>` (never `-A`, `--all` or `.`), then `git commit -m ...`, then `git push -u origin thejudge-auto/card-search-and-send-pill-work`. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: per slice, what a player now sees, the files changed, each criterion with its evidence, the PR URL, the final commit hash, and the complete list of every file path you wrote or created (absolute paths).
 
 ## Instruction ledger
 
