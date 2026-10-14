@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| card-search-and-send-pill | Card search ignores punctuation/accents (REQ-002); no-mic send pill is one round arrow (REQ-212, REQ-206) |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| card-search-and-send-pill | Card search ignores punctuation/accents (REQ-002); no-mic send pill is one round arrow (REQ-212, REQ-206) — answer `GATE-QUESTIONS.md` in the docs PR, then merge to build |
 
 ## deferred
 

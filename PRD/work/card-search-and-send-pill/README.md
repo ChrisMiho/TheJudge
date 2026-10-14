@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # card-search-and-send-pill
 
@@ -6,7 +6,7 @@ Two player-facing defects from `PRD/ideasForLater/hardtofind/hardtosearch.md`: c
 
 Refined 2026-10-13: `DESIGN-BRIEF.md` (scope, decisions, assumptions) and `GATE-QUESTIONS.md` (amendments to REQ-002, REQ-212, REQ-206; no new stable ID; no blocker).
 
-Next: `/thejudge-quality-check PRD/work/card-search-and-send-pill/`
+Quality-check PASS 2026-10-13. Next: the owner answers `GATE-QUESTIONS.md` in the docs PR, then merges it; `graph-implement` builds it.
 
 ## Autonomous metadata
 

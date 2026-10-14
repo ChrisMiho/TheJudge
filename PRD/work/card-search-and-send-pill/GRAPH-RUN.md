@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/card-search-and-send-pill` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-card-search-and-send-pill` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-card-search-and-send-pill` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-031636/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/card-search-and-send-pill/`
+- Current node: `owner-action`
+- Next action: `/graph-implement PRD/work/card-search-and-send-pill/`
 
 ## Node ledger
 
@@ -16,10 +16,13 @@
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/card-search-and-send-pill` pushed (`git ls-remote` → `181b829f`) from `.worktrees/kickoff-card-search-and-send-pill`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261014-031636` | 2026-10-13 |
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/card-search-and-send-pill/` (IDEA.md, README.md, STATUS.ideation, intake/ ×3) committed `e8af34af`; board row in `PRD/work/STATUS.md` | 2026-10-13 |
 | 3 | define | opus | ok | `0 → 113` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-002, REQ-212, REQ-206 amendments; no blocker), `evidence/measurements.md`, `STATUS.refined` committed `0e7cb914`; no `PRD/sections/` or code diff vs `181b829f` | 2026-10-13 |
+| 4 | gate-qc | sonnet | ok | `0 → 16` | PASS, findings none; `## Preparation gate` in `README.md` committed `7a75d962`; run stops here and parks at `owner-action` | 2026-10-13 |
 
 ## Open gate
 
-- None
+- Question: answer `GATE-QUESTIONS.md` (`PRD/work/card-search-and-send-pill/GATE-QUESTIONS.md`), then merge to build — three verdict slots: REQ-002 (card search ignores punctuation and accents), REQ-212 (no-mic send pill is one round arrow), REQ-206 (budget ring starts at the top of that round arrow).
+- Evidence: gate-qc PASS (`7a75d962`); docs PR: (recorded below once opened).
+- Resume: the owner merges the docs PR; `graph-implement` (or `/graph-implement PRD/work/card-search-and-send-pill/`) builds it.
 
 ## Dispatch prompts
 
