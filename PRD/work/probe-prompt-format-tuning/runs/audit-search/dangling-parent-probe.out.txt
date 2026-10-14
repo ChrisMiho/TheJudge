@@ -1,8 +1,0 @@
-Rules that end by pointing at their sub-rules (and have some): 17 of 2893
-Set suite: 1181 questions; slots holding such a rule 22; of those with none of its sub-rules alongside 13
-Questions whose prompt has at least one dangling pointer rule: 13 (1%)
-Most frequent: 727.1×10, 514.3×2, 603.10×1
-Rules that end by pointing at their sub-rules (and have some): 17 of 2893
-Set hard25: 25 questions; slots holding such a rule 1; of those with none of its sub-rules alongside 1
-Questions whose prompt has at least one dangling pointer rule: 1 (4%)
-Most frequent: 727.1×1

@@ -1,9 +1,0 @@
-Rule book: 2893 pieces; longer than 256 word pieces: 50
-Loaded 1752 cases (3 skipped) and 2270 distinct card texts in 48 s; per-card embed median 2.0 ms
-Columns: variant                                                    | tun | chk (Δ t/c vs ref) | every t/c | hard25 | corpus c/e | bench@5 | 514.1/514.2/514.3a Quick · In-Depth | long% | miss med | chars/q | ms/q scoring+per-card embed
-(suite tuning 1259 cites, check 1210 cites; bench 156 questions)
-today (production)                                         | 250 | 223            | 84/75 | 5 | 351/305 | 120 | 3/30/14 · 3/49/17 | 26.0% | 450 | 7472 | 0.03+0.0
-Fidelity: production top 10 reproduced on 1596 of 1596 questions
-today + S1+S5                                              | 275 | 252 (+25/+29)  | 89/78 | 6 | 382/336 | 118 | 3/35/18 · 3/38/22 | 22.5% | 436 | 6899 | 0.03+0.0
-card-wording best: S1+S5 + map + per-card 2                | 315 | 293 (+65/+70)  | 104/86 | 8 | 388/338 | 113 | 8/28/13 · 25/16/6 | 25.0% | 288 | 7587 | 0.16+4.5
-today + variant C vectors                                  | 246 | 226 (-4/+3)    | 83/72 | 6 | 353/304 | 120 | 3/40/6 · 3/79/4 | 24.8% | 407 | 7459 | 0.03+0.0
