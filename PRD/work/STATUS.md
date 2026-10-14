@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| card-search-and-send-pill | Card search misses comma names (Urborg); Firefox send pill shows an empty half |
 
 ## owner-action
 
