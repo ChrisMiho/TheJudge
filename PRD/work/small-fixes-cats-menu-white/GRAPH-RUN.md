@@ -29,6 +29,7 @@
 - Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `QUALITY-CHECK.md` (PASS), `evidence/measurements.md`.
 - PR: https://github.com/ChrisMiho/TheJudge/pull/307 (docs-only, `thejudge-auto/small-fixes-cats-menu-white → main`).
 - Owner revision during the park (2026-10-14, after the lock was released): the owner previewed the REQ-207 chip live, declined it, and chose from live previews 45px desktop bars with a soft colour-tinted glow, plus the same glow at today's size on a phone. The REQ-207 slot, `DESIGN-BRIEF.md` section 2 (A4, A11) and `evidence/measurements.md` were rewritten to that choice; the verdict slot stays blank for the owner. The build half's re-grade at `gate-qc` covers the revision.
+- Verdicts (2026-10-14): the owner took the recommendation on all six slots in session; all six recorded `accept` in `GATE-QUESTIONS.md`, each attributed to the owner. This answers the six named slots only; it is not a standing authorization for any later product decision. Remaining owner step: merge PR #307.
 - Resume: the owner's merge of the docs PR is the build signal; `graph-implement` picks it up (`/graph-implement PRD/work/small-fixes-cats-menu-white/`). The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white` stays until `graph-implement` claims the spec.
 
 ## Dispatch prompts
@@ -207,3 +208,4 @@ Report back plainly: PASS or FAIL, the complete findings list (none if PASS), th
 | "instead of adding a box around the menu, can we make the thing wider? and maybe add a little glow too maybe?" | answered-once | owner-action | — |
 | "I think C is what im looking for, but can we compare 40 vs 45 vs 50 px?" | answered-once | owner-action | — |
 | "45 for sure, can we also add the same level of glow to mobile? but keep the size its at right now" | answered-once | owner-action | — |
+| "ill take your recommendation unless you really need my input" | answered-once | owner-action | — |

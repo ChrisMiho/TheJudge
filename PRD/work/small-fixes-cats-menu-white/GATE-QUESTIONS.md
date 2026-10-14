@@ -83,8 +83,8 @@ it instead (for example, a pop-up over the page).
 +  plain heading. No storage key. (REQ-203, REQ-056)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: the owner took the recommendation on every slot in session on 2026-10-14 (quoted in GRAPH-RUN.md's instruction ledger), after the slot was explained and, for REQ-207, after choosing the look from live previews.
 
 ## REQ-207 — the ☰ gets wider bars and a soft glow on desktop, and the same glow on a phone
 
@@ -143,8 +143,8 @@ on desktop and no glow on a phone.
 +  geometry: the single-zone corner rail (`5.5rem × 3.5rem`
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: the owner took the recommendation on every slot in session on 2026-10-14 (quoted in GRAPH-RUN.md's instruction ledger), after the slot was explained and, for REQ-207, after choosing the look from live previews.
 
 ## REQ-099 — first-time visitors land on White, not Blue
 
@@ -203,8 +203,8 @@ tab icon change too, so a first visit never flashes blue. Recommendation: accept
 `decisions.md`'s DEC-119 row also says "fall back to Blue". The decision log is
 retired history and is left unchanged.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: the owner took the recommendation on every slot in session on 2026-10-14 (quoted in GRAPH-RUN.md's instruction ledger), after the slot was explained and, for REQ-207, after choosing the look from live previews.
 
 ## REQ-044 — the colour menu's own wording follows the White default
 
@@ -231,8 +231,8 @@ contradict it; reject only together with REQ-099.
 +  - amended by `small-fixes-cats-menu-white` (2026-10-14): the default and the fallback move from Blue to White with REQ-099
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: the owner took the recommendation on every slot in session on 2026-10-14 (quoted in GRAPH-RUN.md's instruction ledger), after the slot was explained and, for REQ-207, after choosing the look from live previews.
 
 ## FLOW-007 — the choose-a-colour flow names White as the default
 
@@ -259,8 +259,8 @@ contradict it; reject only together with REQ-099.
 +  - amended by `small-fixes-cats-menu-white` (2026-10-14): the default and the fallback move from Blue to White with REQ-099
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: the owner took the recommendation on every slot in session on 2026-10-14 (quoted in GRAPH-RUN.md's instruction ledger), after the slot was explained and, for REQ-207, after choosing the look from live previews.
 
 ## REQ-113 — the open menu never scrolls sideways
 
@@ -291,8 +291,8 @@ bug), but nothing tests for it, so a later change can bring it back unnoticed.
 +  - amended by `small-fixes-cats-menu-white` (2026-10-14): the owner saw a horizontal scrollbar along the open tray's bottom on desktop. Measured at 1440×900 and 390×844: clientWidth 319, scrollWidth 320 — the tray's 1px right-edge light line (`::after`, `right: -1px`) overhung the scroll box, and `overflow-y: auto` makes the x-axis scroll too. Removing the overhang alone restored 319 = 319 at both widths
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: the owner took the recommendation on every slot in session on 2026-10-14 (quoted in GRAPH-RUN.md's instruction ledger), after the slot was explained and, for REQ-207, after choosing the look from live previews.
 
 ## Blocker questions
 
