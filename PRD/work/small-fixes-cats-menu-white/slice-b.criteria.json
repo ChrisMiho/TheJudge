@@ -2,14 +2,14 @@
   "slug": "small-fixes-cats-menu-white",
   "slice": "B",
   "criteria": [
-    {"id": "B1", "statement": "Stylesheet assertion: desktop menu button draws 45px bars with glow, inside the min-width 768px block before the hover/focus rule (test)", "value": false, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/styles/shell.css"]}},
-    {"id": "B2", "statement": "Stylesheet assertion: phone rule keeps 50px box and 1.4rem glyph with the glow; desktop box stays 54px (test)", "value": false, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/styles/shell.css"]}},
-    {"id": "B3", "statement": "Stylesheet assertion: .menu-tray::after has no negative right/left and keeps content, 1px width, background (test)", "value": false, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/styles/shell.css"]}},
-    {"id": "B4", "statement": "Stylesheet assertion: .menu-tray declares overflow-x hidden or clip (test)", "value": false, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/styles/shell.css"]}},
-    {"id": "B5", "statement": "Frontend test suite passes", "value": false, "evidence": {"command": "npm.*(workspace apps/frontend run test|run test)"}},
-    {"id": "B6", "statement": "Live at 1440x900 and 390x844: box 54px / 50px, desktop header 68px, 45px bars, glow in all six colours, hover and focus fill intact with no glow on the box", "value": false, "evidence": {"manual": true}},
-    {"id": "B7", "statement": "Live with classic scrollbars forced on at both widths: open tray scrollWidth equals clientWidth, no horizontal bar, right-edge line paints", "value": false, "evidence": {"manual": true}},
-    {"id": "B8", "statement": "The REQ-207 and REQ-113 amendments from GATE-QUESTIONS.md are applied to PRD/sections/ in this PR", "value": false, "evidence": {"paths": ["PRD/sections"]}},
-    {"id": "B9", "statement": "Browser closed, owned server(s) stopped, ports released; captures under PRD/work/small-fixes-cats-menu-white/.playwright-mcp/", "value": false, "evidence": {"manual": true}}
+    {"id": "B1", "statement": "Stylesheet assertion: desktop menu button draws 45px bars with glow, inside the min-width 768px block before the hover/focus rule (test)", "value": true, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/styles/shell.css"]}},
+    {"id": "B2", "statement": "Stylesheet assertion: phone rule keeps 50px box and 1.4rem glyph with the glow; desktop box stays 54px (test)", "value": true, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/styles/shell.css"]}},
+    {"id": "B3", "statement": "Stylesheet assertion: .menu-tray::after has no negative right/left and keeps content, 1px width, background (test)", "value": true, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/styles/shell.css"]}},
+    {"id": "B4", "statement": "Stylesheet assertion: .menu-tray declares overflow-x hidden or clip (test)", "value": true, "evidence": {"command": "vitest|npm.*(run )?test", "paths": ["apps/frontend/src/styles/shell.css"]}},
+    {"id": "B5", "statement": "Frontend test suite passes", "value": true, "evidence": {"command": "npm.*(workspace apps/frontend run test|run test)"}},
+    {"id": "B6", "statement": "Live at 1440x900 and 390x844: box 54px / 50px, desktop header 68px, 45px bars, glow in all six colours, hover and focus fill intact with no glow on the box", "value": true, "evidence": {"manual": true}},
+    {"id": "B7", "statement": "Live with classic scrollbars forced on at both widths: open tray scrollWidth equals clientWidth, no horizontal bar, right-edge line paints", "value": true, "evidence": {"manual": true}},
+    {"id": "B8", "statement": "The REQ-207 and REQ-113 amendments from GATE-QUESTIONS.md are applied to PRD/sections/ in this PR", "value": true, "evidence": {"paths": ["PRD/sections"]}},
+    {"id": "B9", "statement": "Browser closed, owned server(s) stopped, ports released; captures under PRD/work/small-fixes-cats-menu-white/.playwright-mcp/", "value": true, "evidence": {"manual": true}}
   ]
 }

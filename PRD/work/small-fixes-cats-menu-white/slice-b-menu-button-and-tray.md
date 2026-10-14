@@ -1,6 +1,15 @@
 # Slice B — Bigger glowing menu button, no sideways scrollbar in the menu
 
-## Status: planned
+## Status: done
+
+### Status notes (evidence, self-reported)
+
+- B1-B4: `npx vitest run src/test/menu-button-and-tray-styles.test.ts` — 5 tests pass (45px bars, 2.5/9.5/19px stops, drop-shadow glow, block before the hover rule; phone 50px/1.4rem + text-shadow glow; desktop 54px; `.menu-tray::after` right: 0 with content/1px/background; `.menu-tray` overflow-x: hidden).
+- B5: `npm --workspace apps/frontend run test` — 150 files, 1615 tests passed.
+- B6: live computed style. 1440x900 all six colours: box 54x54, header 68, `::before` 45px x 21.5px, drop-shadow 6px in the tinted colour, no box-shadow, transparent background. 390x844 all six: box 50x50, header 64, font 22.4px, text-shadow 6px tinted. Hover and Tab focus (Red): background accent 14% alpha, box-shadow none; text-shadow none on desktop (the glow is on the bars only), phone glow stays on the glyph. Captures `.playwright-mcp/b-header-*.png`, `b-focus-*.png`.
+- B7: open tray at 1440x900 and 390x844: scrollWidth 319 = clientWidth 319, overflow-x hidden, `::after` right 0px, width 1px, opacity 0.7, content "". Caveat: the headless browser uses overlay scrollbars, so "classic scrollbars forced on" was proven by the equal widths plus `overflow-x: hidden` rather than a visible bar. Captures `b-tray-{390,1440}.png`.
+- B8: REQ-207 (3 hunks + note) and REQ-113 (criteria + note) in `functional-requirements.md`; two `shared-chrome/README.md` hunks.
+- B9: browser closed, server stopped, port 5391 released (see slice A).
 
 ## Goal
 
