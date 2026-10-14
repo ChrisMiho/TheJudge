@@ -1,13 +1,14 @@
 # Graph run — small-fixes-cats-menu-white
 
-- Run ID: `graph-20261014-225350`
+- Run ID: `graph-20261014-225350` (spec-forming half); build half `graph-20261014-234321`
 - Profile: `unverified` — printed by `npm run graph:preflight` at node 1 (`profile sentinel: absent`)
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/small-fixes-cats-menu-white` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white` by the build half's claim)
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white`
+- Branch: `thejudge-auto/small-fixes-cats-menu-white-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-225350/`
-- Current node: `owner-action`
-- Next action: `/graph-implement PRD/work/small-fixes-cats-menu-white/` (after the owner answers `GATE-QUESTIONS.md` and merges the docs PR)
+- Current node: `gate-review`
+- Next action: `/graph-implement PRD/work/small-fixes-cats-menu-white/`
 
 ## Node ledger
 

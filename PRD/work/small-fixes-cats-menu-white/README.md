@@ -10,7 +10,7 @@ Four small fixes: cats Easter egg, bigger desktop menu button, White as the defa
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/small-fixes-cats-menu-white
+- Autonomous base: origin/main
 
 ## Preparation gate
 
