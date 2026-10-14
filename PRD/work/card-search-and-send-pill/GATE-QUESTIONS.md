@@ -70,8 +70,8 @@ In-depth details' Cards step keeps showing nothing on a miss.
 +  - amended by `card-search-and-send-pill` (2026-10-13): matching ignores punctuation and accents. Measured at refinement over the 34,639-card list: 7,339 names carry a mark; typing the first two words without it found the card in the list of three for 3,380 of 7,288 names today and 7,052 under the rule; typing the whole name found it for 6,200 of 7,324 today and all 7,324 under the rule. The list length stayed at three because 18 names start with "urborg" and Urborg, Tomb of Yawgmoth ranks last of them on every search, so only more typing (`urborg t`) reaches it. In-depth details' Cards step had shown nothing on a miss because its list closed whenever there were no suggestions
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner, 2026-10-13: "accept all three"
 
 ## REQ-212 — without a microphone, the send pill is one round arrow
 
@@ -105,8 +105,8 @@ it can come back.
 +  - amended by `card-search-and-send-pill` (2026-10-13): the arrow-alone pill had kept the two-half width. Measured in Chromium with both speech objects removed before load (the path Firefox takes): in all four boxes the pill stayed 88×44 with the 44px arrow at its left and an empty right half, and the ring kept the two-half shape. The fixed width of `.send-wrap` and the two-half `SEND_RING_PATH` did not follow whether the microphone rendered
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner, 2026-10-13: "accept all three"
 
 ## REQ-206 — where the budget ring starts when there is no microphone
 
@@ -130,5 +130,5 @@ not exist on the arrow-only button, and the build picks one.
 +  - amended by `card-search-and-send-pill` (2026-10-13): the ring's start point when the pill is the arrow alone (no speech recognition, REQ-212) — the top of the round arrow, clockwise
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner, 2026-10-13: "accept all three"
