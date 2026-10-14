@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "The search tests cover the accepted REQ-002 queries and the blank-name and empty-punctuation cases",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest|npm .*test"
       }
@@ -13,7 +13,7 @@
     {
       "id": "A2",
       "statement": "The Trade Balancer search test covers the same queries and shares normalize",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/trade/oracleSearch.test.ts"
@@ -23,7 +23,7 @@
     {
       "id": "A3",
       "statement": "ZoneCollectionStep shows the no-match message at threshold",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/ZoneCollectionStep.test.tsx"
@@ -33,7 +33,7 @@
     {
       "id": "A4",
       "statement": "Corpus recall re-run meets 7,052/7,288 first-two-words and 7,324/7,324 whole-name",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -41,7 +41,7 @@
     {
       "id": "A5",
       "statement": "The frontend test suite passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm (--workspace apps/frontend run|run) test"
       }
@@ -49,7 +49,7 @@
     {
       "id": "A6",
       "statement": "REQ-002 and system-map.md carry the accepted amendments",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",
@@ -60,7 +60,7 @@
     {
       "id": "A7",
       "statement": "Browser check of In-depth, Ask a Question and Trade Balancer searches",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -68,7 +68,7 @@
     {
       "id": "A8",
       "statement": "Browser closed, servers stopped, ports released, captures path recorded",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

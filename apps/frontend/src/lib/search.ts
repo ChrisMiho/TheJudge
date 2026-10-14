@@ -4,8 +4,21 @@ export const NO_MATCH_COPY = "No matching card found";
 const MAX_SUGGESTIONS = 3;
 const MAX_TYPO_DISTANCE = 2;
 
+/**
+ * REQ-002: the one shared card-name rule. Lower-cases, folds accents to plain letters, turns
+ * hyphens and slashes into spaces, drops every other character that is not a letter, digit,
+ * space or underscore, and collapses runs of spaces. Underscores stay so the blank-named
+ * Un-set cards remain findable.
+ */
 export function normalize(input: string): string {
-  return input.trim().toLowerCase();
+  return input
+    .normalize("NFD")
+    .replace(/\p{M}+/gu, "")
+    .toLowerCase()
+    .replace(/[-/\u2010-\u2015]/g, " ")
+    .replace(/[^\p{L}\p{N} _]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export function levenshteinDistance(a: string, b: string): number {

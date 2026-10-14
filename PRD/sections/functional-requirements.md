@@ -19,16 +19,28 @@
 ### REQ-002
 - Title: Autocomplete suggestions
 - Priority: high
-- Description: The app must show matching card suggestions from local metadata with typo tolerance.
+- Description: The app must show matching card suggestions from local metadata with typo tolerance. A player finds a card without typing its punctuation or accents: `urborg tomb` finds Urborg, Tomb of Yawgmoth, `yawgmoths` finds Yawgmoth's Will, `lim dul` finds Lim-Dûl's Vault.
 - Acceptance Criteria:
   - suggestions appear after 3 typed characters
   - no-match state shows **No matching card found**
   - tapping a suggestion opens a preview instead of immediately adding
+  - matching compares the typed text and each card name with letter case, accents and punctuation set aside: an accented letter matches its plain letter (`û` matches `u`), a hyphen or slash counts as a space, every other character that is not a letter, digit, space or underscore is ignored, and a run of spaces counts as one; underscores are kept, so the Un-set cards named only with blanks stay findable by typing underscores
+  - every card-name search in the suite uses this one rule from one shared definition, never a copy: Ask a Question's Add card (REQ-206), In-depth details' Cards step, and each Trade Balancer side's search (REQ-065)
+  - each search keeps its ranking — the exact name first, then names that start with the typed text, then names that contain it, then names within two typing mistakes — and its threshold (one character on Ask a Question's Add card, REQ-167; three elsewhere, REQ-001), counted on the typed text after the rule is applied
+  - the list holds at most three suggestions on Ask a Question's Add card and on In-depth details' Cards step, and at most eight on a Trade Balancer side
+  - each suggestion shows the card's real printed name, and choosing it resolves the same oracle card as before
+  - every one of the three searches shows the no-match message when the typed text reaches its threshold and nothing matches
+  - tests cover, on the shared rule and on each search: `urborg tomb` and `urborg t` returning Urborg, Tomb of Yawgmoth first; `jace the mind`, `atraxa praetors`, `will o the wisp`, `lim dul` and `fire ice` finding Jace, the Mind Sculptor, Atraxa, Praetors' Voice, Will-o'-the-Wisp, a Lim-Dûl card and Fire // Ice; `sol ring`, `lightning bolt`, `urborg` and `urborg, tomb` returning what they returned before; `_____` still finding `_____`; and In-depth details' Cards step showing the no-match message for a query with no match
 - Constraints:
   - suggestions should feel immediate
+  - no new data field, index file, dependency or popularity ranking; matching stays in the browser over the existing card list
 - Dependencies:
   - static local metadata file
+  - REQ-001 (the three-character threshold)
+  - REQ-065 (Trade Balancer manual search uses this search)
+  - REQ-167 (Ask a Question's one-character threshold)
 - Notes:
+  - amended by `card-search-and-send-pill` (2026-10-13): matching ignores punctuation and accents. Measured at refinement over the 34,639-card list: 7,339 names carry a mark; typing the first two words without it found the card in the list of three for 3,380 of 7,288 names before and 7,052 under the rule; typing the whole name found it for 6,200 of 7,324 before and all 7,324 under the rule (re-run at build: 7,339 of 7,339 whole names, 7,063 of 7,301 first-two-words). The list length stayed at three because 18 names start with "urborg" and Urborg, Tomb of Yawgmoth ranks last of them on every search, so only more typing (`urborg t`) reaches it. In-depth details' Cards step had shown nothing on a miss because its list closed whenever there were no suggestions
 
 ### REQ-003
 - Title: Card preview before add
@@ -5536,7 +5548,7 @@
   - dictated text is clipped at the 300-character budget exactly as typed text is (REQ-011)
   - a denied microphone permission or a recognition error stops listening with a one-line message and leaves the typed text intact
   - both halves meet the 44px touch floor (REQ-205) and carry accessible names ("Dictate question" / "Stop dictating", and the existing send control's own name)
-  - tests cover each question box with and without the browser API, insertion into existing text, the character cap, stopping on submit mid-dictation, and the error path, using a stubbed recognition object
+  - tests cover each question box with and without the browser API insertion into existing text, the character cap, stopping on submit mid-dictation, and the error path, using a stubbed recognition object
 - Constraints:
   - browser-native only: no audio reaches TheJudge's backend, no new endpoint, no speech library or dependency, and nothing is stored beyond the text in the box
 - Dependencies:

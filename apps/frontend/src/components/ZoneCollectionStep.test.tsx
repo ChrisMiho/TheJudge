@@ -261,6 +261,21 @@ describe("ZoneCollectionStep scan focus", () => {
     expect(onZonesChange).toHaveBeenCalledWith({ battlefield: [card2] });
   });
 
+  it("shows \"No matching card found\" once the typed text reaches the threshold with no match (REQ-002)", async () => {
+    const user = userEvent.setup();
+    mockScanCapture(false);
+    renderStep([makeZoneCard("opt", "Opt")], null, ["stack", "battlefield"]);
+
+    await user.click(screen.getByRole("button", { name: "Zone tab: Battlefield" }));
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
+    const search = screen.getByLabelText("Battlefield search input");
+
+    await user.type(search, "zz");
+    expect(screen.queryByText("No matching card found")).not.toBeInTheDocument();
+    await user.type(search, "zqx");
+    expect(await screen.findByText("No matching card found")).toBeInTheDocument();
+  });
+
   it("puts the selected card's exact canonical name into the search field", async () => {
     const user = userEvent.setup();
     mockScanCapture(false);
