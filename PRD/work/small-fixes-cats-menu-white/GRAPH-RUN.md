@@ -26,7 +26,8 @@
 
 - Gate: `define` product truth, parked at `owner-action` after gate-qc PASS (attempt 3). Terminal state `PARKED`.
 - Question: answer `PRD/work/small-fixes-cats-menu-white/GATE-QUESTIONS.md` — one accept/edit/reject verdict (with a reason for edit or reject) for each of REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113 — then merge the docs PR to build.
-- Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `QUALITY-CHECK.md` (PASS), `evidence/measurements.md`; docs PR: see the PR line below.
+- Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `QUALITY-CHECK.md` (PASS), `evidence/measurements.md`.
+- PR: https://github.com/ChrisMiho/TheJudge/pull/307 (docs-only, `thejudge-auto/small-fixes-cats-menu-white → main`).
 - Resume: the owner's merge of the docs PR is the build signal; `graph-implement` picks it up (`/graph-implement PRD/work/small-fixes-cats-menu-white/`). The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white` stays until `graph-implement` claims the spec.
 
 ## Dispatch prompts
