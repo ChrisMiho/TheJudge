@@ -129,7 +129,7 @@ Invoke the `thejudge-refinement` skill (Skill tool) in graph mode on `PRD/work/s
 
 Fix each finding in the brief, verifying against the files rather than the report's word:
 1. Name the whole default-palette test in `apps/frontend/src/lib/theme/palettes.test.ts` (lines 76-80, including the blue-name assertion and the test title) and the Blue-fallback test title at `App.mtg-color-themes.test.tsx:171` as things the build changes.
-2. State that the combined `:root, [data-profile="blue"]` selector in `tokens.css` is split: `[data-profile="blue"]` keeps every Blue value (including `--motif` and `--wash-tint`) and `:root` takes White's.
+2. State that the combined root-plus-blue-profile selector in `tokens.css` (lines 41-42) is split: the blue-profile selector keeps every Blue value (including `--motif` and `--wash-tint`) and `:root` takes White's.
 3. Add an automated first-paint check (the `:root` tokens, the theme-color tag and the favicon fill equal White's values), and record the hard-coded hex in `index.html` as a deliberate placeholder exception to the no-hard-coded-per-profile-hex rule in REQ-219/REQ-216.
 4. Make the two flagged acceptance criteria testable: an automated assertion that the cats picture sits directly under the header on the non-Game screens, and for the menu scrollbar the automated form (a stylesheet assertion that the right-edge line no longer overhangs the tray and that the tray does not scroll sideways), keeping the live 390×844 and 1440×900 measurement as the verification step.
 
