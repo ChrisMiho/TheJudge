@@ -309,3 +309,15 @@ describe("EnrichmentStep fit frame (REQ-218)", () => {
   });
 });
 });
+
+describe("EnrichmentStep question box without speech recognition (REQ-212)", () => {
+  it("shows the arrow alone with no empty half", async () => {
+    const user = renderEnrichment({ question: "" });
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
+
+    const pill = screen.getByTestId("composer-pill");
+    expect(pill.querySelector(".send-wrap")).toHaveClass("arrow-only");
+    expect(screen.queryByTestId("dictation-mic")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-ring")).toHaveAttribute("viewBox", "0 0 48 48");
+  });
+});

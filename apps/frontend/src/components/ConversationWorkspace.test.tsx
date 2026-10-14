@@ -53,6 +53,9 @@ describe("Frontend - Conversation workspace", () => {
     // sits inside that shared pill shell instead of checking a `<form>`'s class.
     const composer = within(workspace).getByRole("textbox", { name: "Follow-up question" });
     expect(composer.closest('[data-testid="composer-pill"]')).toBeInTheDocument();
+    // REQ-212: no speech recognition in jsdom, so the follow-up box is the arrow alone — no empty half.
+    expect(composer.closest('[data-testid="composer-pill"]')?.querySelector(".send-wrap")).toHaveClass("arrow-only");
+    expect(within(workspace).queryByTestId("dictation-mic")).not.toBeInTheDocument();
     await user.type(composer, "What happens next?");
     await user.click(within(workspace).getByRole("button", { name: "Send" }));
     expect(onFollowUp).toHaveBeenCalledWith("What happens next?");

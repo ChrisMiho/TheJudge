@@ -114,9 +114,11 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   past which the text area scrolls inside itself — the only element that scrolls. (DEC-146, DEC-131,
   REQ-110, REQ-121, REQ-206, REQ-218)
 - Built: the 300-character budget is drawn as a ring traced round the send
-  pill's edge, starting at the top of the pill's split and running clockwise,
-  brighter in the last 30 characters, closed at 300; at 0 characters no ring
-  is drawn, and no numeric count is shown at any fill. (REQ-011, REQ-134, REQ-206)
+  pill's edge, starting at the top of the pill's split (where the browser has no
+  speech recognition and the pill is the round arrow alone, at the top of that arrow)
+  and running clockwise, brighter in the last 30 characters, closed at 300; at 0
+  characters no ring is drawn, and no numeric count is shown at any fill.
+  (REQ-011, REQ-134, REQ-206, REQ-212)
 - Built: the initial submit control is the round send pill inside the
   question box, with no visible text label (its accessible name keeps Ask
   semantics); the answered-view follow-up composer keeps its own compact

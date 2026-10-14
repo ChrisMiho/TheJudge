@@ -361,6 +361,17 @@ describe("QuickLookupApp", () => {
     expect(await screen.findByText(NO_MATCH_COPY)).toBeInTheDocument();
   });
 
+  it("opens no suggestion panel and shows no message for a lone comma (REQ-002)", async () => {
+    const user = userEvent.setup();
+    render(<QuickLookupApp />);
+    await openCardSearch(user);
+
+    await user.type(screen.getByRole("textbox", { name: "Card search" }), ",");
+
+    expect(screen.queryByText(NO_MATCH_COPY)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Lightning Bolt" })).not.toBeInTheDocument();
+  });
+
   it("uses palette-driven styling for the Scan and Ask controls, not a fixed hue (look-matching pass, slice M)", async () => {
     render(<QuickLookupApp />);
 
@@ -407,6 +418,20 @@ describe("QuickLookupApp", () => {
 
     await user.click(submitButton);
     expect(onSubmit).toHaveBeenLastCalledWith("a".repeat(300), []);
+  });
+
+  it("shows the arrow alone with no empty half where the browser has no speech recognition (REQ-212)", async () => {
+    const user = userEvent.setup();
+    render(<QuickLookupApp />);
+    await openCardSearch(user);
+
+    await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
+    await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
+
+    const pill = screen.getByTestId("composer-pill");
+    expect(pill.querySelector(".send-wrap")).toHaveClass("arrow-only");
+    expect(screen.queryByTestId("dictation-mic")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-ring")).toHaveAttribute("viewBox", "0 0 48 48");
   });
 
   it("counts the editable text rather than the silent card fallback", async () => {

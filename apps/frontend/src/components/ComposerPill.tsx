@@ -6,6 +6,9 @@ import { budgetFillStyle } from "../lib/theme/flowStyles";
 /** The stadium path round the send pill, begun at the top of the mic|send seam and run clockwise
  * (the mockup's `flow.js` RING_PATH): the fill grows out of the seam. */
 const SEND_RING_PATH = "M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z";
+/** Without speech recognition (REQ-212) the pill is the arrow alone: a circle round the 44px arrow, begun at the top
+ * and run clockwise (REQ-206), in a 48x48 box that matches the 44px wrapper plus the ring's 2px bleed each side. */
+const SEND_RING_CIRCLE_PATH = "M24 4 A20 20 0 0 1 24 44 A20 20 0 0 1 24 4 Z";
 /** Within this many characters of the cap the ring and the count turn bright (the mockup's `near`). */
 const NEAR_CAP_CHARACTERS = 30;
 /** A textarea taller than this many pixels has crossed the one-line threshold (the mockup's `autoGrow`). */
@@ -91,6 +94,7 @@ export function ComposerPill({
   const submitDisabled = disabled || isSubmitting;
 
   const dictation = useDictation({ value, onChange, maxLength });
+  const ringPath = dictation.isSupported ? SEND_RING_PATH : SEND_RING_CIRCLE_PATH;
   const boxRef = useRef<HTMLDivElement>(null);
   const ownTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -229,10 +233,15 @@ export function ComposerPill({
         {maxLength - length} characters remaining
       </span>
 
-      <span className="send-wrap">
-        <svg className="send-ring" data-testid="composer-pill-ring" viewBox="0 0 88 48" aria-hidden="true">
-          <path className="track" d={SEND_RING_PATH} pathLength={100} />
-          <path className="fill" d={SEND_RING_PATH} pathLength={100} />
+      <span className={dictation.isSupported ? "send-wrap" : "send-wrap arrow-only"}>
+        <svg
+          className="send-ring"
+          data-testid="composer-pill-ring"
+          viewBox={dictation.isSupported ? "0 0 88 48" : "0 0 48 48"}
+          aria-hidden="true"
+        >
+          <path className="track" d={ringPath} pathLength={100} />
+          <path className="fill" d={ringPath} pathLength={100} />
         </svg>
         <span className="send-pair">
           {/* REQ-212: the mic half exists only where the browser exposes speech recognition;

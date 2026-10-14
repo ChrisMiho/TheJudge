@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-import { NO_MATCH_COPY } from "../../lib/search";
+import { NO_MATCH_COPY, normalize } from "../../lib/search";
 import { fetchCardPrintings, type CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import {
   formatUsd,
@@ -96,7 +96,7 @@ export function TradeSide({
   const scanNotice = scan.notice?.sideId === sideId ? scan.notice.message : null;
   const isInputDisabled = isSearchDisabled;
   const suggestions = searchOracleIndex(searchIndex, query);
-  const showSuggestionPanel = pendingCard === null && query.trim().length >= MIN_TRADE_SEARCH_LENGTH;
+  const showSuggestionPanel = pendingCard === null && normalize(query).length >= MIN_TRADE_SEARCH_LENGTH;
 
   function clearPending(): void {
     pendingOracleIdRef.current = null;

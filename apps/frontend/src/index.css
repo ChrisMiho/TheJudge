@@ -342,6 +342,15 @@ html {
   height: 44px;
 }
 
+/* REQ-212: where the browser has no speech recognition the pill is the arrow alone, one round 44px control. */
+.send-wrap.arrow-only {
+  width: 44px;
+}
+
+.send-wrap.arrow-only .send-pair {
+  width: 44px;
+}
+
 .send-pair {
   height: 44px;
 }

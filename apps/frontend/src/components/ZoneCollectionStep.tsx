@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { CANONICAL_ZONE_ORDER } from "../lib/contextFlow";
-import { NO_MATCH_COPY } from "../lib/search";
+import { NO_MATCH_COPY, normalize } from "../lib/search";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import {
   appendZoneCard,
@@ -298,8 +298,15 @@ export function ZoneCollectionStep({
   const stackSelected = activeZone === "stack";
   // DEC-160: the suggestion list is only visible once there are 3+ query chars that are not the
   // already-staged card's canonical name. Escape dismisses the list first (below), the search second.
+  // REQ-002: with nothing matching, `keyboard.isOpen` is false by design, so the list also shows
+  // when the typed text (punctuation set aside) reaches the threshold and has no suggestion, to carry the no-match message.
   const suggestionsVisible =
-    searchInput.trim().length >= 3 && keyboard.isOpen && searchInput !== selectedCard?.name;
+    normalize(searchInput).length >= 3 &&
+    (keyboard.isOpen || suggestions.length === 0) &&
+    searchInput !== selectedCard?.name;
+  // Escape dismisses only a list of real suggestions; the no-match message is not one, so Escape
+  // with a no-match query closes the whole search as it did before REQ-002.
+  const suggestionListOpen = suggestionsVisible && keyboard.isOpen;
 
   return (
     <PageShell variant="narrow">
@@ -413,7 +420,7 @@ export function ZoneCollectionStep({
               // list closed it closes the whole search, the same as the Close-search chip — parity
               // with Ask a Question's card search (QuickLookupApp).
               onSearchKeyDown={(event) => {
-                if (event.key === "Escape" && !suggestionsVisible) {
+                if (event.key === "Escape" && !suggestionListOpen) {
                   setIsSearchOpen(false);
                   return;
                 }

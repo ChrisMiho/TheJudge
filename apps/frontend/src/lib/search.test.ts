@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardMetadataItem } from "../types";
-import { buildSearchIndex, getSuggestions, getSuggestionsFromIndex, isFuzzyMatch, levenshteinDistance, NO_MATCH_COPY } from "./search";
+import { normalize, buildSearchIndex, getSuggestions, getSuggestionsFromIndex, isFuzzyMatch, levenshteinDistance, NO_MATCH_COPY } from "./search";
 
 const sampleCards: CardMetadataItem[] = [
   {
@@ -22,6 +22,13 @@ const sampleCards: CardMetadataItem[] = [
     colors: ["U"],
   }
 ];
+
+const punctuationCards: CardMetadataItem[] = [
+  ["u1", "Urborg, Tomb of Yawgmoth"], ["u2", "Urborg"], ["u3", "Urborg Elf"], ["u4", "Urborg Drake"],
+  ["j1", "Jace, the Mind Sculptor"], ["a1", "Atraxa, Praetors' Voice"], ["w1", "Will-o'-the-Wisp"],
+  ["l1", "Lim-D\u00fbl's Vault"], ["f1", "Fire // Ice"], ["f2", "Fire Imp"], ["s1", "Sol Ring"],
+  ["b1", "Lightning Bolt"], ["x1", "_____"]
+].map(([cardId, name]) => ({ cardId, name, imageId: "", colors: [] }));
 
 describe("Frontend - Shared", () => {
 describe("search helpers", () => {
@@ -150,4 +157,48 @@ describe("search helpers", () => {
     expect(getSuggestionsFromIndex(index, query)).toEqual(getSuggestions(sampleCards, query));
   });
 });
+});
+
+describe("REQ-002 punctuation- and accent-blind card search", () => {
+  it.each([
+  ["urborg tomb", "Urborg, Tomb of Yawgmoth"],
+  ["urborg t", "Urborg, Tomb of Yawgmoth"],
+  ["jace the mind", "Jace, the Mind Sculptor"],
+  ["atraxa praetors", "Atraxa, Praetors' Voice"],
+  ["will o the wisp", "Will-o'-the-Wisp"],
+  ["lim dul", "Lim-D\u00fbl's Vault"],
+  ["fire ice", "Fire // Ice"],
+  ["sol ring", "Sol Ring"],
+  ["lightning bolt", "Lightning Bolt"],
+  ["urborg, tomb", "Urborg, Tomb of Yawgmoth"],
+  ["lim-d\u00fbl", "Lim-D\u00fbl's Vault"],
+  ["_____", "_____"]
+  ])("%s finds %s first", (query, expected) => {
+    expect(getSuggestions(punctuationCards, query as string, 1)[0]?.name).toBe(expected);
+  });
+
+  it("keeps a bare urborg to the plain Urborg names", () => {
+    expect(getSuggestions(punctuationCards, "urborg").map((c) => c.name)).toEqual(["Urborg", "Urborg Elf", "Urborg Drake"]);
+  });
+
+  it("normalizes case, accents, hyphens, slashes, other marks and space runs; keeps underscores", () => {
+    expect(normalize("  Lim-D\u00fbl's  Vault ")).toBe("lim duls vault");
+    expect(normalize("Fire // Ice")).toBe("fire ice");
+    expect(normalize("_____")).toBe("_____");
+    expect(normalize(",,,")).toBe("");
+  });
+
+  it("counts long dashes as a space like a hyphen, and any whitespace as a space", () => {
+    expect(normalize("Human—Time Lord Meta-Crisis")).toBe("human time lord meta crisis");
+    expect(normalize("a–b‐c―d")).toBe("a b c d");
+    const emDashCards = [{ cardId: "h", name: "Human—Time Lord Meta-Crisis" }] as never;
+    expect(getSuggestions(emDashCards, "human time lord").map((c) => c.name)).toEqual(["Human—Time Lord Meta-Crisis"]);
+    expect(normalize("a\tb")).toBe("a b");
+    expect(normalize("a   b")).toBe("a b");
+  });
+
+  it("reaches no search with only punctuation", () => {
+    expect(getSuggestions(punctuationCards, ",,,", 1)).toEqual([]);
+    expect(getSuggestions(punctuationCards, ",,,")).toEqual([]);
+  });
 });

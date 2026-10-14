@@ -146,6 +146,22 @@ describe("Frontend - Trade", () => {
       expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
     });
 
+    it("opens no suggestion panel and shows no message for punctuation-only or too-short typed text (REQ-002)", async () => {
+      const user = userEvent.setup();
+      renderSide();
+      await openSideSearch(user);
+      const search = screen.getByLabelText("Side A card search");
+
+      for (const typed of [",,,", "ur,"]) {
+        await user.clear(search);
+        await user.type(search, typed);
+        expect(screen.queryByText("No matching card found")).not.toBeInTheDocument();
+      }
+      await user.clear(search);
+      await user.type(search, "zzzq");
+      expect(await screen.findByText("No matching card found")).toBeInTheDocument();
+    });
+
     it("C1: tapping a suggestion shows a loading state, then the printing picker in place of the suggestion list", async () => {
       let resolveFetch: (value: Response) => void = () => undefined;
       vi.stubGlobal(

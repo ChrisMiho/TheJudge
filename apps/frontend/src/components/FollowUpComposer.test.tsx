@@ -127,4 +127,16 @@ describe("Frontend - Conversation composer", () => {
       expect(screen.getByRole("alert")).toHaveTextContent("Microphone access was denied.");
     });
   });
+
+  it("without speech recognition shows the arrow alone, no empty half (REQ-212)", () => {
+    render(<FollowUpComposer isSubmitting={false} onSubmit={vi.fn(async () => undefined)} />);
+    const pill = screen.getByTestId("composer-pill");
+    const wrap = pill.querySelector(".send-wrap");
+    expect(wrap).toHaveClass("arrow-only");
+    expect(pill.querySelector(".send-pair")).toBeInTheDocument();
+    expect(screen.queryByTestId("dictation-mic")).not.toBeInTheDocument();
+    const ring = screen.getByTestId("composer-pill-ring");
+    expect(ring).toHaveAttribute("viewBox", "0 0 48 48");
+    expect(ring.querySelector("path.track")).toHaveAttribute("d", "M24 4 A20 20 0 0 1 24 44 A20 20 0 0 1 24 4 Z");
+  });
 });
