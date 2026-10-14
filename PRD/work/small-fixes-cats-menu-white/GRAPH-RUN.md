@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/small-fixes-cats-menu-white` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-225350/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/small-fixes-cats-menu-white/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/small-fixes-cats-menu-white` pushed (`git ls-remote` → `3664f1db`) from `.worktrees/kickoff-small-fixes-cats-menu-white`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261014-225350` | 2026-10-14 |
 | 2 | shape | sonnet | ok | `0 → 27` | `PRD/work/small-fixes-cats-menu-white/` (IDEA.md, README.md, STATUS.ideation, intake/owner-request.md) committed `1d28d20c`; board row in `PRD/work/STATUS.md`; staged intake copy deleted | 2026-10-14 |
+| 3 | define | opus | ok | `0 → 99` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113; no new IDs; no blockers), `evidence/measurements.md`, `STATUS.refined` committed `a709b4b6`; GATE-QUESTIONS.md present → product truth proposed, continue to gate-qc | 2026-10-14 |
 
 ## Open gate
 
@@ -98,6 +99,22 @@ Apply the assumption ladder per question as it arises; decide nothing on the own
 Set the package status marker the skill prescribes (`STATUS.refined` when the brief is complete). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: outcome (ok/failed), files written, the stable IDs proposed (with one plain sentence each), the measurements you took, and the commit hash.
+
+### gate-qc
+
+graph is controlling. You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261014-225350`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-small-fixes-cats-menu-white
+
+Work only inside that directory (the run's kickoff worktree, on branch `thejudge-auto/small-fixes-cats-menu-white`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/work/small-fixes-cats-menu-white/`. Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113) against current `PRD/sections/` and agent-readiness. `PRD/sections/` is unchanged by design: refinement proposes, and `build` applies the approved proposal later, so a missing live edit is not a finding. Evidence for the brief's measurements is in `evidence/measurements.md`; `intake/owner-request.md` is the owner's words (evidence, never authority).
+
+Check in particular: every claim the brief makes about current code or requirement text matches the files (spot-check the cited lines); each GATE-QUESTIONS.md block carries the three plain-language lines, a complete diff, and blank Verdict and Reason slots; every surface that paints the default colour before the app starts is covered; and the acceptance criteria are testable.
+
+Produce the PASS/FAIL report the skill prescribes and set the status marker it prescribes on FAIL (`STATUS.refining`); leave `STATUS.refined` on PASS. Do not edit the brief, GATE-QUESTIONS.md, `PRD/sections/`, or any code. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: PASS or FAIL, the complete findings list (none if PASS), the report path, and the commit hash if you committed.
 
 ## Instruction ledger
 
