@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
@@ -24,6 +24,7 @@
 | 9 | gate-review | sonnet | ok | `0 → 25` | build half run `graph-20261015-044701`: kickoff worktree removed clean (`git worktree remove`); claim commit `62a281fc` on `thejudge-auto/ask-box-prefilled-text-work` cut from `origin/main` `84ae13f5` (docs PR #309 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `a18a9d68`: 2 accept / 0 edit / 1 reject (REQ-206), `### Brief reconciliation` recorded under `## Gate verdicts` (brief now Draft-follows-the-box only, 8 criteria); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-14 |
 | 10 | gate-qc | sonnet | ok | `0 → 13` | build-half re-grade PASS, findings none — `QUALITY-CHECK.md` committed `1fc5de78`: no brief passage carries out the rejected REQ-206; brief, REQ-108 and FLOW-017 diffs state one Draft rule; all five diff anchors match `PRD/sections/` at `84ae13f5`; cited lines in `QuickLookupApp.tsx` (167/183/214/234/252) and `MtgAssistantApp.tsx` (372/413/795) verified; 8 criteria testable; `STATUS.refined` kept; README `## Preparation gate` already PASS / none (driver confirmed, unchanged) | 2026-10-14 |
 | 11 | plan | sonnet | ok | `0 → 16` | `thejudge-map-out` commit `41c65c3d`: `GAMEPLAN.md`, slice A (`slice-a-draft-follows-box.md`, Draft follows the box in both destinations, final slice with REQ-108/FLOW-017 apply and ship gates, 11 criteria) and `slice-a.criteria.json` all `false`; `STATUS.active` only marker; board row under active; no `PRD/sections`/code diff vs `origin/main`; captures planned only under gitignored `.playwright-mcp/` (`git check-ignore` → `.gitignore:92`), no tracked deliverable in `PRD/work/` | 2026-10-14 |
+| 12 | build | sonnet | ok | `0 → 78` | PR https://github.com/ChrisMiho/TheJudge/pull/310 (`main` ← `thejudge-auto/ask-box-prefilled-text-work`); commit `92a387fb` (slice A) pushed, `origin` tip = local `92a387fb`; `STATUS.ship-ready` only marker; `slice-a.criteria.json` A1–A11 all `true` (no flip denied); builder reports `npm run quality:check` exit 0 (1059 script tests), frontend suite 150 files / 1621 tests pass, 6 new tests in `App.mid-flight-draft.test.tsx` red before the change; live check on dev port 5391 at 1440x900 and 390x844 in `evidence/build-verification.md`. Return-side: launch-checkout porcelain identical before/after (both empty, `cmp`); `classifyBuildWrites` over 23 paths (tracked diff `7125ae9c..92a387fb`, untracked/ignored incl. `.tmp/qc.log`, `.playwright-mcp/` captures, `node_modules/`, `coverage/`, `dist/`, `output/`) → ok, all inside `.worktrees/implement-ask-box-prefilled-text/`; Playwright MCP server logs in `~/.cache/playwright-mcp/` are the server's configured output dir, not a node tool call. Builder deviations recorded for review: one old assertion (typing writes no Draft) and one old Draft-is-null assertion changed to the new rule; `npm ci` in the worktree; new `evidence/build-verification.md`. PR registration skipped by the builder (no `registered:` marker, no `[THEJUDGE-AUTO]` title): driver set the body to the skill's template with marker `thejudge-auto:v1:registered:ask-box-prefilled-text` and title `[THEJUDGE-AUTO][READY] …` via `gh pr edit 310` on head `92a387fb` (single slice done, no blockers) | 2026-10-14 |
 
 ## Gate verdicts
 
@@ -294,6 +295,38 @@ For the manual live checks, run a dev server from this worktree on a free port, 
 Change files only with the Write and Edit tools; never chain a heredoc or `sed -i` into a long Bash command. Run git as short separate calls: `git add <explicit paths>` (never `-A`, `--all` or `.`), then `git commit -m ...`, then `git push origin thejudge-auto/ask-box-prefilled-text-work`. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: outcome (ok/failed), the PR URL, commit hashes, the final `STATUS.*` marker, each criterion and its final value, the result of `npm run quality:check` and the frontend test suite (exit codes and counts), any deviation from the slice doc, and a complete list of every file path you wrote or created (absolute paths), tracked or untracked.
+
+### review
+
+graph is controlling. You are node 7 (`review`), attempt 1, of graph run `graph-20261015-044701`: a fresh-context, no-write reviewer.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text
+
+You hold no write tools and must change nothing: no file edits, no commits, no pushes, no PR comments or edits. Read and run read-only commands only (git, grep, and the test commands below).
+
+What changed for a player: the Draft (the browser-local saved unsent question) is now rewritten on every change and removed the moment nothing is staged, in Ask a Question and In-depth details, so text cleared from the Ask box stays cleared after a refresh. The owner rejected the REQ-206 In-depth hand-off change at the gate, so the hand-off must behave exactly as before.
+
+Inputs: the diff `git diff 7125ae9c 92a387fb` on branch `thejudge-auto/ask-box-prefilled-text-work` (PR https://github.com/ChrisMiho/TheJudge/pull/310); the slice doc `PRD/work/ask-box-prefilled-text/slice-a-draft-follows-box.md`; `DESIGN-BRIEF.md`; the finalized proposal `GATE-QUESTIONS.md` (REQ-108 and FLOW-017 accepted, REQ-206 rejected); `evidence/build-verification.md`. Do not read `GRAPH-RUN.md`.
+
+Rubric: the slice's own acceptance criteria, quoted here verbatim:
+
+1. Reload mid-walk: type `How does ward work?`, attach Sol Ring, tap In-depth, reload once; In-depth still holds Sol Ring (waiting for a zone) and the question (test).
+2. Clear then reload stays empty: after Menu trip then clearing, the `thejudge.conversationDraft.lookup` key is absent before reload; after reload the textarea value is empty, `data-fill` is 0, Draft absent; same when the Draft came from attaching then removing Sol Ring (test).
+3. Clear with a card kept: after clearing the box with Sol Ring attached and reloading, the box is empty, Sol Ring is on the stage, and the Draft holds Sol Ring and an empty question (test).
+4. Replace then reload shows `What does hexproof stop?`; from clean storage, type `How does ward work?` and reload with no Menu trip shows `How does ward work?` (test).
+5. In-depth details: type a question at its question box, Menu-leave and return, clear it, reload; the box is empty and `thejudge.conversationDraft.game` holds an empty question (test).
+6. Desktop at rest (1440x900), empty and unfocused, clean storage: value empty, hint, `data-fill` 0, no focus, In-depth button with label shown, about 96px; focusing or typing still folds it (manual live check on the dev build).
+7. Phone at rest (390x844), empty and unfocused: value empty, hint, `data-fill` 0, no focus, In-depth button icon only, about 35px (manual live check on the dev build).
+8. No regressions: an unsent uncarried question still returns after a Menu trip or reload; Ask a Question's own answer still clears its Draft; opening a saved conversation still saves the staged attempt as a Draft first; Edit cards still returns cards and question; Start over still empties everything; the In-depth hand-off is unchanged (tests, existing suites included).
+9. REQ-108 and FLOW-017 in `PRD/sections/` carry the finalized accepted wording (acceptance criterion, notes, FLOW-017 main flow, two edge cases, dated note); REQ-206 and `quick-lookup/README.md` are unchanged (grep and git diff).
+10. Live check cleanup: browser closed, owned dev server(s) stopped, ports released; captures written only under the package's `.playwright-mcp/` (manual, recorded in the evidence log).
+11. `npm run typecheck`, the frontend test suite, and `npm run quality:check` pass.
+
+Re-run `npm --workspace apps/frontend run test` and `npm run typecheck` yourself. Check in particular: the two changed old assertions are changed because the accepted rule demands it, not to hide a regression; the new effects cannot overwrite a Draft restored on load, cannot write a Draft after a successful submit cleared it, and do not change the In-depth carry; and every `PRD/sections/` hunk matches the finalized `GATE-QUESTIONS.md` diffs by intent.
+
+Severity rule: flag only gaps affecting correctness or the criteria above. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important and never sends the work back to build; mark it Minor. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: APPROVE or CHANGES REQUIRED; each finding with severity (Critical / Important / Minor), file and line, the criterion it affects, and the evidence; and the test and typecheck results you observed (exit codes and counts).
 
 ## Instruction ledger
 
