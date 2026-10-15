@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ask-box-prefilled-text | Ask box shows an old carried question instead of the hint; fix the In-depth hand-off (REQ-206 slot) |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ask-box-prefilled-text | Ask box looks pre-filled with real text; In-depth button looks shrunk |
 
 ## owner-action
 
