@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `owner-action`
-- Next action: answer `GATE-QUESTIONS.md`, merge the docs PR; then `/graph-implement PRD/work/ask-box-prefilled-text/`
+- Current node: `gate-qc` (build-half re-grade)
+- Next action: `/graph-implement PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
 
@@ -21,6 +21,7 @@
 | 6 | gate-qc | sonnet | failed | `0 → 21` | FAIL 2 of 3 — `QUALITY-CHECK.md` committed `e7989da6`: both attempt-1 findings resolved; one new finding (second In-depth tap leaves In-depth's question box and the clear-triggering attempt undefined; criterion 9 incomplete); diff anchors and cited lines verified; `STATUS.refining`; driver rewrote README `## Preparation gate`; loop to define | 2026-10-14 |
 | 7 | define | opus | ok | `0 → 93` | attempt 3 committed `f9385d8d`: later-tap rule in brief and REQ-206 criterion (each tap a new carried attempt; In-depth's box takes the new carried question; only the first answer to a request sent after the latest tap clears Ask a Question), criterion 9 rewritten + 9a–9e; second tap measured live on dev (`evidence/measurements.md` §6, T1–T4); clearing comparison re-anchored to what Ask a Question held at the tap; line refs corrected (234, 252); `STATUS.refined`; no `PRD/sections`/`apps` diff vs `origin/main`; launch checkout porcelain empty | 2026-10-14 |
 | 8 | gate-qc | sonnet | ok | `0 → 12` | PASS (attempt 3), no findings — `QUALITY-CHECK.md` committed `cf78c693`; run stops at gate-qc PASS: proposal pushed to `origin/thejudge-auto/ask-box-prefilled-text`, docs PR into `main` opened, parked `STATUS.owner-action` | 2026-10-14 |
+| 9 | gate-review | sonnet | ok | `0 → 25` | build half run `graph-20261015-044701`: kickoff worktree removed clean (`git worktree remove`); claim commit `62a281fc` on `thejudge-auto/ask-box-prefilled-text-work` cut from `origin/main` `84ae13f5` (docs PR #309 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `a18a9d68`: 2 accept / 0 edit / 1 reject (REQ-206), `### Brief reconciliation` recorded under `## Gate verdicts` (brief now Draft-follows-the-box only, 8 criteria); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-14 |
 
 ## Gate verdicts
 
@@ -241,6 +242,22 @@ Reconcile `DESIGN-BRIEF.md` to the REQ-206 reject, as the skill requires: every 
 Restore `STATUS.refined` as the only marker and update the `PRD/work/STATUS.md` board row as the skill prescribes. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: outcome (ok/failed), the verdict counts, a `### Brief reconciliation` list (each brief passage changed or removed, and why), files written, and the commit hash.
+
+### gate-qc (build-half re-grade)
+
+graph is controlling. You are node 4 (`gate-qc`), build-half re-grade attempt 1, of graph run `graph-20261015-044701`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/ask-box-prefilled-text-work`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/work/ask-box-prefilled-text/`. This is the re-grade after `graph-gate-review` applied the owner's verdicts (commit `a18a9d68`): REQ-206 reject, REQ-108 accept, FLOW-017 accept. Read `GRAPH-RUN.md` sections `## Gate verdicts` and `### Brief reconciliation` first. Grade `DESIGN-BRIEF.md` together with the finalized proposal in `GATE-QUESTIONS.md` (REQ-108 and FLOW-017 amendments only) against current `PRD/sections/` and agent-readiness. `PRD/sections/` is unchanged by design: `build` applies the finalized proposal later, so a missing live edit is not a finding. The In-depth hand-off (the rejected REQ-206 change) and the In-depth Context spacing finding are out of scope by the owner's decision; their absence is not a finding.
+
+Check in particular: no passage, criterion, touched-file entry or test plan in the brief still carries out the rejected REQ-206 change or contradicts today's In-depth hand-off; the brief, the REQ-108 diff and the FLOW-017 diff state one identical Draft rule (rewritten on every change, removed the moment nothing is staged, in Ask a Question and In-depth details); every diff anchor in `GATE-QUESTIONS.md` still matches current `PRD/sections/` on `origin/main`; cited code lines (for example `snapshotMidFlightDraft` in `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`) match the files; and every one of the 8 acceptance criteria is testable. Flag only gaps affecting correctness or agent-readiness.
+
+Record the result as the skill prescribes (QUALITY-CHECK.md, status marker). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: PASS or FAIL, the complete findings list (or none), files written, and the commit hash.
 
 ## Instruction ledger
 
