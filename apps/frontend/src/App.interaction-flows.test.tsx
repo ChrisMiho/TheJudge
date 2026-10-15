@@ -265,6 +265,9 @@ describe("Interaction flows - search and game context", () => {
     });
 
     stackView.unmount();
+    // The second render is a fresh visit; the first walk wrote an In-depth Draft (REQ-108) that would otherwise restore.
+    // Optional call: Node 26's built-in localStorage has no clear() without --localstorage-file.
+    globalThis.localStorage?.clear?.();
 
     const battlefieldView = render(<App />);
     await advanceToBattlefieldZoneCollection(user);

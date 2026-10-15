@@ -8,3 +8,10 @@ Typed `How does ward work?`, reloaded with no Menu trip: box held the text and t
 - Phone 390x844 at rest: value `""`, hint "Your question…", `data-fill="0"`, not focused, Draft absent, In-depth button 35px, label `display: none`.
 
 Cleanup: browser closed (`browser_close`), vite task stopped by its task handle, port 5391 confirmed released (`lsof` empty). Captures only under `PRD/work/ask-box-prefilled-text/.playwright-mcp/` (`desktop-at-rest.png`, `phone-at-rest.png`).
+
+## Review loop 1 — Node 22 test isolation (criterion 11)
+
+CI `frontend-shard 1/3` (Node 22) failed the ordered-suggestions parity test in `apps/frontend/src/App.interaction-flows.test.tsx`: the first walk writes the In-depth Draft (REQ-108), and the second `render(<App />)` restored it. Fix: `globalThis.localStorage?.clear?.()` between `stackView.unmount()` and the second render (optional call because Node 26's built-in localStorage has no `clear()`). No other test renders the app twice expecting a fresh start; the full suite shows none.
+
+- Node 22 (`npx -y -p node@22 node ../../node_modules/vitest/vitest.mjs run`, from `apps/frontend`): 150 files passed, 1621 tests passed, 0 failed.
+- `npm run quality:check` (worktree root, Node 26): exit code 0.
