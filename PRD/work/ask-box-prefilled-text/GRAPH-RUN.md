@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `gate-qc` (build-half re-grade)
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | 7 | define | opus | ok | `0 → 93` | attempt 3 committed `f9385d8d`: later-tap rule in brief and REQ-206 criterion (each tap a new carried attempt; In-depth's box takes the new carried question; only the first answer to a request sent after the latest tap clears Ask a Question), criterion 9 rewritten + 9a–9e; second tap measured live on dev (`evidence/measurements.md` §6, T1–T4); clearing comparison re-anchored to what Ask a Question held at the tap; line refs corrected (234, 252); `STATUS.refined`; no `PRD/sections`/`apps` diff vs `origin/main`; launch checkout porcelain empty | 2026-10-14 |
 | 8 | gate-qc | sonnet | ok | `0 → 12` | PASS (attempt 3), no findings — `QUALITY-CHECK.md` committed `cf78c693`; run stops at gate-qc PASS: proposal pushed to `origin/thejudge-auto/ask-box-prefilled-text`, docs PR into `main` opened, parked `STATUS.owner-action` | 2026-10-14 |
 | 9 | gate-review | sonnet | ok | `0 → 25` | build half run `graph-20261015-044701`: kickoff worktree removed clean (`git worktree remove`); claim commit `62a281fc` on `thejudge-auto/ask-box-prefilled-text-work` cut from `origin/main` `84ae13f5` (docs PR #309 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `a18a9d68`: 2 accept / 0 edit / 1 reject (REQ-206), `### Brief reconciliation` recorded under `## Gate verdicts` (brief now Draft-follows-the-box only, 8 criteria); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-14 |
+| 10 | gate-qc | sonnet | ok | `0 → 13` | build-half re-grade PASS, findings none — `QUALITY-CHECK.md` committed `1fc5de78`: no brief passage carries out the rejected REQ-206; brief, REQ-108 and FLOW-017 diffs state one Draft rule; all five diff anchors match `PRD/sections/` at `84ae13f5`; cited lines in `QuickLookupApp.tsx` (167/183/214/234/252) and `MtgAssistantApp.tsx` (372/413/795) verified; 8 criteria testable; `STATUS.refined` kept; README `## Preparation gate` already PASS / none (driver confirmed, unchanged) | 2026-10-14 |
 
 ## Gate verdicts
 
@@ -258,6 +259,22 @@ Check in particular: no passage, criterion, touched-file entry or test plan in t
 Record the result as the skill prescribes (QUALITY-CHECK.md, status marker). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: PASS or FAIL, the complete findings list (or none), files written, and the commit hash.
+
+### plan
+
+graph is controlling. You are node 5 (`plan`), attempt 1, of graph run `graph-20261015-044701`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/ask-box-prefilled-text-work`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-map-out` skill (Skill tool) in graph mode on `PRD/work/ask-box-prefilled-text/`. First confirm the package README's `## Preparation gate` reads `Quality-check: PASS` (re-grade committed `1fc5de78`); you cannot self-certify one. Slice the finalized `DESIGN-BRIEF.md` (8 acceptance criteria) and the finalized proposal in `GATE-QUESTIONS.md` (REQ-108 and FLOW-017 amendments; REQ-206 rejected, so the In-depth hand-off stays as today and no slice touches it).
+
+The fix: the Draft (the browser-local saved unsent question) is rewritten on every change and removed the moment nothing is staged, in Ask a Question (`QuickLookupApp.tsx`) and In-depth details (`MtgAssistantApp.tsx`), so cleared text stays cleared after a refresh. Keep slices as few as the work honestly needs; a single slice is fine if the brief supports it. The final slice applies the REQ-108 and FLOW-017 product truth to `PRD/sections/` by intent together with the code, and carries the ship gates (`npm run quality:check`, the frontend test suite). Write `GAMEPLAN.md`, one `slice-<letter>.md` per slice, and one `slice-<letter>.criteria.json` beside each with every criterion `false` and an evidence block, per the skill's reference. Plan no deliverable inside `PRD/work/`: screenshots and captures go under the package's `.playwright-mcp/` (gitignored), never a tracked deliverable.
+
+Set `STATUS.active` as the only marker and move the `PRD/work/STATUS.md` board row from refined to active (remove from the old section, add to the new). Do not edit `PRD/sections/` or code. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: outcome (ok/failed), the slices with one plain sentence each and their criteria counts, files written, and the commit hash.
 
 ## Instruction ledger
 
