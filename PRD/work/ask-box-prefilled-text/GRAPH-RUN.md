@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `build` (attempt 2, review loop 1 of 2)
+- Current node: `review` (attempt 2)
 - Next action: `/graph-implement PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
@@ -26,6 +26,7 @@
 | 11 | plan | sonnet | ok | `0 → 16` | `thejudge-map-out` commit `41c65c3d`: `GAMEPLAN.md`, slice A (`slice-a-draft-follows-box.md`, Draft follows the box in both destinations, final slice with REQ-108/FLOW-017 apply and ship gates, 11 criteria) and `slice-a.criteria.json` all `false`; `STATUS.active` only marker; board row under active; no `PRD/sections`/code diff vs `origin/main`; captures planned only under gitignored `.playwright-mcp/` (`git check-ignore` → `.gitignore:92`), no tracked deliverable in `PRD/work/` | 2026-10-14 |
 | 12 | build | sonnet | ok | `0 → 78` | PR https://github.com/ChrisMiho/TheJudge/pull/310 (`main` ← `thejudge-auto/ask-box-prefilled-text-work`); commit `92a387fb` (slice A) pushed, `origin` tip = local `92a387fb`; `STATUS.ship-ready` only marker; `slice-a.criteria.json` A1–A11 all `true` (no flip denied); builder reports `npm run quality:check` exit 0 (1059 script tests), frontend suite 150 files / 1621 tests pass, 6 new tests in `App.mid-flight-draft.test.tsx` red before the change; live check on dev port 5391 at 1440x900 and 390x844 in `evidence/build-verification.md`. Return-side: launch-checkout porcelain identical before/after (both empty, `cmp`); `classifyBuildWrites` over 23 paths (tracked diff `7125ae9c..92a387fb`, untracked/ignored incl. `.tmp/qc.log`, `.playwright-mcp/` captures, `node_modules/`, `coverage/`, `dist/`, `output/`) → ok, all inside `.worktrees/implement-ask-box-prefilled-text/`; Playwright MCP server logs in `~/.cache/playwright-mcp/` are the server's configured output dir, not a node tool call. Builder deviations recorded for review: one old assertion (typing writes no Draft) and one old Draft-is-null assertion changed to the new rule; `npm ci` in the worktree; new `evidence/build-verification.md`. PR registration skipped by the builder (no `registered:` marker, no `[THEJUDGE-AUTO]` title): driver set the body to the skill's template with marker `thejudge-auto:v1:registered:ask-box-prefilled-text` and title `[THEJUDGE-AUTO][READY] …` via `gh pr edit 310` on head `92a387fb` (single slice done, no blockers) | 2026-10-14 |
 | 13 | review | opus | failed | `0 → 28` | reviewer APPROVE, five Minor (In-depth Start Over after reopening a saved conversation now removes the stashed Draft, matches the accepted rule; criterion 5 and 1 tests take shortcuts; DEC-138 tests weaker; no `quality:check` in the evidence log — driver read `.tmp/qc.log`, last stage `test:scripts` 1059 pass / 0 fail); reviewer observed frontend suite 150 files / 1621 pass, typecheck/lint/format exit 0, `PRD/sections/` hunks byte-identical to the finalized diffs; worktree and launch porcelain empty after. Driver CI check overrides to failed: PR #310 runs `38684385791` and `38684577018` fail `frontend-shard 1/3` (Node 22) while `main` run `38683206859` is green. Reproduced locally with `npx -y -p node@22 node ../../node_modules/vitest/vitest.mjs run`: 1 failed / 1620 passed — `App.interaction-flows.test.tsx` parity test, `Unable to find … Confirm game context` at :270. Cause: the test renders `<App />` twice without clearing storage; under the accepted rule the first render's In-depth walk writes the Draft at once, so the second render restores mid-walk. Node 26 hides it (its built-in `localStorage` without `--localstorage-file` shadows jsdom's and persists nothing). Important against criterion 11 → loop to build (1 of 2) | 2026-10-14 |
+| 14 | build | sonnet | ok | `0 → 22` | attempt 2: commit `93a8cda5` pushed (no force), `origin` tip = local; test-only fix in `App.interaction-flows.test.tsx` (`globalThis.localStorage?.clear?.()` between `stackView.unmount()` and the second render, optional call because Node 26's built-in `localStorage` has no `clear()`); `evidence/build-verification.md` appended; builder reports Node 22 suite 150 files / 1621 pass / 0 fail and `npm run quality:check` exit 0; no other test renders the app twice expecting a fresh start. Driver checked: `gh pr checks 310` on run `38685440074` all pass (frontend shards 1–3, static, backend, coverage-merge); PR title READY and registration marker intact, head `93a8cda5`; `STATUS.ship-ready` only marker. Return-side: launch-checkout porcelain identical (both empty); `classifyBuildWrites` over 4 paths → ok | 2026-10-14 |
 
 ## Gate verdicts
 
@@ -348,6 +349,22 @@ Verify under Node 22, the version CI uses, from `apps/frontend`: `npx -y -p node
 Change files only with the Write and Edit tools; never chain a heredoc or `sed -i` into a long Bash command. Run git as short separate calls: `git add <explicit paths>` (never `-A`, `--all` or `.`), then `git commit -m ...`, then the push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: outcome (ok/failed), the commit hash, the Node 22 suite counts, the `npm run quality:check` exit code, the PR checks result, any other test you changed and why, and a complete list of every file path you wrote or created (absolute paths), tracked or untracked.
+
+### review (attempt 2)
+
+graph is controlling. You are node 7 (`review`), attempt 2, of graph run `graph-20261015-044701`: a fresh-context, no-write reviewer.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text
+
+You hold no write tools and must change nothing: no file edits, no commits, no pushes, no PR comments or edits. Read and run read-only commands only.
+
+Context: slice A (`PRD/work/ask-box-prefilled-text/slice-a-draft-follows-box.md`) makes the Draft (the browser-local saved unsent question) follow the box on every change, so cleared text stays cleared after a refresh. A first review approved the product change at `92a387fb`. CI then failed one Node 22 test, `App.interaction-flows.test.tsx`, because it renders the app twice in one test without clearing storage, so the second render restored the first walk's In-depth Draft. Build attempt 2 changed only that test. Do not read `GRAPH-RUN.md`.
+
+Grade only the new commit: `git diff 92a387fb 93a8cda5 -- apps/`, plus `evidence/build-verification.md`. Rubric: slice A criterion 11 (`npm run typecheck`, the frontend test suite, and `npm run quality:check` pass) and criterion 8 (no regressions, the In-depth hand-off unchanged). Check that the fix makes the second render a genuinely fresh visit as the test intends, and does not hide a product regression (the product code must be unchanged since `92a387fb`). Run `npx -y -p node@22 node ../../node_modules/vitest/vitest.mjs run src/App.interaction-flows.test.tsx` from `apps/frontend`, and read `gh pr checks 310`.
+
+Severity rule: flag only gaps affecting correctness or the criteria above. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important; mark it Minor. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: APPROVE or CHANGES REQUIRED; each finding with severity, file and line, the criterion, and the evidence; and the test and PR check results you observed.
 
 ## Instruction ledger
 
