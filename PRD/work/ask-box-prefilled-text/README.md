@@ -6,7 +6,7 @@ Bug: the Ask box shows an old question (a saved Draft) instead of the hint, so t
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/ask-box-prefilled-text
+- Autonomous base: origin/main
 
 ## Preparation gate
 

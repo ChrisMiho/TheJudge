@@ -1,10 +1,10 @@
 # Graph run — ask-box-prefilled-text
 
-- Run ID: `graph-20261015-034607`
+- Run ID: `graph-20261015-044701` (build half; spec-forming half `graph-20261015-034607`)
 - Profile: `loaded (env sentinel)` — printed by `npm run graph:preflight` at node 1 (`profile sentinel: present`)
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/ask-box-prefilled-text`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
 - Current node: `owner-action`
 - Next action: answer `GATE-QUESTIONS.md`, merge the docs PR; then `/graph-implement PRD/work/ask-box-prefilled-text/`
