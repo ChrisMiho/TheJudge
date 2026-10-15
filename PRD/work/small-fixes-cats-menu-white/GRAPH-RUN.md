@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white`
 - Branch: `thejudge-auto/small-fixes-cats-menu-white-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-225350/`
-- Current node: `review`
+- Current node: `close`
 - Next action: `/graph-implement PRD/work/small-fixes-cats-menu-white/`
 
 ## Node ledger
@@ -26,6 +26,7 @@
 | 10 | gate-qc | sonnet | ok | `0 → 16` | build-half re-grade PASS, findings none — `QUALITY-CHECK.md` committed `0ae0d9ba`; owner's REQ-207 park revision graded (brief §2, A4, A11, slot, `evidence/measurements.md` agree; selectors exist in `shell.css` 183/287/304/309-315/318-322); all `GATE-QUESTIONS.md` diff anchors match current `PRD/sections/`; `STATUS.refined` kept; driver rewrote README `## Preparation gate` | 2026-10-14 |
 | 11 | plan | sonnet | ok | `0 → 23` | `thejudge-map-out` commit `be9331e1`: `GAMEPLAN.md`, slices A (cats everywhere, 12 criteria), B (menu button and tray, 9), C (White default, final slice with ship gates, 11), each `slice-<letter>.criteria.json` all `false`; `STATUS.active` only marker; board row under active; no `PRD/sections`/code diff vs `origin/main`; no deliverable planned inside `PRD/work/` (driver placement check) | 2026-10-14 |
 | 12 | build | sonnet | ok | `0 → 87` | PR https://github.com/ChrisMiho/TheJudge/pull/308 (`[THEJUDGE-AUTO][READY]`, registration marker in body); commits `e69f0a2a` (A), `447b4cd4` (B), `59a0fc5f` (C) pushed, `origin` tip = local `59a0fc5f`; `STATUS.ship-ready` only marker; all 32 criteria self-reported true (hook log does not see worktree criteria); builder reports `npm run quality:check` exit 0 and frontend suite 150 files / 1615 tests green. Return-side: launch-checkout porcelain identical before/after (both empty); `classifyBuildWrites` over the 37 tracked paths plus untracked `.tmp/` and capture paths → one path outside scope, `.playwright-mcp/console-2026-10-14T23-51-29-731Z.log` at the launch root (gitignored; written by the session-wide Playwright MCP server's default output dir, not a node tool call). Owner waived it in session (see instruction ledger); driver deleted the file and set `PLAYWRIGHT_MCP_OUTPUT_DIR=/Users/chrismiho/.cache/playwright-mcp` in user settings (`~/.claude/settings.json` env; effective next session). Builder deviations recorded for review: shell edit scripts under `.tmp/` used for exact-string replacements; all `PRD/sections/` edits landed in the slice C commit | 2026-10-14 |
+| 13 | review | opus | ok | `0 → 40` | APPROVE on attempt 1, no Critical or Important; no-write `Plan`-type reviewer over `git diff 1dd3c2e3 59a0fc5f` re-ran `npm --workspace apps/frontend run test` (150 files / 1615 tests, exit 0), typecheck clean, eslint on touched files 0 errors; compared every `PRD/sections/` hunk with the finalized `GATE-QUESTIONS.md` (all match). Minor: B7 measured with overlay scrollbars (code guarantee `overflow-x: hidden` at `shell.css:384-385`); C7 first paint rests on the `:root` token tests; all `PRD/sections/` edits in the slice C commit; new eslint `react-refresh/only-export-components` warning at `brandTapContext.tsx:34`. PR #308 registration marker present, title READY | 2026-10-14 |
 
 ## Open gate
 
@@ -344,6 +345,22 @@ Severity rule: flag only gaps against these stated criteria or correctness defec
 Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: a verdict (APPROVE, or CHANGES REQUIRED), then each finding with severity (Critical, Important, Minor), the criterion it breaks, file and line, and the evidence; then what you independently re-ran and its result.
+
+### close
+
+graph is controlling. You are node 8 (`close`), attempt 1, of the build half of graph run `graph-20261014-234321`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white
+
+Shared branch: `thejudge-auto/small-fixes-cats-menu-white-work`, code PR https://github.com/ChrisMiho/TheJudge/pull/308 (open, into `main`, registration marker `thejudge-auto:v1:registered:small-fixes-cats-menu-white` in its body). Work only inside that worktree; never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-cleanup` skill (Skill tool) in graph mode on `PRD/work/small-fixes-cats-menu-white/` (`STATUS.ship-ready`), on the PR-ready path: on the code branch, before the owner merges. Review approved on attempt 1 with Minor findings only (recorded in `GRAPH-RUN.md` node ledger row 13). Build already applied the durable `PRD/sections/` truth (REQ-203, REQ-207, REQ-113, REQ-099, REQ-044, FLOW-007, plus the `in-depth/README.md`, `shared-chrome/README.md`, `system-map.md` and `user-flows.md` lines): confirm it is present and promote only a leftover, never re-write it. Write the receipt under `PRD/instructions/receipts/` with the plain-language opening block, a `- PR:` line, the `## Graph run` section folding `GRAPH-RUN.md` `## Node ledger` and `## Instruction ledger` verbatim (every row, byte for byte, both the spec-forming half rows 1-8 and the build half rows 9-13), the `## Intake` section naming each staged intake file and its origin, and the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/308`. Record in the receipt: the owner's REQ-207 revision during the park (45px bars and glow chosen from live previews; the box look declined); the build write-scope trip (a Playwright MCP console log written to the launch root's gitignored `.playwright-mcp/`), which the owner waived in session, with the fix applied (`PLAYWRIGHT_MCP_OUTPUT_DIR` in user settings, effective next session, to be verified on the first browser run); and the follow-ups: the review's four Minor findings, and the out-of-scope note from refinement that the desktop menu is a full-height square while REQ-207 and REQ-113 describe a floating rounded card at 768px and wider. Update the `PRD/work/STATUS.md` board as the skill prescribes, then delete the package with `git rm -r PRD/work/small-fixes-cats-menu-white` (tracked files only; the gitignored `.playwright-mcp/` captures stay on disk, which is expected).
+
+Do not write the driver's `close` row; the driver appends it to the receipt after you return. Do not merge or close the PR.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>` (never `-A`, `--all` or `.`), `git rm -r <path>`, then `git commit -m ...`, then `git push origin thejudge-auto/small-fixes-cats-menu-white-work`. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: the receipt path, whether every ledger row was folded verbatim, what you confirmed or promoted in `PRD/sections/`, the board change, the commit hash, and the push result.
 
 ## Instruction ledger
 
