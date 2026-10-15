@@ -237,21 +237,20 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
 
   const isFirstCardsEffectRef = useRef(true);
 
-  // REQ-206 owner edit (A4/A5): the Draft begins the moment the first card is attached —
-  // not only once the player leaves the Menu or types a question — so a carried-but-
-  // unplaced card survives a reload. Reacts to every `selectedCards` change (attach or
-  // remove) rather than typing, which still relies on the Menu-leave snapshot above; the
-  // very first effect pass is skipped so it never races the mount-hydrate effect above (a
-  // snapshot here, before that effect's own `setSelectedCards` commits, would read the
-  // pre-hydration empty array and wipe the very draft about to be restored).
+  // REQ-108 / FLOW-017: the Draft always matches the box. Every change to the cards or the
+  // question rewrites it, and the moment nothing is staged it is removed, so an emptied
+  // question stays empty after a reload. The very first effect pass is skipped so it never
+  // races the mount-hydrate effect above (a snapshot here, before that effect's own
+  // `setSelectedCards` commits, would read the pre-hydration empty state and wipe the very
+  // draft about to be restored).
   useEffect(() => {
     if (isFirstCardsEffectRef.current) {
       isFirstCardsEffectRef.current = false;
       return;
     }
     snapshotMidFlightDraft();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to selectedCards; question is read via closure at fire time inside snapshotMidFlightDraft.
-  }, [selectedCards]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to the two fields the Draft saves; snapshotMidFlightDraft reads both via closure at fire time.
+  }, [selectedCards, question]);
 
   useEffect(() => {
     const controller = new AbortController();

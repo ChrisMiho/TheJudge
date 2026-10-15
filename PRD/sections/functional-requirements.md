@@ -2671,7 +2671,7 @@
 - Description: Each conversation-bearing destination must persist at most one mid-flight Draft snapshot (anything before the first successful submit) so Menu navigation away, page reload, and opening a saved conversation do not wipe staged work; listed in History as **Draft**, auto-hydrated on destination mount, and kept as a single updating slot (no unfinished backlog).
 - Acceptance Criteria:
   - mid-flight is defined as any staged state before the first successful Ask AI answer for the current attempt (typed question, optional card, staged game/zones/enrichment, current step as applicable)
-  - Draft is written/updated as mid-flight staging changes enough to resume meaningfully after Menu leave, reload, or opening a saved conversation
+  - the Draft always matches what is staged on screen: every change to anything the Draft saves rewrites it at once, and the moment nothing is staged it is removed at once. A change is each edit to the question and each card attached or removed, and in In-depth details also each step, zone, placement or game-state change; "nothing is staged" is the same test Menu-leave uses (Ask a Question: the question empty or spaces only and no card attached). So Menu leave, reload, closing the tab, or opening a saved conversation never brings back older work than the screen showed: an emptied question comes back empty, a replaced question comes back as the new text, and a question typed and reloaded without a Menu trip comes back
   - selecting a completed conversation from any pre-submit staged step writes the destination's Draft **before** restoring that conversation, so the staged attempt is recoverable from the same drawer immediately afterward (DEC-138)
   - this snapshot-on-history-select applies to **both** conversation-bearing destinations — In-Depth Question and Quick Question — and is silent (no confirmation dialog and no transient notice)
   - when there is no meaningful staging to preserve, selecting a conversation writes no Draft, matching Menu-leave's existing empty-staging behavior
@@ -2696,6 +2696,7 @@
   - FLOW-017
 - Notes:
   - DEC-138 extended this requirement's exit coverage from "Menu leave or reload" to include opening a saved conversation, in both destinations; the one-slot-per-destination rule is unchanged
+  - amended by `ask-box-prefilled-text` (2026-10-14): the Draft follows every change instead of being snapshotted at exits. Measured live at 1440x900 and 390x844 on mtgjudge.gg and the dev build: the Draft was written or removed only at Menu-leave, opening a saved conversation, and (Ask a Question) a card change, so after any of those, clearing or replacing the question and reloading restored the older question, a question typed and reloaded with no Menu trip was lost, and a reload mid-walk in In-depth details lost the carried cards. Removing the Draft only when the box empties, and saving at page hide, were considered and not chosen (the first leaves a replaced question stale; phones do not reliably signal page hide)
 
 ### REQ-109
 - Title: Answered workspace fill and Start Over chrome
