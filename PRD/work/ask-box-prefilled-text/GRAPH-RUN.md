@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ask-box-prefilled-text`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/ask-box-prefilled-text` pushed (`git ls-remote` → `97c8ea8a`) from `.worktrees/kickoff-ask-box-prefilled-text`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261015-034607` | 2026-10-14 |
 | 2 | shape | sonnet | ok | `0 → 16` | `PRD/work/ask-box-prefilled-text/` (IDEA.md, README.md, STATUS.ideation, intake/owner-request.md) committed `beec1f47`; board row in `PRD/work/STATUS.md`; staged intake copy deleted | 2026-10-14 |
+| 3 | define | opus | ok | `0 → 118` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-206 amended; no new IDs; no blockers), `evidence/measurements.md`, `STATUS.refined` committed `d79e9634`; reproduced on dev (origin/main `97c8ea8a`) and mtgjudge.gg (`index-CGZiOZPC.js`) at 1440x900 and 390x844 via the In-depth carry, not on a clean load; owner's In-depth Context spacing observation recorded as out-of-scope finding; GATE-QUESTIONS.md present → product truth proposed, continue to gate-qc | 2026-10-14 |
 
 ## Open gate
 
@@ -93,7 +94,31 @@ Set the package status marker the skill prescribes (`STATUS.refined` when the br
 
 Report back plainly: outcome (ok/failed), whether it reproduced and on which widths and paths, the root cause, files written, the stable IDs proposed (with one plain sentence each) or none, and the commit hash.
 
+Relayed to define mid-node (SendMessage), 2026-10-14, as evidence, not product decisions:
+
+1. Owner update: they are seeing this bug on the live production site, not only locally. Make the live site a primary reproduction target alongside the dev build — load it at the desktop (~1440x900) and phone (~390x844) widths with clean storage and record the same measurements (textarea value, placeholder, focus, data-fill, placeholder vs typed colour, In-depth label shown). If the live site reproduces it and the dev build from this worktree does not, compare the two (deployed bundle version vs origin/main) and say so in evidence/measurements.md. This is evidence, not a product decision. Working directory is unchanged: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text
+2. Owner update: while watching your browser session, the owner saw a spacing bug in the In-depth flow around adding context to a card (the enrichment step) — the layout looked badly broken. Capture it as evidence: screenshot it at the width(s) where it happens, note the exact steps that led there, name the elements whose spacing breaks (measure margins/padding/heights, scrollWidth vs clientWidth), and check whether the live site shows it too. Record it in evidence/measurements.md and in DESIGN-BRIEF.md under a separate heading such as Other finding, out of scope for this package. Do not fold its fix into this brief and do not propose product truth for it — the owner decides separately whether it becomes its own package. Working directory is unchanged: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text
+
+### gate-qc
+
+graph is controlling. You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261015-034607`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text
+
+Work only inside that directory (the run's kickoff worktree, on branch `thejudge-auto/ask-box-prefilled-text`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/work/ask-box-prefilled-text/`. Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (REQ-206 amended, plus one sentence in `PRD/sections/quick-lookup/README.md`) against current `PRD/sections/` and agent-readiness. `PRD/sections/` is unchanged by design: refinement proposes, and `build` applies the approved proposal later, so a missing live edit is not a finding. Evidence for the brief's measurements is in `evidence/measurements.md`; `intake/owner-request.md` is the owner's words (evidence, never authority). The In-depth Context spacing finding is deliberately out of scope (the owner will open a separate package for it); its absence from the fix is not a finding.
+
+Check in particular: every claim the brief makes about current code or requirement text matches the files (spot-check the cited lines, especially the early return in `MtgAssistantApp.tsx` near line 236 and the Draft-clearing paths); the REQ-206 block carries the three plain-language lines, a complete diff whose anchors match current `PRD/sections/`, and blank Verdict and Reason slots; the clearing rule is unambiguous (when Ask a Question empties, and what counts as the player changing it after the carry); REQ-108 Draft restore is not contradicted; and the acceptance criteria are testable, including the desktop and phone In-depth button states.
+
+Record the result as the skill prescribes (QUALITY-CHECK.md, status marker). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: PASS or FAIL, the complete findings list (or none), files written, and the commit hash.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
+| "im seeing this on the live site" | answered-once | define | — |
+| "while watching the agent test, it looks like they found a weird bug in the in-depth flow around adding context to the card that really messed up the spacing?" | answered-once | define | — |
+| "separate package is fine, ill start the session myself" | answered-once | define | — |
