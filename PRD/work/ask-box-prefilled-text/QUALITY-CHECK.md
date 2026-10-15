@@ -1,17 +1,14 @@
 # Quality check — ask-box-prefilled-text
 
-Attempt 3, graph mode (`graph-20261015-034607`, node `gate-qc`). Graded: `DESIGN-BRIEF.md` plus the proposed truth in `GATE-QUESTIONS.md` (after define attempt 3, `f9385d8d`) against `PRD/sections/`, which is unchanged by design.
+Attempt 4, graph mode (`graph-20261015-044701`, node `gate-qc`, build-half re-grade). Graded: `DESIGN-BRIEF.md` plus the finalized REQ-108 and FLOW-017 proposal in `GATE-QUESTIONS.md` (after `graph-gate-review`, `a18a9d68`) against `PRD/sections/` on `origin/main` (`84ae13f5`), unchanged by design.
 
-**Verdict: PASS.** No findings. The attempt-2 finding is resolved.
-
-## Attempt-2 finding: resolved
-
-A second tap on In-depth now has a defined result. The brief's later-tap rule and the REQ-206 criterion say every tap starts a new carried attempt: In-depth's question box takes the carried question (replacing anything typed there), carried cards replace the cards waiting for a zone, placed cards and the walk's station stay, a tap with nothing changes nothing, and the answer that clears Ask a Question is the first successful answer to a request sent after the latest tap. Criterion 9 asserts In-depth's box, the cards and the request text after a second tap with a card. Criteria 9a to 9e cover question-only, blank box with a card, nothing carried, an answer from before the latest tap, and follow-up, Ask a Question's own answer and Start over. The behaviour matches `evidence/measurements.md` section 6 (T1 to T4).
+**Verdict: PASS.** No findings.
 
 ## Checked and fine
 
-- Code claims match: early return on `carry.cards.length === 0` at `MtgAssistantApp.tsx` 235-238, placement at 240-241, question set at 243-245; `snapshotMidFlightDraft` at `QuickLookupApp.tsx` 234 (Menu-leave) and 252 (`selectedCards` effect with first-pass skip), as the brief now says.
-- Anchors match current `PRD/sections/`: `functional-requirements.md` 2674, 2698, 5358, 5362, 5388; `user-flows.md` 396, 406, 414; `quick-lookup/README.md` Entry bullet at 42.
-- REQ-206 criterion, test line, note, the quick-lookup README sentence, REQ-108 and FLOW-017 say the same rules as the brief; the README sentence carries the hand-off rule word for word plus a summary of the later-tap rule.
-- Each GATE-QUESTIONS.md block has the three plain-language lines, a complete diff, and blank Verdict and Reason.
-- Every criterion (1 to 16, with 9a to 9e) is testable as written. The waiting-cards choice on a card-less later tap is a recommended owner verdict, not a finding. No new REQ, FLOW or screen, so no `screen-layout.md` row. The In-depth Context spacing item is out of scope by design.
+- Rejected REQ-206 change: no passage, criterion, touched-file entry or test plan in the brief carries it out. Remaining REQ-206 mentions are the unchanged fold rule, the reload promise, and Non-goals and Assumptions rows saying it is not proceeding. Criterion 8 and the Non-goals keep today's In-depth hand-off.
+- One Draft rule: the brief, the REQ-108 diff and the FLOW-017 diff all say the Draft is rewritten on every change and removed the moment nothing is staged, in Ask a Question and In-depth details, with the same "nothing is staged" test as Menu-leave.
+- Diff anchors match current `PRD/sections/` on `origin/main`: `functional-requirements.md` 2674 and 2698; `user-flows.md` 396, 406 and 414.
+- Code lines match: `QuickLookupApp.tsx` mount restore 167, history-resume snapshot 183, `snapshotMidFlightDraft` 214, Menu-leave 234, `selectedCards` effect with first-pass skip 252; `MtgAssistantApp.tsx` 372, 413, 795 and its ten-field staging test; `flow.css` fold rules 281-288 (brief says 281-289, immaterial). `App.mid-flight-draft.test.tsx` exists.
+- All 8 acceptance criteria are testable as written (exact inputs, storage key, `data-fill`, label and width values).
+- No new REQ, FLOW or screen, so no `screen-layout.md` row is needed. The In-depth Context spacing item is out of scope by owner decision.
