@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ask-box-prefilled-text | Ask box shows an old carried question instead of the hint; fix the In-depth hand-off (REQ-206 slot) |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| ask-box-prefilled-text | Ask box shows an old carried question instead of the hint; fix the In-depth hand-off (REQ-206 slot) |
 
 ## ideation
 
