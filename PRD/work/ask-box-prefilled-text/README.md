@@ -1,4 +1,4 @@
-status: refined
+status: refining
 
 # ask-box-prefilled-text
 
