@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ask-box-prefilled-text | Ask box looks pre-filled with real text; In-depth button looks shrunk |
 
 ## owner-action
 
