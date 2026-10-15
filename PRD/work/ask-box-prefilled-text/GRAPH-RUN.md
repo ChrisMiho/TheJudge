@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ask-box-prefilled-text`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/ask-box-prefilled-text` pushed (`git ls-remote` → `97c8ea8a`) from `.worktrees/kickoff-ask-box-prefilled-text`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261015-034607` | 2026-10-14 |
 | 2 | shape | sonnet | ok | `0 → 16` | `PRD/work/ask-box-prefilled-text/` (IDEA.md, README.md, STATUS.ideation, intake/owner-request.md) committed `beec1f47`; board row in `PRD/work/STATUS.md`; staged intake copy deleted | 2026-10-14 |
 | 3 | define | opus | ok | `0 → 118` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-206 amended; no new IDs; no blockers), `evidence/measurements.md`, `STATUS.refined` committed `d79e9634`; reproduced on dev (origin/main `97c8ea8a`) and mtgjudge.gg (`index-CGZiOZPC.js`) at 1440x900 and 390x844 via the In-depth carry, not on a clean load; owner's In-depth Context spacing observation recorded as out-of-scope finding; GATE-QUESTIONS.md present → product truth proposed, continue to gate-qc | 2026-10-14 |
+| 4 | gate-qc | sonnet | failed | `0 → 28` | FAIL 1 of 3 — `QUALITY-CHECK.md` committed `65b55a31` (finding 1: partial-change clearing rule ambiguous) and `35e6acf8` (finding 2: owner's type → clear → reload path, relayed mid-node, confirmed in `QuickLookupApp.tsx` `snapshotMidFlightDraft` ~214); `STATUS.refining`; driver wrote README `## Preparation gate`; loop to define | 2026-10-14 |
 
 ## Open gate
 
@@ -115,6 +116,30 @@ Record the result as the skill prescribes (QUALITY-CHECK.md, status marker). Cha
 
 Report back plainly: PASS or FAIL, the complete findings list (or none), files written, and the commit hash.
 
+Relayed to gate-qc mid-node (SendMessage), 2026-10-14, as evidence, not a product decision:
+
+New owner evidence that contradicts the brief: the owner reports that if they type something in the Ask box, clear it, then refresh the page, the old message comes back. The brief and evidence/measurements.md say type-then-clear does not reproduce. Check the Draft save path in code (where Ask a Question writes its browser-local Draft, and whether an emptied box writes or deletes the saved Draft, or skips the save when the value is empty) and whether the brief's root cause and acceptance criteria cover this path. If they do not, that is a finding: the brief must explain and fix the clear-then-refresh path, with a testable criterion for it. Treat this as evidence, not a product decision. Working directory is unchanged: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text
+
+### define (attempt 2)
+
+graph is controlling. You are node 3 (`define`), attempt 2, of graph run `graph-20261015-034607`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text
+
+Work only inside that directory (the run's kickoff worktree, on branch `thejudge-auto/ask-box-prefilled-text`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-refinement` skill (Skill tool) in graph mode on `PRD/work/ask-box-prefilled-text/`. Quality-check failed attempt 1; resolve every finding in `PRD/work/ask-box-prefilled-text/QUALITY-CHECK.md`. Read it, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `evidence/measurements.md`, and `intake/owner-request.md` first.
+
+Finding 1: the rule for what Ask a Question clears after the In-depth answer is ambiguous when only the question or only the cards change after the carry, and changed is undefined. State one rule, identically, in the brief, the REQ-206 criterion, and the quick-lookup README sentence; define changed precisely (for example against the carried snapshot, trimmed text, and an emptied box); add criteria for an edit to only the question and an edit to only the cards. Quality-check recommends all-or-nothing; that is a recommendation for the proposal, and the owner decides at the gate.
+
+Finding 2: the owner reports, from the live site, that typing a question, clearing it, then refreshing brings the old message back. Quality-check confirmed in code that `snapshotMidFlightDraft` in `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx` (~214) removes the Draft only on Menu-leave (~229), opening a history entry (~183), or a card change (~247), never when the question is emptied, and that there is no page-hide save. Reproduce this path live on mtgjudge.gg and on a dev server from this worktree, at about 1440x900 and 390x844: get a Draft saved (Menu-leave and return, or attach a card), clear the box, reload; also try plain type, clear, reload with no prior Draft. Record each path in `evidence/measurements.md` with the textarea value and the `thejudge.conversationDraft.lookup` storage entry before and after reload. Add this path to the brief's root cause and outcome, with a testable criterion. When the fix changes what REQ-108 or FLOW-017 say about when the Draft is saved or removed, propose those changes as their own blocks in `GATE-QUESTIONS.md`, each with the three plain-language lines, the complete diff, and blank Verdict and Reason slots. Where the rule has more than one reasonable answer (for example remove the Draft the moment the box empties versus at page hide), recommend one in the proposal and leave the decision to the owner's verdict.
+
+Put screenshots under `PRD/work/ask-box-prefilled-text/.playwright-mcp/`, stop any dev server you start, and close the browser when finished.
+
+Apply the assumption ladder per question as it arises; decide nothing on the owner's behalf that the genuine-blocker test reserves for them. Do not edit `PRD/sections/` or any code. Set the status marker the skill prescribes (`STATUS.refined` when the brief is complete). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: outcome (ok/failed), how each finding was resolved, which paths reproduced on which builds and widths, the stable IDs now proposed (one plain sentence each), files written, and the commit hash.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -122,3 +147,4 @@ Report back plainly: PASS or FAIL, the complete findings list (or none), files w
 | "im seeing this on the live site" | answered-once | define | — |
 | "while watching the agent test, it looks like they found a weird bug in the in-depth flow around adding context to the card that really messed up the spacing?" | answered-once | define | — |
 | "separate package is fine, ill start the session myself" | answered-once | define | — |
+| "yeah, it seems like if i typed something before, and then clear it, and then refresh the page, the message comes back" | answered-once | gate-qc | — |
