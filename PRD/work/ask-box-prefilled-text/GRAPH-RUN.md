@@ -27,7 +27,7 @@
 - Gate: `define` product truth, parked at `owner-action` after gate-qc PASS (attempt 3). Terminal state `PARKED`.
 - Question: answer `PRD/work/ask-box-prefilled-text/GATE-QUESTIONS.md` — one accept/edit/reject verdict (with a reason for edit or reject) for each of REQ-206, REQ-108, FLOW-017 (REQ-108 and FLOW-017 go together) — then merge the docs PR to build. One recommendation inside the REQ-206 slot is the owner's call: a second card-less In-depth tap keeps In-depth's waiting cards (recommended) versus empties them.
 - Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `QUALITY-CHECK.md` (PASS), `evidence/measurements.md`.
-- PR: pending (recorded in the next commit).
+- PR: https://github.com/ChrisMiho/TheJudge/pull/309 (docs-only, `thejudge-auto/ask-box-prefilled-text → main`).
 - Out of scope, owner opening a separate package: In-depth Context spacing (card counter pill text hugs the top; note field cuts its hint's third line) — `evidence/measurements.md`, Other finding.
 - Resume: the owner's merge of the docs PR is the build signal; `graph-implement` picks it up (`/graph-implement PRD/work/ask-box-prefilled-text/`). The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text` stays until `graph-implement` claims the spec.
 
