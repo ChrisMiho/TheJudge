@@ -7,7 +7,7 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white`
 - Branch: `thejudge-auto/small-fixes-cats-menu-white-work`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261014-225350/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/small-fixes-cats-menu-white/`
 
 ## Node ledger
@@ -25,6 +25,7 @@
 | 9 | gate-review | sonnet | ok | `0 → 14` | build half run `graph-20261014-234321`: kickoff worktree removed clean (`git worktree remove`); claim commit `bbb74297` on `thejudge-auto/small-fixes-cats-menu-white-work` cut from `origin/main` `3c937d37` (docs PR #307 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `5fa333bb`: 6 accept / 0 edit / 0 reject, `### Brief reconciliation` none, REQ-207 slot and brief agree (45px bars, glow, no box); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-14 |
 | 10 | gate-qc | sonnet | ok | `0 → 16` | build-half re-grade PASS, findings none — `QUALITY-CHECK.md` committed `0ae0d9ba`; owner's REQ-207 park revision graded (brief §2, A4, A11, slot, `evidence/measurements.md` agree; selectors exist in `shell.css` 183/287/304/309-315/318-322); all `GATE-QUESTIONS.md` diff anchors match current `PRD/sections/`; `STATUS.refined` kept; driver rewrote README `## Preparation gate` | 2026-10-14 |
 | 11 | plan | sonnet | ok | `0 → 23` | `thejudge-map-out` commit `be9331e1`: `GAMEPLAN.md`, slices A (cats everywhere, 12 criteria), B (menu button and tray, 9), C (White default, final slice with ship gates, 11), each `slice-<letter>.criteria.json` all `false`; `STATUS.active` only marker; board row under active; no `PRD/sections`/code diff vs `origin/main`; no deliverable planned inside `PRD/work/` (driver placement check) | 2026-10-14 |
+| 12 | build | sonnet | ok | `0 → 87` | PR https://github.com/ChrisMiho/TheJudge/pull/308 (`[THEJUDGE-AUTO][READY]`, registration marker in body); commits `e69f0a2a` (A), `447b4cd4` (B), `59a0fc5f` (C) pushed, `origin` tip = local `59a0fc5f`; `STATUS.ship-ready` only marker; all 32 criteria self-reported true (hook log does not see worktree criteria); builder reports `npm run quality:check` exit 0 and frontend suite 150 files / 1615 tests green. Return-side: launch-checkout porcelain identical before/after (both empty); `classifyBuildWrites` over the 37 tracked paths plus untracked `.tmp/` and capture paths → one path outside scope, `.playwright-mcp/console-2026-10-14T23-51-29-731Z.log` at the launch root (gitignored; written by the session-wide Playwright MCP server's default output dir, not a node tool call). Owner waived it in session (see instruction ledger); driver deleted the file and set `PLAYWRIGHT_MCP_OUTPUT_DIR=/Users/chrismiho/.cache/playwright-mcp` in user settings (`~/.claude/settings.json` env; effective next session). Builder deviations recorded for review: shell edit scripts under `.tmp/` used for exact-string replacements; all `PRD/sections/` edits landed in the slice C commit | 2026-10-14 |
 
 ## Open gate
 
@@ -286,6 +287,64 @@ Verify directly; spawn no subagents or forks, and do no sleeping or polling loop
 
 Report back plainly: per slice, what a player now sees, the files changed, each criterion with its evidence, the PR URL, the final commit hash, and the complete list of every file path you wrote or created (absolute paths).
 
+### review
+
+graph is controlling. You are node 7 (`review`), attempt 1, of the build half of graph run `graph-20261014-234321`: a fresh-context, no-write reviewer.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-small-fixes-cats-menu-white
+
+You hold no write tools and must create, modify or delete nothing: no file writes through Bash either, no git commits, no pushes, no PR comments. Reading, searching, `git diff`/`git log`/`git show`, and running tests are allowed.
+
+What to review: the code PR https://github.com/ChrisMiho/TheJudge/pull/308, which is `git diff 1dd3c2e3 59a0fc5f` in that worktree (branch `thejudge-auto/small-fixes-cats-menu-white-work`). Read the slice docs `PRD/work/small-fixes-cats-menu-white/slice-a-cats-everywhere.md`, `slice-b-menu-button-and-tray.md` and `slice-c-white-default.md`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (REQ-203, REQ-207, REQ-099, REQ-044, FLOW-007, REQ-113 accepted by the owner), and `evidence/measurements.md`.
+
+Rubric: each slice's own acceptance criteria, quoted here.
+
+Slice A (cats everywhere):
+- A1 The tap count adds up across two different screens (test).
+- A2 The reveal holds after a destination switch (test).
+- A3 A fresh mount (reload) starts hidden (test).
+- A4 Life Tracker has no tap target and no picture (test).
+- A5 Nine taps show nothing; the tenth shows the picture (test).
+- A6 Placement: on Ask a Question and Trade Balancer, the cat wizard img follows the banner header and precedes page content, via `compareDocumentPosition` (test).
+- A7 The three existing tests in `App.interaction-flows.presentation.test.tsx` still pass.
+- A8 The Game step no longer holds its own tap count or picture (grep shows one source).
+- A9 Frontend test suite passes.
+- A10 Live check at 390x844 and 1440x900: ten taps on Ask a Question reveal the picture, it holds on Trade Balancer and In-depth, Life Tracker shows none, no page scroll added on Ask a Question and Trade Balancer.
+- A11 The REQ-203 amendments from `GATE-QUESTIONS.md` are applied to `PRD/sections/` in this PR.
+- A12 Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/small-fixes-cats-menu-white/.playwright-mcp/`.
+
+Slice B (menu button and tray):
+- B1 Stylesheet assertion: the desktop menu-button rule draws bars 45px wide with the glow and sits inside the `min-width: 768px` block before the hover/focus rule (test).
+- B2 Stylesheet assertion: the phone rule keeps the 50px box and 1.4rem glyph and carries the glow; desktop box stays 54px (test).
+- B3 Stylesheet assertion: `.menu-tray::after` has no negative `right`/`left`, and still has `content`, 1px `width` and `background` (test).
+- B4 Stylesheet assertion: `.menu-tray` declares `overflow-x: hidden` or `clip` (test).
+- B5 Frontend test suite passes.
+- B6 Live at 1440x900 and 390x844: box 54px / 50px, desktop header 68px, 45px bars on desktop, glow visible in all six colours at both widths; hover and keyboard focus still show the accent fill with no glow on the box.
+- B7 Live at 390x844 and 1440x900 with classic scrollbars forced on: open tray `scrollWidth` equals `clientWidth`, no horizontal bar, right-edge line still paints.
+- B8 The REQ-207 and REQ-113 amendments from `GATE-QUESTIONS.md` are applied to `PRD/sections/` in this PR.
+- B9 Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/small-fixes-cats-menu-white/.playwright-mcp/`.
+
+Slice C (White default):
+- C1 `palettes.test.ts` default test asserts `DEFAULT_PALETTE_ID` is white and the default palette name contains white (test).
+- C2 First-paint test in `applyPalette.test.ts`: the `:root {` block of `tokens.css` equals the white profile block (same properties, same values); `index.html` `theme-color` and decoded favicon fill equal White's `--accent`; the Blue block still carries Blue's six values (test).
+- C3 Order test: the offset of `:root {` precedes each of the six profile blocks (test).
+- C4 `AmbientScene.test.tsx`: with no `data-profile` and reduced motion, the still-frame fingerprint equals White's and differs from Blue's; the per-colour golden test stays green (test).
+- C5 `App.mtg-color-themes.test.tsx` fallback test says White and passes; `appliedTheme.ts` follows the constant.
+- C6 Frontend test suite passes; `npm run quality:check` green for touched areas.
+- C7 Live with fresh storage: first paint and settled page are White.
+- C8 Live: pick Blue then Red in Theme; computed `--accent` reads #0050d8 for Blue and #c10230 for Red, and after reload with each saved.
+- C9 The REQ-099, REQ-044 and FLOW-007 amendments from `GATE-QUESTIONS.md` are applied to `PRD/sections/` in this PR.
+- C10 Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/small-fixes-cats-menu-white/.playwright-mcp/`.
+- C11 Whole-package check: slices A and B acceptance criteria are all true and the full ship list in the slice doc is met.
+
+Distrust the `true` marks in `slice-a.criteria.json`, `slice-b.criteria.json` and `slice-c.criteria.json`: they are self-reported by the builder. Re-verify independently: run `npm --workspace apps/frontend run test` yourself; read the brand-tap context and its wiring and check the count is session-scoped (no storage), shared across the in-scope screens, and absent on Life Tracker; read the `shell.css` change against the accepted REQ-207 look (45px bars, 2.5px thick, 7px gap on desktop; soft accent-tinted glow at every width; phone box and glyph size unchanged; no box, fill or outline; desktop box 54px, header 68px) and the REQ-113 tray fix; read the White-default change in `palettes.ts`, `tokens.css`, `index.html` and `AmbientScene.tsx` and confirm Blue keeps its own values; and compare each `PRD/sections/` edit against the accepted `GATE-QUESTIONS.md` diff by intent. The builder reported four things worth checking against the criteria: A10 says the Game step lost its own count (confirm the Game step still reveals the picture through the shared count), B7 was measured with overlay scrollbars rather than classic ones forced on, C7 could not run a no-script first-paint probe so first paint rests on the `:root` tests, and all `PRD/sections/` edits landed in the slice C commit. The PNG captures under `.playwright-mcp/` are gitignored and present on disk; you may view them.
+
+Severity rule: flag only gaps against these stated criteria or correctness defects that affect them. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important and never loops the run back to `build`; list such items as Minor at most.
+
+Verify directly; spawn no subagents or forks, and do no sleeping or polling; stay well under 120 tool calls. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: a verdict (APPROVE, or CHANGES REQUIRED), then each finding with severity (Critical, Important, Minor), the criterion it breaks, file and line, and the evidence; then what you independently re-ran and its result.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -298,3 +357,5 @@ Report back plainly: per slice, what a player now sees, the files changed, each 
 | "I think C is what im looking for, but can we compare 40 vs 45 vs 50 px?" | answered-once | owner-action | — |
 | "45 for sure, can we also add the same level of glow to mobile? but keep the size its at right now" | answered-once | owner-action | — |
 | "ill take your recommendation unless you really need my input" | answered-once | owner-action | — |
+| "whats the fix to stop this?" | answered-once | build | — |
+| "Both (Recommended)" | answered-once | build | — |
