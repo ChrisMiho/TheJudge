@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| small-fixes-cats-menu-white | All 3 slices done (A cats everywhere, B glowing desktop ☰ + no sideways menu scrollbar, C White default); code PR open, awaiting owner merge. |
 
 ## active
 
