@@ -10,6 +10,6 @@ Bug: the Ask box shows an old question (a saved Draft) instead of the hint, so t
 
 ## Preparation gate
 
-- Quality-check: FAIL
-- Checked artifact: `PRD/work/ask-box-prefilled-text/DESIGN-BRIEF.md`
-- Findings: (attempt 2; both attempt-1 findings resolved) (1) a second tap on In-depth leaves In-depth's question box undefined — criterion 9 asserts only that Ask a Question clears, never what In-depth's box holds after a second tap when the first tap already filled it or a walk had started, nor whether the second tap starts a new carried attempt whose answer triggers the clear; fix in the brief and the REQ-206 criterion (a later tap replaces the carried question; that attempt's answer triggers the clear) and extend criterion 9 to assert In-depth's box and request text. Full text: `QUALITY-CHECK.md`.
+- Quality-check: PASS
+- Checked artifact: `PRD/work/ask-box-prefilled-text/DESIGN-BRIEF.md` with the proposal in `GATE-QUESTIONS.md`
+- Findings: none (attempt 3; the attempt-2 second-tap finding is resolved). Full text: `QUALITY-CHECK.md`.
