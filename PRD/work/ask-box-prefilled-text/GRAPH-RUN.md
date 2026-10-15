@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `review` (attempt 2)
+- Current node: `close`
 - Next action: `/graph-implement PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
@@ -27,6 +27,7 @@
 | 12 | build | sonnet | ok | `0 → 78` | PR https://github.com/ChrisMiho/TheJudge/pull/310 (`main` ← `thejudge-auto/ask-box-prefilled-text-work`); commit `92a387fb` (slice A) pushed, `origin` tip = local `92a387fb`; `STATUS.ship-ready` only marker; `slice-a.criteria.json` A1–A11 all `true` (no flip denied); builder reports `npm run quality:check` exit 0 (1059 script tests), frontend suite 150 files / 1621 tests pass, 6 new tests in `App.mid-flight-draft.test.tsx` red before the change; live check on dev port 5391 at 1440x900 and 390x844 in `evidence/build-verification.md`. Return-side: launch-checkout porcelain identical before/after (both empty, `cmp`); `classifyBuildWrites` over 23 paths (tracked diff `7125ae9c..92a387fb`, untracked/ignored incl. `.tmp/qc.log`, `.playwright-mcp/` captures, `node_modules/`, `coverage/`, `dist/`, `output/`) → ok, all inside `.worktrees/implement-ask-box-prefilled-text/`; Playwright MCP server logs in `~/.cache/playwright-mcp/` are the server's configured output dir, not a node tool call. Builder deviations recorded for review: one old assertion (typing writes no Draft) and one old Draft-is-null assertion changed to the new rule; `npm ci` in the worktree; new `evidence/build-verification.md`. PR registration skipped by the builder (no `registered:` marker, no `[THEJUDGE-AUTO]` title): driver set the body to the skill's template with marker `thejudge-auto:v1:registered:ask-box-prefilled-text` and title `[THEJUDGE-AUTO][READY] …` via `gh pr edit 310` on head `92a387fb` (single slice done, no blockers) | 2026-10-14 |
 | 13 | review | opus | failed | `0 → 28` | reviewer APPROVE, five Minor (In-depth Start Over after reopening a saved conversation now removes the stashed Draft, matches the accepted rule; criterion 5 and 1 tests take shortcuts; DEC-138 tests weaker; no `quality:check` in the evidence log — driver read `.tmp/qc.log`, last stage `test:scripts` 1059 pass / 0 fail); reviewer observed frontend suite 150 files / 1621 pass, typecheck/lint/format exit 0, `PRD/sections/` hunks byte-identical to the finalized diffs; worktree and launch porcelain empty after. Driver CI check overrides to failed: PR #310 runs `38684385791` and `38684577018` fail `frontend-shard 1/3` (Node 22) while `main` run `38683206859` is green. Reproduced locally with `npx -y -p node@22 node ../../node_modules/vitest/vitest.mjs run`: 1 failed / 1620 passed — `App.interaction-flows.test.tsx` parity test, `Unable to find … Confirm game context` at :270. Cause: the test renders `<App />` twice without clearing storage; under the accepted rule the first render's In-depth walk writes the Draft at once, so the second render restores mid-walk. Node 26 hides it (its built-in `localStorage` without `--localstorage-file` shadows jsdom's and persists nothing). Important against criterion 11 → loop to build (1 of 2) | 2026-10-14 |
 | 14 | build | sonnet | ok | `0 → 22` | attempt 2: commit `93a8cda5` pushed (no force), `origin` tip = local; test-only fix in `App.interaction-flows.test.tsx` (`globalThis.localStorage?.clear?.()` between `stackView.unmount()` and the second render, optional call because Node 26's built-in `localStorage` has no `clear()`); `evidence/build-verification.md` appended; builder reports Node 22 suite 150 files / 1621 pass / 0 fail and `npm run quality:check` exit 0; no other test renders the app twice expecting a fresh start. Driver checked: `gh pr checks 310` on run `38685440074` all pass (frontend shards 1–3, static, backend, coverage-merge); PR title READY and registration marker intact, head `93a8cda5`; `STATUS.ship-ready` only marker. Return-side: launch-checkout porcelain identical (both empty); `classifyBuildWrites` over 4 paths → ok | 2026-10-14 |
+| 15 | review | opus | ok | `0 → 14` | APPROVE on attempt 2, no Critical or Important; no-write `Plan`-type reviewer over `git diff 92a387fb 93a8cda5 -- apps/` (3 lines, test only; product code unchanged since the approved `92a387fb`); Node 22 `App.interaction-flows.test.tsx` 10/10 pass; CI run `38685440074` on `93a8cda5` success. Minor: `?.clear?.()` double guard differs from `setup.ts`'s `?.clear()` (both work). Worktree and launch porcelain empty after | 2026-10-14 |
 
 ## Gate verdicts
 
@@ -365,6 +366,24 @@ Grade only the new commit: `git diff 92a387fb 93a8cda5 -- apps/`, plus `evidence
 Severity rule: flag only gaps affecting correctness or the criteria above. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important; mark it Minor. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: APPROVE or CHANGES REQUIRED; each finding with severity, file and line, the criterion, and the evidence; and the test and PR check results you observed.
+
+### close
+
+graph is controlling. You are node 8 (`close`), attempt 1, of graph run `graph-20261015-044701` (spec-forming half `graph-20261015-034607`).
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/ask-box-prefilled-text-work`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-cleanup` skill (Skill tool) in graph mode on `PRD/work/ask-box-prefilled-text/`, taking the PR-ready path: the code PR https://github.com/ChrisMiho/TheJudge/pull/310 is open into `main` (registration marker `thejudge-auto:v1:registered:ask-box-prefilled-text`, title READY), `STATUS.ship-ready` is the only marker, review approved, and CI on the code commit `93a8cda5` is green.
+
+Write the receipt `PRD/instructions/receipts/ask-box-prefilled-text-2026-10-14.md` with the plain-language opening the skill requires (lead with what a player sees: text cleared from the Ask box stays cleared after a refresh; the In-depth hand-off is unchanged because the owner rejected REQ-206). Fold `GRAPH-RUN.md`'s `## Node ledger` and `## Instruction ledger` into its `## Graph run` section verbatim, with the summary line `- Run ID: graph-20261015-044701 (build half; spec-forming half graph-20261015-034607) | Profile: loaded (env sentinel) | Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/310`. Write the `## Intake` section for `intake/owner-request.md`. Record as follow-ups: the In-depth Context spacing finding (owner opening a separate package); the reviewer's Minor notes (In-depth Start Over after reopening a saved conversation now removes the stashed Draft, as the accepted rule says; criterion 1 and 5 tests take shortcuts; DEC-138 snapshot tests weaker; the `?.clear?.()` style note); and that local test runs on Node 26 do not exercise browser storage in tests without the memory storage helper, because Node 26's built-in `localStorage` shadows jsdom's (CI on Node 22 does).
+
+Confirm the REQ-108 and FLOW-017 truth that build applied is present in `PRD/sections/` and promote nothing else; never re-write it. Remove the package's row from `PRD/work/STATUS.md`. Delete the package with `git rm -r PRD/work/ask-box-prefilled-text` only after the receipt carries both ledgers. Commit with explicit paths and push with `git push origin thejudge-auto/ask-box-prefilled-text-work` (no force). Never merge or close the PR, and never delete a remote branch.
+
+Change files only with the Write and Edit tools; never chain a heredoc or `sed -i` into a long Bash command. Run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`, then the push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: outcome (ok/failed), the receipt path, the commit hash and push range, what was confirmed in `PRD/sections/`, the board change, and the PR state.
 
 ## Instruction ledger
 
