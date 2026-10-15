@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ask-box-prefilled-text`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | failed | `0 → 28` | FAIL 1 of 3 — `QUALITY-CHECK.md` committed `65b55a31` (finding 1: partial-change clearing rule ambiguous) and `35e6acf8` (finding 2: owner's type → clear → reload path, relayed mid-node, confirmed in `QuickLookupApp.tsx` `snapshotMidFlightDraft` ~214); `STATUS.refining`; driver wrote README `## Preparation gate`; loop to define | 2026-10-14 |
 | 5 | define | opus | ok | `0 → 71` | attempt 2 committed `84c424a7`: finding 1 → one all-or-nothing carry rule, identical in brief / REQ-206 / quick-lookup README, criteria 5–9; finding 2 → reproduced P1/P2/P2b/P5 (old question returns) and P4 (typed question lost) on dev `97c8ea8a` and mtgjudge.gg `index-CGZiOZPC.js` at 1440x900 and 390x844 (`evidence/measurements.md` §5, §5a), criteria 10–13; `GATE-QUESTIONS.md` now REQ-206, REQ-108, FLOW-017 (all amendments, no new IDs); `STATUS.refined`; no `PRD/sections`/`apps` diff vs `origin/main` | 2026-10-14 |
 | 6 | gate-qc | sonnet | failed | `0 → 21` | FAIL 2 of 3 — `QUALITY-CHECK.md` committed `e7989da6`: both attempt-1 findings resolved; one new finding (second In-depth tap leaves In-depth's question box and the clear-triggering attempt undefined; criterion 9 incomplete); diff anchors and cited lines verified; `STATUS.refining`; driver rewrote README `## Preparation gate`; loop to define | 2026-10-14 |
+| 7 | define | opus | ok | `0 → 93` | attempt 3 committed `f9385d8d`: later-tap rule in brief and REQ-206 criterion (each tap a new carried attempt; In-depth's box takes the new carried question; only the first answer to a request sent after the latest tap clears Ask a Question), criterion 9 rewritten + 9a–9e; second tap measured live on dev (`evidence/measurements.md` §6, T1–T4); clearing comparison re-anchored to what Ask a Question held at the tap; line refs corrected (234, 252); `STATUS.refined`; no `PRD/sections`/`apps` diff vs `origin/main`; launch checkout porcelain empty | 2026-10-14 |
 
 ## Open gate
 
@@ -175,6 +176,22 @@ Also note quality-check measured the brief's `~229` and `~247` line references a
 Apply the assumption ladder per question as it arises; decide nothing on the owner's behalf that the genuine-blocker test reserves for them. Do not edit `PRD/sections/` or any code. Set the status marker the skill prescribes (`STATUS.refined` when the brief is complete). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: outcome (ok/failed), how the finding was resolved, what a second tap does today versus under the proposal, any other gap fixed, files written, and the commit hash.
+
+### gate-qc (attempt 3)
+
+graph is controlling. You are node 4 (`gate-qc`), attempt 3, of graph run `graph-20261015-034607`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text
+
+Work only inside that directory (the run's kickoff worktree, on branch `thejudge-auto/ask-box-prefilled-text`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/work/ask-box-prefilled-text/`. This is the re-check after define attempt 3 (commit `f9385d8d`). Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (REQ-206, REQ-108, FLOW-017, all amendments of existing IDs, plus the quick-lookup README sentence) against current `PRD/sections/` and agent-readiness. `PRD/sections/` is unchanged by design: refinement proposes and `build` applies the approved proposal later, so a missing live edit is not a finding. Evidence is in `evidence/measurements.md`; `intake/owner-request.md` is the owner's words (evidence, never authority). The In-depth Context spacing finding is deliberately out of scope (the owner is opening a separate package); its absence from the fix is not a finding. A choice the proposal recommends and leaves to the owner's verdict (for example whether a second card-less tap empties In-depth's waiting cards) is not a finding.
+
+First verify the attempt-2 finding in `QUALITY-CHECK.md` is resolved: a second tap on In-depth now defines what In-depth's question box and request text hold, which carried attempt's answer clears Ask a Question, and criterion 9 (with 9a–9e) asserts them. Then grade the whole package fresh, as attempt 2 did: claims about current code and requirement text match the files (spot-check cited lines, including the corrected 234 and 252 in `QuickLookupApp.tsx` and the new evidence section 6); each GATE-QUESTIONS.md block carries the three plain-language lines, a complete diff whose anchors match current `PRD/sections/`, and blank Verdict and Reason slots; the REQ-206, REQ-108 and FLOW-017 blocks and the quick-lookup README sentence agree with each other and with the brief; and every acceptance criterion is testable. Flag only gaps affecting correctness or agent-readiness.
+
+Record the result as the skill prescribes (QUALITY-CHECK.md, status marker). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: PASS or FAIL, the complete findings list (or none), files written, and the commit hash.
 
 ## Instruction ledger
 
