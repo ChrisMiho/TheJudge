@@ -2,8 +2,9 @@
 
 **Nothing (FYI).** This is the evidence record behind `DESIGN-BRIEF.md`.
 
-Measured 2026-10-14 (UTC 2026-10-15 03:49–03:58) with Playwright (Chromium) in
-two builds:
+Sections 1–4 measured 2026-10-14 (UTC 2026-10-15 03:49–03:58); section 5 (the
+clear-then-reload report) measured 04:07–04:12. Playwright (Chromium), two
+builds:
 
 - **Dev:** this worktree at `4b6817f5` (code identical to `origin/main`
   `97c8ea8a`; the branch adds only docs), served by Vite on port 5391, first
@@ -59,8 +60,11 @@ bundle and `origin/main` behave the same here. No version comparison was needed.
 
 | # | Path | Build / width | value | data-fill | label | Reproduces? |
 | --- | --- | --- | --- | --- | --- | --- |
-| A | Type `test`, select all, delete, click away | dev 1440 | `""` | 0 | shown | no |
+| A | Type `test`, select all, delete, click away (no reload) | dev 1440 | `""` | 0 | shown | no |
 | A | same, still focused | dev 1440 | `""` | 0 | hidden (focus) | no — by design while focused |
+
+Row A stops before a reload. Section 5 below shows that once a Draft exists,
+clearing the box and then reloading **does** bring the old question back.
 | B | Type `How does ward work?`, tap In-depth, tap Back | dev 1440 | `How does ward work?` | some | hidden, 35px | **yes** |
 | B | then reload | dev 1440 | `How does ward work?` | some | hidden | **yes** |
 | B | same path | live 1440 | `How does ward work?` | some | hidden, 35px | **yes** |
@@ -118,11 +122,15 @@ says the pill carries "every attached card and the typed question".
 ### What clears the Ask a Question Draft today
 
 Only two things (`QuickLookupApp.tsx`): Ask a Question's own first successful
-answer (line ~153), or a Menu-leave or card change while the box and stage are
-both empty (`snapshotMidFlightDraft`, line ~222). An answer in In-depth clears
-only In-depth's own Draft (`MtgAssistantApp.tsx` ~359). So a carried question
-stays in Ask a Question until the player sends it from there or deletes it by
-hand.
+answer (line ~153), or a snapshot taken while the box and stage are both empty
+(`snapshotMidFlightDraft`, line ~214, which removes the Draft at line ~222).
+That snapshot runs only on Menu-leave (line ~229), on opening a saved
+conversation from Question History (line ~183), and on attaching or removing a
+card (line ~247). Typing in the box or emptying it runs none of them, and there
+is no page-hide or before-unload save anywhere in the frontend. An answer in
+In-depth clears only In-depth's own Draft (`MtgAssistantApp.tsx` ~359). So a
+carried question stays in Ask a Question until the player sends it from there,
+or empties the box and then leaves by the Menu.
 
 ## 3. Where the owner's text could come from
 
@@ -163,3 +171,91 @@ This session's screenshots do not show a badly broken layout. The two
 defects above are the visible spacing faults at both widths, on dev and live.
 The owner may have seen a moment this session did not capture (for example,
 mid-transition between stations).
+
+## 5. Clear (or replace) the question, then reload — the owner's second report
+
+The owner reported from the live site: type a question, clear it, refresh, and
+the old message comes back. Measured 2026-10-14 (UTC 2026-10-15 04:07–04:12)
+with Playwright (Chromium), each path from clean storage:
+
+- **Dev:** this worktree at `23563364` (code identical to `origin/main`
+  `97c8ea8a`; the branch adds only docs), Vite frontend-only on port 5391.
+- **Live:** `https://mtgjudge.gg`, bundle `assets/index-CGZiOZPC.js`.
+- Widths: desktop 1440x900, phone 390x844.
+
+**All four runs (dev 1440, dev 390, live 1440, live 390) gave identical values
+in every row below.** So the table is written once.
+
+Columns: **value** is the Ask box's textarea value; **cards** is the cards on
+the stage; **Draft** is the stored `thejudge.conversationDraft.lookup` entry
+(its `question` and card names), or *absent*. Typed text in every path:
+`How does ward work?`.
+
+| # | Path | Moment | value | cards | Draft |
+| --- | --- | --- | --- | --- | --- |
+| P1 | Type, Menu → Life Tracker → Menu → Ask a Question (a Menu-leave saves the Draft), clear the box (select all, delete, click away), reload | after return | `How does ward work?` | none | `How does ward work?`, no cards |
+| P1 | | box cleared, before reload | `""` (`data-fill="0"`) | none | `How does ward work?`, no cards (**stale**) |
+| P1 | | after reload | `How does ward work?` (`data-fill="some"`) | none | `How does ward work?`, no cards |
+| P2 | Type, attach Sol Ring (attaching saves the Draft), remove Sol Ring, clear the box, reload | card attached | `How does ward work?` | Sol Ring | `How does ward work?`, Sol Ring |
+| P2 | | card removed | `How does ward work?` | none | `How does ward work?`, no cards |
+| P2 | | box cleared, before reload | `""` | none | `How does ward work?`, no cards (**stale**) |
+| P2 | | after reload | `How does ward work?` | none | `How does ward work?`, no cards |
+| P2b | Type, attach Sol Ring, clear the box (card stays), reload | box cleared, before reload | `""` | Sol Ring | `How does ward work?`, Sol Ring (**stale**) |
+| P2b | | after reload | `How does ward work?` | Sol Ring | `How does ward work?`, Sol Ring |
+| P3 | Type, clear, reload, no Draft ever saved | typed | `How does ward work?` | none | absent |
+| P3 | | box cleared, before reload | `""` | none | absent |
+| P3 | | after reload | `""` (`data-fill="0"`) | none | absent |
+| P4 | Type, reload without clearing, no Draft ever saved | before reload | `How does ward work?` | none | absent |
+| P4 | | after reload | `""` | none | absent (**typed question lost**) |
+| P5 | Type, Menu-leave and return (Draft saved), select all and type `What does hexproof stop?`, click away, reload | before reload | `What does hexproof stop?` | none | `How does ward work?`, no cards (**stale**) |
+| P5 | | after reload | `How does ward work?` | none | `How does ward work?`, no cards |
+
+What this shows, in player terms:
+
+- **P1, P2, P2b reproduce the owner's report.** Once anything has saved a
+  Draft (a Menu-leave, or attaching or removing a card), emptying the box does
+  not touch the saved copy. A reload restores the old question, real text in
+  typed-text colour, with the In-depth button folded to ◈.
+- **P3 does not reproduce.** Type, clear, reload with no Draft ever saved comes
+  back empty. The owner's path therefore had a Draft behind it, from any of the
+  saves above or from an In-depth tap (section 2, path B).
+- **P5 is the same fault without clearing.** Replacing the question and
+  reloading brings back the older question, not the new one.
+- **P4 is the mirror image.** A question typed and reloaded without any Menu
+  trip or card is lost, although REQ-108 lists reload as an exit the Draft
+  covers ("Draft is written/updated as mid-flight staging changes enough to
+  resume meaningfully after Menu leave, reload, or opening a saved
+  conversation").
+
+Code cause: the Draft is a snapshot taken only at Menu-leave, opening a saved
+conversation, and a card change (section 2, "What clears the Ask a Question
+Draft today"). Nothing writes or removes it when the question text changes, and
+nothing snapshots at page hide.
+
+Screenshots (after reload): `dev-desktop-p1-clear-reload.png`,
+`dev-phone-p1-clear-reload.png`, `live-desktop-p1-clear-reload.png`,
+`live-phone-p1-clear-reload.png`, the matching `-p2-card-clear-reload.png` and
+`-p5-replace-reload.png` for each build and width.
+
+### 5a. In-depth details has the same gap: a reload mid-walk loses the walk
+
+Dev 1440 only. Type `How does ward work?`, attach Sol Ring, tap In-depth.
+
+| Moment | URL | In-depth screen | `…conversationDraft.game` | `…conversationDraft.lookup` |
+| --- | --- | --- | --- | --- |
+| after tapping In-depth | `/in-depth` | Game context | absent | `How does ward work?`, 1 card |
+| after reload | `/in-depth` | Game context, nothing carried | absent | `How does ward work?`, 1 card |
+
+In-depth's own Draft (key `thejudge.conversationDraft.game`) uses the same
+snapshot points as Ask a Question (`MtgAssistantApp.tsx` ~372, called only at
+Menu-leave ~413 and on opening a saved conversation ~795). So a reload during
+the walk drops the carried card and question from In-depth; only Ask a
+Question's copy survives. REQ-206 already promises "every carried card ... is
+written into the Draft slot, so the whole request survives a reload", and
+`in-depth/README.md` says "a reload mid-placement resumes exactly where it left
+off". Screenshot: `dev-desktop-indepth-midwalk-reload.png`.
+
+In-depth's question box (the Finish station) was not walked to for a
+clear-then-reload test. By the same code, once a Menu-leave has saved
+In-depth's Draft, a question cleared there would come back on reload. That is
+inferred from code, not measured.
