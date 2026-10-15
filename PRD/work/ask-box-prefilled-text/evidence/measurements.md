@@ -124,9 +124,9 @@ says the pill carries "every attached card and the typed question".
 Only two things (`QuickLookupApp.tsx`): Ask a Question's own first successful
 answer (line ~153), or a snapshot taken while the box and stage are both empty
 (`snapshotMidFlightDraft`, line ~214, which removes the Draft at line ~222).
-That snapshot runs only on Menu-leave (line ~229), on opening a saved
-conversation from Question History (line ~183), and on attaching or removing a
-card (line ~247). Typing in the box or emptying it runs none of them, and there
+That snapshot runs only on Menu-leave (line 234), on opening a saved
+conversation from Question History (line 183), and on attaching or removing a
+card (line 252). Typing in the box or emptying it runs none of them, and there
 is no page-hide or before-unload save anywhere in the frontend. An answer in
 In-depth clears only In-depth's own Draft (`MtgAssistantApp.tsx` ~359). So a
 carried question stays in Ask a Question until the player sends it from there,
@@ -259,3 +259,46 @@ In-depth's question box (the Finish station) was not walked to for a
 clear-then-reload test. By the same code, once a Menu-leave has saved
 In-depth's Draft, a question cleared there would come back on reload. That is
 inferred from code, not measured.
+
+## 6. A second tap on In-depth — what In-depth's question box holds today
+
+Measured 2026-10-14 (UTC 2026-10-15 04:20–04:25) for quality-check attempt 2's
+finding. Dev only, this worktree at `373b75cd` (code identical to
+`origin/main` `97c8ea8a`), Vite frontend-only on port 5391, 1440x900, Playwright
+(Chromium), from clean storage. One continuous session; each row starts where
+the previous one ended. "In-depth box" is the In-depth question box at the
+Finish station (`textarea` "Optional question").
+
+| # | What the player did | Walk station after the tap | In-depth box after the tap | Cards in In-depth after the tap |
+| --- | --- | --- | --- | --- |
+| T1 | Type `How does ward work?`, attach Sol Ring, tap In-depth; walk Game → Zones → Cards, place Sol Ring on the Battlefield → Context → Finish | Finish | `How does ward work?` | Sol Ring on the Battlefield |
+| T2 | Type `Edited inside In-depth` in the In-depth box; Menu → Ask a Question (box still `How does ward work?`); change it to `How does ward work with hexproof?`; tap In-depth again | Finish (unchanged) | `How does ward work with hexproof?` — the In-depth edit is gone | Sol Ring still on the Battlefield **and** queued again ("1 card came along with your question") |
+| T3 | Type `Typed in In-depth 2` in the In-depth box; Menu → Ask a Question; empty the box (Sol Ring still attached); tap In-depth again | Finish (unchanged) | `Tell me about Sol Ring.` — Ask a Question's silent fallback, replacing the In-depth text | as T2 |
+| T4 | Menu → Ask a Question; remove Sol Ring; type `What does hexproof stop?`; tap In-depth again | Finish (unchanged) | `Tell me about Sol Ring.` — unchanged; the question-only carry was dropped | as T2 (the waiting Sol Ring stays) |
+
+What this shows, in player terms:
+
+- **A later tap with a card replaces In-depth's question box** with the carried
+  question, including anything the player typed there since the earlier tap
+  (`MtgAssistantApp.tsx` 243-245: the carried question is set whenever it is
+  not blank).
+- **The carried question is never blank when a card is attached.** Ask a
+  Question sends its trimmed typed question, or, when the box is blank, its
+  silent card fallback ("Tell me about Sol Ring.",
+  `QuickLookupApp.tsx` 53-60 and 437-439). So "the question carried at the
+  tap" can differ from what Ask a Question's box held at the tap.
+- **A later tap with no card does nothing** (T4), the same fault as section 2
+  path C.
+- **A later tap leaves the walk where it was**, and leaves cards already placed
+  in a zone where they are. It replaces only the queue of cards waiting for a
+  zone (`MtgAssistantApp.tsx` 240-241), so a card carried twice can be on the
+  Battlefield and waiting for a zone at once.
+- The request text is whatever the In-depth box holds when the player sends
+  (`buildAskAiRequest(question, …)`, `MtgAssistantApp.tsx` 711), or In-depth's
+  own silent fallback ("Explain the interaction with the provided game state")
+  when the box is empty.
+
+Not measured (no answer was fetched in this session): a later tap while
+In-depth details is showing an answered ruling. By code reading, the
+destination stays mounted with the conversation active, so the ruling stays on
+screen and the carried question and cards land in the staged state behind it.
