@@ -33,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ask-box-prefilled-text | Ask box shows an old question instead of the hint; fix the In-depth hand-off (including a second tap) and make the saved Draft follow the box — answer `GATE-QUESTIONS.md` (REQ-206, REQ-108, FLOW-017), then merge the docs PR to build |
 
 ## deferred
 
