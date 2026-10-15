@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ask-box-prefilled-text | Saved Draft follows the Ask box so cleared text stays cleared after a refresh (REQ-108, FLOW-017 accepted; REQ-206 rejected) — mapped, 1 slice (A) |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| ask-box-prefilled-text | Saved Draft follows the Ask box so cleared text stays cleared after a refresh (REQ-108, FLOW-017 accepted; REQ-206 In-depth hand-off rejected) — gate resolved, resumes at gate-qc |
 
 ## refining
 

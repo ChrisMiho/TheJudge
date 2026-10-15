@@ -1,8 +1,16 @@
-status: refined
+status: active
 
 # ask-box-prefilled-text
 
 Bug: the Ask box shows an old question (a saved Draft) instead of the hint, so the In-depth button folds to ◈. Reproduced on dev and mtgjudge.gg via clear-then-reload once a Draft exists. Owner's verdicts (2026-10-14): the fix is only that cleared text does not come back after a refresh (REQ-108 and FLOW-017 accepted); the In-depth hand-off change (REQ-206) was rejected and stays as today. See `DESIGN-BRIEF.md`, the finalized proposal `GATE-QUESTIONS.md`, and `evidence/measurements.md`. Owner's words: `intake/owner-request.md`.
+
+## Slices
+
+| Slice | Doc | Goal | Depends on | Status |
+| --- | --- | --- | --- | --- |
+| A | `slice-a-draft-follows-box.md` | Draft follows the box in both destinations; REQ-108 and FLOW-017 applied; ship gates | none | planned |
+
+Plan: `GAMEPLAN.md`. Criteria: `slice-a.criteria.json`.
 
 ## Autonomous metadata
 

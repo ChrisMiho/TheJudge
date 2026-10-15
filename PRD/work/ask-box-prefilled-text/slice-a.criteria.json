@@ -1,0 +1,72 @@
+{
+  "slug": "ask-box-prefilled-text",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "Reload mid-walk keeps Sol Ring and the question in In-depth details",
+      "value": false,
+      "evidence": { "command": "vitest|test.*mid-flight-draft", "paths": ["apps/frontend/src/App.mid-flight-draft.test.tsx"] }
+    },
+    {
+      "id": "A2",
+      "statement": "Clear then reload stays empty, Draft absent before and after reload (Menu-trip and card-toggle Drafts)",
+      "value": false,
+      "evidence": { "command": "vitest|test.*mid-flight-draft", "paths": ["apps/frontend/src/App.mid-flight-draft.test.tsx"] }
+    },
+    {
+      "id": "A3",
+      "statement": "Clear with a card kept: box empty, Sol Ring staged, Draft holds Sol Ring and empty question",
+      "value": false,
+      "evidence": { "command": "vitest|test.*mid-flight-draft", "paths": ["apps/frontend/src/App.mid-flight-draft.test.tsx"] }
+    },
+    {
+      "id": "A4",
+      "statement": "Replaced question and typed-then-reloaded question both come back as the new text",
+      "value": false,
+      "evidence": { "command": "vitest|test.*mid-flight-draft", "paths": ["apps/frontend/src/App.mid-flight-draft.test.tsx"] }
+    },
+    {
+      "id": "A5",
+      "statement": "In-depth details: cleared question stays empty after reload and the game Draft holds an empty question",
+      "value": false,
+      "evidence": { "command": "vitest|test.*mid-flight-draft", "paths": ["apps/frontend/src/App.mid-flight-draft.test.tsx"] }
+    },
+    {
+      "id": "A6",
+      "statement": "Desktop 1440x900 at rest: empty, hint shown, data-fill 0, In-depth button reads ◈ In-depth (~96px); focus or typing folds it to ◈",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "A7",
+      "statement": "Phone 390x844 at rest: empty, hint 'Your question…', data-fill 0, In-depth button ◈ only (~35px)",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "A8",
+      "statement": "No regressions: Menu/reload restore, answer clears Draft, saved-conversation Draft, Edit cards, Start over, In-depth hand-off unchanged",
+      "value": false,
+      "evidence": { "command": "vitest|npm.* test" }
+    },
+    {
+      "id": "A9",
+      "statement": "REQ-108 and FLOW-017 carry the finalized wording; REQ-206 and quick-lookup/README.md unchanged",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/user-flows.md"] }
+    },
+    {
+      "id": "A10",
+      "statement": "Live-check cleanup: browser closed, owned servers stopped, ports released, captures only under the package .playwright-mcp/",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "A11",
+      "statement": "typecheck, frontend tests, and quality:check pass",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    }
+  ]
+}
