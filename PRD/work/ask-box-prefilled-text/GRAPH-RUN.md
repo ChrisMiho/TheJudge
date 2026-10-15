@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/ask-box-prefilled-text`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/ask-box-prefilled-text/`
+- Current node: `owner-action`
+- Next action: answer `GATE-QUESTIONS.md`, merge the docs PR; then `/graph-implement PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
 
@@ -20,10 +20,16 @@
 | 5 | define | opus | ok | `0 → 71` | attempt 2 committed `84c424a7`: finding 1 → one all-or-nothing carry rule, identical in brief / REQ-206 / quick-lookup README, criteria 5–9; finding 2 → reproduced P1/P2/P2b/P5 (old question returns) and P4 (typed question lost) on dev `97c8ea8a` and mtgjudge.gg `index-CGZiOZPC.js` at 1440x900 and 390x844 (`evidence/measurements.md` §5, §5a), criteria 10–13; `GATE-QUESTIONS.md` now REQ-206, REQ-108, FLOW-017 (all amendments, no new IDs); `STATUS.refined`; no `PRD/sections`/`apps` diff vs `origin/main` | 2026-10-14 |
 | 6 | gate-qc | sonnet | failed | `0 → 21` | FAIL 2 of 3 — `QUALITY-CHECK.md` committed `e7989da6`: both attempt-1 findings resolved; one new finding (second In-depth tap leaves In-depth's question box and the clear-triggering attempt undefined; criterion 9 incomplete); diff anchors and cited lines verified; `STATUS.refining`; driver rewrote README `## Preparation gate`; loop to define | 2026-10-14 |
 | 7 | define | opus | ok | `0 → 93` | attempt 3 committed `f9385d8d`: later-tap rule in brief and REQ-206 criterion (each tap a new carried attempt; In-depth's box takes the new carried question; only the first answer to a request sent after the latest tap clears Ask a Question), criterion 9 rewritten + 9a–9e; second tap measured live on dev (`evidence/measurements.md` §6, T1–T4); clearing comparison re-anchored to what Ask a Question held at the tap; line refs corrected (234, 252); `STATUS.refined`; no `PRD/sections`/`apps` diff vs `origin/main`; launch checkout porcelain empty | 2026-10-14 |
+| 8 | gate-qc | sonnet | ok | `0 → 12` | PASS (attempt 3), no findings — `QUALITY-CHECK.md` committed `cf78c693`; run stops at gate-qc PASS: proposal pushed to `origin/thejudge-auto/ask-box-prefilled-text`, docs PR into `main` opened, parked `STATUS.owner-action` | 2026-10-14 |
 
 ## Open gate
 
-- None
+- Gate: `define` product truth, parked at `owner-action` after gate-qc PASS (attempt 3). Terminal state `PARKED`.
+- Question: answer `PRD/work/ask-box-prefilled-text/GATE-QUESTIONS.md` — one accept/edit/reject verdict (with a reason for edit or reject) for each of REQ-206, REQ-108, FLOW-017 (REQ-108 and FLOW-017 go together) — then merge the docs PR to build. One recommendation inside the REQ-206 slot is the owner's call: a second card-less In-depth tap keeps In-depth's waiting cards (recommended) versus empties them.
+- Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `QUALITY-CHECK.md` (PASS), `evidence/measurements.md`.
+- PR: pending (recorded in the next commit).
+- Out of scope, owner opening a separate package: In-depth Context spacing (card counter pill text hugs the top; note field cuts its hint's third line) — `evidence/measurements.md`, Other finding.
+- Resume: the owner's merge of the docs PR is the build signal; `graph-implement` picks it up (`/graph-implement PRD/work/ask-box-prefilled-text/`). The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text` stays until `graph-implement` claims the spec.
 
 ## Dispatch prompts
 

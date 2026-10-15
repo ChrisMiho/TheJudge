@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # ask-box-prefilled-text
 
@@ -11,5 +11,5 @@ Bug: the Ask box shows an old question (a saved Draft) instead of the hint, so t
 ## Preparation gate
 
 - Quality-check: PASS
-- Checked artifact: `PRD/work/ask-box-prefilled-text/DESIGN-BRIEF.md` with the proposal in `GATE-QUESTIONS.md`
-- Findings: none (attempt 3; the attempt-2 second-tap finding is resolved). Full text: `QUALITY-CHECK.md`.
+- Checked artifact: `PRD/work/ask-box-prefilled-text/DESIGN-BRIEF.md`
+- Findings: none
