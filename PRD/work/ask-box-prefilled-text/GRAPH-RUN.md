@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ask-box-prefilled-text`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 118` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-206 amended; no new IDs; no blockers), `evidence/measurements.md`, `STATUS.refined` committed `d79e9634`; reproduced on dev (origin/main `97c8ea8a`) and mtgjudge.gg (`index-CGZiOZPC.js`) at 1440x900 and 390x844 via the In-depth carry, not on a clean load; owner's In-depth Context spacing observation recorded as out-of-scope finding; GATE-QUESTIONS.md present → product truth proposed, continue to gate-qc | 2026-10-14 |
 | 4 | gate-qc | sonnet | failed | `0 → 28` | FAIL 1 of 3 — `QUALITY-CHECK.md` committed `65b55a31` (finding 1: partial-change clearing rule ambiguous) and `35e6acf8` (finding 2: owner's type → clear → reload path, relayed mid-node, confirmed in `QuickLookupApp.tsx` `snapshotMidFlightDraft` ~214); `STATUS.refining`; driver wrote README `## Preparation gate`; loop to define | 2026-10-14 |
 | 5 | define | opus | ok | `0 → 71` | attempt 2 committed `84c424a7`: finding 1 → one all-or-nothing carry rule, identical in brief / REQ-206 / quick-lookup README, criteria 5–9; finding 2 → reproduced P1/P2/P2b/P5 (old question returns) and P4 (typed question lost) on dev `97c8ea8a` and mtgjudge.gg `index-CGZiOZPC.js` at 1440x900 and 390x844 (`evidence/measurements.md` §5, §5a), criteria 10–13; `GATE-QUESTIONS.md` now REQ-206, REQ-108, FLOW-017 (all amendments, no new IDs); `STATUS.refined`; no `PRD/sections`/`apps` diff vs `origin/main` | 2026-10-14 |
+| 6 | gate-qc | sonnet | failed | `0 → 21` | FAIL 2 of 3 — `QUALITY-CHECK.md` committed `e7989da6`: both attempt-1 findings resolved; one new finding (second In-depth tap leaves In-depth's question box and the clear-triggering attempt undefined; criterion 9 incomplete); diff anchors and cited lines verified; `STATUS.refining`; driver rewrote README `## Preparation gate`; loop to define | 2026-10-14 |
 
 ## Open gate
 
@@ -156,6 +157,24 @@ First verify that both attempt-1 findings in `QUALITY-CHECK.md` are resolved: (1
 Record the result as the skill prescribes (QUALITY-CHECK.md, status marker). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: PASS or FAIL, the complete findings list (or none), files written, and the commit hash.
+
+### define (attempt 3)
+
+graph is controlling. You are node 3 (`define`), attempt 3, of graph run `graph-20261015-034607`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text
+
+Work only inside that directory (the run's kickoff worktree, on branch `thejudge-auto/ask-box-prefilled-text`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-refinement` skill (Skill tool) in graph mode on `PRD/work/ask-box-prefilled-text/`. Quality-check failed attempt 2 with one finding; resolve it. Read `QUALITY-CHECK.md`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, and `evidence/measurements.md` first.
+
+The finding: a second tap on In-depth leaves In-depth's question box undefined. Criterion 9 (the latest tap wins) asserts only that Ask a Question ends up cleared. It never says what In-depth's question box and request text hold after a second tap when the first tap already put a question there or an In-depth walk had started, nor whether the second tap starts a new carried attempt whose answer is the one that triggers the clear. State this in the brief and in the REQ-206 criterion in `GATE-QUESTIONS.md` (quality-check suggests: a later tap replaces the carried question in In-depth's box, and the answer to that attempt is the one that triggers the clear), and extend criterion 9 so a test asserts In-depth's question box and request text after the second tap. Check today's code for what a second carry does now (the carry handling in `apps/frontend/src/components/portal/MtgAssistantApp.tsx` near lines 235-238 and the In-depth composer) and say whether the proposal keeps or changes it. Where more than one answer is reasonable, recommend one in the proposal and leave the decision to the owner's verdict. Keep the REQ-206 wording consistent with the REQ-108 and FLOW-017 blocks and with the quick-lookup README sentence; re-read the whole package once for any other gap of the same kind before you finish.
+
+Also note quality-check measured the brief's `~229` and `~247` line references at 234 and 252 in `QuickLookupApp.tsx`; correct them.
+
+Apply the assumption ladder per question as it arises; decide nothing on the owner's behalf that the genuine-blocker test reserves for them. Do not edit `PRD/sections/` or any code. Set the status marker the skill prescribes (`STATUS.refined` when the brief is complete). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: outcome (ok/failed), how the finding was resolved, what a second tap does today versus under the proposal, any other gap fixed, files written, and the commit hash.
 
 ## Instruction ledger
 
