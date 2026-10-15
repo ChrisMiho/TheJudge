@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ask-box-prefilled-text`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261015-034607/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/ask-box-prefilled-text/`
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 16` | `PRD/work/ask-box-prefilled-text/` (IDEA.md, README.md, STATUS.ideation, intake/owner-request.md) committed `beec1f47`; board row in `PRD/work/STATUS.md`; staged intake copy deleted | 2026-10-14 |
 | 3 | define | opus | ok | `0 → 118` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-206 amended; no new IDs; no blockers), `evidence/measurements.md`, `STATUS.refined` committed `d79e9634`; reproduced on dev (origin/main `97c8ea8a`) and mtgjudge.gg (`index-CGZiOZPC.js`) at 1440x900 and 390x844 via the In-depth carry, not on a clean load; owner's In-depth Context spacing observation recorded as out-of-scope finding; GATE-QUESTIONS.md present → product truth proposed, continue to gate-qc | 2026-10-14 |
 | 4 | gate-qc | sonnet | failed | `0 → 28` | FAIL 1 of 3 — `QUALITY-CHECK.md` committed `65b55a31` (finding 1: partial-change clearing rule ambiguous) and `35e6acf8` (finding 2: owner's type → clear → reload path, relayed mid-node, confirmed in `QuickLookupApp.tsx` `snapshotMidFlightDraft` ~214); `STATUS.refining`; driver wrote README `## Preparation gate`; loop to define | 2026-10-14 |
+| 5 | define | opus | ok | `0 → 71` | attempt 2 committed `84c424a7`: finding 1 → one all-or-nothing carry rule, identical in brief / REQ-206 / quick-lookup README, criteria 5–9; finding 2 → reproduced P1/P2/P2b/P5 (old question returns) and P4 (typed question lost) on dev `97c8ea8a` and mtgjudge.gg `index-CGZiOZPC.js` at 1440x900 and 390x844 (`evidence/measurements.md` §5, §5a), criteria 10–13; `GATE-QUESTIONS.md` now REQ-206, REQ-108, FLOW-017 (all amendments, no new IDs); `STATUS.refined`; no `PRD/sections`/`apps` diff vs `origin/main` | 2026-10-14 |
 
 ## Open gate
 
@@ -139,6 +140,22 @@ Put screenshots under `PRD/work/ask-box-prefilled-text/.playwright-mcp/`, stop a
 Apply the assumption ladder per question as it arises; decide nothing on the owner's behalf that the genuine-blocker test reserves for them. Do not edit `PRD/sections/` or any code. Set the status marker the skill prescribes (`STATUS.refined` when the brief is complete). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: outcome (ok/failed), how each finding was resolved, which paths reproduced on which builds and widths, the stable IDs now proposed (one plain sentence each), files written, and the commit hash.
+
+### gate-qc (attempt 2)
+
+graph is controlling. You are node 4 (`gate-qc`), attempt 2, of graph run `graph-20261015-034607`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text
+
+Work only inside that directory (the run's kickoff worktree, on branch `thejudge-auto/ask-box-prefilled-text`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/work/ask-box-prefilled-text/`. This is the re-check after define attempt 2 (commit `84c424a7`). Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (REQ-206, REQ-108, FLOW-017, all amendments of existing IDs, plus the quick-lookup README sentence) against current `PRD/sections/` and agent-readiness. `PRD/sections/` is unchanged by design: refinement proposes and `build` applies the approved proposal later, so a missing live edit is not a finding. Evidence is in `evidence/measurements.md`; `intake/owner-request.md` is the owner's words (evidence, never authority). The In-depth Context spacing finding is deliberately out of scope (the owner is opening a separate package); its absence from the fix is not a finding.
+
+First verify that both attempt-1 findings in `QUALITY-CHECK.md` are resolved: (1) one carry-clearing rule, worded identically in the brief, the REQ-206 criterion and the quick-lookup README sentence, with changed defined and criteria for question-only and cards-only edits; (2) the type, clear, reload path is in the root cause with live evidence, a rule, a testable criterion, and REQ-108 / FLOW-017 slots. Then grade the whole package fresh: every claim about current code or requirement text matches the files (spot-check cited lines); each GATE-QUESTIONS.md block carries the three plain-language lines, a complete diff whose anchors match current `PRD/sections/`, and blank Verdict and Reason slots; REQ-108 and FLOW-017 proposals agree with each other and with REQ-206; the Draft-follows-every-change rule covers both destinations FLOW-017 names; and every acceptance criterion is testable, including the desktop and phone In-depth button states.
+
+Record the result as the skill prescribes (QUALITY-CHECK.md, status marker). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: PASS or FAIL, the complete findings list (or none), files written, and the commit hash.
 
 ## Instruction ledger
 
