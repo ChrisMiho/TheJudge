@@ -14,6 +14,7 @@ import {
 } from "./lib/feedback/FeedbackContextProvider";
 import { loadTrackerState } from "./lib/lifeTracker/persistence";
 import { trackerStateToRosterSeed } from "./lib/lifeTracker/seed";
+import { BrandTapProvider } from "./lib/portal/brandTapContext";
 import { InDepthCarryContext } from "./lib/portal/inDepthCarryContext";
 import { LeftEdgeDrawerProvider } from "./lib/portal/leftEdgeDrawerContext";
 import { AssistantSeedProvider, useAssistantSeed } from "./lib/portal/seedContext";
@@ -167,7 +168,9 @@ export default function App(): JSX.Element {
     <BrowserRouter>
       <LeftEdgeDrawerProvider>
         <AssistantSeedProvider>
-          <PortalShell />
+          <BrandTapProvider>
+            <PortalShell />
+          </BrandTapProvider>
         </AssistantSeedProvider>
       </LeftEdgeDrawerProvider>
     </BrowserRouter>

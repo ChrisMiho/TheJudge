@@ -38,7 +38,19 @@
  * profiles) is deliberately exempt from these floors, exactly as it is today.
  */
 
-:root,
+/* The default (REQ-099): White's values, so a visitor with no saved colour sees
+   White from the first paint. This block must stay before every
+   `[data-profile="..."]` block: `:root` and `[data-profile]` have equal
+   specificity, so the later rule wins once `applyPalette` sets `data-profile`. */
+:root {
+  --motif: url("../lib/theme/motifs/white.svg");
+  --accent: #ede7d6;
+  --accent-strong: #b0a382;
+  --accent-soft: #faf8f2;
+  --accent-contrast: #09090b;
+  --wash-tint: #120e08;
+}
+
 [data-profile="blue"] {
   --motif: url("../lib/theme/motifs/blue.svg");
   --accent: #0050d8;

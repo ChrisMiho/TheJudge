@@ -58,7 +58,7 @@ describe("Interaction flows - submission and retry", () => {
     // `.chat-head` "Ask a Question" — the old header that hid the tagline here alone is
     // retired.
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "TheJudge" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();

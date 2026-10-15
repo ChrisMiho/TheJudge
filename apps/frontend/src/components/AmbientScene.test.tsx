@@ -139,6 +139,20 @@ describe("Frontend - Theme", () => {
     }
   })
 
+  it("C4: with no profile set yet, the still frame is the default (White's), not Blue's", () => {
+    const whiteFrame = fingerprint(paintStill("white", 1280, 800))
+    const blueFrame = fingerprint(paintStill("blue", 1280, 800))
+    mockMatchMedia(true)
+    setViewport(1280, 800)
+    document.documentElement.removeAttribute("data-profile")
+    log.length = 0
+    const { unmount } = render(<AmbientScene motif="beams" />)
+    unmount()
+    const unsetFrame = fingerprint([...log])
+    expect(unsetFrame).toBe(whiteFrame)
+    expect(unsetFrame).not.toBe(blueFrame)
+  })
+
   it("renders at full strength behind the page by default and as the Menu tray's whisper copy in the tray", () => {
     const { rerender } = render(<AmbientScene motif="runes" />)
     expect(screen.getByTestId("ambient-scene").dataset.variant).toBe("page")

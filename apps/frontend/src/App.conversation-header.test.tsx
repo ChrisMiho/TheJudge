@@ -69,6 +69,6 @@ describe("Frontend - Conversation header docking", () => {
 
     expect(menuContainerClassName).toContain("portal-slot-tab");
     expect(menuContainerClassName).not.toContain("fixed");
-    expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "TheJudge" })).toBeInTheDocument();
   });
 });

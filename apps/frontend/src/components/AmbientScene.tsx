@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef } from "react";
-import type { Palette } from "../lib/theme/palettes";
+import { DEFAULT_PALETTE_ID, type Palette } from "../lib/theme/palettes";
 import { blueLinkRadius, createBlueFamilyPicker, blueOutline, bluePlacement, BLUE_RUNES } from "../lib/theme/blueInscription";
 
 export type AmbientSceneProps = {
@@ -547,9 +547,9 @@ const AMBIENCE = (() => {
       probeDone = false; probeStart = 0; probeLast = 0; probeSamples.length = 0; frozen = false;
       random = reducedMotion() ? seededRandom(STILL_FRAME_SEED) : Math.random;
       t = Math.floor(rnd(0, 10000));
-      const profile = document.documentElement.dataset.profile || 'blue';
-      recipe = Object.assign({}, RECIPES[profile] || RECIPES.blue);
-      scene = Object.create((opts.tray && TRAY_SCENES[profile]) || SCENES[profile] || SCENES.blue);
+      const profile = document.documentElement.dataset.profile || DEFAULT_PALETTE_ID;
+      recipe = Object.assign({}, RECIPES[profile] || RECIPES[DEFAULT_PALETTE_ID]);
+      scene = Object.create((opts.tray && TRAY_SCENES[profile]) || SCENES[profile] || SCENES[DEFAULT_PALETTE_ID]);
       if (recipe.fromToken) { const c = tokenRGB(); if (c) { recipe.color = c; recipe.spark = c.map((x) => Math.min(255, x + 40)); scene.col = c; } }
       moteColor = makeMote(recipe.color); moteSpark = makeMote(recipe.spark);
       parts = Array.from({ length: Math.round(recipe.n * dustK) }, () => spawn({}, true));

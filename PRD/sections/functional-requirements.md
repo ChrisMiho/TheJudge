@@ -915,10 +915,10 @@
 - Description: The frontend must let users choose an app color profile through a compact global theme/settings control, with the selection applied immediately and persisted for that browser; DEC-119/REQ-099 define the current six-profile catalog and Colorless-only customization.
 - Acceptance Criteria:
   - a theme/settings affordance is available from the app chrome across the primary staged flow and answered-state conversation view
-  - opening the control shows the named profiles as swatches, including Blue as the default and Colorless customization per REQ-099
+  - opening the control shows the named profiles as swatches, including White as the default and Colorless customization per REQ-099
   - selecting a palette immediately restyles primary accent surfaces such as primary buttons, active controls, focus/selection accents, badges, and prominent status highlights; REQ-200 extends the same immediate restyle to the whole surface — background wash, panel fills and edges, focus rings, waiting panel, card-detail popup
   - selected palette persists across page reloads for the same browser
-  - missing or corrupt persisted values fall back to Blue; retired or unsupported selected IDs are deleted before falling back, without throwing or blocking app load
+  - missing or corrupt persisted values fall back to White; retired or unsupported selected IDs are deleted before falling back, without throwing or blocking app load
   - palette changes do not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, or retry cooldowns
   - tests cover palette selection, persistence, fallback, and at least one representative themed control
 - Constraints:
@@ -937,6 +937,7 @@
   - REQ-046 (DEC-068) broadens this requirement's reach to additional surfaces, semantic states, and the scanner UI without changing the selection mechanism
   - DEC-119 / REQ-099 supersede the former predefined catalog and no-arbitrary-color constraint while preserving this requirement's global-control, immediate-apply, persistence, and state-preservation behavior
   - REQ-200 supersedes this requirement's accent-only reach: one palette choice now drives the whole surface through a named token set, and the "no dark/light mode redesign" constraint narrows to "no theme-mode control and no light values in this pass"
+  - amended by `small-fixes-cats-menu-white` (2026-10-14): the default and the fallback move from Blue to White with REQ-099
 
 ### REQ-045
 - Title: Inline step label in the staged header
@@ -2405,7 +2406,7 @@
 - Priority: medium
 - Description: The frontend must replace the retired generic preset catalog with one globally shared White/Blue/Black/Red/Green/Colorless profile catalog, preserve the existing four-token theme architecture and global reach, and let Colorless alone carry a remembered, resettable, deliberately uncorrected custom RGB.
 - Acceptance Criteria:
-  - the Theme section renders exactly six profiles in this order: White, Blue, Black, Red, Green, Colorless; Blue is the default
+  - the Theme section renders exactly six profiles in this order: White, Blue, Black, Red, Green, Colorless; White is the default, so a visitor with no saved choice sees White from the first paint
   - the authoritative fixed swatch/token matrix is:
     - White: `swatch #FAF8F2`, `accent #EDE7D6`, `accent-strong #B0A382`, `accent-soft #FAF8F2`, `accent-contrast #09090B`
     - Blue: `swatch #38E1FF`, `accent #0050D8`, `accent-strong #1E3A9C`, `accent-soft #38E1FF`, `accent-contrast #FFFFFF`
@@ -2421,9 +2422,9 @@
   - choosing a custom color applies its hue to every token-driven surface, applies immediately, persists separately as the exact RGB picked, and is restored after switching away from and back to Colorless
   - custom Colorless is lifted only where it would fail readability, keeping its hue: accent text and decorative dust reach at least 7:1 against the page ground, filled controls at least 2.4:1, and text on a filled control is white or near-black, whichever reads; there is no warning or rejection, and a readable pick is applied unchanged
   - `Reset to gray` removes only the saved custom RGB and immediately reapplies the fixed Colorless values
-  - Violet, Emerald, Amber, and Rose are absent from the catalog; loading one of those or any unsupported selected ID deletes the stored selection and falls back to Blue
+  - Violet, Emerald, Amber, and Rose are absent from the catalog; loading one of those or any unsupported selected ID deletes the stored selection and falls back to White
   - malformed saved custom RGB is deleted and Colorless uses its fixed gray values; unavailable storage or failed reads/writes do not block render or reset app state
-  - tests cover exact catalog/order/swatches/token values, refreshed WUBRG swatch-to-`accent-soft` alignment, Blue default, fixed-profile contrast, Black-versus-Colorless distinction, global representative reach, custom apply/persist/restore/reset, legacy/unknown deletion, malformed custom deletion, and unavailable storage
+  - tests cover exact catalog/order/swatches/token values, refreshed WUBRG swatch-to-`accent-soft` alignment, White default, fixed-profile contrast, Black-versus-Colorless distinction, global representative reach, custom apply/persist/restore/reset, legacy/unknown deletion, malformed custom deletion, and unavailable storage
 - Constraints:
   - reuse the single authoritative frontend theme system; no per-flow palettes, per-profile component overrides, or generated theming/contrast engine. The four-token restriction is **superseded by REQ-200**, which adds named surface roles to the same single source; each profile supplies values for the new roles alongside the four published above, which stay authoritative and unchanged
   - do not recolor card-identity rings (REQ-058) or change scanner behavior/motion. REQ-200 supersedes the closed-inventory and untinted-background clauses: the surface is palette-driven within REQ-200's measured contrast floors
@@ -2448,6 +2449,7 @@
   - the refinement comparison image is preview-only and is not a shipped product asset
   - amended for the `ui-reimagining` pass (2026-09-24): REQ-200 adds surface roles per profile without changing any published hex value or the Colorless custom-RGB contract. Colorless's "artifact" reading — steel, brushed metal, a hint of warmth — is expressed through those new roles and REQ-201's motif language, not by editing Colorless's four published values
   - amended for the `ui-reimagining-build` pass (2026-09-30): "deliberately uncorrected" custom Colorless becomes "your hue, made readable" (REQ-207); the stored value is still the exact pick, so Reset to gray and persistence are unchanged. The constraint's "no custom-Colorless contrast guarantee" is superseded by the lift above; the lift is a fixed rule, not a generated theming engine
+  - amended by `small-fixes-cats-menu-white` (2026-10-14): the owner moved the default from Blue to White. A saved choice is untouched; nothing is saved until a player picks, so players who never picked also move to White. The fallback for a missing, corrupt or retired saved value follows the default. The pre-start paint (the default token block, the browser-tab `theme-color`, the placeholder favicon) follows it too, so a first visit never flashes Blue. No profile's values or catalog order change
 
 ### REQ-100
 - Title: Compact synchronized player-secondary disclosure
@@ -2794,7 +2796,8 @@
   - Life Tracker (full-bleed shell) receives the same full left-side height and bottom-left radius treatment as standard destinations
   - unused lower tray space shows the colour's scene at a whisper over a pool of the colour's light (REQ-207); nothing there is a second navigation control
   - left-edge slide open/close, destination/action/Theme behavior and reduced-motion remain; the trigger is REQ-207's ☰ button and History is a Menu row (REQ-213)
-  - tests or stylesheet assertions cover full-shell height (or visible-bounds equivalent), matching bottom-left radius, and Life Tracker parity
+  - the open tray never scrolls sideways and never shows a horizontal scrollbar at any width, including in a browser that always shows scrollbars: its content width equals its visible width; its right-edge light line stays visible
+  - tests or stylesheet assertions cover full-shell height (or visible-bounds equivalent), matching bottom-left radius, Life Tracker parity, and no sideways overflow of the open tray at 390×844 and 1440×900
 - Constraints:
   - presentation only; below `768px` the tray is shell-docked (DEC-109), tracking the shell's visible rectangle; at `768px`+ it is a floating card inset from the viewport edges and sized to its content (REQ-207)
   - no change to destination registry, action entries, Theme section contents, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scan behavior, or data pipeline
@@ -2810,6 +2813,7 @@
 - Notes:
   - follow-up to shipped `center-menu-tab-prominence` (DEC-122); EnrichmentStep brand-block consolidation remains parked
   - amended for the `ui-reimagining-build` pass (2026-09-30): full height below `768px`, floating card at `768px`+
+  - amended by `small-fixes-cats-menu-white` (2026-10-14): the owner saw a horizontal scrollbar along the open tray's bottom on desktop. Measured at 1440×900 and 390×844: clientWidth 319, scrollWidth 320 — the tray's 1px right-edge light line (`::after`, `right: -1px`) overhung the scroll box, and `overflow-y: auto` makes the x-axis scroll too. Removing the overhang alone restored 319 = 319 at both widths
 
 ### REQ-114
 - Title: Suite chrome hit areas bounded to the affordance they paint
@@ -5226,9 +5230,19 @@
   - DEC-076
   - FLOW-001
 - Notes:
-  - where the cat appears on screens with no hero slot is a mockup decision,
-    deliberately not fixed here
+  - the cat appears directly under the banner header (and under the mock-mode
+    strip when it shows), centred, at the same 224px width as on the
+    game-context step, on every in-scope screen including game context, and
+    scrolls with the page rather than pinning to the header; on load failure
+    the text "Cat wizard" stands in, as today
   - the egg is protected scope: it survives every mockup direction
+  - amended by `small-fixes-cats-menu-white` (2026-10-14): the placement above
+    replaces "a mockup decision, deliberately not fixed here" — no mockup drew
+    one. Measured live at 390×844 and 1440×900: a 224px cat under the header
+    on Ask a Question and Trade Balancer leaves the document exactly the
+    viewport's height (no page scroll). At that date only the game-context
+    step counted taps and showed the cat; the suite-wide count had never been
+    built
 
 ### REQ-204
 - Title: Trade Balancer phone side tabs
@@ -5380,7 +5394,7 @@
 - Acceptance Criteria:
   - one typeface, Inter, for body and titles (titles heavier with tighter tracking), served as a self-hosted local font file with the system stack as fallback — no runtime request to a font CDN, no display face
   - the page ground is flat: one colour per profile from the REQ-200 token set, no gradient; neutral ground and panel fills stay the visual majority; no corner decoration, hairline bracket or flourish on any surface
-  - the header is a banner: ☰ at the left (at least 44px; about a quarter larger than today's trigger on a phone and a third on desktop), the brand centred (a breathing orb holding the colour's badge, the wordmark, "MTG Assistant") on a lit band with a hairline of the colour's light along its foot, and each profile's element drawn across the band (White low-sun rays at half strength; Blue a scatter of arcane shapes; Black fog pooling at the ends; Red a hot band with embers; Green a scatter of leaf and tree shapes; Colorless small triangles, rings, arcs, dots and crosses); the right-hand slot shows Trade Balancer's price date at `768px`+; the brand keeps the cat-wizard Easter egg (REQ-203)
+  - the header is a banner: ☰ at the left (at least 44px; about a quarter larger than today's trigger on a phone and a third on desktop; at `768px`+ its three bars are drawn 45px wide and thin, with no box or outline at rest, and it stays in the far-left corner at the same box size, so the header's height is unchanged; at every width the bars carry a soft glow tinted by the colour's light, and below `768px` the ☰ keeps its size), the brand centred (a breathing orb holding the colour's badge, the wordmark, "MTG Assistant") on a lit band with a hairline of the colour's light along its foot, and each profile's element drawn across the band (White low-sun rays at half strength; Blue a scatter of arcane shapes; Black fog pooling at the ends; Red a hot band with embers; Green a scatter of leaf and tree shapes; Colorless small triangles, rings, arcs, dots and crosses); the right-hand slot shows Trade Balancer's price date at `768px`+; the brand keeps the cat-wizard Easter egg (REQ-203)
   - the banner header sits flush with the top edge of the viewport — its top at y=0 at every width — and the page's own padding applies only to the content below it, never wrapping or offsetting the header; in mock provider mode the mock-mode banner keeps its place directly under the header (REQ-123)
   - the Menu tray slides in from the left at every width: full height of the visible shell side below `768px`; at `768px`+ a floating card inset from the edges, rounded, sized to its content; it closes on its ✕, a tap outside it, and Escape; it stays fully opaque over destination content (REQ-122)
   - the destination list is REQ-206's: Ask a Question, Question History (REQ-213), Life Tracker, Trade Balancer, then Send feedback past a hairline
@@ -5393,7 +5407,7 @@
   - under `prefers-reduced-motion` the scene paints one still frame and runs no animation loop, and every decorative motion stops (NFR-006)
   - the REQ-200 contrast floors hold over the scene in all six profiles, including text on glass panels with the scene behind them; a custom Colorless colour follows REQ-099
   - every card keeps its colour-identity ring (REQ-058) on every card surface; the theme owns the glow behind a card, never its edge
-  - tests cover the band's cell floor and arrows at 280px and 390px, the tray's close paths, reduced motion stopping the scene, the header's top edge at 0 at 390×844 and 1440×900, the font loading from the app's own origin, the contrast floors per profile, and the Green scene on a phone (390×844) staying a quiet backdrop clear of the content column, confirmed by a before/after screenshot pair on Ask a Question, In-depth, and the Menu tray
+  - tests cover the band's cell floor and arrows at 280px and 390px, the tray's close paths, reduced motion stopping the scene, the header's top edge at 0 at 390×844 and 1440×900, the font loading from the app's own origin, the contrast floors per profile, the ☰'s wider bars and glow (45px bars and the colour-tinted glow at `768px`+, the glow at today's size below it, box and header height unchanged at 390×844 and 1440×900), and the Green scene on a phone (390×844) staying a quiet backdrop clear of the content column, confirmed by a before/after screenshot pair on Ask a Question, In-depth, and the Menu tray
 - Constraints:
   - motion (NFR-006): the scene is the one hand-written canvas renderer ported from the mockup's `ambience.js`, mounted once as `AmbientScene` (page and Menu-tray variants) on a fixed canvas behind the page and driven by the active colour profile; no animation library; every other decorative motion in the frame stays CSS transforms and opacity
   - the six symbols, badges, banner elements and scene art are the app's own drawings, shipped as local static files or drawn by the ported scene renderer from the app's own code (REQ-201); no Wizards of the Coast glyph, icon font, logo, set symbol or card art
@@ -5419,6 +5433,7 @@
   - amended by `ui-look-translation` (2026-10-02): the scene returns to the mockup's own canvas renderer under NFR-006's ambient-scene exception; the CSS-only haze it replaces is retired
   - amended by `green-mobile-branch-declutter` (2026-10-04): the Green scene's phone path drew its branches (limbs) down both side edges, across the content column — a phone has no side gutter for them to sit in — so green read as clutter over the interface instead of ambience; the new criterion requires green on a phone (viewport `< 768px`, the whole phone band) to stay a quiet backdrop. Presentation-only and Green-only; the other five scenes and every tablet/desktop width are unchanged. Grounded against the running app at 390×844 (screenshots in the work package)
   - amended by `ui-look-translation` (2026-10-02): the header sits at the top edge outside the page padding (the first build's reviews measured a band of about 20px at 390×844 and 48px at 1440×900 above it), and panels take the mockup's glass surfaces instead of solid fills
+  - amended by `small-fixes-cats-menu-white` (2026-10-14): the owner found the desktop ☰ "almost invisible" at normal zoom. Measured live at 1440×900, 100% zoom: the glyph painted 14×12px of light (84 lit pixels) inside a 54px box with a transparent fill and edge; contrast was 12.3:1–15.1:1 across the six profiles, so size was the cause. A first proposal (an `.icon-chip`-style box around a 2.1rem glyph) was previewed and declined by the owner ("not the vibe"); from live previews of 30/34/40px bars with glow, then 40/45/50px, the owner chose 45px bars, 2.5px thick and 7px apart, with a soft glow (about 6px, the colour's `--accent` mixed about half with white) on the bars only, and the same glow at today's size on a phone. 50px was not chosen: it nearly filled the 54px box
 
 ### REQ-208
 - Title: One shared sheet for card detail, Question History, the printing picker, Send feedback, and confirmations

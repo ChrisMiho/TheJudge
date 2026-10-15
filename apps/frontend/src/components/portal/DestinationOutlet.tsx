@@ -11,7 +11,7 @@ export interface DestinationOutletProps {
 function DestinationLoadFallback(): JSX.Element {
   return (
     <PageShell>
-      <StagedStepHeader />
+      <StagedStepHeader plainBrand />
       <div
         className="destination-load-fallback text-sm text-zinc-400"
         role="status"
