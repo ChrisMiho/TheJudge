@@ -87,8 +87,8 @@ leaves them, the smaller change).
 +  (DEC-107, REQ-073, REQ-108, REQ-206, FLOW-011)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: reject
+- Reason: the owner narrowed the fix in session (2026-10-14) to one thing: text cleared from the Ask box must not come back after a refresh. The In-depth hand-off changes are out of scope for this package; today's hand-off behavior stays.
 
 ## REQ-108 — the saved unsent question always matches the box, so clearing it sticks
 
@@ -127,7 +127,7 @@ when a tab is swiped away, so the old question can still return there).
 +  - amended by `ask-box-prefilled-text` (2026-10-14): the Draft follows every change instead of being snapshotted at exits. Measured live at 1440x900 and 390x844 on mtgjudge.gg and the dev build: the Draft was written or removed only at Menu-leave, opening a saved conversation, and (Ask a Question) a card change, so after any of those, clearing or replacing the question and reloading restored the older question, a question typed and reloaded with no Menu trip was lost, and a reload mid-walk in In-depth details lost the carried cards. Removing the Draft only when the box empties, and saving at page hide, were considered and not chosen (the first leaves a replaced question stale; phones do not reliably signal page hide)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-017 — the step-by-step flow for unsent work says the same: the Draft follows every change
@@ -160,5 +160,5 @@ saved. If REQ-108 is rejected, reject this too.
 +  - amended by `ask-box-prefilled-text` (2026-10-14): the Draft is rewritten on every change and removed the moment nothing is staged, in both destinations (REQ-108); before this, an emptied or replaced question came back as the older text after a reload, measured on mtgjudge.gg and the dev build at desktop and phone widths
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:

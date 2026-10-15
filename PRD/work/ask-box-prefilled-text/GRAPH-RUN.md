@@ -29,6 +29,7 @@
 - Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `QUALITY-CHECK.md` (PASS), `evidence/measurements.md`.
 - PR: https://github.com/ChrisMiho/TheJudge/pull/309 (docs-only, `thejudge-auto/ask-box-prefilled-text → main`).
 - Out of scope, owner opening a separate package: In-depth Context spacing (card counter pill text hugs the top; note field cuts its hint's third line) — `evidence/measurements.md`, Other finding.
+- Verdicts (2026-10-14, after the lock was released): the owner found the three slots confusing and stated the fix in their own words — text cleared from the Ask box must not come back after a refresh, nothing more. Recorded in `GATE-QUESTIONS.md`, attributed to the owner: REQ-206 reject (scope narrowed; the In-depth hand-off stays as today), REQ-108 accept, FLOW-017 accept. This answers these three named slots only; it is not a standing authorization for any later product decision. `graph-gate-review` reconciles `DESIGN-BRIEF.md` to the REQ-206 reject at claim time. Remaining owner step: merge PR #309.
 - Resume: the owner's merge of the docs PR is the build signal; `graph-implement` picks it up (`/graph-implement PRD/work/ask-box-prefilled-text/`). The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ask-box-prefilled-text` stays until `graph-implement` claims the spec.
 
 ## Dispatch prompts
@@ -207,3 +208,5 @@ Report back plainly: PASS or FAIL, the complete findings list (or none), files w
 | "while watching the agent test, it looks like they found a weird bug in the in-depth flow around adding context to the card that really messed up the spacing?" | answered-once | define | — |
 | "separate package is fine, ill start the session myself" | answered-once | define | — |
 | "yeah, it seems like if i typed something before, and then clear it, and then refresh the page, the message comes back" | answered-once | gate-qc | — |
+| "what we want to fix, is that when the text is cleared from the box, it doesnt come back after a refresh" | answered-once | owner-action | — |
+| "so i just want to address that" | answered-once | owner-action | — |
