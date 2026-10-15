@@ -10,6 +10,11 @@ a reload. No new stable ID. No blocker.
 REQ-108 and FLOW-017 say the same rule in two places; accept or reject them
 together. REQ-206 stands on its own.
 
+**Finalized (2026-10-14):** REQ-206 rejected, REQ-108 accepted, FLOW-017
+accepted. The finalized proposal is the REQ-108 and FLOW-017 diffs below only;
+the REQ-206 slot is kept as the record of what the owner reviewed, with its
+diffs removed.
+
 Every diff is against `PRD/sections/` at `97c8ea8a`. Line numbers are where the
 hunk starts today. Evidence: `evidence/measurements.md`; screenshots in
 `.playwright-mcp/` (local). The full reasoning is in `DESIGN-BRIEF.md`.
@@ -52,40 +57,10 @@ at the moment of the tap rather than after the answer, or a second tap with no
 card to also empty In-depth's cards still waiting for a zone (the proposal
 leaves them, the smaller change).
 
-```diff
-@@ functional-requirements.md:5358 — REQ-206, Acceptance Criteria @@
-   - **Add in-depth details** switches the active destination to In-depth details, carrying every attached card and the typed question (or its silent fallback); the carry is queued in a one-slot mailbox (`lib/portal/seedContext.tsx`'s `queueLookupCarry`/`consumeLookupCarry`) alongside the existing Life Tracker roster-seed mailbox; a quick-lookup visit entered directly from Life Tracker still carries the roster seed forward through this one gesture, narrowly tied to it the same way the retired direct Menu transition was (App.player-life-tracker-seed.test.tsx's negative tests: a deep link, browser Back, or a raw route jump never seeds)
-+  - a typed question carried with no card attached still arrives in In-depth details' question box (a carry is never dropped for having no card). Every tap on In-depth starts a new carried attempt that replaces any earlier one. In-depth details' question box takes the carried question, replacing whatever it held, including anything typed there since an earlier tap; the carried question is Ask a Question's typed question, trimmed, or, with the box blank and cards attached, its silent card fallback. Carried cards replace the cards still waiting for a zone; a carry with no card leaves In-depth details' cards as they are; cards already placed stay placed, and the walk stays at its station. A tap with no question and no card changes nothing in In-depth details. The carried attempt's answer is the first successful answer to a request sent from In-depth details after the latest tap (a retry of that request counts); an answer to a request sent before that tap, or to a follow-up in an already-answered conversation, does not. The hand-off fires once; Ask a Question sending its own question, or ↺ Start over in In-depth details, drops it. The request sends whatever In-depth details' question box holds at send time, or In-depth details' own silent fallback when it is empty
-+  - the carry hands the question off: when In-depth details gives its first successful answer for a carried attempt, Ask a Question compares what it holds with what it held at the latest tap: if the question, ignoring leading and trailing spaces, and the set of attached cards both match, it clears the question, the cards and its Draft; if either differs in any way, including a box emptied or a card added or removed since the tap, it clears nothing. The comparison is of the two states at the moment of the answer (the state at the tap is Ask a Question's own box and cards, not the fallback question sent when the box was blank; an edit undone back to that state counts as unchanged; cards compare by identity, order ignored; only Ask a Question is compared, so an edit made inside In-depth details never counts). Nothing is cleared before that answer, so Back from In-depth details still finds the question waiting; a cleared page shows the empty box with only the faint hint and the full "◈ In-depth" label (◈ only under 480px); the hand-off, and the walk in In-depth details, survive a page reload between the tap and the answer
-@@ functional-requirements.md:5362 — REQ-206, Acceptance Criteria (tests) @@
--  - tests cover the single Menu entry, turning the ring (tap and arrows, wrapping, no duplicate neighbour at exactly two cards, the lit position dot following the front card), the carry queuing cards/question and switching the destination, the ring at 0/mid/last-30/300 characters, Edit cards restoring cards and question, and a chip opening the card detail
-+  - tests cover the single Menu entry, turning the ring (tap and arrows, wrapping, no duplicate neighbour at exactly two cards, the lit position dot following the front card), the carry queuing cards/question and switching the destination, a question-only carry arriving in In-depth details, Ask a Question emptied (box, stage and Draft) after the carried attempt's first In-depth answer when untouched since the tap, everything kept after an edit to only the question, only the cards, or an emptied box, a spaces-only edit still clearing, a cards-only carry from a blank box clearing, a second tap (with and without a card) replacing In-depth details' question box (including text typed there) and the request text while leaving placed cards and the walk's station, a tap with nothing carried changing nothing, only the answer to the latest tap's request clearing (not an answer to an earlier request, a follow-up, or a walk after Start over), a reload mid-walk keeping the walk and the hand-off, the ring at 0/mid/last-30/300 characters, Edit cards restoring cards and question, and a chip opening the card detail
-@@ functional-requirements.md:5388 — REQ-206, Notes @@
-   - amended by `card-search-and-send-pill` (2026-10-13): the ring's start point when the pill is the arrow alone (no speech recognition, REQ-212) — the top of the round arrow, clockwise
-+  - amended by `ask-box-prefilled-text` (2026-10-14): the carry hands the question off (acceptance criteria above), all or nothing against what Ask a Question held at the latest tap, and every tap is a new carried attempt. Measured on the dev build: a later tap with a card already replaced In-depth details' question box, even text typed there, and a later tap with no card was dropped. Measured live at 1440x900 and 390x844 on mtgjudge.gg and the dev build: a question-only carry was dropped in In-depth details (`MtgAssistantApp.tsx` returned early on a carry with no card), and Ask a Question's Draft cleared only on Ask a Question's own answer, so a carried question came back on every later visit as real text with the chip folded to ◈. REQ-108's "Draft for that attempt is cleared on first successful answer" now counts the In-depth answer for a carried attempt. Drafts saved before this change carry no hand-off record and are not cleared retroactively
-```
-
-```diff
-@@ quick-lookup/README.md:42 — Entry and pre-submit layout @@
- - Built: Quick Lookup is the **Ask a Question** page — the Menu's single
-   question destination (`quick-lookup`, route `/quick-lookup`, DEC-095) — and
-   opens as a frontend-only view switch with no reload; it ships no navigation
-   menu of its own. Its **Add in-depth details** pill carries the attached
-   cards and the typed question into In-depth details (`/in-depth`), switching
--  the active destination there. (DEC-107, REQ-073, REQ-206, FLOW-011)
-+  the active destination there. A question carried with no card still arrives
-+  in In-depth details' question box. Every tap is a new carried attempt: the
-+  carried question replaces whatever In-depth details' question box held, and
-+  only the first successful answer to a request sent after the latest tap
-+  counts. When In-depth details gives its first successful answer for a
-+  carried attempt, Ask a Question compares what it holds with what it held at
-+  the latest tap: if the question, ignoring leading and trailing spaces, and
-+  the set of attached cards both match, it clears the question, the cards and
-+  its Draft; if either differs in any way, including a box emptied or a card
-+  added or removed since the tap, it clears nothing. Before that answer, Back
-+  finds the question waiting.
-+  (DEC-107, REQ-073, REQ-108, REQ-206, FLOW-011)
-```
+*Proposed diff removed (verdict: reject). Nothing from this slot, including
+the `quick-lookup/README.md` sentence that went with it, is applied to
+`PRD/sections/`. REQ-206 number stays with the owner's record; no new ID was
+allocated for it.*
 
 - Verdict: reject
 - Reason: the owner narrowed the fix in session (2026-10-14) to one thing: text cleared from the Ask box must not come back after a refresh. The In-depth hand-off changes are out of scope for this package; today's hand-off behavior stays.
@@ -109,9 +84,8 @@ moment anything in it changes, and removed the moment nothing is staged, in
 both destinations. Whatever is on screen is what comes back.
 Recommendation: accept.
 
-**What happens if you say no:** the In-depth hand-off (REQ-206 slot) still
-ships, but clearing the Ask box and reloading keeps bringing the old question
-back, a question typed and reloaded is still lost, and a reload mid-walk in
+**What happens if you say no:** clearing the Ask box and reloading keeps
+bringing the old question back, a question typed and reloaded is still lost, and a reload mid-walk in
 In-depth still drops the carried cards. Two narrower versions exist if you
 prefer to Edit: remove the Draft only when the box empties (fixes clear and
 reload, but a replaced question still comes back as the older one), or save at

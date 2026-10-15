@@ -22,7 +22,33 @@
 | 7 | define | opus | ok | `0 → 93` | attempt 3 committed `f9385d8d`: later-tap rule in brief and REQ-206 criterion (each tap a new carried attempt; In-depth's box takes the new carried question; only the first answer to a request sent after the latest tap clears Ask a Question), criterion 9 rewritten + 9a–9e; second tap measured live on dev (`evidence/measurements.md` §6, T1–T4); clearing comparison re-anchored to what Ask a Question held at the tap; line refs corrected (234, 252); `STATUS.refined`; no `PRD/sections`/`apps` diff vs `origin/main`; launch checkout porcelain empty | 2026-10-14 |
 | 8 | gate-qc | sonnet | ok | `0 → 12` | PASS (attempt 3), no findings — `QUALITY-CHECK.md` committed `cf78c693`; run stops at gate-qc PASS: proposal pushed to `origin/thejudge-auto/ask-box-prefilled-text`, docs PR into `main` opened, parked `STATUS.owner-action` | 2026-10-14 |
 
-## Open gate
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-206` | reject | "the owner narrowed the fix in session (2026-10-14) to one thing: text cleared from the Ask box must not come back after a refresh. The In-depth hand-off changes are out of scope for this package; today's hand-off behavior stays." |
+| `REQ-108` | accept | — |
+| `FLOW-017` | accept | — |
+
+### Brief reconciliation
+
+- grep: `grep -nE 'carry rule|carry hand-off|later-tap|second tap|later tap|question-only|snapshot|hand-off|carried attempt|clears the question' DESIGN-BRIEF.md README.md`
+- `DESIGN-BRIEF.md` Decide/answer paragraph — said three slots and an In-depth carry path → now says REQ-206 rejected, two accepted slots, fix is Draft-follows-the-box only
+- `DESIGN-BRIEF.md` What was measured — second-tap bullet and the In-depth carry bullets removed; the carry/Draft bullet kept as context only (today's behaviour, unchanged); clear-then-reload, type-then-reload, mid-walk reload evidence kept
+- `DESIGN-BRIEF.md` Root cause — items 1 and 2 (question-only carry dropped, nothing removes a carried question) removed as they exist only for REQ-206; item 3 (Draft snapshot) kept
+- `DESIGN-BRIEF.md` "three rules" — carry hand-off rule, "what changed means", later-tap rule and table, and their recommendation list removed; Draft rule kept, section retitled
+- `DESIGN-BRIEF.md` Player-facing outcome — carry/clear/second-tap bullets removed; one line added that the In-depth button behaves as today
+- `DESIGN-BRIEF.md` Acceptance criteria — old 1, 2, 4–9e removed; old 3 trimmed to its reload half; old 10–16 renumbered 2–8; 8 gains "In-depth hand-off behaves as today"
+- `DESIGN-BRIEF.md` Touched files — carry snapshot, answered signal, `seedContext.tsx`, `persistence.ts`, carry-placement tests, quick-lookup README, REQ-206 entries removed; Draft-on-every-change entries kept
+- `DESIGN-BRIEF.md` Non-goals — added the In-depth hand-off as out of scope; removed carry-record and later-tap items
+- `DESIGN-BRIEF.md` Assumptions 2, 3, 4, 8, 9 — evidence is now the REQ-206 reject verdict (not proceeding); 6 and 7 cite the accept verdicts; the "clear at tap" alternative paragraph removed
+- `DESIGN-BRIEF.md` PRD alignment and Verification — REQ-206 and quick-lookup README amendments dropped (unchanged); criteria ranges updated
+- `DESIGN-BRIEF.md` Other finding (In-depth Context spacing) — kept as-is, out of scope
+- `GATE-QUESTIONS.md` — REQ-206 diffs and the quick-lookup README diff removed; a finalized note added; REQ-108 "what happens if you say no" lost its "In-depth hand-off still ships" clause
+- `README.md` — status restored to `refined`; summary sentence said the bug reproduced via the In-depth carry and listed REQ-206 as proposed → now states the verdicts. `intake/owner-request.md` states no superseded behaviour, so no supersession note
+- Re-run grep: remaining hits only in the Non-goals and Assumptions rows that state the change is not proceeding
+
+## Open gate (resolved 2026-10-14: 3 verdicts — 1 reject, 2 accept)
 
 - Gate: `define` product truth, parked at `owner-action` after gate-qc PASS (attempt 3). Terminal state `PARKED`.
 - Question: answer `PRD/work/ask-box-prefilled-text/GATE-QUESTIONS.md` — one accept/edit/reject verdict (with a reason for edit or reject) for each of REQ-206, REQ-108, FLOW-017 (REQ-108 and FLOW-017 go together) — then merge the docs PR to build. One recommendation inside the REQ-206 slot is the owner's call: a second card-less In-depth tap keeps In-depth's waiting cards (recommended) versus empties them.
@@ -199,6 +225,22 @@ First verify the attempt-2 finding in `QUALITY-CHECK.md` is resolved: a second t
 Record the result as the skill prescribes (QUALITY-CHECK.md, status marker). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: PASS or FAIL, the complete findings list (or none), files written, and the commit hash.
+
+### gate-review
+
+graph is controlling. You are the gate-resolution step of build-half graph run `graph-20261015-044701` (spec-forming half `graph-20261015-034607`).
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ask-box-prefilled-text
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/ask-box-prefilled-text-work`, cut from `origin/main` after the docs PR #309 merged). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `graph-gate-review` skill (Skill tool) on `PRD/work/ask-box-prefilled-text/`. The owner answered every slot in `GATE-QUESTIONS.md`: REQ-206 reject (reason recorded in the slot: the owner narrowed the fix to text cleared from the Ask box not coming back after a refresh; the In-depth hand-off stays as today), REQ-108 accept, FLOW-017 accept. Apply those verdicts inside `GATE-QUESTIONS.md` only; never edit `PRD/sections/` or code.
+
+Reconcile `DESIGN-BRIEF.md` to the REQ-206 reject, as the skill requires: every passage, root-cause paragraph, outcome, touched-file entry and acceptance criterion that exists only to carry out the rejected REQ-206 change (the In-depth carry rule, what Ask a Question clears after the In-depth answer, the second-tap rule, and the quick-lookup README sentence that went with REQ-206) is removed or marked out of scope, so the brief describes only the accepted REQ-108 / FLOW-017 fix: the Draft (the saved unsent question) is rewritten on every change and removed the moment nothing is staged, in Ask a Question and In-depth details. Keep the measured evidence that supports the accepted fix. Keep the In-depth Context spacing finding as an out-of-scope note. Leave `intake/` verbatim; reconcile the README's intake pointer only if it states the rejected behavior. Renumber or relabel acceptance criteria only as needed for the brief to read consistently, and say what you did. Do not add new product behavior.
+
+Restore `STATUS.refined` as the only marker and update the `PRD/work/STATUS.md` board row as the skill prescribes. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: outcome (ok/failed), the verdict counts, a `### Brief reconciliation` list (each brief passage changed or removed, and why), files written, and the commit hash.
 
 ## Instruction ledger
 
