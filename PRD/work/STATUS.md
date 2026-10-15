@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ask-box-prefilled-text | Saved Draft follows the Ask box so cleared text stays cleared after a refresh (REQ-108, FLOW-017 applied; REQ-206 rejected) — slice A done |
 
 ## active
 
