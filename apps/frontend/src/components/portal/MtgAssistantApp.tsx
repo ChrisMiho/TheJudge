@@ -414,6 +414,34 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to the isActive edge; staging fields are read via closure at fire time, not listed, so typing doesn't re-fire this.
   }, [isActive]);
 
+  const isFirstDraftEffectRef = useRef(true);
+
+  // REQ-108 / FLOW-017: the Draft always matches what is staged. Every change to a field the
+  // Draft saves rewrites it, and the moment nothing is staged it is removed. The first pass
+  // is skipped so it never overwrites the stored Draft with the pre-restore empty state
+  // before the mount-hydrate effect above commits. How a carry is consumed is unchanged.
+  useEffect(() => {
+    if (isFirstDraftEffectRef.current) {
+      isFirstDraftEffectRef.current = false;
+      return;
+    }
+    snapshotMidFlightDraft();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to the fields the Draft saves (and the answered-conversation flag); snapshotMidFlightDraft reads them via closure at fire time.
+  }, [
+    flowStep,
+    gameContext,
+    selectedZones,
+    zoneCardsByZone,
+    question,
+    turnPhase,
+    combatStep,
+    confirmedPhase,
+    activePlayer,
+    pendingPlacementCards,
+    placementTotal,
+    isConversationActive
+  ]);
+
   // DEC-105/REQ-088: contribute this flow's live slice to a feedback snapshot,
   // lazily — the closure is re-read on every render, so a snapshot taken at any
   // step (game context → zone confirm → collection → enrichment → conversation)

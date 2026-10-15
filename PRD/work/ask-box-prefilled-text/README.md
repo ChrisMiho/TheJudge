@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # ask-box-prefilled-text
 
@@ -8,7 +8,7 @@ Bug: the Ask box shows an old question (a saved Draft) instead of the hint, so t
 
 | Slice | Doc | Goal | Depends on | Status |
 | --- | --- | --- | --- | --- |
-| A | `slice-a-draft-follows-box.md` | Draft follows the box in both destinations; REQ-108 and FLOW-017 applied; ship gates | none | planned |
+| A | `slice-a-draft-follows-box.md` | Draft follows the box in both destinations; REQ-108 and FLOW-017 applied; ship gates | none | done |
 
 Plan: `GAMEPLAN.md`. Criteria: `slice-a.criteria.json`.
 

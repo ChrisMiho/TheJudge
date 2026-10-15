@@ -393,7 +393,7 @@
   - user is on (or returning to) In-Depth Question or Quick Question
   - Question History is reachable from the Menu on every destination (REQ-107, REQ-213)
 - Main Flow:
-  1. User stages mid-flight state (typed question, optional card, zones/enrichment, current step — anything before first successful submit). The destination's single Draft slot is written/updated and appears in Question History as its own **Draft** row.
+  1. User stages mid-flight state (typed question, optional card, zones/enrichment, current step — anything before first successful submit). The destination's single Draft slot is rewritten at once on every change, so it always matches the screen (REQ-108), and appears in Question History as its own **Draft** row.
   2. User may open Menu and navigate to another destination (or reload the page) without submitting; Draft remains browser-local.
   3. Returning to that destination via Menu, or reloading while that destination mounts, auto-hydrates mid-flight UI from Draft (DEC-103-style) so staged work is not lost.
   4. User may also open Question History from the Menu (including from a pre-submit step) and select **Draft** or a completed conversation (FLOW-016).
@@ -404,6 +404,8 @@
   - empty completed history and no Draft → Question History still opens to an empty/zero-state list
   - Draft storage corrupt → Draft dropped; Question History still opens; destination mounts fresh
   - first successful submit while a Draft exists for the attempt → Draft cleared; conversation enters completed-history path
+  - user empties everything they staged (clears the question, removes every card, and in In-depth details nothing else staged) → Draft removed at once; a reload or Menu return shows the empty destination, never the older work
+  - user replaces the question, then reloads → the new text comes back, never the older one
   - switching to Life Tracker / Trade Balancer → Question History stays reachable from the Menu there; returning to Ask a Question or In-depth details auto-hydrates Draft if present
   - selecting a completed conversation with no meaningful staging present → no Draft written, matching Menu-leave's empty-staging behavior
   - selecting a completed conversation while an answered conversation is already active → no Draft to maintain; restore proceeds unchanged
@@ -412,6 +414,7 @@
   - pre-submit empty lower-half screen fill is out of scope for this flow
   - the three mid-flight exits — Menu leave, reload, and opening a saved conversation — are all Draft-covered and must behave identically in both conversation-bearing destinations (DEC-138)
   - amended for the `ui-reimagining-build` pass (2026-09-30): Draft lives in Question History (REQ-213), not the retired rail; selecting a Draft already on its own destination re-hydrates immediately rather than relying on a mount effect
+  - amended by `ask-box-prefilled-text` (2026-10-14): the Draft is rewritten on every change and removed the moment nothing is staged, in both destinations (REQ-108); before this, an emptied or replaced question came back as the older text after a reload, measured on mtgjudge.gg and the dev build at desktop and phone widths
 
 ### FLOW-018
 - Name: Delete a saved conversation from Question History

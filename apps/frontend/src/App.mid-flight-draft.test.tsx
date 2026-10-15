@@ -12,7 +12,9 @@ import {
   navigateToPath,
   uninstallMemoryLocalStorage,
   uninstallMemorySessionStorage,
-  startOnInDepthQuestion
+  startOnInDepthQuestion,
+  setSelectedZones,
+  finishEnrichmentWizard
 } from "./test/appTestHelpers";
 
 // REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
@@ -192,7 +194,10 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
 
       await switchToDestination(user, "Quick Question");
       await user.type(screen.getByLabelText("Magic question"), "Does lifelink trigger on deathtouch damage?");
-      expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
+      // The Draft follows every change, so it already holds the typed question before the exit.
+      expect(JSON.parse(localStorage.getItem("thejudge.conversationDraft.lookup") as string)).toMatchObject({
+        question: "Does lifelink trigger on deathtouch damage?"
+      });
 
       await openHistory(user);
       await selectAndOpenHistoryEntry(user);
@@ -215,7 +220,6 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       render(<App />);
 
       await advanceToBattlefieldZoneCollection(user);
-      expect(localStorage.getItem("thejudge.conversationDraft.game")).toBeNull();
 
       await openHistory(user);
       await selectAndOpenHistoryEntry(user);
@@ -252,6 +256,188 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await selectAndOpenHistoryEntry(user);
 
       expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
+    });
+  });
+
+  // ask-box-prefilled-text: the Draft is rewritten on every change and removed the moment
+  // nothing is staged, so what is on screen is what a reload brings back.
+  describe("Draft follows every change (REQ-108 / FLOW-017)", () => {
+    const LOOKUP_KEY = "thejudge.conversationDraft.lookup";
+    const GAME_KEY = "thejudge.conversationDraft.game";
+    const solRing = {
+      cardId: "sol-ring",
+      name: "Sol Ring",
+      oracleText: "{T}: Add {C}{C}.",
+      imageId: "",
+      manaCost: "{1}",
+      manaValue: 1,
+      typeLine: "Artifact",
+      colors: [],
+      supertypes: [],
+      subtypes: []
+    };
+
+    beforeEach(() => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
+          const url = getUrlFromRequest(input);
+          if (url === "/data/cardMetadata.json") {
+            return jsonResponse([...baseCardMetadataFixture, solRing]);
+          }
+          if (url === "/data/gameRulesCoreTopics.json") {
+            return jsonResponse([]);
+          }
+          return jsonResponse({ error: "not found" }, 404);
+        })
+      );
+    });
+
+    function readDraft(key: string): { question: string; selectedCards?: Array<{ name: string }> } | null {
+      const raw = localStorage.getItem(key);
+      return raw === null ? null : JSON.parse(raw);
+    }
+
+    async function openAsk(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+      await switchToDestination(user, "Quick Question");
+      await screen.findByRole("heading", { name: "Ask a Question" });
+    }
+
+    async function attachSolRing(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+      if (!screen.queryByRole("textbox", { name: "Card search" })) {
+        await user.click(screen.getByRole("button", { name: "Add card" }));
+      }
+      await user.type(screen.getByRole("textbox", { name: "Card search" }), "sol r");
+      await user.click(await screen.findByRole("button", { name: "Sol Ring" }));
+    }
+
+    it("keeps Sol Ring and the question in In-depth details across a reload mid-walk", async () => {
+      const user = userEvent.setup();
+      const first = render(<App />);
+      await openAsk(user);
+      await user.type(screen.getByLabelText("Magic question"), "How does ward work?");
+      await attachSolRing(user);
+      await user.click(screen.getByTestId("composer-pill-in-depth"));
+      await screen.findByRole("button", { name: "Confirm game context" });
+
+      first.unmount();
+      render(<App />);
+      await navigateToPath("/in-depth");
+
+      await user.click(await screen.findByRole("button", { name: "Confirm game context" }));
+      expect(JSON.parse(localStorage.getItem(GAME_KEY) as string)).toMatchObject({
+        question: "How does ward work?"
+      });
+      expect(JSON.parse(localStorage.getItem(GAME_KEY) as string).pendingPlacementCards).toHaveLength(1);
+    });
+
+    it("stays empty after reload once the question is cleared following a Menu trip", async () => {
+      const user = userEvent.setup();
+      const first = render(<App />);
+      await openAsk(user);
+      await user.type(screen.getByLabelText("Magic question"), "Old question");
+      await switchToDestination(user, "Life Tracker");
+      expect(readDraft(LOOKUP_KEY)).toMatchObject({ question: "Old question" });
+      await openAsk(user);
+      await user.clear(screen.getByLabelText("Magic question"));
+      expect(localStorage.getItem(LOOKUP_KEY)).toBeNull();
+
+      first.unmount();
+      render(<App />);
+      await openAsk(user);
+      expect(screen.getByLabelText("Magic question")).toHaveValue("");
+      expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "0");
+      expect(localStorage.getItem(LOOKUP_KEY)).toBeNull();
+    });
+
+    it("stays empty after reload when the Draft came from attaching then removing a card", async () => {
+      const user = userEvent.setup();
+      const first = render(<App />);
+      await openAsk(user);
+      await attachSolRing(user);
+      expect(readDraft(LOOKUP_KEY)).not.toBeNull();
+      await user.click(screen.getByRole("button", { name: "Remove Sol Ring" }));
+      expect(localStorage.getItem(LOOKUP_KEY)).toBeNull();
+
+      first.unmount();
+      render(<App />);
+      await openAsk(user);
+      expect(screen.getByLabelText("Magic question")).toHaveValue("");
+      expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "0");
+      expect(localStorage.getItem(LOOKUP_KEY)).toBeNull();
+    });
+
+    it("keeps Sol Ring staged and the box empty when the question is cleared with a card kept", async () => {
+      const user = userEvent.setup();
+      const first = render(<App />);
+      await openAsk(user);
+      await user.type(screen.getByLabelText("Magic question"), "Old question");
+      await attachSolRing(user);
+      await user.clear(screen.getByLabelText("Magic question"));
+      expect(readDraft(LOOKUP_KEY)).toMatchObject({ question: "" });
+      expect(readDraft(LOOKUP_KEY)?.selectedCards?.map((c) => c.name)).toEqual(["Sol Ring"]);
+
+      first.unmount();
+      render(<App />);
+      await openAsk(user);
+      expect(screen.getByLabelText("Magic question")).toHaveValue("");
+      expect(screen.getByRole("button", { name: "Remove Sol Ring" })).toBeInTheDocument();
+    });
+
+    it("brings back the replaced question, and a typed question with no Menu trip", async () => {
+      const user = userEvent.setup();
+      const first = render(<App />);
+      await openAsk(user);
+      await user.type(screen.getByLabelText("Magic question"), "How does ward work?");
+      await switchToDestination(user, "Life Tracker");
+      await openAsk(user);
+      await user.clear(screen.getByLabelText("Magic question"));
+      await user.type(screen.getByLabelText("Magic question"), "What does hexproof stop?");
+
+      first.unmount();
+      const second = render(<App />);
+      await openAsk(user);
+      expect(screen.getByLabelText("Magic question")).toHaveValue("What does hexproof stop?");
+
+      // Clean storage, type, reload with no Menu trip.
+      second.unmount();
+      localStorage.removeItem(LOOKUP_KEY);
+      const third = render(<App />);
+      await openAsk(user);
+      await user.type(screen.getByLabelText("Magic question"), "How does ward work?");
+      third.unmount();
+      render(<App />);
+      await openAsk(user);
+      expect(screen.getByLabelText("Magic question")).toHaveValue("How does ward work?");
+    });
+
+    it("In-depth details: a cleared question stays empty after reload and the Draft holds an empty question", async () => {
+      const user = userEvent.setup();
+      const first = render(<App />);
+      await openAsk(user);
+      await user.type(screen.getByLabelText("Magic question"), "How does ward work?");
+      await attachSolRing(user);
+      await user.click(screen.getByTestId("composer-pill-in-depth"));
+      await user.click(await screen.findByRole("button", { name: "Confirm game context" }));
+      await setSelectedZones(user, ["Battlefield"]);
+      await user.click(screen.getByRole("button", { name: "Continue" }));
+      await user.click(await screen.findByRole("button", { name: "Battlefield" }));
+      await switchToDestination(user, "Life Tracker");
+      await navigateToPath("/in-depth");
+      expect(JSON.parse(localStorage.getItem(GAME_KEY) as string)).toMatchObject({ question: "How does ward work?" });
+
+      await user.click(screen.getByRole("button", { name: "Continue" }));
+      await finishEnrichmentWizard(user);
+      const box = await screen.findByRole("textbox", { name: "Optional question" });
+      await user.clear(box);
+      expect(JSON.parse(localStorage.getItem(GAME_KEY) as string)).toMatchObject({ question: "" });
+
+      first.unmount();
+      render(<App />);
+      await navigateToPath("/in-depth");
+      await user.click(await screen.findByText("Finish context"));
+      expect(await screen.findByRole("textbox", { name: "Optional question" })).toHaveValue("");
+      expect(JSON.parse(localStorage.getItem(GAME_KEY) as string)).toMatchObject({ question: "" });
     });
   });
 });
