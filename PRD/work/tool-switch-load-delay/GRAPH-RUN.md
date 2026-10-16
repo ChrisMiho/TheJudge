@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS — `QUALITY-CHECK.md` committed `80112ad7` (on origin); README `## Preparation gate` recorded by the driver | 2026-10-15 |
 | 5 | gate-review | sonnet | ok | `0 → 25` | build half run `graph-20261016-050510`: kickoff worktree removed clean (`git worktree remove`); claim commit `8abc7f2d` on `thejudge-auto/tool-switch-load-delay-work` cut from `origin/main` `a6b127da` (docs PR #313 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `063915ff` (= origin tip): 0 accept / 1 edit / 0 reject (NFR-014 widened to three tiers); `### Brief reconciliation` 15 passages in `DESIGN-BRIEF.md`; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; worktree and launch-checkout porcelain empty | 2026-10-15 |
 | 4 | gate-qc (build half, attempt 1) | sonnet | failed | `0 → 20` | FAIL — 4 blocking, 2 advisory; `QUALITY-CHECK.md` overwritten, commit `e256532b` (= origin tip); `STATUS.refining`; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 1 of 3) | 2026-10-15 |
+| 3 | define (build half, attempt 1) | opus | ok | `0 → 53` | commit `24176fc1` (= origin tip): all 6 findings addressed in `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (Diff 4 under NFR-014 rewording the REQ-064 ping overlap; NFR-014 verdict and reason untouched), `evidence/measurements.md` (live-site Life Tracker landing, read-only); new blocker question `Q-014` with blank slots (`GATE-QUESTIONS.md:202-252`: does a Life Tracker landing also download the card list in the background); `STATUS.refining`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -181,6 +182,24 @@ Never edit `PRD/sections/` or code. Do not edit `GRAPH-RUN.md` or the README `##
 Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
 
 Report back: outcome (`ok` or `failed`), how each of the six findings was resolved (file and line), whether any new `GATE-QUESTIONS.md` block or blocker question with blank slots was written (and its ID), any measurements taken, files changed, the commit sha and push result, the status marker, and `git status --porcelain`.
+
+### gate-qc (build half, attempt 2)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 2, of graph run `graph-20261016-050510` (build half of `tool-switch-load-delay`), re-grading the package after `define` revised it for the attempt-1 findings. Invoke the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory below) and follow its controlled mode. Tool-call cap 60 — verify directly, spawn no subagents or forks, no sleeping or polling, do not re-run browser measurements, stay well under the cap.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory (branch `thejudge-auto/tool-switch-load-delay-work`).
+
+Read the previous `QUALITY-CHECK.md` first, then grade `PRD/work/tool-switch-load-delay/DESIGN-BRIEF.md` together with `GATE-QUESTIONS.md` and `evidence/measurements.md` against PRD alignment and agent-readiness. Confirm each of the six attempt-1 findings is resolved, and grade the new material: Diff 4 under NFR-014 (trade-balancer, REQ-064, user-flows and system-map wording) must apply cleanly to current `PRD/sections/` text and amend in place without changing the wake-up ping's behaviour; the shared card-list contract (design item 7) and acceptance criteria 3, 4, 5 and 9 must be measurable by an implementer; the `Product truth dispositions` table must cover the spots it claims. `GATE-QUESTIONS.md` now carries an open blocker question `Q-014` with blank verdict slots — that is expected and is the owner's to answer, not a finding; check only that it meets the plain-language standard and that both answers are fully specified in the package (what changes under each). In graph runs refinement proposes truth in `GATE-QUESTIONS.md` instead of writing `PRD/sections/`, so truth living only in that file is the expected shape.
+
+Overwrite the package's `QUALITY-CHECK.md` with the new report. On FAIL set the status marker the skill names; on PASS set the marker the skill names for PASS. Do not edit `README.md`'s `## Preparation gate` section or `GRAPH-RUN.md` — the driver owns both. Never edit `PRD/sections/` or code.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
+
+Report back: PASS or FAIL, the complete findings list (each with file and line), the report path, the commit sha and push result, the status marker, and `git status --porcelain`.
 
 ## Mid-node relays
 
