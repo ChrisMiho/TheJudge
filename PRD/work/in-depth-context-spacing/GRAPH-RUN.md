@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/in-depth-context-spacing`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-in-depth-context-spacing`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-020939/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/in-depth-context-spacing/`
+- Current node: `owner-action` (gate-qc PASS — spec-forming half stopped)
+- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/in-depth-context-spacing/`
 
 ## Node ledger
 
@@ -16,10 +16,12 @@
 | 1 | preflight | haiku | ok | `0 → 14` | branch `thejudge-auto/in-depth-context-spacing` pushed (`git ls-remote` → `12b0e6bc`) from `.worktrees/kickoff-in-depth-context-spacing`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261016-020939` (counter includes 6 driver scouting calls made before run-state moved off `preflight/1`) | 2026-10-15 |
 | 2 | shape | sonnet | ok | `0 → 19` | `PRD/work/in-depth-context-spacing/` (IDEA.md, README.md, STATUS.ideation, intake/owner-request.md) committed `86d02fd9`; board row in `PRD/work/STATUS.md`; staged intake copy deleted | 2026-10-15 |
 | 3 | define | opus | ok | `0 → 85` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (one slot: REQ-023 amendment), `evidence/measurements.md`, `STATUS.refined`, board row moved — commit `f2ab5714`; live screenshots under `PRD/work/in-depth-context-spacing/.playwright-mcp/` (git-ignored); dev server stopped (listeners on :5173/:5273 belong to older worktrees) | 2026-10-15 |
+| 4 | gate-qc | sonnet | ok | `0 → 13` | PASS — `QUALITY-CHECK.md` committed `8fe2dc95`; README `## Preparation gate` recorded by the driver | 2026-10-15 |
 
 ## Open gate
 
-- None
+- Owner action: answer `PRD/work/in-depth-context-spacing/GATE-QUESTIONS.md` (one slot, REQ-023: waiting bubble's icon, phrase and timer on one row), then merge the docs PR to build. Screenshots to compare: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-in-depth-context-spacing/PRD/work/in-depth-context-spacing/.playwright-mcp/` (local, git-ignored).
+- Resume: `/graph-implement PRD/work/in-depth-context-spacing/` after the merge.
 
 ## Dispatch prompts
 
