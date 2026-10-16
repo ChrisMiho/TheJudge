@@ -6,7 +6,7 @@ Put the waiting bubble's seal, rotating phrase and elapsed clock on one row. See
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/in-depth-context-spacing
+- Autonomous base: origin/main
 
 ## Preparation gate
 

@@ -1,10 +1,10 @@
 # Graph run — in-depth-context-spacing
 
-- Run ID: `graph-20261016-020939`
+- Run ID: `graph-20261016-023551` (build half; spec-forming half `graph-20261016-020939`)
 - Profile: `loaded (env sentinel)` — printed by `npm run graph:preflight` at node 1
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/in-depth-context-spacing`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-in-depth-context-spacing`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-020939/`
 - Current node: `owner-action` (gate-qc PASS — spec-forming half stopped)
 - Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/in-depth-context-spacing/`
