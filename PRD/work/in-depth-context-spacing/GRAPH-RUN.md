@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-020939/`
-- Current node: `gate-qc` (build-half re-grade)
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/in-depth-context-spacing/`
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 85` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (one slot: REQ-023 amendment), `evidence/measurements.md`, `STATUS.refined`, board row moved — commit `f2ab5714`; live screenshots under `PRD/work/in-depth-context-spacing/.playwright-mcp/` (git-ignored); dev server stopped (listeners on :5173/:5273 belong to older worktrees) | 2026-10-15 |
 | 4 | gate-qc | sonnet | ok | `0 → 13` | PASS — `QUALITY-CHECK.md` committed `8fe2dc95`; README `## Preparation gate` recorded by the driver | 2026-10-15 |
 | 5 | gate-review | sonnet | ok | `0 → 13` | build half run `graph-20261016-023551`: kickoff worktree removed clean (`git worktree remove`; its git-ignored gate screenshots copied into this worktree's `.playwright-mcp/`); claim commit `86f3de9f` on `thejudge-auto/in-depth-context-spacing-work` cut from `origin/main` `95144615` (docs PR #311 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `b9d5f105`: 1 accept / 0 edit / 0 reject (REQ-023), `### Brief reconciliation` none (grep zero hits); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-15 |
+| 6 | gate-qc | sonnet | ok | `0 → 13` | build-half re-grade PASS, findings none — `QUALITY-CHECK.md` committed `c2ceff0a`: brief and finalized REQ-023 diff state one rule; hunks anchor at `functional-requirements.md:429`/`:438` and `in-depth/README.md:278` (edited line 282) at HEAD `78be7c49`; `apps/frontend/src/` anchors verified (`index.css` 204/218/3093/2940/5364, `AskAiWaitingPanel.tsx` 44/74, render sites `EnrichmentStep.tsx` 718/880, `QuickLookupApp.tsx` 702); 10 criteria testable; `STATUS.refined` kept; driver rewrote README `## Preparation gate`; worktree and launch porcelain empty | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -144,6 +145,22 @@ Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/wor
 Rewrite `QUALITY-CHECK.md` as the skill prescribes. On PASS keep `STATUS.refined`; on FAIL set the marker the skill prescribes and list every finding with its file and line. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, or the README (the driver writes the README `## Preparation gate`). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back: verdict (PASS or FAIL), the findings in full (or none) and any minor notes, the current start lines of each hunk, files written, the commit hash, and `git status --porcelain` in the working directory after the commit.
+
+### plan
+
+graph is controlling. You are node 5 (`plan`), attempt 1, of graph run `graph-20261016-023551` (build half). Tool-call cap 120 — verify directly, spawn no subagents or forks, no sleeping or polling, no dev server or browser, stay well under the cap.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/in-depth-context-spacing-work`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-map-out` skill (Skill tool) in graph mode on `PRD/work/in-depth-context-spacing/`. Verify `Quality-check: PASS` in the package README's `## Preparation gate` before writing anything; you cannot self-certify one. Inputs: `DESIGN-BRIEF.md` (10 acceptance criteria), the finalized `GATE-QUESTIONS.md` (REQ-023 accepted: the waiting bubble puts the seal, the phrase and the clock on one row, with a long phrase wrapping in the middle), `QUALITY-CHECK.md` (four minor notes, including the full `QuickLookupApp.tsx` path and the current hunk start lines), and `evidence/measurements.md`.
+
+Write `GAMEPLAN.md` and the lettered slice docs the skill prescribes, plus one `slice-<letter>.criteria.json` beside each slice doc with every criterion `false` and an evidence block per the schema in the skill's reference. This is a small CSS-and-layout change; prefer the fewest slices that keep each one reviewable. The final slice applies the finalized REQ-023 diff to `PRD/sections/` by intent against current truth, together with the code, and carries the ship gates. Any live browser checks the slices plan must save captures under the git-ignored `PRD/work/in-depth-context-spacing/.playwright-mcp/`; plan no tracked deliverable inside `PRD/work/` (cleanup deletes the folder). Set `STATUS.active` as the only marker and move the `PRD/work/STATUS.md` board row fully (removed from refined, added under active). Do not edit `PRD/sections/` or code.
+
+Change files only with the Write and Edit tools; never chain a heredoc or `sed -i` into a long Bash command. Run git as short separate calls: `git add <explicit paths>` (`git rm` for the old marker), then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back: outcome (ok/failed), the slices with one plain sentence each, the criteria count per slice, files written, the commit hash, and `git status --porcelain` in the working directory after the commit.
 
 ## Instruction ledger
 
