@@ -104,6 +104,20 @@ Write the report the skill prescribes into the package. On FAIL, set the marker 
 
 Report back: verdict (PASS or FAIL), the findings in full, files written, and the commit hash.
 
+### gate-review
+
+graph is controlling. You resolve the `define` gate of graph run `graph-20261016-023551` (build half; spec-forming half `graph-20261016-020939`), attempt 1. No tool-call cap applies to this step, but stay small — about 20 calls; spawn no subagents or forks, no sleeping or polling, no dev server or browser.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/in-depth-context-spacing-work`, cut from `origin/main`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `graph-gate-review` skill (Skill tool) on `PRD/work/in-depth-context-spacing/` and follow it exactly. `GATE-QUESTIONS.md` carries one slot, REQ-023 (the waiting bubble puts the seal, the phrase and the clock on one row), answered by the owner with verdict accept and a reason. Apply the verdict inside `GATE-QUESTIONS.md` only (an accept changes nothing there), and reconcile `DESIGN-BRIEF.md` and the README intake pointer to every edit or reject — with one accept and no edits or rejects, the reconciliation is expected to be none; still quote the grep you ran in the `### Brief reconciliation` list. Write `## Gate verdicts` (with `### Brief reconciliation`) into `GRAPH-RUN.md`, mark `## Open gate` resolved with the date and the verdict count, and restore the lifecycle position: the README `status:` field and the single `STATUS.*` marker to `refined`, and the `PRD/work/STATUS.md` board row moved fully (removed from its old group, added under refined). Never edit `PRD/sections/`, code, or anything under `intake/`.
+
+Change files only with the Write and Edit tools; never chain a heredoc or `sed -i` into a long Bash command. Run git as short separate calls from the working directory: `git add <explicit paths>` (a `git rm` for the old marker), then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back plainly: the verdict counts, the brief reconciliation (or none) with the grep, the restored status, every file changed, the commit hash, and the output of `git status --porcelain` in the working directory after the commit.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
