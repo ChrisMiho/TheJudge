@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `review`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -26,6 +26,7 @@
 | 4 | gate-qc (build half, attempt 3) | sonnet | ok | `0 → 15` | PASS, no findings — `QUALITY-CHECK.md` commit `c96c77c4` (= origin tip); all 13 diff blocks match current `PRD/sections/` once each; tier order holds on every landing; README `## Preparation gate` PASS recorded by the driver | 2026-10-15 |
 | 5 | plan | sonnet | ok | `0 → 26` | commit `4bd23212` (= origin tip): `GAMEPLAN.md`, `slice-a-shared-card-list.md` (Diff 4), `slice-b-background-download.md` (Diffs 1-3), `slice-c-live-verification.md` (promotion check, ship gates); `slice-a.criteria.json` 10, `slice-b.criteria.json` 10, `slice-c.criteria.json` 9 (7 manual), every `value` false; `STATUS.active` only marker; board row under active; worktree porcelain empty (published for `build`); launch-checkout porcelain empty | 2026-10-15 |
 | 6 | build | sonnet | ok | `0 → 145` | PR https://github.com/ChrisMiho/TheJudge/pull/314 (open, base `main`); commits `8cff69ca` (A), `547d85ee` (B), `4b721b75` (C) = origin tip; 29/29 criteria `value: true` (A 10, B 10, C 9); `.graph-evidence.jsonl` holds 0 entries for this run id (known build-half gap: criteria are self-reported, review is the gate); reported `npm --workspace apps/frontend run test` 152 files / 1639 tests pass, `npm run typecheck` 0, `npm run quality:check` 0, build 0; C1-C7 dated observations in `slice-c.evidence.md`; Diffs 1-4 applied to `PRD/sections/`; `STATUS.ship-ready`; return side: launch-checkout porcelain empty before and after (identical), `classifyBuildWrites` over 41 reported paths → `ok`, 0 outside `.worktrees/implement-tool-switch-load-delay/`; worktree porcelain empty | 2026-10-15 |
+| 7 | review | opus | failed | `0 → 32` | CHANGES REQUESTED: 1 Important (C2 not met on Slow 4G + CPU 4x per `slice-c.evidence.md:9` — `Loading card list…` 1-2 frames, continuing-tap times unrecorded — and so C9), 3 Minor (A4 test thin; missing space `MtgAssistantApp.tsx:40`; in-flight lazy rejection sticks, outside rubric). A1-A10, B1-B10, C1, C3-C8 met; reviewer re-ran frontend tests 152/1639 pass, typecheck, format, lint 0 errors. Driver check: `DESIGN-BRIEF.md:318-321` (QC-passed) conditions the clause on the balancer opening after the list has arrived; `slice-c-live-verification.md:18` and `slice-c.criteria.json` C2 dropped that condition at `plan` — a transcription gap, settled by the brief and the owner's NFR-014 reason (list trimming out of scope). Launch and worktree porcelain empty (no reviewer writes). Loops to `build` (return 1 of 2) | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -324,6 +325,29 @@ Slice C: (1) Quick Question landing, wait 3 s, tap Life Tracker: no `Loading…`
 Grade each criterion as met, not met, or not evidenced, citing file and line or evidence-file line. Flag only gaps affecting correctness or these stated requirements. Severity rule: a preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never sends the work back to `build`; rate it Minor or omit it. Critical means a stated requirement is broken in a way that harms players or product truth; Important means a stated criterion is not met or not evidenced. Where the evidence file states a profile-specific caveat, judge it against the criterion's own wording, not against the builder's reading of it.
 
 Report back: verdict `APPROVE` or `CHANGES REQUESTED`, then each finding with severity (Critical, Important, Minor), the criterion it concerns, file and line, and the concrete fix; then a per-criterion table (A1-A10, B1-B10, C1-C9) of met / not met / not evidenced.
+
+### build (attempt 2, review return 1 of 2)
+
+graph is controlling
+
+You are node 6 (`build`), attempt 2, of graph run `graph-20261016-050510`, package `tool-switch-load-delay`, returning from review with one Important finding. Continue under the `thejudge-implement-all` skill's controlled mode (read `.claude/skills/thejudge-implement-all/SKILL.md` and its `reference.md` in the working directory below) for this targeted fix only. Tool-call cap 4000; spawn no subagents or forks; no sleeping or polling loops.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Shared branch `thejudge-auto/tool-switch-load-delay-work`, PR https://github.com/ChrisMiho/TheJudge/pull/314 (already open). Work only in that worktree; every file you write must lie inside `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay/`.
+
+Review finding (Important): slice C criterion C2 was graded not met on Slow 4G + CPU 4x, and C9 with it. The evidence (`slice-c.evidence.md:9`) shows `Loading card list…` for 1-2 frames on the Trade Balancer and In-Depth taps on Slow 4G while the 1.96 MB list was still downloading, and records no Slow 4G on-screen times for the continuing taps. The approved brief, `DESIGN-BRIEF.md` success criterion 2 (lines 318-321), conditions the no-`Loading card list…` clause on the Trade Balancer opening after the card list has arrived; `slice-c-live-verification.md:18` and `slice-c.criteria.json` C2 dropped that condition when the plan was written. The brief governs the slice, and the owner's NFR-014 verdict keeps trimming or compressing the list out of scope.
+
+Do exactly this:
+1. Reconcile C2 to the brief: reword the C2 bullet in `slice-c-live-verification.md` and the C2 `statement` in `slice-c.criteria.json` to carry the brief's criterion 2 wording (each tool on screen within 100 ms with no `Loading…` frame, at both profiles as continued from C1; when the Trade Balancer opens after the card list has arrived, no `Loading card list…` frame). Add a one-line note in the slice doc naming `DESIGN-BRIEF.md:318-321` as the source. Set C2 and C9 `value` back to false until re-earned.
+2. Re-measure on a production preview you start on a port you own, with the existing rerun script under `PRD/work/tool-switch-load-delay/.playwright-mcp/` or an equivalent rAF-timed tap: the C2 continuing taps (Trade Balancer, then In-Depth, then Quick Question) at Slow 4G + CPU 4x — on-screen time and `Loading…` frame count for each, and whether the card list `responseEnd` had passed when the balancer opened; plus one Slow 4G Trade Balancer open after the list `responseEnd`, counting `Loading card list…` frames. Write dated observation lines for C2 into `slice-c.evidence.md`, keeping the existing Fast 4G lines. Stop the server with a plain `kill <pid>`, call `browser_close`, confirm the port is released, and record that cleanup under C7.
+3. If every C2 condition holds, flip C2 and then C9 to true. If any does not hold — a tap over 100 ms, a code `Loading…` frame, or a `Loading card list…` frame after the list has arrived — do not flip it: report the numbers as a blocker and stop.
+4. Two Minor review notes inside the slices' requirements, fix both: in `apps/frontend/src/components/portal/cardMetadataSharing.test.tsx` (~line 62) make the failed-list Quick Question test type and submit a question and assert submission happens; add the missing space at `apps/frontend/src/components/portal/MtgAssistantApp.tsx:40`. Do not act on the third Minor note (lazy rejection sticking); it is outside the rubric.
+5. Run `npm --workspace apps/frontend run test` and `npm run quality:check`; both must pass. Leave `STATUS.ship-ready` as the only marker once C2 and C9 are true.
+
+Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` / `## Autonomous metadata` sections. Mechanics: Write and Edit tools for file changes; git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`); never `git add -A` or `.`, never force-push, never `git stash`, never chain a heredoc or `sed -i`. A denied command is reported, never retried verbatim.
+
+Report back: outcome (`ok`, `failed`, or `blocked`), the reworded C2 text, the Slow 4G measurements (each tap's ms and frame counts, list `responseEnd` timing), C2/C9 final values, test and quality:check results, commit shas and final push result, every file path you wrote, browser cleanup evidence, the status marker, and `git status --porcelain`.
 
 ## Mid-node relays
 
