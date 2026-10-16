@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-warnings-cleanup | Quality Check warnings: Node 20 actions, ubuntu-latest migration 2026-10-19, 19 lint warnings |
 
 ## owner-action
 
