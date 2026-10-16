@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useRef,
   useState,
@@ -11,6 +9,7 @@ import {
 import { createPortal } from "react-dom";
 import { useOutsideDismiss } from "../hooks/useOutsideDismiss";
 import { OverlayCloseButton } from "./OverlayCloseButton";
+import { SheetCloseContext } from "./sheetCloseContext";
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -20,14 +19,6 @@ const FOCUSABLE_SELECTOR = [
   "textarea:not([disabled])",
   '[tabindex]:not([tabindex="-1"])'
 ].join(", ");
-
-const SheetCloseContext = createContext<(() => void) | null>(null);
-
-/** The close handler of the sheet this component renders inside, or `null` outside a sheet — so a foot
- * bar written by a sheet's body (Life Tracker's Done) can close it without the host passing it down. */
-export function useSheetClose(): (() => void) | null {
-  return useContext(SheetCloseContext);
-}
 
 export interface SheetShellProps {
   /** Mount-gate: SheetShell renders nothing while closed, matching the suite's other
