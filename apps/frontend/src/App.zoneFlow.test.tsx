@@ -236,7 +236,7 @@ describe("Target gating and pickers", () => {
     await openStackZoneCollection(user);
 
     const fetchMock = vi.mocked(fetch);
-    expect(fetchMock).toHaveBeenCalledWith("/data/cardMetadata.json", expect.anything());
+    expect(fetchMock).toHaveBeenCalledWith("/data/cardMetadata.json");
     expect(fetchMock).not.toHaveBeenCalledWith("/data/cardScanMap.json");
     expect(fetchMock).not.toHaveBeenCalledWith("/data/cardhashes.bin");
 

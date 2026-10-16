@@ -4,6 +4,7 @@ import { useAutocompleteSuggestions } from "../../../hooks/useAutocompleteSugges
 import { useAskAiSubmitOrchestration } from "../../../hooks/useAskAiSubmitOrchestration";
 import { useAutoGrowTextarea } from "../../../hooks/useAutoGrowTextarea";
 import { useScanCapture, type ScanHoldCheck } from "../../../hooks/useScanCapture";
+import { loadCardMetadata, readCardMetadata } from "../../../lib/cardMetadataStore";
 import { buildLookupAskAiRequest } from "../../../lib/contextFlow";
 import type { LookupDraftState } from "../../../lib/conversationHistory/persistence";
 import {
@@ -34,7 +35,6 @@ import { StagedStepHeader } from "../../StagedStepHeader";
 const FLOW_LABEL = "Quick Question";
 const PAGE_TITLE = "Ask a Question";
 
-const CARD_METADATA_URL = "/data/cardMetadata.json";
 /** REQ-167: Ask a Question's Add-card search lists matches from the first character typed. The
  * mockup's own search (`quick-question.html`'s `renderSearch`) has no minimum — it filters its demo
  * shortlist on whatever is typed — and the real corpus has tens of thousands of cards, so an empty
@@ -92,8 +92,8 @@ export type QuickLookupAppProps = {
 };
 
 export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProps): JSX.Element {
-  const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
-  const [isMetadataLoading, setIsMetadataLoading] = useState(true);
+  const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>(() => readCardMetadata() ?? []);
+  const [isMetadataLoading, setIsMetadataLoading] = useState(() => readCardMetadata() === undefined);
   const [metadataError, setMetadataError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   // Look-matching pass (slice M): the card search collapses into the composer's own
@@ -253,29 +253,25 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   }, [selectedCards, question]);
 
   useEffect(() => {
-    const controller = new AbortController();
+    // The card list is shared (NFR-014 tier 3); unmounting never cancels the download.
+    let isMounted = true;
 
-    async function loadCardMetadata(): Promise<void> {
-      try {
-        const response = await fetch(CARD_METADATA_URL, { signal: controller.signal });
-        if (!response.ok) {
-          throw new Error(`Card metadata fetch failed with status ${response.status}`);
-        }
-        setCardMetadata((await response.json()) as CardMetadataItem[]);
-      } catch {
-        if (!controller.signal.aborted) {
+    loadCardMetadata()
+      .then((cards) => {
+        if (isMounted) setCardMetadata(cards);
+      })
+      .catch(() => {
+        if (isMounted) {
           setMetadataError("Card search is unavailable. You can still ask without a card.");
         }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsMetadataLoading(false);
-        }
-      }
-    }
+      })
+      .finally(() => {
+        if (isMounted) setIsMetadataLoading(false);
+      });
 
-    void loadCardMetadata();
-
-    return () => controller.abort();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // REQ-167: an add beyond the 5-card cap is blocked with a stated limit

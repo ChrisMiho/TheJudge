@@ -57,9 +57,11 @@ Assistant core loop and changes nothing about it or the AI answer path.
   are owned at the feature-portal level (DEC-095 / REQ-067 / DEC-157), not by
   this feature. (REQ-064)
 - Built: on open the balancer fires **one fire-and-forget warm-up request** to
-  the backend's existing health check (`GET /api/health`) beside its
-  `cardMetadata` load, so a cold backend wakes while the card list downloads
-  and the player types instead of that wait landing on the first card's price.
+  the backend's existing health check (`GET /api/health`) beside its read of
+  the shared `cardMetadata` list, so a cold backend wakes while the player
+  types — and while the list finishes downloading, when it has not already
+  arrived in the background (NFR-014 tier 3) — instead of that wait landing on
+  the first card's price.
   It carries no product data, renders no UI, and never blocks or errors search
   when it fails or when no backend is running. (REQ-064)
 
@@ -184,7 +186,8 @@ Assistant core loop and changes nothing about it or the AI answer path.
   and a set filter appears past five printings. (REQ-065, `screen-layout.md`)
 - First-card wait: the balancer's warm-up ping on open overlaps the backend's
   cold start (measured ~4.2 s cold against ~0.2 s warm on the live price route)
-  with the `cardMetadata` download and the player's typing, so the wait is
+  with the player's typing, and with the `cardMetadata` download when the list
+  has not already arrived in the background (NFR-014 tier 3), so the wait is
   hidden rather than removed. A scheduled keep-warm ping is deliberately out of
   scope. (REQ-064)
 - Layout/fit: on phone the two sides are tabs sharing one panel (REQ-204 — not
@@ -195,7 +198,8 @@ Assistant core loop and changes nothing about it or the AI answer path.
   (`screen-layout.md`, NFR-001)
 - Data footprint: no up-front price download — the balancer's only up-front
   frontend cost is the shared `cardMetadata` index (REQ-174), the same list
-  MTG Assistant and Quick Lookup already load. A card's prices are fetched
+  MTG Assistant and Quick Lookup read, loaded once per page and shared by all
+  three (NFR-014 tier 3). A card's prices are fetched
   from the backend once per card — on the suggestion tap on a manual search,
   on add on a scan — and the warm-up ping on open (REQ-064) downloads no
   data; per-card fetch and pricing stay within a

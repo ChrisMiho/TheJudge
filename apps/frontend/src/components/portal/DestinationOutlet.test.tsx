@@ -1,7 +1,7 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { lazy, useState } from "react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { appCss } from "../../test/appTestHelpers";
 import { DestinationOutlet } from "./DestinationOutlet";
 import type { DestinationId, PortalDestination } from "../../lib/portal/types";
@@ -178,6 +178,68 @@ describe("DestinationOutlet", () => {
     expect(appCss).toMatch(
       /\.destination-load-fallback\s*\{[^}]*min-height:\s*calc\([^)]*var\(--layout-panel-padding\)[^)]*\)/s
     );
+  });
+
+  describe("background download (NFR-014)", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    });
+
+    it("starts the shared card-list download once after the landing destination renders, mounts no other destination, and sends no health ping", () => {
+      vi.useFakeTimers();
+      const fetchMock = vi.fn(
+        async (_input: RequestInfo | URL) => ({ ok: true, status: 200, json: async () => [] }) as unknown as Response
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      render(<Harness />);
+      expect(fetchMock).not.toHaveBeenCalled();
+
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+
+      expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual(["/data/cardMetadata.json"]);
+      expect(screen.queryByTestId("beta-input")).not.toBeInTheDocument();
+
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("waits for a still-loading landing destination to render before starting the download", async () => {
+      vi.useFakeTimers();
+      const fetchMock = vi.fn(
+        async (_input: RequestInfo | URL) => ({ ok: true, status: 200, json: async () => [] }) as unknown as Response
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      let resolveLanding: (() => void) | undefined;
+      const Landing = lazy(
+        () =>
+          new Promise<{ default: () => JSX.Element }>((resolve) => {
+            resolveLanding = () => resolve({ default: () => <p>Landing ready</p> });
+          })
+      );
+
+      render(
+        <DestinationOutlet
+          destinations={[{ id: "alpha", path: "/alpha", label: "Alpha", render: () => <Landing /> }]}
+          activeDestinationId="alpha"
+        />
+      );
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+
+      await act(async () => resolveLanding?.());
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
   });
 });
 });
