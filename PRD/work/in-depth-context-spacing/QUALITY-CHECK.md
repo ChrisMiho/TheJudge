@@ -2,28 +2,35 @@
 
 - Quality-check: PASS
 - Checked artifact: `PRD/work/in-depth-context-spacing/DESIGN-BRIEF.md`
-- Mode: graph (node 4, gate-qc, attempt 1). Graded as a proposal pending the owner's verdict on the one REQ-023 slot in `GATE-QUESTIONS.md`, not as applied truth.
+- Mode: graph (node 4, gate-qc, attempt 1 of the build half, run `graph-20261016-023551`). Graded as a finalized package: the owner accepted the one REQ-023 slot (recorded under `## Gate verdicts` in `GRAPH-RUN.md`), and the proposal is unchanged.
 - Package status: stays `refined` (`STATUS.refined`).
 
 ## Result
 
-The brief puts the waiting bubble's seal, phrase and clock on one row, and nothing else. It is ready to slice once the owner accepts the slot.
+The brief puts the waiting bubble's seal, phrase and clock on one row, and nothing else. The owner accepted it. It is ready to slice.
 
 ## Checks
 
-- Diff start lines match today's PRD. `functional-requirements.md:429` is the REQ-023 "drawn as the judge's bubble under the colour's seal" bullet, verbatim. `functional-requirements.md:438` is the last Notes line, verbatim. `in-depth/README.md:278` starts the "Built: while the decrypt request is in flight" bullet; the changed line is 282, and the hunk's context lines match exactly.
-- Scope matches `intake/owner-request.md`: icon, text, timer on one row, to look cleaner. Phrases, timing, animations, colours, timer size and aria-live are explicitly out of scope.
-- Both-flows claim holds. REQ-092 says to reuse `AskAiWaitingPanel` as-is with no new variant. The component renders at `EnrichmentStep.tsx:718`, `EnrichmentStep.tsx:880` and `QuickLookupApp.tsx:702`, as the brief lists. The slot tells the owner both flows change.
-- No new stable ID, no DEC, no blocker. The slot is an amendment to an existing requirement. Vocabulary is current.
-- `technical-design-rules.md`: CSS-only, no new endpoint, NFR-006 respected. No stack, API or prompt change.
-- Screen-layout catalog: no new screen or overlay, so no `screen-layout.md` row is needed.
-- Code anchors check out. `index.css:204` is `.wait-inscription-bubble` (display grid, gap 0.5rem). `index.css:218` is the clock, and `index.css:3093` is its `text-align: right` rule. `index.css:2940` and `AskAiWaitingPanel.tsx:44` and `:74` carry the stacked-layout comments the brief names. `index.css:5364` is the reduced-motion list. The test file already reads `index.css` with `readFileSync` (lines 126 and 134), so the proposed CSS assertion follows its pattern.
-- Acceptance criteria are testable. 1 to 3 and 6 have numeric live checks (centres within 2 px, height at most 70 px, no "…", no horizontal scroll). 4, 5, 7 and 8 are diff or existing-test checks. 9 is a CSS-reading test. 10 is a text check against the owner-approved wording.
+- One rule. The brief's paragraph, scope and AC10 match the finalized REQ-023 diff: seal at the start, phrase in the middle, clock at the end, all centred; a long phrase wraps in the middle; phrases, timing, motion, colours, clock size and `aria-live` unchanged; both flows take it (REQ-092). No contradiction. The brief's "Decide" line still says one slot is open to the owner; this is historical wording and harmless.
+- Diff anchors at this worktree's HEAD (`78be7c49`; `PRD/sections/` and `apps/` have no change since `b9c922db`):
+  - `PRD/sections/functional-requirements.md:429` starts the REQ-023 "drawn as the judge's bubble under the colour's seal" bullet, verbatim as the `-` line.
+  - `PRD/sections/functional-requirements.md:438` is the `ui-reimagining-build` Notes line, verbatim; the new Notes line goes after it, before `### REQ-024` (line 440).
+  - `PRD/sections/in-depth/README.md:278` starts the "Built: while the decrypt request is in flight" bullet; the changed line is 282, and the context lines match exactly.
+- Scope matches `intake/owner-request.md` (icon, text and timer on one row, cleaner and more streamlined). Out-of-scope items are explicit. No scope creep.
+- Code anchors in `apps/frontend/src/` still match:
+  - `index.css:204` `.wait-inscription-bubble` (grid, gap 0.5rem); `index.css:218` `.wait-inscription-clock`; `index.css:3093` clock `text-align: right`; `index.css:2940` stacked-layout comment (brief says ~2938); `index.css:5364` reduced-motion list.
+  - `AskAiWaitingPanel.tsx:44` and `:74` carry the two stacked-layout comments.
+  - `AskAiWaitingPanel.test.tsx:126` and `:134` read `index.css` with `readFileSync`, so the new CSS assertion follows the file's pattern.
+  - Render sites: `components/EnrichmentStep.tsx:718` and `:880`; `components/portal/quick-lookup/QuickLookupApp.tsx:702`.
+- Acceptance criteria are testable. 1 to 3 and 6 are numeric live checks (centres within 2 px, at most 70 px, no ellipsis, no horizontal scroll). 4, 5, 7 and 8 are diff or existing-test checks. 9 is a CSS-reading test. 10, which depended on the owner's verdict, now has a settled target: the accepted wording in `GATE-QUESTIONS.md`.
+- Vocabulary current, no new stable ID or DEC, no blocker. `technical-design-rules.md`: CSS-only, no endpoint, stack or prompt change. No new screen or overlay, so no `screen-layout.md` row is needed.
 
 ## Findings
 
-No blocking findings. Minor, none needing a refinement round:
+None blocking.
 
-1. `GATE-QUESTIONS.md` line 69 says "Every diff is against `PRD/sections/` at `b9c922db`". The hunks still apply at HEAD, because no PRD section changed since. A builder should re-check the starting lines at build time.
-2. `in-depth/README.md` hunk header says 278, but the edited line is 282. Harmless; the context lines anchor it.
-3. AC10 depends on the owner's gate answer. If the owner edits or rejects the slot, `graph-gate-review` must reconcile the brief before the re-grade (already its job).
+Minor notes:
+
+1. `GATE-QUESTIONS.md:5` says diffs are against `b9c922db`. They still apply at HEAD. The builder should re-check start lines when applying.
+2. The `in-depth/README.md` hunk header says 278; the edited line is 282. Context lines anchor it.
+3. The brief cites `QuickLookupApp.tsx` without its path; it is `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`.
