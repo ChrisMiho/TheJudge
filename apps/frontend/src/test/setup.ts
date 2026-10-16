@@ -2,7 +2,7 @@ import { afterEach, beforeAll } from "vitest";
 import { cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { resetCardMetadataForTests } from "../lib/cardMetadataStore";
-import { preloadPortalDestinations } from "../components/portal/destinationRegistry";
+import { preloadPortalDestinations, resetBackgroundDownloadForTests } from "../components/portal/destinationRegistry";
 
 beforeAll(preloadPortalDestinations);
 
@@ -17,6 +17,7 @@ if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
 afterEach(() => {
   cleanup();
   resetCardMetadataForTests();
+  resetBackgroundDownloadForTests();
   globalThis.localStorage?.clear();
   if (typeof window !== "undefined") window.history.replaceState(null, "", "/");
 });

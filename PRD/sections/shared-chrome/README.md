@@ -96,8 +96,23 @@ language live here.
   renders as a full-viewport takeover. It reserves the region so the shell does
   not jump height when the chunk resolves, and appears at most **once per
   destination per session** (keep-alive means a revisited destination is already
-  loaded). It stays quiet — no branded splash, progress bar, or motion beyond the
-  CSS-motion rules. (DEC-157, NFR-014)
+  loaded), and not at all for a destination whose code arrived from the background download before the
+  player opened it. It stays quiet — no branded splash, progress bar, or motion
+  beyond the CSS-motion rules. (DEC-157, NFR-014)
+- Built: tiered background download — tier 1 is the landing destination as
+  today. Tier 2: once it has rendered and the browser is idle, the code of every
+  other destination (Life Tracker, Trade Balancer, Quick Question, In-Depth
+  Question) downloads in the background, so a player's first switch to any tool
+  opens with no load fallback. Tier 3, after tier 2: the card list is downloaded
+  and read once and shared by Quick Question, In-Depth Question and the Trade
+  Balancer, on every landing including the Life Tracker. Code and the shared
+  card list only: no destination mounts, fetches its other data, or sends the
+  balancer's health-check ping (REQ-064) until the player opens it, and visited
+  destinations stay open (REQ-067). A failed background download is silent and
+  the destination loads on first open as before. Measured 2026-10-15 on the live
+  site: the first-open fallback was 0.2 s unthrottled and 0.7 s on a Slow 4G
+  phone profile; with the Life Tracker and Trade Balancer code already
+  downloaded, each was on screen in about 40 ms. (NFR-014)
 - Built: `vite.config.ts` declares function-form `manualChunks` — a `scan` group
   covering the scan surface shared across the scanning destinations (wider than
   `src/lib/scan/**`; includes `hooks/useScanCapture.ts` and

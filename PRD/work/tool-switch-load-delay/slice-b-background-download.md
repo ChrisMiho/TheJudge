@@ -1,6 +1,6 @@
 # Slice B — Tiered background download
 
-## Status: planned
+## Status: done
 
 ## Goal
 
