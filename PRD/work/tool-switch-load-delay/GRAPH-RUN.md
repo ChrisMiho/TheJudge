@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `gate-qc`
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -23,6 +23,7 @@
 | 4 | gate-qc (build half, attempt 2) | sonnet | failed | `0 → 17` | FAIL — 1 blocking (`integrations-and-data.md:165` missing from Diff 4 and the dispositions table), 3 advisory; attempt-1 findings 1, 2, 4, 5, 6 resolved; Diff 4 applies cleanly; Q-014 meets the plain-language standard; `QUALITY-CHECK.md` commit `6edb3a71` (= origin tip); `STATUS.refining`; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 2 of 3) | 2026-10-15 |
 | 3 | define (build half, attempt 2) | opus | ok | `0 → 42` | commit `df85db45` (= origin tip): blocker fixed (Diff 4 hunk for `integrations-and-data.md:165`, intro count corrected), 3 advisories fixed (criteria 3, 4, 6); widened disposition grep over `PRD/sections/` → 96 hits, each dispositioned in `DESIGN-BRIEF.md`; Q-014 unchanged, slots blank at return; `STATUS.refining`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts. Owner then answered Q-014 in session (accept, transcribed by the driver) | 2026-10-15 |
 | 5 | gate-review (build half, attempt 2) | sonnet | ok | `0 → 38` | driver verdict commit `9a969584` (Q-014 accept); `graph-gate-review` commit `f3d1d4c1` (= origin tip): Q-014 accept applied, diffs unchanged (already written for yes), `### Brief reconciliation` 13 passages (pending/no-answer wording removed), `Q-014` row in `## Gate verdicts`; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts | 2026-10-15 |
+| 4 | gate-qc (build half, attempt 3) | sonnet | ok | `0 → 15` | PASS, no findings — `QUALITY-CHECK.md` commit `c96c77c4` (= origin tip); all 13 diff blocks match current `PRD/sections/` once each; tier order holds on every landing; README `## Preparation gate` PASS recorded by the driver | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -259,6 +260,24 @@ Overwrite the package's `QUALITY-CHECK.md` with the new report. On FAIL set the 
 Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
 
 Report back: PASS or FAIL, the complete findings list (each with file and line), the report path, the commit sha and push result, the status marker, and `git status --porcelain`.
+
+### plan
+
+graph is controlling
+
+You are node 5 (`plan`), attempt 1, of graph run `graph-20261016-050510` (build half of `tool-switch-load-delay`). Invoke the `thejudge-map-out` skill (read `.claude/skills/thejudge-map-out/SKILL.md` and its `reference.md` in the working directory below) and follow its controlled mode. Tool-call cap 120 — spawn no subagents or forks, no sleeping or polling, stay well under the cap.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory, on branch `thejudge-auto/tool-switch-load-delay-work`.
+
+Verify `## Preparation gate` in `PRD/work/tool-switch-load-delay/README.md` reads `Quality-check: PASS` before writing anything. Slice `DESIGN-BRIEF.md` with the finalized `GATE-QUESTIONS.md` (NFR-014 `edit`, Q-014 `accept`; Diffs 1-4 are the product truth `build` applies by intent, together with the code). Write `GAMEPLAN.md`, the lettered slice docs, and one `slice-<letter>.criteria.json` beside each slice doc with every criterion initialised `false` and an evidence block per the skill's reference. Each slice names which `GATE-QUESTIONS.md` diffs it applies to `PRD/sections/`, carries the brief's acceptance criteria that belong to it, and states the verification commands (the repo's own test and quality scripts as the package and `package.json` name them). Set `STATUS.active` as the only marker and move the `PRD/work/STATUS.md` board row to match (remove from the old section, add to the new).
+
+Never edit `PRD/sections/` or code. Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` / `## Autonomous metadata` sections — the driver owns them.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
+
+Report back: outcome (`ok` or `failed`), the slices (letter, title, one line each, which diffs and acceptance criteria each carries), the criteria file paths with their criterion counts, files written, the commit sha and push result, the status marker, and `git status --porcelain`.
 
 ## Mid-node relays
 

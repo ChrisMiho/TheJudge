@@ -28,6 +28,6 @@ Likely sources, in order of suspicion: (1) Trade Balancer's 4.9 MB card list dow
 
 ## Preparation gate
 
-- Quality-check: FAIL
+- Quality-check: PASS
 - Checked artifact: `PRD/work/tool-switch-load-delay/DESIGN-BRIEF.md`
-- Findings: (1) `PRD/sections/integrations-and-data.md:165` says the REQ-064 ping lets the backend's cold start overlap the card-list download — stale under tier 3 the same way Diff 4 fixes elsewhere, but in neither Diff 4 (GATE-QUESTIONS.md:119-187) nor the dispositions table (DESIGN-BRIEF.md:253-266); the brief's grep (:249-251) misses the hyphenated `card-list`, and Diff 4's intro count (GATE-QUESTIONS.md:122) is wrong. Advisory: criterion 6 (DESIGN-BRIEF.md:316-319) needs the Q-014 no-answer clause criterion 4 has; criterion 4's fixed 3 s wait is thin against a ~2.1 s list time; criterion 3 needs a defined landing-rendered marker. Full report: `QUALITY-CHECK.md`.
+- Findings: none
