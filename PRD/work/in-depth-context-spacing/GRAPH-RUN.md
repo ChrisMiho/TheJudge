@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-020939/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/in-depth-context-spacing/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 5 | gate-review | sonnet | ok | `0 → 13` | build half run `graph-20261016-023551`: kickoff worktree removed clean (`git worktree remove`; its git-ignored gate screenshots copied into this worktree's `.playwright-mcp/`); claim commit `86f3de9f` on `thejudge-auto/in-depth-context-spacing-work` cut from `origin/main` `95144615` (docs PR #311 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `b9d5f105`: 1 accept / 0 edit / 0 reject (REQ-023), `### Brief reconciliation` none (grep zero hits); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-15 |
 | 6 | gate-qc | sonnet | ok | `0 → 13` | build-half re-grade PASS, findings none — `QUALITY-CHECK.md` committed `c2ceff0a`: brief and finalized REQ-023 diff state one rule; hunks anchor at `functional-requirements.md:429`/`:438` and `in-depth/README.md:278` (edited line 282) at HEAD `78be7c49`; `apps/frontend/src/` anchors verified (`index.css` 204/218/3093/2940/5364, `AskAiWaitingPanel.tsx` 44/74, render sites `EnrichmentStep.tsx` 718/880, `QuickLookupApp.tsx` 702); 10 criteria testable; `STATUS.refined` kept; driver rewrote README `## Preparation gate`; worktree and launch porcelain empty | 2026-10-15 |
 | 7 | plan | sonnet | ok | `0 → 19` | `thejudge-map-out` commit `e7c3caf1`: `GAMEPLAN.md`, slice A (`slice-a-one-row-bubble.md`, one row in both flows, final slice with REQ-023 apply and ship gates, 11 criteria — A1/A2/A3/A6/A11 manual) and `slice-a.criteria.json` all `false`; `STATUS.active` only marker; board row under active; `git diff --stat origin/main HEAD -- PRD/sections apps` empty; captures planned only under git-ignored `.playwright-mcp/`; worktree and launch porcelain empty | 2026-10-15 |
+| 8 | build | sonnet | ok | `0 → 74` | PR https://github.com/ChrisMiho/TheJudge/pull/312 (`main` ← `thejudge-auto/in-depth-context-spacing-work`), title `[THEJUDGE-AUTO][READY] …`, marker `thejudge-auto:v1:registered:in-depth-context-spacing` in body (`gh pr view 312`); commit `dd33e473` (slice A) pushed, `origin` tip = local; `STATUS.ship-ready` only marker; `slice-a.criteria.json` A1–A11 all `true` (no flip denied); builder reports new `index.css` assertion red then green, Node 22 frontend suite 150 files / 1622 pass, `npm run quality:check` green; live on vite :5493 (requests held open, no model call): 1440 bubble 60–62 px, phones 62–68 px, centres within 1 px, no horizontal scroll, reduced motion one row; browser closed, port released. Deviations for review: Node 22 run used the launch root's `node_modules/vitest` (read only; the worktree resolves modules upward); In-depth measured at the question-step site only (`EnrichmentStep.tsx` ~880), same component and CSS at ~718; slice Verification path corrected to `src/lib/askAiWaitStages.ts`. Return-side: launch-checkout porcelain identical before/after (both empty, `cmp`); `classifyBuildWrites` over 19 paths (tracked diff `e6ee2076..dd33e473`, untracked/ignored incl. `.tmp/`, `.playwright-mcp/` captures, `node_modules/`, `coverage/`, `dist/`, `output/`) → ok; Playwright MCP server logs in `~/.cache/playwright-mcp/` are the server's configured output dir, not a node tool call. CI run `38842495749` pending at record time | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -182,6 +183,31 @@ Open the code PR `thejudge-auto/in-depth-context-spacing-work → main` with `gh
 Change files only with the Write and Edit tools; never chain a heredoc or `sed -i` into a long Bash command. Run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`, then `git push` (never force, never `git add -A` or `git add .`). If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back: outcome (ok/failed), the PR URL, every commit hash and whether `origin` matches local, each criterion's final value, test and `quality:check` results (local Node and Node 22), the live measurements, any deviation from the slice doc, and the complete list of every path you wrote or created (tracked and untracked, including git-ignored captures, logs and installs), each as an absolute path.
+
+### review
+
+graph is controlling. You are node 7 (`review`), attempt 1, of graph run `graph-20261016-023551` (build half): a fresh-context, no-write reviewer. Tool-call cap 120. You hold no Write, Edit or NotebookEdit tools and must not change any file, commit, push, or comment on the PR. Spawn no subagents; no dev server, no browser; no sleeping or polling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing
+
+Grade slice A of `PRD/work/in-depth-context-spacing/` (doc `slice-a-one-row-bubble.md`) against its own acceptance criteria — the rubric is those criteria, not your taste. The change under review is `git diff e6ee2076 dd33e473` (code PR https://github.com/ChrisMiho/TheJudge/pull/312, head `dd33e473`): the waiting bubble shown while the Judge works on a first question puts the colour's seal, the rotating phrase and the elapsed timer on one row in both In-depth and Ask a Question, and the finalized REQ-023 wording is applied to `PRD/sections/`. Read the diff, the slice doc (including its dated observation lines), `slice-a.criteria.json`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (REQ-023, owner verdict accept), `evidence/measurements.md`, and the PR body (`gh pr view 312`). You may run read-only commands: git diff/show/log, grep, and the frontend tests (from `apps/frontend`, `npx vitest run src/components/AskAiWaitingPanel.test.tsx` and the reduced-motion and motion-foundation tests).
+
+The rubric, the slice's acceptance criteria in summary (read the slice doc for the exact text):
+- A1 one row at 1440x900, 390x844 and 375x667 in both flows: seal ends before the phrase starts, the phrase ends before the timer starts, vertical centres within 2 px (live, noted in the PR).
+- A2 the bubble is at most 70 px tall at all three widths for every phrase (live).
+- A3 on phones the 25 s and 40 s phrases show in full on two lines in the middle column, never cut short, timer at the row end, no horizontal page scroll (live).
+- A4 the timer looks unchanged: the clock rule diff adds only white-space nowrap.
+- A5 motion unchanged: animation rules and the reduced-motion selector list byte-identical; the AskAiWaitingPanel, reduced-motion and motion-foundation tests pass without edits to existing assertions.
+- A6 under reduced motion at 375x667 the bubble is on one row and each phrase appears whole (live).
+- A7 live region, aria-hidden attributes and DOM order unchanged; the `AskAiWaitingPanel.tsx` diff is comments only.
+- A8 `apps/frontend/src/lib/askAiWaitStages.ts` and `useElapsedWaitTimer.ts` have no diff; the 280 ms lift-away constant is unchanged.
+- A9 a new test reading `index.css` pins the three-column grid with a minmax(0, 1fr) middle, centred items and the nowrap timer, and it passes.
+- A10 REQ-023 in `PRD/sections/functional-requirements.md` and `PRD/sections/in-depth/README.md` carry the wording approved in `GATE-QUESTIONS.md`, applied by intent against current text.
+- A11 cleanup: browser closed, server stopped, captures only under the git-ignored `.playwright-mcp/` and none tracked.
+
+Severity rule: Critical or Important only for a gap that breaks correctness or one of these stated criteria. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important — rate it Minor. Live criteria (A1, A2, A3, A6) cannot be re-measured here; judge whether the recorded observations and the CSS together support them, and flag only a concrete contradiction. Builder deviations to weigh: In-depth was measured at the question-step render site only (same component and CSS as the other site); the Node 22 test run resolved vitest from the launch root's `node_modules`.
+
+Report back: verdict (APPROVE or CHANGES REQUIRED), every finding with severity, file and line, which criterion it affects, the commands you ran with their results, and `git status --porcelain` in the working directory at the end.
 
 ## Instruction ledger
 
