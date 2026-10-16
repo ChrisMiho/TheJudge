@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `gate-review`
+- Current node: `gate-qc`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -17,11 +17,19 @@
 | 2 | shape | sonnet | ok | `0 → 14` | `PRD/work/tool-switch-load-delay/` (IDEA.md, README.md, STATUS.ideation) and board row committed `f5cf16f6`, pushed | 2026-10-15 |
 | 3 | define | opus | ok | `0 → 76` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (one block, `NFR-014` amendment), `evidence/measurements.md` (live mtgjudge.gg + local preview, throttled and unthrottled), `STATUS.refined`, board row; committed `cf3c434c`, pushed `ed3e96b8..cf3c434c`; worktree `git status --porcelain` empty; port 4917 free | 2026-10-15 |
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS — `QUALITY-CHECK.md` committed `80112ad7` (on origin); README `## Preparation gate` recorded by the driver | 2026-10-15 |
+| 5 | gate-review | sonnet | ok | `0 → 25` | build half run `graph-20261016-050510`: kickoff worktree removed clean (`git worktree remove`); claim commit `8abc7f2d` on `thejudge-auto/tool-switch-load-delay-work` cut from `origin/main` `a6b127da` (docs PR #313 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `063915ff` (= origin tip): 0 accept / 1 edit / 0 reject (NFR-014 widened to three tiers); `### Brief reconciliation` 15 passages in `DESIGN-BRIEF.md`; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; worktree and launch-checkout porcelain empty | 2026-10-15 |
+
+## Gate verdicts
+
+Applied by `graph-gate-review` (build half, 2026-10-15): 0 accept, 1 edit, 0 reject. Copied from `GATE-QUESTIONS.md` `## Gate verdicts`.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `NFR-014` | edit | widen from two tools to a tiered download: tier 1 landing screen as today, tier 2 code for every other tool, tier 3 shared card list read once; Brotli, caching headers, list trimming out of scope |
 
 ## Open gate
 
-- Owner action: answer `PRD/work/tool-switch-load-delay/GATE-QUESTIONS.md` (one slot, NFR-014: download the Life Tracker and Trade Balancer code in the background so their first open shows no Loading screen), then merge the docs PR (https://github.com/ChrisMiho/TheJudge/pull/313) to build. Read follow-up F1 in `DESIGN-BRIEF.md` first: the multi-second card-list wait on a slow network is not in this scope; widen it with an `edit` verdict if that is the wait you meant.
-- Resume: `/graph-implement PRD/work/tool-switch-load-delay/` after the merge.
+- None (the `define` gate resolved: docs PR #313 merged with NFR-014 answered `edit`; verdict applied at gate-review)
 
 ## Dispatch prompts
 
@@ -134,6 +142,24 @@ Record the verdicts as the skill directs, restore `STATUS.refined` as the only s
 Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
 
 Report back: outcome (`ok` or `failed`), accept/edit/reject counts, the finalized NFR-014 text summary, the `### Brief reconciliation` list, files changed, the commit sha and push result, and `git status --porcelain` for the worktree.
+
+### gate-qc (build half, attempt 1)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261016-050510` (build half of `tool-switch-load-delay`), re-grading the package after the owner's `edit` verdict. Invoke the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory below) and follow its controlled mode. Tool-call cap 60 — verify directly, spawn no subagents or forks, no sleeping or polling, do not re-run browser measurements, stay well under the cap.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory (branch `thejudge-auto/tool-switch-load-delay-work`).
+
+Grade `PRD/work/tool-switch-load-delay/DESIGN-BRIEF.md` together with the finalized `GATE-QUESTIONS.md` (NFR-014 now carries the owner's `edit`: a tiered background download — tier 1 the landing screen, tier 2 the code for every other tool, tier 3 the card list read once and shared by Quick Question, In-depth and the Trade Balancer) and `evidence/measurements.md`, against PRD alignment and agent-readiness. Check that the brief and every proposed diff agree with the owner's verdict and with each other; that each diff applies cleanly to current `PRD/sections/` text and amends existing rules in place rather than contradicting them (REQ-064 wake-up ping only on balancer open, REQ-067 visited tools stay open); that the shared card-list design names how the three screens consume one load without changing what each screen shows; and that the acceptance criteria are measurable by an implementer. In graph runs refinement proposes truth in `GATE-QUESTIONS.md` instead of writing `PRD/sections/`, so a brief whose truth lives only in that file is the expected shape, not a finding.
+
+Overwrite the package's `QUALITY-CHECK.md` with the new report. On FAIL set the status marker the skill names. Do not edit `README.md`'s `## Preparation gate` section or `GRAPH-RUN.md` — the driver owns both. Never edit `PRD/sections/` or code.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
+
+Report back: PASS or FAIL, the complete findings list (each with file and line), the report path, the commit sha and push result, and `git status --porcelain`.
 
 ## Mid-node relays
 
