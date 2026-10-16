@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-020939/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/in-depth-context-spacing/`
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 13` | PASS — `QUALITY-CHECK.md` committed `8fe2dc95`; README `## Preparation gate` recorded by the driver | 2026-10-15 |
 | 5 | gate-review | sonnet | ok | `0 → 13` | build half run `graph-20261016-023551`: kickoff worktree removed clean (`git worktree remove`; its git-ignored gate screenshots copied into this worktree's `.playwright-mcp/`); claim commit `86f3de9f` on `thejudge-auto/in-depth-context-spacing-work` cut from `origin/main` `95144615` (docs PR #311 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `b9d5f105`: 1 accept / 0 edit / 0 reject (REQ-023), `### Brief reconciliation` none (grep zero hits); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-15 |
 | 6 | gate-qc | sonnet | ok | `0 → 13` | build-half re-grade PASS, findings none — `QUALITY-CHECK.md` committed `c2ceff0a`: brief and finalized REQ-023 diff state one rule; hunks anchor at `functional-requirements.md:429`/`:438` and `in-depth/README.md:278` (edited line 282) at HEAD `78be7c49`; `apps/frontend/src/` anchors verified (`index.css` 204/218/3093/2940/5364, `AskAiWaitingPanel.tsx` 44/74, render sites `EnrichmentStep.tsx` 718/880, `QuickLookupApp.tsx` 702); 10 criteria testable; `STATUS.refined` kept; driver rewrote README `## Preparation gate`; worktree and launch porcelain empty | 2026-10-15 |
+| 7 | plan | sonnet | ok | `0 → 19` | `thejudge-map-out` commit `e7c3caf1`: `GAMEPLAN.md`, slice A (`slice-a-one-row-bubble.md`, one row in both flows, final slice with REQ-023 apply and ship gates, 11 criteria — A1/A2/A3/A6/A11 manual) and `slice-a.criteria.json` all `false`; `STATUS.active` only marker; board row under active; `git diff --stat origin/main HEAD -- PRD/sections apps` empty; captures planned only under git-ignored `.playwright-mcp/`; worktree and launch porcelain empty | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -161,6 +162,26 @@ Write `GAMEPLAN.md` and the lettered slice docs the skill prescribes, plus one `
 Change files only with the Write and Edit tools; never chain a heredoc or `sed -i` into a long Bash command. Run git as short separate calls: `git add <explicit paths>` (`git rm` for the old marker), then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back: outcome (ok/failed), the slices with one plain sentence each, the criteria count per slice, files written, the commit hash, and `git status --porcelain` in the working directory after the commit.
+
+### build
+
+graph is controlling. You are node 6 (`build`), attempt 1, of graph run `graph-20261016-023551` (build half). Tool-call cap 4000. Spawn no subagents or forks; no sleeping or polling loops.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing
+
+Shared branch: `thejudge-auto/in-depth-context-spacing-work` (checked out in the working directory above; autonomous base `origin/main`). Work in that worktree in place — no second worktree, no contributor branch. Never write to /Users/chrismiho/Coding/Projects/TheJudge itself or anywhere outside the working directory; every path you write must lie inside it.
+
+Invoke the `thejudge-implement-all` skill (Skill tool) in graph mode on `PRD/work/in-depth-context-spacing/` and complete every slice in `GAMEPLAN.md` (one: slice A, `slice-a-one-row-bubble.md`, 11 criteria in `slice-a.criteria.json`). The change: the waiting bubble puts the seal, the phrase and the timer on one row in both In-depth and Ask a Question, CSS-only plus comment rewording and one new test, and slice A applies the finalized REQ-023 diff in `GATE-QUESTIONS.md` to `PRD/sections/functional-requirements.md` and `PRD/sections/in-depth/README.md` by intent against current text, together with the code. Read the four builder notes in `GAMEPLAN.md`. One path correction the driver found: the slice's Verification block names `apps/frontend/src/askAiWaitStages.ts`; the real file is `apps/frontend/src/lib/askAiWaitStages.ts`.
+
+Use test-driven development: write the new `index.css` assertion in `AskAiWaitingPanel.test.tsx` first and watch it fail before the CSS change. Run the frontend tests under Node 22 as well as the local Node, because CI runs Node 22 and a local Node 26 has hidden failures before (from `apps/frontend`: `npx -y -p node@22 node ../../node_modules/vitest/vitest.mjs run`). Run `npm run quality:check` before the final push.
+
+Live checks (A1, A2, A3, A6): run a dev server from this worktree on a free port that you own, bring up the waiting bubble in a real browser at 1440x900, 390x844 and 375x667 in both Ask a Question and In-depth first submit, and hold the wait open by delaying or stubbing the answer request in the browser — never call a paid model. Measure positions and heights and record them in the PR body. Save screenshots only under `PRD/work/in-depth-context-spacing/.playwright-mcp/` (git-ignored); the before screenshots the owner approved are already there for comparison. Close the browser and stop the server when done (A11). A manual criterion is earned by a dated observation line naming its id; never flip a criterion to `true` before its evidence was observed.
+
+Open the code PR `thejudge-auto/in-depth-context-spacing-work → main` with `gh pr create`, registered as the skill's reference requires (the `thejudge-auto:v1:registered:in-depth-context-spacing` marker in the body and the `[THEJUDGE-AUTO]` title form). Never merge or close a PR. Set `STATUS.ship-ready` as the only marker when the slice is done, and update the board row.
+
+Change files only with the Write and Edit tools; never chain a heredoc or `sed -i` into a long Bash command. Run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`, then `git push` (never force, never `git add -A` or `git add .`). If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back: outcome (ok/failed), the PR URL, every commit hash and whether `origin` matches local, each criterion's final value, test and `quality:check` results (local Node and Node 22), the live measurements, any deviation from the slice doc, and the complete list of every path you wrote or created (tracked and untracked, including git-ignored captures, logs and installs), each as an absolute path.
 
 ## Instruction ledger
 
