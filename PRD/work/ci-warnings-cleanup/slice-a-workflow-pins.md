@@ -1,6 +1,6 @@
 # Slice A — Workflow pins and runner labels
 
-## Status: in-progress
+## Status: done
 
 ## Goal
 
@@ -22,6 +22,10 @@ Move every GitHub action in the Quality Check workflow to its current major vers
 - [ ] A5. The tests that read the workflow (`scripts/ci-workflow-parity.test.mjs`, `apps/frontend/src/lib/deploymentPipeline.test.ts`) pass with no edit.
 - [ ] A6. The PR's Quality Check run: every job that runs (`static`, `backend`, three frontend shards, `coverage-merge`) succeeds and shows zero annotations, checked with `gh api repos/ChrisMiho/TheJudge/check-runs/<job-id>/annotations`. (PR run only.)
 Post-merge reading (not a criterion; owner-run, recorded in `GAMEPLAN.md` under `## Post-merge reading`): the `main` run's `changes` and `deploy` jobs, and one live answer with the embedder loaded.
+
+## Evidence
+
+- 2026-10-16, A6: PR #316 Quality Check run 38926130654. static, backend, frontend-shard 1/3, 2/3, 3/3 and coverage-merge all passed; `gh api repos/ChrisMiho/TheJudge/check-runs/<job-id>/annotations` returned 0 annotations for each. `changes` and `deploy` skipped (main-only).
 
 ## Verification
 

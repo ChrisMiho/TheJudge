@@ -54,7 +54,7 @@
     {
       "id": "A6",
       "statement": "The PR Quality Check run shows every running job succeeding with zero annotations",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

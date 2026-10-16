@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-warnings-cleanup | Slices A and B done; code PR #316 on `thejudge-auto/ci-warnings-cleanup-work` |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| ci-warnings-cleanup | Mapped into slices A (workflow pins) and B (lint fixes); build half on `thejudge-auto/ci-warnings-cleanup-work` |
 
 ## refined
 
