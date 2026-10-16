@@ -41,7 +41,7 @@ export function AskAiWaitingPanel({ isSubmitting }: AskAiWaitingPanelProps): JSX
       className={`wait-inscription-bubble ambient-accent-surface ambient-accent-interactive wait-stage-${stage.variant}`}
       data-accent-current="true"
     >
-      {/* The colour's seal: a small ringed badge the message sits under. Only the
+      {/* The colour's seal: a small ringed badge at the row's start, beside the message. Only the
           ring turns (transform: rotate); the seal face itself does not move. Two
           motes of the colour's light drift up beside it (transform/opacity). */}
       <div aria-hidden="true" className="wait-inscription-seal">
@@ -71,7 +71,7 @@ export function AskAiWaitingPanel({ isSubmitting }: AskAiWaitingPanelProps): JSX
         </p>
       </div>
 
-      {/* The elapsed clock ticks at the bubble's foot (REQ-023). */}
+      {/* The elapsed clock ticks at the row's end (REQ-023). */}
       <p className="wait-inscription-clock">{formatElapsed(elapsed)}</p>
     </div>
   );

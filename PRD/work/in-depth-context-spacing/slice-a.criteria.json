@@ -2,16 +2,16 @@
   "slug": "in-depth-context-spacing",
   "slice": "A",
   "criteria": [
-    { "id": "A1", "statement": "One row at 1440x900, 390x844 and 375x667 in both flows: seal, phrase, timer side by side, centres within 2 px", "value": false, "evidence": { "manual": true } },
-    { "id": "A2", "statement": "Bubble is at most 70 px tall at all three widths for every phrase", "value": false, "evidence": { "manual": true } },
-    { "id": "A3", "statement": "25 s and 40 s phrases show in full on two lines on phones, timer at row end, no horizontal scroll", "value": false, "evidence": { "manual": true } },
-    { "id": "A4", "statement": "Timer look unchanged; clock rule diff adds only white-space: nowrap", "value": false, "evidence": { "command": "git diff.*index\\.css", "paths": ["apps/frontend/src/index.css"] } },
-    { "id": "A5", "statement": "Motion rules byte-identical; AskAiWaitingPanel, reduced-motion and motion-foundation tests pass unedited", "value": false, "evidence": { "command": "(npm|npx).*(vitest|run test).*(AskAiWaitingPanel|reduced-motion|motion-foundation)" } },
-    { "id": "A6", "statement": "Under reduced motion at 375x667 the bubble is on one row and each phrase appears whole", "value": false, "evidence": { "manual": true } },
-    { "id": "A7", "statement": "Live region, aria-hidden and DOM order unchanged; AskAiWaitingPanel.tsx diff is comments only", "value": false, "evidence": { "command": "git diff.*AskAiWaitingPanel\\.tsx", "paths": ["apps/frontend/src/components/AskAiWaitingPanel.tsx"] } },
-    { "id": "A8", "statement": "askAiWaitStages.ts and useElapsedWaitTimer.ts have no diff; 280 ms constant unchanged", "value": false, "evidence": { "command": "git diff.*(askAiWaitStages|useElapsedWaitTimer)" } },
-    { "id": "A9", "statement": "New test reading index.css pins the three-column grid, centred items and nowrap timer, and passes", "value": false, "evidence": { "command": "(npm|npx).*(vitest|run test).*AskAiWaitingPanel", "paths": ["apps/frontend/src/components/AskAiWaitingPanel.test.tsx"] } },
-    { "id": "A10", "statement": "REQ-023 and in-depth/README.md carry the wording approved in GATE-QUESTIONS.md", "value": false, "evidence": { "command": "grep.*on one row", "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/in-depth/README.md"] } },
-    { "id": "A11", "statement": "Cleanup evidence: browser closed, owned server stopped, ports released, captures only under the git-ignored .playwright-mcp folder", "value": false, "evidence": { "manual": true } }
+    { "id": "A1", "statement": "One row at 1440x900, 390x844 and 375x667 in both flows: seal, phrase, timer side by side, centres within 2 px", "value": true, "evidence": { "manual": true } },
+    { "id": "A2", "statement": "Bubble is at most 70 px tall at all three widths for every phrase", "value": true, "evidence": { "manual": true } },
+    { "id": "A3", "statement": "25 s and 40 s phrases show in full on two lines on phones, timer at row end, no horizontal scroll", "value": true, "evidence": { "manual": true } },
+    { "id": "A4", "statement": "Timer look unchanged; clock rule diff adds only white-space: nowrap", "value": true, "evidence": { "command": "git diff.*index\\.css", "paths": ["apps/frontend/src/index.css"] } },
+    { "id": "A5", "statement": "Motion rules byte-identical; AskAiWaitingPanel, reduced-motion and motion-foundation tests pass unedited", "value": true, "evidence": { "command": "(npm|npx).*(vitest|run test).*(AskAiWaitingPanel|reduced-motion|motion-foundation)" } },
+    { "id": "A6", "statement": "Under reduced motion at 375x667 the bubble is on one row and each phrase appears whole", "value": true, "evidence": { "manual": true } },
+    { "id": "A7", "statement": "Live region, aria-hidden and DOM order unchanged; AskAiWaitingPanel.tsx diff is comments only", "value": true, "evidence": { "command": "git diff.*AskAiWaitingPanel\\.tsx", "paths": ["apps/frontend/src/components/AskAiWaitingPanel.tsx"] } },
+    { "id": "A8", "statement": "askAiWaitStages.ts and useElapsedWaitTimer.ts have no diff; 280 ms constant unchanged", "value": true, "evidence": { "command": "git diff.*(askAiWaitStages|useElapsedWaitTimer)" } },
+    { "id": "A9", "statement": "New test reading index.css pins the three-column grid, centred items and nowrap timer, and passes", "value": true, "evidence": { "command": "(npm|npx).*(vitest|run test).*AskAiWaitingPanel", "paths": ["apps/frontend/src/components/AskAiWaitingPanel.test.tsx"] } },
+    { "id": "A10", "statement": "REQ-023 and in-depth/README.md carry the wording approved in GATE-QUESTIONS.md", "value": true, "evidence": { "command": "grep.*on one row", "paths": ["PRD/sections/functional-requirements.md", "PRD/sections/in-depth/README.md"] } },
+    { "id": "A11", "statement": "Cleanup evidence: browser closed, owned server stopped, ports released, captures only under the git-ignored .playwright-mcp folder", "value": true, "evidence": { "manual": true } }
   ]
 }

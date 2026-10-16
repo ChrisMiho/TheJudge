@@ -203,6 +203,9 @@ html {
 /* The wait bubble (AskAiWaitingPanel) on the shared panel tokens. */
 .wait-inscription-bubble {
   display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 0.75rem;
   gap: 0.5rem;
   padding: 1rem;
   border: 1px solid var(--surface-edge);
@@ -2937,7 +2940,7 @@ body {
 }
 
 /* REQ-023 (ui-reimagining-build): the wait inks itself in, inside the judge's
- * bubble, under the colour's seal — the previous threshold line lifts and fades
+ * bubble, with the colour's seal, the line and the clock on one row — the previous threshold line lifts and fades
  * while the new one inks in letter by letter, two motes of the colour's light
  * drift up past a turning dashed ring, and the bubble's edge breathes. Every rule
  * here animates only `clip-path`, `opacity`, or `transform` (NFR-006: "prefer
@@ -3092,6 +3095,7 @@ body {
 
 .wait-inscription-clock {
   text-align: right;
+  white-space: nowrap;
 }
 
 /* REQ-215 (ui-reimagining-build): Trade Balancer's two piles of gold. A

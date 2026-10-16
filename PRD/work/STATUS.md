@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| in-depth-context-spacing | waiting bubble on one row — slice A done; code PR open for the owner to merge |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| in-depth-context-spacing | waiting bubble on one row — mapped, one slice (A); ready to implement |
 
 ## refined
 

@@ -279,7 +279,9 @@ retrieval/combo machinery that other specs own.
   the `AskAiWaitingPanel` — a live elapsed timer with `aria-live` threshold
   messages at 0s / 3s / 8s / 15s / 25s / 40s (CSS-only motion) — while the card
   list and wizard context above the form stay visible. It is drawn as the judge's
-  bubble under the colour's seal, each line inking itself in letter by letter.
+  bubble with the colour's seal, the line and the clock on one row (seal first,
+  clock last; a long line wraps in the middle), each line inking itself in
+  letter by letter.
   (DEC-031, REQ-023)
 - Built: on the first success the enrichment submit form is replaced by the shared
   chat-first conversation workspace (owned by `sections/shared-chrome/`). The

@@ -1,6 +1,14 @@
 # Slice A — One-row waiting bubble
 
-## Status: planned
+## Status: done
+
+## Observations
+
+- 2026-10-15 A1 — live, vite on 5493, answer request held open, fake clock through all six phrases: Ask a Question at 1440x900, 390x844, 375x667 and In-depth first submit at the same three widths; seal ends before phrase, phrase ends before clock, three vertical centres within 1 px.
+- 2026-10-15 A2 — bubble 60.3–62 px at 1440, 62–68 px at 390 and 375, every phrase, both flows.
+- 2026-10-15 A3 — at 390 and 375 the 25 s and 40 s phrases are 33–34 px tall (two lines) in a 203–223 px middle column, clock at the row's end, document scrollWidth equals viewport width at all three widths.
+- 2026-10-15 A6 — prefers-reduced-motion: reduce at 375x667: one row, bubble 62–68 px, clip-path fully open on every phrase.
+- 2026-10-15 A11 — browser closed, vite task stopped, port 5493 released (lsof empty), captures only under PRD/work/in-depth-context-spacing/.playwright-mcp/ (git-ignored, not in git status).
 
 ## Goal
 

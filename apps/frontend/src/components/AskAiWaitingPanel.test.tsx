@@ -130,6 +130,18 @@ describe("AskAiWaitingPanel ink-in inscription (REQ-023)", () => {
     expect(inkReveal).not.toMatch(/\bleft\s*:/);
   });
 
+  it("lays the seal, the line and the clock on one row (REQ-023)", () => {
+    const css = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+    const rulesFor = (selector: string) =>
+      [...css.matchAll(new RegExp(`(?:^|\\n)${selector.replace(/\./g, "\\.")}\\s*\\{([^}]*)\\}`, "g"))]
+        .map((match) => match[1])
+        .join("\n");
+    const bubble = rulesFor(".wait-inscription-bubble");
+    expect(bubble).toMatch(/grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
+    expect(bubble).toMatch(/align-items:\s*center/);
+    expect(rulesFor(".wait-inscription-clock")).toMatch(/white-space:\s*nowrap/);
+  });
+
   it("stills the new ink/seal/mote/breathe decoration under prefers-reduced-motion, leaving the existing functional wait-stage pulse exempt (reduced-motion.test.ts)", () => {
     const css = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
     const reducedMotionBlock = css.slice(css.indexOf("@media (prefers-reduced-motion: reduce)"));

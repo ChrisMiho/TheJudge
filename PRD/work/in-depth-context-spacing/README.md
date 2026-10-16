@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # in-depth-context-spacing
 
@@ -8,7 +8,7 @@ Put the waiting bubble's seal, rotating phrase and elapsed clock on one row. See
 
 | Slice | Doc | Depends on | Status |
 | --- | --- | --- | --- |
-| A | `slice-a-one-row-bubble.md` (11 criteria, `slice-a.criteria.json`) | none | planned |
+| A | `slice-a-one-row-bubble.md` (11 criteria, `slice-a.criteria.json`) | none | done |
 
 Plan: `GAMEPLAN.md`. Slice A is the final slice: code, test, and REQ-023 product-truth application.
 

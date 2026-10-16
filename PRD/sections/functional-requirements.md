@@ -426,7 +426,7 @@
   - displayed message updates at defined second thresholds: 0s, 3s, 8s, 15s, 25s, 40s
   - submit form is restored when a response is received or an error occurs
   - message region uses `aria-live` so screen readers announce updates
-  - the panel is drawn as the judge's bubble under the colour's seal: each threshold line inks itself in letter by letter with a glow that fades, the line before lifts and fades, the elapsed clock ticks at the bubble's foot, two motes of the colour's light drift up through it, a faint dashed ring turns round the seal, and the bubble's edge breathes in the colour's light; the absurd-tone lines are set in italics; under reduced motion each line appears whole and nothing drifts or turns
+  - the panel is drawn as the judge's bubble with the colour's seal, the threshold line and the elapsed clock on one row: the seal at the start, the line in the middle, the clock at the end, all three centred on the row; a line too long for the middle wraps onto further lines there, in full, never cut short and never pushing the seal or the clock off the row; each threshold line inks itself in letter by letter with a glow that fades, the line before lifts and fades, the elapsed clock ticks at the row's end, two motes of the colour's light drift up through it, a faint dashed ring turns round the seal, and the bubble's edge breathes in the colour's light; the absurd-tone lines are set in italics; under reduced motion each line appears whole and nothing drifts or turns
 - Constraints:
   - CSS-only motion; no animation libraries
   - panel must not block card context above the form
@@ -436,6 +436,7 @@
 - Notes:
   - approved threshold copy: 0s "Consulting the stack…" (calm), 3s "Priority is passing to the LLM." (calm), 8s "The judge is reading every layer. Twice." (curious), 15s "Still waiting? The servers are scrying 1." (curious), 25s "At this point we're basically in a MUD subgame." (absurd), 40s "If this were F6, we'd have resolved by now." (absurd)
   - amended for the `ui-reimagining-build` pass (2026-09-30): thresholds and copy unchanged; the panel takes the direction-1 inscription treatment, CSS-only (NFR-006)
+  - amended by `in-depth-context-spacing` (2026-10-15): the seal, the line and the clock moved from a stack (seal on top, line under it, clock at the foot) onto one row, at the owner's request for a cleaner, shorter bubble. Thresholds, copy, timing, motion, colours, the clock's size and the `aria-live` region are unchanged. Measured live: the bubble went from about 123 px tall to about 62 px at 1440x900, 390x844 and 375x667; on a phone the four longer lines wrap to two lines in the middle (bubble 66–68 px) with the clock still at the row's end. Applies wherever `AskAiWaitingPanel` renders, so In-depth details and Ask a Question (REQ-092) both take it
 
 ### REQ-024
 - Title: Phase-scoped prompt guidance
