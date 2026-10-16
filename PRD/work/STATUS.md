@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-warnings-cleanup | Mapped into slices A (workflow pins) and B (lint fixes); build half on `thejudge-auto/ci-warnings-cleanup-work` |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| ci-warnings-cleanup | Docs PR #315 merged; build half claimed (`thejudge-auto/ci-warnings-cleanup-work`); no gate questions — re-grading at gate-qc before plan |
 
 ## refining
 
