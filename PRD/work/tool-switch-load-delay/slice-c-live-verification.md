@@ -1,6 +1,8 @@
 # Slice C — Live timing check and ship gates
 
-## Status: planned
+## Status: done
+
+Evidence: `slice-c.evidence.md` (one scheduler fix came out of the run: the download now starts after the landing destination renders).
 
 ## Goal
 

@@ -208,6 +208,38 @@ describe("DestinationOutlet", () => {
       });
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });
+
+    it("waits for a still-loading landing destination to render before starting the download", async () => {
+      vi.useFakeTimers();
+      const fetchMock = vi.fn(
+        async (_input: RequestInfo | URL) => ({ ok: true, status: 200, json: async () => [] }) as unknown as Response
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      let resolveLanding: (() => void) | undefined;
+      const Landing = lazy(
+        () =>
+          new Promise<{ default: () => JSX.Element }>((resolve) => {
+            resolveLanding = () => resolve({ default: () => <p>Landing ready</p> });
+          })
+      );
+
+      render(
+        <DestinationOutlet
+          destinations={[{ id: "alpha", path: "/alpha", label: "Alpha", render: () => <Landing /> }]}
+          activeDestinationId="alpha"
+        />
+      );
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+
+      await act(async () => resolveLanding?.());
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
   });
 });
 });

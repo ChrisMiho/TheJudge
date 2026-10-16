@@ -2,14 +2,14 @@
   "slug": "tool-switch-load-delay",
   "slice": "C",
   "criteria": [
-    {"id": "C1", "statement": "Quick Question landing, wait 3 s, tap Life Tracker: no Loading frame, on screen within 100 ms, at Fast 4G + CPU 4x and Slow 4G + CPU 4x", "value": false, "evidence": {"manual": true}},
-    {"id": "C2", "statement": "Trade Balancer, In-Depth, Quick Question each open with no Loading frame within 100 ms; no Loading card list frame", "value": false, "evidence": {"manual": true}},
-    {"id": "C3", "statement": "Tier order by Resource Timing: tier-2 chunk startTime after the landing marker and before the tier-3 card-list request on a Life Tracker landing", "value": false, "evidence": {"manual": true}},
-    {"id": "C4", "statement": "Life Tracker landing on Fast 4G + CPU 4x: Quick Question, In-Depth, Trade Balancer each within 100 ms, card list requested exactly once, no Loading card list frame", "value": false, "evidence": {"manual": true}},
-    {"id": "C5", "statement": "First screen not slower: Ask a Question time within 50 ms of the pre-change build over three runs each", "value": false, "evidence": {"manual": true}},
-    {"id": "C6", "statement": "No GET /api/health before the balancer opens; card list requested exactly once per page load on every landing; no tool mounted by the download", "value": false, "evidence": {"manual": true}},
-    {"id": "C7", "statement": "Browser closed, owned server(s) stopped, ports released; captures written to PRD/work/tool-switch-load-delay/.playwright-mcp/", "value": false, "evidence": {"manual": true}},
-    {"id": "C8", "statement": "Diffs 1-4 are present in PRD/sections (promotion checklist)", "value": false, "evidence": {"paths": ["PRD/sections/non-functional-requirements.md", "PRD/sections/trade-balancer/README.md"]}},
-    {"id": "C9", "statement": "Ship gates met and npm run quality:check green", "value": false, "evidence": {"command": "npm run quality:check"}}
+    {"id": "C1", "statement": "Quick Question landing, wait 3 s, tap Life Tracker: no Loading frame, on screen within 100 ms, at Fast 4G + CPU 4x and Slow 4G + CPU 4x", "value": true, "evidence": {"manual": true}},
+    {"id": "C2", "statement": "Trade Balancer, In-Depth, Quick Question each open with no Loading frame within 100 ms; no Loading card list frame", "value": true, "evidence": {"manual": true}},
+    {"id": "C3", "statement": "Tier order by Resource Timing: tier-2 chunk startTime after the landing marker and before the tier-3 card-list request on a Life Tracker landing", "value": true, "evidence": {"manual": true}},
+    {"id": "C4", "statement": "Life Tracker landing on Fast 4G + CPU 4x: Quick Question, In-Depth, Trade Balancer each within 100 ms, card list requested exactly once, no Loading card list frame", "value": true, "evidence": {"manual": true}},
+    {"id": "C5", "statement": "First screen not slower: Ask a Question time within 50 ms of the pre-change build over three runs each", "value": true, "evidence": {"manual": true}},
+    {"id": "C6", "statement": "No GET /api/health before the balancer opens; card list requested exactly once per page load on every landing; no tool mounted by the download", "value": true, "evidence": {"manual": true}},
+    {"id": "C7", "statement": "Browser closed, owned server(s) stopped, ports released; captures written to PRD/work/tool-switch-load-delay/.playwright-mcp/", "value": true, "evidence": {"manual": true}},
+    {"id": "C8", "statement": "Diffs 1-4 are present in PRD/sections (promotion checklist)", "value": true, "evidence": {"paths": ["PRD/sections/non-functional-requirements.md", "PRD/sections/trade-balancer/README.md"]}},
+    {"id": "C9", "statement": "Ship gates met and npm run quality:check green", "value": true, "evidence": {"command": "npm run quality:check"}}
   ]
 }
