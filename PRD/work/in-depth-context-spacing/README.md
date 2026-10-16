@@ -1,8 +1,16 @@
-status: refined
+status: active
 
 # in-depth-context-spacing
 
 Put the waiting bubble's seal, rotating phrase and elapsed clock on one row. See `IDEA.md`. Owner's request: `intake/owner-request.md` (evidence, not authority).
+
+## Slices
+
+| Slice | Doc | Depends on | Status |
+| --- | --- | --- | --- |
+| A | `slice-a-one-row-bubble.md` (11 criteria, `slice-a.criteria.json`) | none | planned |
+
+Plan: `GAMEPLAN.md`. Slice A is the final slice: code, test, and REQ-023 product-truth application.
 
 ## Autonomous metadata
 

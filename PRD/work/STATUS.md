@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| in-depth-context-spacing | waiting bubble on one row — mapped, one slice (A); ready to implement |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| in-depth-context-spacing | waiting bubble on one row — gate answered (REQ-023 accept); resumes at gate-qc |
 
 ## refining
 
