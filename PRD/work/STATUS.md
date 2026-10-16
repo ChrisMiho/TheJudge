@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); NFR-014 verdict `edit` and Q-014 verdict `accept` (a Life Tracker landing also downloads the 1.96 MB card list) applied; awaiting re-grade |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); NFR-014 verdict `edit` applied; second re-grade FAIL (missed REQ-064 ping line in integrations-and-data) fixed at define, every card-list line dispositioned; open blocker Q-014 (does a Life Tracker landing download the 1.96 MB card list?) awaits the owner |
 
 ## ideation
 

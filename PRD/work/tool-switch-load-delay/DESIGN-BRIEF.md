@@ -1,11 +1,11 @@
 # Design brief — tools open without the "Loading…" screen
 
-**Decide:** one open question in `GATE-QUESTIONS.md`, Q-014: should a player
-who opens the app on the Life Tracker also download the card list in the
-background (about 1.96 MB)? Recommendation: yes. The NFR-014 slot (the
-code-splitting rule) is answered: owner verdict edit (2026-10-15), widened from
-two tools to a three-tier background download. This brief is written for a
-"yes" on Q-014; the lines a "no" changes are marked.
+**Decided:** both slots in `GATE-QUESTIONS.md` are answered. The NFR-014 slot
+(the code-splitting rule): owner verdict edit (2026-10-15), widened from two
+tools to a three-tier background download. Q-014: owner verdict accept
+(2026-10-15), "Q-014 yes, Life Tracker landings download it too" — a player who
+opens the app on the Life Tracker also downloads the card list in the background
+(about 1.96 MB).
 
 ## The answer in one paragraph
 
@@ -19,7 +19,7 @@ other tool, including both question tools: about 36 KB from a Quick Question
 landing, about 107 KB from a Life Tracker landing. Tier 3 is the card list,
 downloaded and read once and shared by Quick Question, In-Depth and the Trade
 Balancer. It adds nothing for a player who lands on one of those three screens,
-and about 1.96 MB for a player who lands on the Life Tracker (Q-014). The tap
+and about 1.96 MB for a player who lands on the Life Tracker (owner-accepted, Q-014). The tap
 then shows the tool at once. Measured with the fix approximated for two tools
 on a production build: 688 ms → 41 ms for the Life Tracker, 685 ms → 34 ms for
 the Trade Balancer, on a slow phone profile; the question tools are measured at
@@ -65,8 +65,7 @@ Full numbers and method: `evidence/measurements.md`.
    from a Life Tracker landing. Then the card list (tier 3) is downloaded and
    read once, shared by the three screens that use it. For a question-screen
    or Trade Balancer landing it is already downloading today; for a Life
-   Tracker landing it is a new download of about 1.96 MB (Q-014; on a "no" it
-   is skipped there).
+   Tracker landing it is a new download of about 1.96 MB (accepted, Q-014).
 3. Tapping any tool shows it straight away — no "Loading…" screen, on any
    connection, as long as the background download has finished (about 0.2 s on
    Fast 4G, 0.7 s on Slow 4G after the first screen).
@@ -134,8 +133,7 @@ Technical detail for the implementer, below the player story.
    versions). `DestinationOutlet` (or the portal shell that renders it) is the
    natural home: it already owns the mounted-destination list. Exact delay and
    host component are equivalent technical choices for the implementer.
-   On a "no" to Q-014, tier 3 is skipped when the landing destination is the
-   Life Tracker; nothing else changes.
+   Tier 3 runs on every landing, the Life Tracker included (Q-014 accepted).
 3. **No fallback frame for a pre-downloaded tool.** `lazyDestination` already feeds
    React an already-loaded module synchronously once `preload()` has resolved
    (the `loadedModule` thenable path), so a pre-downloaded tool never suspends. A
@@ -219,27 +217,26 @@ Technical detail for the implementer, below the player story.
 - **A6 — NFR-013 is not affected.** NFR-013 keeps price data off players who
   never open the balancer. The background download fetches code and the shared
   card list, never prices; the card list is identity data (REQ-174), not price
-  data. It is a new download only for a Life Tracker landing, which Q-014 puts
-  to the owner. (Ladder 1.)
+  data. It is a new download only for a Life Tracker landing, which the owner
+  accepted (Q-014). (Ladder 1.)
 - **A7 — no endpoint, deploy or dependency change in core.** The card list file
   itself is unchanged; compression, caching headers and trimming are follow-ups.
   (Ladder 6.)
 - **A8 — no special case for data-saver mode.** Tier 2 is 36–107 KB, below a
   couple of card images. Tier 3's 1.96 MB is new data only for a Life Tracker
-  landing; whether that player downloads it is Q-014, and a `Save-Data`
+  landing, which the owner accepted (Q-014), and a `Save-Data`
   exception would be new behavior nobody asked for, so none is proposed.
   (Ladder 4.)
 - **A9 — the multi-second figure is not fully reproduced.** Emulation shows at
   most 0.7 s of "Loading…" per tool; a real weak cellular signal can have more
   latency than Slow 4G, which multiplies each round trip. The fix removes the
   download from the tap path whatever the network, so it holds either way.
-- **A10 — Life Tracker landing and the card list: open (Q-014).** The owner's
-  verdict asks for everything a hop needs, and states tier 3 adds no data for a
-  question-screen landing. It does add about 1.96 MB for a Life Tracker
-  landing, which the verdict did not weigh. That meets the genuine-blocker test
-  (data handling; the verdict and NFR-013's pattern point opposite ways; either
-  build decides it), so it is asked, not assumed. Everything else in this brief
-  holds under either answer; the one switch is design item 2.
+- **A10 — Life Tracker landing and the card list: yes (Q-014 accept).** The
+  NFR-014 verdict asks for everything a hop needs, and states tier 3 adds no
+  data for a question-screen landing. It does add about 1.96 MB for a Life
+  Tracker landing, which the verdict did not weigh, so it was asked. Evidence:
+  the owner's Q-014 verdict, "Q-014 yes, Life Tracker landings download it
+  too" (2026-10-15). Tier 3 runs on every landing (design item 2).
 - **A11 — each screen's loading and failure behaviour is preserved.** The
   shared load hands over the array only; flags, copy and index stay per screen
   (design item 7). (Ladder 5: preserve user-visible behavior.)
@@ -304,8 +301,8 @@ Hit count by file, to check the rows: `functional-requirements.md` 36,
 - `apps/frontend/src/test/setup.ts` — reset the shared card list after each test.
 - Tests: `destinationRegistry.test.tsx`, `DestinationOutlet.test.tsx`, the shared
   card-list module, and the three consumers' existing card-list tests.
-- Product truth at build: Diffs 1-4 in `GATE-QUESTIONS.md`, adjusted per Q-014's
-  answer.
+- Product truth at build: Diffs 1-4 in `GATE-QUESTIONS.md`, as finalized (NFR-014
+  `edit`, Q-014 `accept`).
 
 ## Acceptance criteria
 
@@ -340,9 +337,7 @@ preview`), first visit, cache cleared:
    Quick Question, then In-Depth, then Trade Balancer: each on screen within
    100 ms with no "Loading…" frame; `/data/cardMetadata.json` is requested
    exactly once for the page; the Trade Balancer shows no "Loading card list…"
-   frame. On a "no" to Q-014: there is no list request to wait on, so wait 3 s
-   for tier 2 instead; no card-list request is made before the first
-   card-search screen opens, then exactly one.
+   frame.
 5. The first screen is not slower: "Ask a Question" appears at about the same
    time as on the pre-change build on the same profile. Read it as a trend
    over three runs each, not a hard per-run threshold; a consistent slowdown
@@ -350,9 +345,8 @@ preview`), first visit, cache cleared:
 6. Before the balancer is opened, there is no `GET /api/health` request. The
    card list is requested exactly once per page load, whichever screen reads
    it and whichever landing screen, and no tool is mounted by the background
-   download. On a "no" to Q-014, a Life Tracker landing requests it zero times
-   until the first card-search screen opens, then exactly once (as criterion
-   4 states).
+   download. A Life Tracker landing requests it too, exactly once (Q-014
+   accepted; criterion 4).
 7. Tapping a tool before its background download finishes shows "Loading…" only until the
    in-flight download lands, with exactly one request for that chunk.
 8. A failed background download (block the chunk URL once, then unblock) leaves the tool

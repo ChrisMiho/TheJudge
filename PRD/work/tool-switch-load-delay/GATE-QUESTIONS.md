@@ -1,10 +1,10 @@
 # Gate questions — tools open without the "Loading…" screen
 
-**Decide:** one open question, Q-014 at the bottom: should a player who opens
-the app on the Life Tracker also download the card list in the background
-(about 1.96 MB)? Recommendation: yes. The NFR-014 slot (the code-splitting
-rule) is already answered `edit`; its diffs below now state that cost and carry
-the Trade Balancer wording the change makes stale. No new stable ID.
+**Decided:** both slots are answered. NFR-014 (the code-splitting rule) is
+`edit`. Q-014 is `accept`: a player who opens the app on the Life Tracker also
+downloads the card list in the background (about 1.96 MB). The diffs below state
+that cost and carry the Trade Balancer wording the change makes stale. No new
+stable ID.
 
 Every diff is against `PRD/sections/` at `ed3e96b8`. Line numbers are where the
 hunk starts today. Evidence: `evidence/measurements.md`. The full reasoning is
@@ -32,8 +32,7 @@ read once and shared by the three screens instead of each fetching and parsing
 its own copy. A player landing on a question screen or the Trade Balancer
 already downloads the card list today, so tier 3 adds no data for them. A
 player landing on the Life Tracker does not download it today, so tier 3 adds
-about 1.96 MB for them, once per visit; Q-014 below asks whether that is
-wanted. The first screen still loads exactly as fast as today. The background
+about 1.96 MB for them, once per visit; the owner accepted that (Q-014). The first screen still loads exactly as fast as today. The background
 download opens no tool; the Trade Balancer's wake-up ping to the server
 (REQ-064) still goes only when the player opens the balancer; visited tools
 stay open (REQ-067); and if a background download fails, nothing shows and the
@@ -203,13 +202,14 @@ dispositioned in `DESIGN-BRIEF.md`, `## Product truth dispositions`.
 
 ## Gate verdicts
 
-Applied by `graph-gate-review` on 2026-10-15 (1 block: 0 accept, 1 edit, 0 reject). The driver copies this table into `GRAPH-RUN.md`.
+Applied by `graph-gate-review` on 2026-10-15 (attempt 1: NFR-014 `edit`; attempt 2: blocker Q-014 `accept`). 2 items: 1 accept, 1 edit, 0 reject. The driver copies this table into `GRAPH-RUN.md`.
 
 | Stable ID | Verdict | Reason |
 | --- | --- | --- |
 | `NFR-014` | edit | "Widen from two tools to a tiered download so the player has everything they need when they hop from one screen to the next" — tier 1 landing screen, tier 2 code for every other tool, tier 3 shared card list; Brotli, caching headers, list trimming out of scope |
+| `Q-014` | accept | "Q-014 yes, Life Tracker landings download it too." — tier 3 (the shared card list, about 1.96 MB) runs on a Life Tracker landing; Diffs 1-2 stand as written |
 
-The finalized NFR-014 text is Diffs 1-3 above, already rewritten to the tiered download. Diff 4 and the cost lines in Diff 1 were added at define after the re-grade (QUALITY-CHECK.md findings 1 and 3); Diff 4's `integrations-and-data.md` hunk was added at the second define pass, after the second re-grade found it missing. Diffs 1-2 are written for a "yes" on Q-014.
+The finalized NFR-014 text is Diffs 1-3 above, already rewritten to the tiered download. Diff 4 and the cost lines in Diff 1 were added at define after the re-grade (QUALITY-CHECK.md findings 1 and 3); Diff 4's `integrations-and-data.md` hunk was added at the second define pass, after the second re-grade found it missing. Diffs 1-2 carry the accepted "yes" on Q-014 and need no change.
 
 ## Blocker questions
 
