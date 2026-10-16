@@ -5,7 +5,7 @@
     {
       "id": "B1",
       "statement": "npm run lint prints no problems (0 errors, 0 warnings)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run lint|eslint"
       }
@@ -13,7 +13,7 @@
     {
       "id": "B2",
       "statement": "Each of the nine fast-refresh files is split as listed and the new files exist",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/lib/feedback/feedbackSeam.ts",
@@ -32,7 +32,7 @@
     {
       "id": "B3",
       "statement": "Each moved context has exactly one createContext call; provider and hook share it",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep.*createContext"
       }
@@ -40,7 +40,7 @@
     {
       "id": "B4",
       "statement": "ConversationThread keeps dependency list [messages.length] and calls scrollToLatestRef.current at all three former call sites",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/ConversationThread.tsx"
@@ -50,7 +50,7 @@
     {
       "id": "B5",
       "statement": "The three unused eslint-disable comments are gone",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/portal/ThemeSection.tsx",
@@ -62,7 +62,7 @@
     {
       "id": "B6",
       "statement": "npm run typecheck passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run typecheck"
       }
@@ -70,7 +70,7 @@
     {
       "id": "B7",
       "statement": "ConversationThread and the provider-plus-hook tests pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(vitest|npm run test).*(ConversationThread|seedContext|FeaturePortalMenu|FeedbackContextProvider|SheetShell|GameSetupPanel)"
       }
@@ -78,7 +78,7 @@
     {
       "id": "B8",
       "statement": "npm run quality:check passes locally",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
@@ -86,7 +86,7 @@
     {
       "id": "B9",
       "statement": "No test assertion is edited: test-file diff shows only import-path changes",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -94,7 +94,7 @@
     {
       "id": "B10",
       "statement": "eslint.config.mjs is unchanged",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git diff.*eslint\\.config\\.mjs"
       }

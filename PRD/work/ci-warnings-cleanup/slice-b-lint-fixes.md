@@ -1,6 +1,6 @@
 # Slice B — Lint fixes
 
-## Status: planned
+## Status: done
 
 ## Goal
 
