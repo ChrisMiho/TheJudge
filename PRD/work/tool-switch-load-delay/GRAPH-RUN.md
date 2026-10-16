@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `owner-action` (gate-qc PASS — spec-forming half stopped)
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/tool-switch-load-delay/`
+- Current node: `gate-review`
+- Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
 
@@ -115,6 +115,26 @@ Mechanics: change files with the Write and Edit tools. Run git as short separate
 
 Report back: PASS or FAIL, the complete findings list (each with file and line), the report path, the commit sha and push result, and `git status --porcelain`.
 
+### gate-review
+
+graph is controlling
+
+You are the gate-resolution step (`gate-review`), attempt 1, of graph run `graph-20261016-050510` (build half of `tool-switch-load-delay`). Invoke the `graph-gate-review` skill (read `.claude/skills/graph-gate-review/SKILL.md` in the working directory below) and follow it exactly. Spawn no subagents or forks; no sleeping or polling; stay well under 60 tool calls.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory, on branch `thejudge-auto/tool-switch-load-delay-work` (already checked out and pushed; do not create another branch or worktree).
+
+The owner answered `PRD/work/tool-switch-load-delay/GATE-QUESTIONS.md` and merged the docs PR (#313). Its one block, NFR-014, carries verdict `edit` with the owner's reason. Apply that verdict to the proposed diff inside `GATE-QUESTIONS.md` — the finalized NFR-014 text must carry the owner's edit by intent: the tiered background download (tier 1 the landing screen as today; tier 2 the code for every other tool, including both question tools; tier 3 the card list `/data/cardMetadata.json`, downloaded and read once and shared by Quick Question, the In-depth question flow and the Trade Balancer), with everything the reason says still stands and everything it puts out of scope recorded as out of scope. Never edit `PRD/sections/` or code; `build` applies truth later.
+
+Reconcile `DESIGN-BRIEF.md` and the package README's intake pointer to the edit: every passage that contradicts the widened scope (for example two tools only, follow-ups F1 load-once and F3 now folded in, acceptance criteria, measurements targets) is rewritten to match; passages that agree stay. Bound the reconciliation to contradictions. `intake/` (if present) stays verbatim. Include a `### Brief reconciliation` list in your report: each passage changed, before and after in one line each.
+
+Record the verdicts as the skill directs, restore `STATUS.refined` as the only status marker, and update the `PRD/work/STATUS.md` board row to match (a board move is remove-from-old plus add-to-new). Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` section — the driver owns both.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
+
+Report back: outcome (`ok` or `failed`), accept/edit/reject counts, the finalized NFR-014 text summary, the `### Brief reconciliation` list, files changed, the commit sha and push result, and `git status --porcelain` for the worktree.
+
 ## Mid-node relays
 
 Messages sent to a running node (not dispatches; no new attempt), verbatim.
@@ -127,3 +147,4 @@ Messages sent to a running node (not dispatches; no new attempt), verbatim.
 | --- | --- | --- | --- |
 | owner launch request (verbatim in IDEA.md): why is there such a delay when going from the question flow to the life tracker to the trade balancer, can we fix it | answered-once | shape | — |
 | owner mid-run note: the delay is seen on the live server — relayed to define as a measurement target | answered-once | define | — |
+| owner build signal: merged, go ahead (docs PR #313 merged) | answered-once | gate-review | — |
