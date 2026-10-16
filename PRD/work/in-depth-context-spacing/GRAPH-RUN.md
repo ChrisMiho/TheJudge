@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/in-depth-context-spacing`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-in-depth-context-spacing`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-020939/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/in-depth-context-spacing/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 14` | branch `thejudge-auto/in-depth-context-spacing` pushed (`git ls-remote` → `12b0e6bc`) from `.worktrees/kickoff-in-depth-context-spacing`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261016-020939` (counter includes 6 driver scouting calls made before run-state moved off `preflight/1`) | 2026-10-15 |
 | 2 | shape | sonnet | ok | `0 → 19` | `PRD/work/in-depth-context-spacing/` (IDEA.md, README.md, STATUS.ideation, intake/owner-request.md) committed `86d02fd9`; board row in `PRD/work/STATUS.md`; staged intake copy deleted | 2026-10-15 |
+| 3 | define | opus | ok | `0 → 85` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (one slot: REQ-023 amendment), `evidence/measurements.md`, `STATUS.refined`, board row moved — commit `f2ab5714`; live screenshots under `PRD/work/in-depth-context-spacing/.playwright-mcp/` (git-ignored); dev server stopped (listeners on :5173/:5273 belong to older worktrees) | 2026-10-15 |
 
 ## Open gate
 
@@ -84,6 +85,20 @@ Then shape the change into `DESIGN-BRIEF.md`: what the player sees today and aft
 Set the package status marker the skill prescribes (`STATUS.refined` when the brief is complete). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: outcome (ok/failed), what the bubble looks like today and in the one-row preview at each width, how long phrases behave on a phone, files written, the stable IDs proposed (with one plain sentence each) or none, and the commit hash.
+
+### gate-qc
+
+graph is controlling. You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261016-020939`. Tool-call cap 60 — verify directly, spawn no subagents or forks, no sleeping or polling, no dev server or browser, stay well under the cap.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-in-depth-context-spacing
+
+Work only inside that directory (the run's kickoff worktree, on branch `thejudge-auto/in-depth-context-spacing`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/work/in-depth-context-spacing/DESIGN-BRIEF.md`. Grade it against PRD alignment and agent-readiness as the skill defines. Also read `GATE-QUESTIONS.md` (one slot, an amendment to REQ-023 putting the waiting bubble's seal, phrase and clock on one row) and `evidence/measurements.md`; check that the proposed diff's starting lines match `PRD/sections/functional-requirements.md` and `PRD/sections/in-depth/README.md` as they stand, that the brief's scope matches the owner's request in `intake/owner-request.md` (one row for icon, phrase and timer; nothing else), and that each acceptance criterion is testable. The proposal is not yet answered by the owner; grade the brief as a proposal pending that verdict, not as applied truth.
+
+Write the report the skill prescribes into the package. On FAIL, set the marker the skill prescribes and list every finding with its file and line. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md`. Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back: verdict (PASS or FAIL), the findings in full, files written, and the commit hash.
 
 ## Instruction ledger
 
