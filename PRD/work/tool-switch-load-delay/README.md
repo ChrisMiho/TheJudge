@@ -28,6 +28,6 @@ Likely sources, in order of suspicion: (1) Trade Balancer's 4.9 MB card list dow
 
 ## Preparation gate
 
-- Quality-check: PASS
+- Quality-check: FAIL
 - Checked artifact: `PRD/work/tool-switch-load-delay/DESIGN-BRIEF.md`
-- Findings: none blocking (four advisory notes in `QUALITY-CHECK.md`: the fix removes 0.2–0.7 s per tool, while the only multi-second wait measured — the Trade Balancer card list on Slow 4G, 9.7 s — is follow-up F1, out of scope; NFR-014 dependencies hunk should append REQ-064 after REQ-066; the acceptance script `.playwright-mcp/measure.js` is gitignored and the 50 ms comparison is noise-sensitive; the no-fallback-frame claim is a build-time check covered by criteria 1, 2 and 6)
+- Findings: (1) a Life Tracker landing pays ~1.96 MB gzipped for the tier-3 card list, but DESIGN-BRIEF.md:143-145, A6 (:166-169), A8 (:173-175) and the GATE-QUESTIONS.md:47 cost line say no player downloads more than today; (2) the shared card-list design (DESIGN-BRIEF.md:139-145) does not name how Quick Question, In-depth and the Trade Balancer each keep their own loading flag, failure copy, index build and unmount behaviour unchanged, with no per-screen acceptance line; (3) `PRD/sections/trade-balancer/README.md` :60-62, :186-189 and :196-199 still describe the card list downloading when the balancer opens, with no diff or stays-true disposition; (4) acceptance criteria pin neither tier order (tier 2 code before the tier 3 card list) nor the Life Tracker landing case, and the 41/34 ms figures cover two tools only. Advisory: the gitignored `measure.js` reference and the 50 ms noise; the NFR-014 Dependencies hunk should append REQ-064 and REQ-067 after REQ-066. Full report: `QUALITY-CHECK.md`.

@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 76` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (one block, `NFR-014` amendment), `evidence/measurements.md` (live mtgjudge.gg + local preview, throttled and unthrottled), `STATUS.refined`, board row; committed `cf3c434c`, pushed `ed3e96b8..cf3c434c`; worktree `git status --porcelain` empty; port 4917 free | 2026-10-15 |
 | 4 | gate-qc | sonnet | ok | `0 → 16` | PASS — `QUALITY-CHECK.md` committed `80112ad7` (on origin); README `## Preparation gate` recorded by the driver | 2026-10-15 |
 | 5 | gate-review | sonnet | ok | `0 → 25` | build half run `graph-20261016-050510`: kickoff worktree removed clean (`git worktree remove`); claim commit `8abc7f2d` on `thejudge-auto/tool-switch-load-delay-work` cut from `origin/main` `a6b127da` (docs PR #313 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `063915ff` (= origin tip): 0 accept / 1 edit / 0 reject (NFR-014 widened to three tiers); `### Brief reconciliation` 15 passages in `DESIGN-BRIEF.md`; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; worktree and launch-checkout porcelain empty | 2026-10-15 |
+| 4 | gate-qc (build half, attempt 1) | sonnet | failed | `0 → 20` | FAIL — 4 blocking, 2 advisory; `QUALITY-CHECK.md` overwritten, commit `e256532b` (= origin tip); `STATUS.refining`; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 1 of 3) | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -160,6 +161,26 @@ Overwrite the package's `QUALITY-CHECK.md` with the new report. On FAIL set the 
 Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
 
 Report back: PASS or FAIL, the complete findings list (each with file and line), the report path, the commit sha and push result, and `git status --porcelain`.
+
+### define (build half, attempt 1)
+
+graph is controlling
+
+You are node 3 (`define`), attempt 1 of the build half, graph run `graph-20261016-050510`, for package `tool-switch-load-delay`. The re-grade after the owner's `edit` verdict FAILED (FAIL 1 of 3). Invoke the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory below) in its controlled mode and revise the package to resolve the findings in `PRD/work/tool-switch-load-delay/QUALITY-CHECK.md`. Spawn no subagents or forks; no sleeping or polling; tool-call cap 150, stay well under it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory, on branch `thejudge-auto/tool-switch-load-delay-work`.
+
+Read `QUALITY-CHECK.md` in full first. It lists four blocking findings: (1) a player landing on the Life Tracker would download the card list under tier 3 though they do not today, while the brief and the NFR-014 cost line say no player downloads more than today; (2) the shared card-list design does not say how Quick Question, In-depth and the Trade Balancer each keep their current loading, failure and unmount behaviour; (3) `PRD/sections/trade-balancer/README.md` still describes the card list downloading when the balancer opens, with no diff or disposition; (4) the acceptance criteria pin neither tier order nor the Life Tracker landing case. Two advisory notes follow.
+
+The owner's verdict on NFR-014 is settled and recorded in `GATE-QUESTIONS.md` (`- Verdict: edit` and its `- Reason:`); do not reopen it or change its verdict line. Where a finding is a factual correction, a missing design detail, or a consequence that follows directly from the owner's recorded reason, fix it in `DESIGN-BRIEF.md`, the finalized diffs in `GATE-QUESTIONS.md`, and `evidence/` as the skill directs. Where a finding raises a product choice the owner's recorded verdict does not settle, decide it on its own evidence under the assumption ladder in `PRD/instructions/preparation-contract.md`, at the moment it arises; if the genuine-blocker test holds, write it to `GATE-QUESTIONS.md` under `## Blocker questions` in the plain-language form with blank verdict slots, and say so in your report — do not answer it yourself. Any product-truth change beyond what the owner's verdict already covers gets its own `## <STABLE-ID>` block with the three plain-language lines, the complete diff, and blank verdict slots; spec text that stays true gets a one-line disposition in the brief instead. You may measure in the browser if a number the brief states is unmeasured (use the local production build; save captures under `PRD/work/tool-switch-load-delay/.playwright-mcp/`; stop any server you start with a plain `kill <pid>` and call `browser_close` when done).
+
+Never edit `PRD/sections/` or code. Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` section — the driver owns both. Set the package status marker per the skill (one marker only) and keep the `PRD/work/STATUS.md` board row in step (a board move is remove-from-old plus add-to-new).
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
+
+Report back: outcome (`ok` or `failed`), how each of the six findings was resolved (file and line), whether any new `GATE-QUESTIONS.md` block or blocker question with blank slots was written (and its ID), any measurements taken, files changed, the commit sha and push result, the status marker, and `git status --porcelain`.
 
 ## Mid-node relays
 
