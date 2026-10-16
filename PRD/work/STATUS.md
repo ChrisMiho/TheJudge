@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); mapped into slices A-C (shared card list, background download, live timing check) |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); NFR-014 verdict `edit` and Q-014 verdict `accept` (a Life Tracker landing also downloads the 1.96 MB card list) applied; awaiting re-grade |
 
 ## refining
 

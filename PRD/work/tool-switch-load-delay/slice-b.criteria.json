@@ -1,0 +1,16 @@
+{
+  "slug": "tool-switch-load-delay",
+  "slice": "B",
+  "criteria": [
+    {"id": "B1", "statement": "The background download calls the loader of every other destination and not the landing one (unit test)", "value": false, "evidence": {"command": "(vitest|npm.*(--workspace apps/frontend )?(run )?test)"}},
+    {"id": "B2", "statement": "Every tier-2 call is made before the tier-3 card-list request (unit test)", "value": false, "evidence": {"command": "(vitest|npm.*(--workspace apps/frontend )?(run )?test)"}},
+    {"id": "B3", "statement": "It runs once per page load and never mounts a destination (unit test)", "value": false, "evidence": {"command": "(vitest|npm.*(--workspace apps/frontend )?(run )?test)"}},
+    {"id": "B4", "statement": "A rejected preload clears the cached promise and a later tap loads and shows the tool (unit test on lazyDestination)", "value": false, "evidence": {"command": "(vitest|npm.*(--workspace apps/frontend )?(run )?test)"}},
+    {"id": "B5", "statement": "A destination whose code has already arrived renders without the Loading fallback", "value": false, "evidence": {"command": "(vitest|npm.*(--workspace apps/frontend )?(run )?test)"}},
+    {"id": "B6", "statement": "A tap before the download finishes shows Loading only until the in-flight download lands, with exactly one request for that chunk", "value": false, "evidence": {"command": "(vitest|npm.*(--workspace apps/frontend )?(run )?test)"}},
+    {"id": "B7", "statement": "No GET /api/health is sent before the Trade Balancer opens", "value": false, "evidence": {"command": "(vitest|npm.*(--workspace apps/frontend )?(run )?test)"}},
+    {"id": "B8", "statement": "The production-never-preloads comments in destinationRegistry.tsx are updated", "value": false, "evidence": {"paths": ["apps/frontend/src/components/portal/destinationRegistry.tsx"]}},
+    {"id": "B9", "statement": "Diffs 1, 2 and 3 are applied to PRD/sections as finalized", "value": false, "evidence": {"paths": ["PRD/sections/non-functional-requirements.md", "PRD/sections/shared-chrome/README.md", "PRD/sections/screen-layout.md"]}},
+    {"id": "B10", "statement": "Frontend tests and npm run quality:check pass with no coverage threshold lowered (NFR-012)", "value": false, "evidence": {"command": "npm run quality:check"}}
+  ]
+}

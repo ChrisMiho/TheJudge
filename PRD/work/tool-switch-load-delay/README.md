@@ -1,10 +1,20 @@
 ---
-status: refined
+status: active
 ---
 
 # tool-switch-load-delay
 
 Players see a few seconds of loading when first opening the Life Tracker, then the Trade Balancer, from the question flow. See `IDEA.md`.
+
+## Slices
+
+Plan: `GAMEPLAN.md`. Each slice has a `slice-<letter>.criteria.json`.
+
+| Slice | Doc | Depends on | Diffs applied |
+| --- | --- | --- | --- |
+| A | `slice-a-shared-card-list.md` | none | 4 |
+| B | `slice-b-background-download.md` | A | 1, 2, 3 |
+| C | `slice-c-live-verification.md` | A, B | promotion check; ship gates |
 
 ## Evidence (code read only, nothing run or measured)
 
