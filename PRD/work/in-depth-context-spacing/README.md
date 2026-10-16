@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # in-depth-context-spacing
 

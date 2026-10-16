@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| in-depth-context-spacing | waiting bubble: seal, phrase and clock on one row |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| in-depth-context-spacing | waiting bubble: seal, phrase and clock on one row |
 
 ## owner-action
 
