@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| tool-switch-load-delay | Few-second load when first opening Life Tracker and Trade Balancer from the question flow |
 
 ## owner-action
 
