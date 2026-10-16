@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ci-warnings-cleanup | Brief written: actions to Node 24 majors, runners pinned to ubuntu-24.04, all 19 lint warnings cleared; no product-truth change |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-warnings-cleanup | Quality-check PASS; no product-truth change. Review the docs PR, then merge to build (actions to Node 24 majors, runners pinned to ubuntu-24.04, all 19 lint warnings cleared) |
 
 ## deferred
 

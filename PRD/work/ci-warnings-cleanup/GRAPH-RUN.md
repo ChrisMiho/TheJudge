@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/ci-warnings-cleanup`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ci-warnings-cleanup`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-061526/` (one file, `ci-warnings-capture.md`, copied verbatim to `intake/`)
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/ci-warnings-cleanup/`
+- Current node: `owner-action` (spec-forming half complete; gate-qc PASS)
+- Next action: owner reviews the docs PR and merges it; then `/graph-implement PRD/work/ci-warnings-cleanup/` (the background build loop picks it up from `main`)
 
 ## Node ledger
 
@@ -16,10 +16,14 @@
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/ci-warnings-cleanup` pushed (`git ls-remote` → `f0241ec4`) from `.worktrees/kickoff-ci-warnings-cleanup`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261016-061526` | 2026-10-16 |
 | 2 | shape | sonnet | ok | `0 → 12` | `PRD/work/ci-warnings-cleanup/` (IDEA.md, README.md, STATUS.ideation, intake/ci-warnings-capture.md) and board row committed `c122658a`, pushed; local `npm run lint` = 0 errors, 19 warnings | 2026-10-16 |
 | 3 | define | opus | ok | `0 → 56` | `DESIGN-BRIEF.md`, `STATUS.refined`, board row committed `3c484ba8`, pushed; no `GATE-QUESTIONS.md` (no product-truth change) → no gate; driver re-checked chosen majors via `gh api repos/<action>/contents/action.yml?ref=<tag>` → all `node24` | 2026-10-16 |
+| 4 | gate-qc | sonnet | ok | `0 → 11` | Quality-check PASS, findings none; recorded in README `## Preparation gate`; run stops here — docs PR opened, park at `owner-action` (`STATUS.owner-action`, board row moved) | 2026-10-16 |
 
 ## Open gate
 
-- None
+- Gate: `owner-action` after gate-qc PASS. Refinement proposed no product-truth change, so there is no `GATE-QUESTIONS.md`.
+- Owner action: review the docs PR, then merge to build.
+- Evidence: `DESIGN-BRIEF.md`; README `## Preparation gate` (PASS, findings none).
+- Resume: merging the docs PR into `main` is the build signal; `/graph-implement PRD/work/ci-warnings-cleanup/` builds it.
 
 ## Dispatch prompts
 
