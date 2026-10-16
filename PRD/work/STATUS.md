@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); slices A-C done, live timing check recorded in slice-c.evidence.md |
 
 ## active
 
