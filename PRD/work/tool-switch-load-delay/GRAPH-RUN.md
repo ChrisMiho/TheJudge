@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -25,6 +25,7 @@
 | 5 | gate-review (build half, attempt 2) | sonnet | ok | `0 → 38` | driver verdict commit `9a969584` (Q-014 accept); `graph-gate-review` commit `f3d1d4c1` (= origin tip): Q-014 accept applied, diffs unchanged (already written for yes), `### Brief reconciliation` 13 passages (pending/no-answer wording removed), `Q-014` row in `## Gate verdicts`; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts | 2026-10-15 |
 | 4 | gate-qc (build half, attempt 3) | sonnet | ok | `0 → 15` | PASS, no findings — `QUALITY-CHECK.md` commit `c96c77c4` (= origin tip); all 13 diff blocks match current `PRD/sections/` once each; tier order holds on every landing; README `## Preparation gate` PASS recorded by the driver | 2026-10-15 |
 | 5 | plan | sonnet | ok | `0 → 26` | commit `4bd23212` (= origin tip): `GAMEPLAN.md`, `slice-a-shared-card-list.md` (Diff 4), `slice-b-background-download.md` (Diffs 1-3), `slice-c-live-verification.md` (promotion check, ship gates); `slice-a.criteria.json` 10, `slice-b.criteria.json` 10, `slice-c.criteria.json` 9 (7 manual), every `value` false; `STATUS.active` only marker; board row under active; worktree porcelain empty (published for `build`); launch-checkout porcelain empty | 2026-10-15 |
+| 6 | build | sonnet | ok | `0 → 145` | PR https://github.com/ChrisMiho/TheJudge/pull/314 (open, base `main`); commits `8cff69ca` (A), `547d85ee` (B), `4b721b75` (C) = origin tip; 29/29 criteria `value: true` (A 10, B 10, C 9); `.graph-evidence.jsonl` holds 0 entries for this run id (known build-half gap: criteria are self-reported, review is the gate); reported `npm --workspace apps/frontend run test` 152 files / 1639 tests pass, `npm run typecheck` 0, `npm run quality:check` 0, build 0; C1-C7 dated observations in `slice-c.evidence.md`; Diffs 1-4 applied to `PRD/sections/`; `STATUS.ship-ready`; return side: launch-checkout porcelain empty before and after (identical), `classifyBuildWrites` over 41 reported paths → `ok`, 0 outside `.worktrees/implement-tool-switch-load-delay/`; worktree porcelain empty | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -299,6 +300,30 @@ Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` / `## Autonomous 
 Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`, never force-push, never `git stash`, never chain a heredoc or `sed -i` into a longer command. If a command is denied, do not retry it verbatim; report it.
 
 Report back: outcome (`ok`, `failed`, or `blocked`), per slice what changed (files, `PRD/sections/` edits applied, tests added), each criterion id with its final value and evidence, the verification command outputs (pass/fail counts), the PR URL, every commit sha and the final push result, the complete list of every file path you wrote (absolute or worktree-relative), the browser cleanup evidence, the status marker, and `git status --porcelain` for the worktree.
+
+### review
+
+graph is controlling
+
+You are node 7 (`review`), attempt 1, of graph run `graph-20261016-050510`, package `tool-switch-load-delay`: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit, and you must not change any file by any other means (no Bash redirection, no git commit, no PR comments). Read only. Tool-call cap 120; spawn no subagents; stay well under the cap.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write.
+
+Material: the diff `git diff e44216e7 4b721b75` in that worktree (the build node's three slice commits on `thejudge-auto/tool-switch-load-delay-work`; PR https://github.com/ChrisMiho/TheJudge/pull/314), the slice docs `PRD/work/tool-switch-load-delay/slice-a-shared-card-list.md`, `slice-b-background-download.md`, `slice-c-live-verification.md`, their `slice-*.criteria.json`, `slice-c.evidence.md`, and the package artifacts `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (finalized: NFR-014 `edit`, Q-014 `accept`). You may run the frontend tests read-only to confirm them.
+
+Rubric: each slice's own acceptance criteria, quoted here (inner quotes shown as backticks).
+
+Slice A: (1) the shared load fetches once, is reused by concurrent and later callers, and hands back the finished list synchronously (unit test); (2) after a failed download every waiting caller is rejected and the next call fetches again (unit test); (3) the test-only reset runs after each test in `apps/frontend/src/test/setup.ts`; (4) Quick Question: card search works once the list arrives; a failed list shows `Card search is unavailable. You can still ask without a card.` and asking still works; (5) In-Depth: zone-step card search works; a failed list shows no message and logs the error; (6) Trade Balancer: `Loading card list…` while waiting, search disabled until arrival, search finds cards after, failed list shows existing error copy with the reason; (7) a screen that unmounts while the list downloads does not cancel it for another screen still waiting; (8) a screen opened after the list has arrived renders with the list in hand and its loading flag false on first render; (9) Diff 4 is applied to the five `PRD/sections/` files as finalized; (10) frontend tests and `npm run quality:check` pass with no coverage threshold lowered (NFR-012).
+
+Slice B: (1) the background download calls the loader of every other destination and not the landing one; (2) every tier-2 call is made before the tier-3 card-list request; (3) it runs once per page load and never mounts a destination; (4) a rejected preload clears the cached promise and a later tap loads and shows the tool; (5) a destination whose code has already arrived renders without the `Loading…` fallback; (6) a tap before the download finishes shows `Loading…` only until the in-flight download lands, with exactly one request for that chunk; (7) no `GET /api/health` is sent before the Trade Balancer opens; (8) the production-never-preloads comments in `destinationRegistry.tsx` are updated; (9) Diffs 1, 2 and 3 are applied to `PRD/sections/` as finalized; (10) frontend tests and `npm run quality:check` pass with no coverage threshold lowered.
+
+Slice C: (1) Quick Question landing, wait 3 s, tap Life Tracker: no `Loading…` frame, tool on screen within 100 ms, at Fast 4G + CPU 4x and Slow 4G + CPU 4x; (2) continuing: Trade Balancer, In-Depth, Quick Question each with no `Loading…` frame within 100 ms; the Trade Balancer shows no `Loading card list…` frame; (3) tier order by Resource Timing on Quick Question and Life Tracker landings; (4) Life Tracker landing on Fast 4G + CPU 4x, after the card list responseEnd: the three card-search tools each within 100 ms, no `Loading…` frame, card list requested exactly once, no `Loading card list…` frame; (5) first screen not slower than the pre-change build over three runs, no consistent slowdown over 50 ms; (6) no `GET /api/health` before the balancer opens, card list requested exactly once per page load on every landing, no tool mounted by the download; (7) browser closed, owned servers stopped, ports released, captures under the package `.playwright-mcp/`; (8) Diffs 1-4 present in `PRD/sections/`; (9) the slice doc's ship gates met.
+
+Grade each criterion as met, not met, or not evidenced, citing file and line or evidence-file line. Flag only gaps affecting correctness or these stated requirements. Severity rule: a preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never sends the work back to `build`; rate it Minor or omit it. Critical means a stated requirement is broken in a way that harms players or product truth; Important means a stated criterion is not met or not evidenced. Where the evidence file states a profile-specific caveat, judge it against the criterion's own wording, not against the builder's reading of it.
+
+Report back: verdict `APPROVE` or `CHANGES REQUESTED`, then each finding with severity (Critical, Important, Minor), the criterion it concerns, file and line, and the concrete fix; then a per-criterion table (A1-A10, B1-B10, C1-C9) of met / not met / not evidenced.
 
 ## Mid-node relays
 
