@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "The workflow contains no @v4 action reference",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep.*@v4",
         "paths": [
@@ -16,7 +16,7 @@
     {
       "id": "A2",
       "statement": "The pins are exactly checkout@v7, setup-node@v7, upload-artifact@v7, download-artifact@v8, configure-aws-credentials@v6",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep.*uses:",
         "paths": [
@@ -27,7 +27,7 @@
     {
       "id": "A3",
       "statement": "All six runs-on lines read ubuntu-24.04; no ubuntu-latest remains",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep.*runs-on",
         "paths": [
@@ -38,7 +38,7 @@
     {
       "id": "A4",
       "statement": "No other workflow line changes: diff touches only uses and runs-on lines",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git diff.*quality-check\\.yml"
       }
@@ -46,7 +46,7 @@
     {
       "id": "A5",
       "statement": "The workflow-reading tests pass with no edit",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(ci-workflow-parity|deploymentPipeline)"
       }

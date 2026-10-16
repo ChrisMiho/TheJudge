@@ -1,6 +1,6 @@
 # Slice A — Workflow pins and runner labels
 
-## Status: planned
+## Status: in-progress
 
 ## Goal
 
