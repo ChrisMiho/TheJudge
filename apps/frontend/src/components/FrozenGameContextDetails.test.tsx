@@ -1,10 +1,8 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { GameContext } from "../types";
-import {
-  FrozenGameContextDetails,
-  getFrozenGameContextTriggerLabel
-} from "./FrozenGameContextDetails";
+import { FrozenGameContextDetails } from "./FrozenGameContextDetails";
+import { getFrozenGameContextTriggerLabel } from "./frozenGameContextTriggerLabel";
 
 afterEach(cleanup);
 
