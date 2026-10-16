@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -24,6 +24,7 @@
 | 3 | define (build half, attempt 2) | opus | ok | `0 → 42` | commit `df85db45` (= origin tip): blocker fixed (Diff 4 hunk for `integrations-and-data.md:165`, intro count corrected), 3 advisories fixed (criteria 3, 4, 6); widened disposition grep over `PRD/sections/` → 96 hits, each dispositioned in `DESIGN-BRIEF.md`; Q-014 unchanged, slots blank at return; `STATUS.refining`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts. Owner then answered Q-014 in session (accept, transcribed by the driver) | 2026-10-15 |
 | 5 | gate-review (build half, attempt 2) | sonnet | ok | `0 → 38` | driver verdict commit `9a969584` (Q-014 accept); `graph-gate-review` commit `f3d1d4c1` (= origin tip): Q-014 accept applied, diffs unchanged (already written for yes), `### Brief reconciliation` 13 passages (pending/no-answer wording removed), `Q-014` row in `## Gate verdicts`; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts | 2026-10-15 |
 | 4 | gate-qc (build half, attempt 3) | sonnet | ok | `0 → 15` | PASS, no findings — `QUALITY-CHECK.md` commit `c96c77c4` (= origin tip); all 13 diff blocks match current `PRD/sections/` once each; tier order holds on every landing; README `## Preparation gate` PASS recorded by the driver | 2026-10-15 |
+| 5 | plan | sonnet | ok | `0 → 26` | commit `4bd23212` (= origin tip): `GAMEPLAN.md`, `slice-a-shared-card-list.md` (Diff 4), `slice-b-background-download.md` (Diffs 1-3), `slice-c-live-verification.md` (promotion check, ship gates); `slice-a.criteria.json` 10, `slice-b.criteria.json` 10, `slice-c.criteria.json` 9 (7 manual), every `value` false; `STATUS.active` only marker; board row under active; worktree porcelain empty (published for `build`); launch-checkout porcelain empty | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -278,6 +279,26 @@ Never edit `PRD/sections/` or code. Do not edit `GRAPH-RUN.md` or the README `##
 Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
 
 Report back: outcome (`ok` or `failed`), the slices (letter, title, one line each, which diffs and acceptance criteria each carries), the criteria file paths with their criterion counts, files written, the commit sha and push result, the status marker, and `git status --porcelain`.
+
+### build
+
+graph is controlling
+
+You are node 6 (`build`), attempt 1, of graph run `graph-20261016-050510`, package `tool-switch-load-delay`. Invoke the `thejudge-implement-all` skill (read `.claude/skills/thejudge-implement-all/SKILL.md` and its `reference.md` in the working directory below) and follow its controlled mode exactly: implement every remaining slice (A, B, C) in order, in place in this worktree. Tool-call cap 4000. Do not spawn subagents or forks (fan-out is off for this run). No sleeping or polling loops; the skill's own READY loop is the exception.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Shared branch: `thejudge-auto/tool-switch-load-delay-work` (already checked out in that worktree and pushed; the recorded autonomous base is `origin/main`). Work only in that worktree on that branch: no second worktree, no contributor branch. Every file you write must lie inside `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay/`; never write to the launch checkout `/Users/chrismiho/Coding/Projects/TheJudge` outside `.worktrees/implement-tool-switch-load-delay/` — a bare `PRD/work/...` path resolved against the launch root is a write to the launch checkout. The worktree may have no `node_modules`; install dependencies inside the worktree with the repo's lockfile install before the first test run.
+
+Apply product truth by intent: each slice applies the `GATE-QUESTIONS.md` diffs its slice doc names (NFR-014 `edit` and Q-014 `accept` are the owner's settled verdicts) to the real `PRD/sections/` files together with that slice's code, re-deriving each edit against current text rather than blind-replaying it. Open the code PR `thejudge-auto/tool-switch-load-delay-work` into `main` after the first push (title and body per the skill and `PRD/instructions/plain-language-standard.md`, opening with what the player experiences: every tool opens without a Loading screen, the card list downloads once in the background and last). Never merge or close it.
+
+Acceptance criteria are earned: run each slice's verification commands as its slice doc names them, and flip a criterion `value` to true only after its evidence exists; for `manual` criteria write the dated observation line the skill's reference requires. For slice C's browser checks, start your own production preview on a port you own, save captures under `PRD/work/tool-switch-load-delay/.playwright-mcp/` inside the worktree, stop servers with a plain `kill <pid>`, call `browser_close`, and record the cleanup evidence. If a criterion cannot be met, or a product decision arises that the finalized package and the assumption ladder in `PRD/instructions/preparation-contract.md` do not settle, stop and report it as a blocker — do not decide it. When every slice is done, set `STATUS.ship-ready` as the only marker and move the board row per the skill.
+
+Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` / `## Autonomous metadata` sections — the driver owns them.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`, never force-push, never `git stash`, never chain a heredoc or `sed -i` into a longer command. If a command is denied, do not retry it verbatim; report it.
+
+Report back: outcome (`ok`, `failed`, or `blocked`), per slice what changed (files, `PRD/sections/` edits applied, tests added), each criterion id with its final value and evidence, the verification command outputs (pass/fail counts), the PR URL, every commit sha and the final push result, the complete list of every file path you wrote (absolute or worktree-relative), the browser cleanup evidence, the status marker, and `git status --porcelain` for the worktree.
 
 ## Mid-node relays
 
