@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-warnings-cleanup | Docs PR #315 merged; build half claimed (`thejudge-auto/ci-warnings-cleanup-work`); no gate questions — re-grading at gate-qc before plan |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ci-warnings-cleanup | Quality-check PASS; no product-truth change. Review the docs PR, then merge to build (actions to Node 24 majors, runners pinned to ubuntu-24.04, all 19 lint warnings cleared) |
 
 ## deferred
 
