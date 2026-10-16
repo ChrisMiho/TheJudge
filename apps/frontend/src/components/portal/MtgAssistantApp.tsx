@@ -36,7 +36,8 @@ import {
   PlayerRosterEditor,
   type RosterPlayer
 } from "../PlayerRosterEditor";
-import { appendZoneCard, buildZoneCardFromMetadata, validateZoneCardAdd } from "../../lib/zoneCards";
+import { loadCardMetadata, readCardMetadata } from "../../lib/cardMetadataStore";
+import { appendZoneCard,buildZoneCardFromMetadata, validateZoneCardAdd } from "../../lib/zoneCards";
 import type {
   CardMetadataItem,
   CombatStep,
@@ -50,7 +51,6 @@ import type {
 
 const RETRY_COOLDOWN_SECONDS = 13;
 const FLOW_LABEL = "In-Depth Question";
-const METADATA_URL = "/data/cardMetadata.json";
 const MIN_PLAYERS = MIN_PLAYER_ROSTER_SIZE;
 const MAX_PLAYERS = MAX_PLAYER_ROSTER_SIZE;
 const DUEL_STARTING_LIFE_TOTAL = "20";
@@ -162,8 +162,8 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     consumeDraftResume,
     historyResumeVersion
   } = useAssistantSeed();
-  const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
-  const [isMetadataLoading, setIsMetadataLoading] = useState(true);
+  const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>(() => readCardMetadata() ?? []);
+  const [isMetadataLoading, setIsMetadataLoading] = useState(() => readCardMetadata() === undefined);
   const [flowStep, setFlowStep] = useState<FlowStepId>("game-context");
   // REQ-209: the furthest station this walk has reached, so the rail can let a player
   // jump back to any visited station without re-earning it; reset on Start Over.
@@ -288,33 +288,23 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
+    // The card list is shared (NFR-014 tier 3); unmounting never cancels the download.
+    let isMounted = true;
 
-    async function loadMetadata() {
-      setIsMetadataLoading(true);
+    loadCardMetadata()
+      .then((cards) => {
+        if (isMounted) setCardMetadata(cards);
+      })
+      .catch((error: unknown) => {
+        if (isMounted) console.error(error);
+      })
+      .finally(() => {
+        if (isMounted) setIsMetadataLoading(false);
+      });
 
-      try {
-        const response = await fetch(METADATA_URL, { signal: controller.signal });
-        if (!response.ok) {
-          throw new Error(`Metadata fetch failed with status ${response.status}`);
-        }
-
-        const payload = (await response.json()) as CardMetadataItem[];
-        setCardMetadata(payload);
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          console.error(error);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsMetadataLoading(false);
-        }
-      }
-    }
-
-    void loadMetadata();
-
-    return () => controller.abort();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const activePlayers = PLAYER_OPTIONS.slice(0, activePlayerCount);

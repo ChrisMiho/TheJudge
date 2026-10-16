@@ -162,7 +162,7 @@ Purpose:
 - local development checks
 - deployment health checks
 - uptime verification
-- the Trade Balancer's fire-and-forget warm-up ping when the screen opens, so the backend's cold start overlaps the card-list download instead of the first card's price fetch (REQ-064). No product data travels in either direction, the response is discarded, and a failure is ignored
+- the Trade Balancer's fire-and-forget warm-up ping when the screen opens, so the backend's cold start overlaps the player's typing — and the card-list download, when the list has not already arrived in the background (NFR-014 tier 3) — instead of the first card's price fetch (REQ-064). No product data travels in either direction, the response is discarded, and a failure is ignored
 
 ## API Contracts
 

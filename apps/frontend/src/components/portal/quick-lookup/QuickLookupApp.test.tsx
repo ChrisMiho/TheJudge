@@ -389,7 +389,7 @@ describe("QuickLookupApp", () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
 
-    await waitFor(() => expect(fetch).toHaveBeenCalledWith("/data/cardMetadata.json", expect.anything()));
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith("/data/cardMetadata.json"));
     await user.click(screen.getByRole("button", { name: "Scan a card" }));
 
     expect(await screen.findByRole("img", { name: "Counterspell" })).toBeInTheDocument();

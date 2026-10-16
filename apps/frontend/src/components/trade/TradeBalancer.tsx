@@ -18,13 +18,12 @@ import {
   type TradeEntry,
   type TradeSideId
 } from "../../lib/trade/pricing";
+import { loadCardMetadata, readCardMetadata } from "../../lib/cardMetadataStore";
 import type { CardMetadataItem } from "../../types";
 import { TradePile, type TradePileTransition } from "./TradePile";
 import { TradeSide } from "./TradeSide";
 import { buildOracleSearchIndex } from "./oracleSearch";
 import { useTradeScan } from "./useTradeScan";
-
-const METADATA_URL = "/data/cardMetadata.json";
 
 const METADATA_LOAD_ERROR_COPY =
   "The card list is unavailable right now. Search and scan won't find cards until it loads.";
@@ -115,8 +114,8 @@ const INITIAL_PILE_ANIM: Record<TradeSideId, PileAnimState> = {
  * (FLOW-025) — the balancer costs nothing at startup beyond `cardMetadata`.
  */
 export function TradeBalancer(): JSX.Element {
-  const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[] | null>(null);
-  const [isMetadataLoading, setIsMetadataLoading] = useState(true);
+  const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[] | null>(() => readCardMetadata() ?? null);
+  const [isMetadataLoading, setIsMetadataLoading] = useState(() => readCardMetadata() === undefined);
   const [metadataLoadError, setMetadataLoadError] = useState<string | null>(null);
   const [entriesBySide, setEntriesBySide] = useState<Record<TradeSideId, TradeEntry[]>>({
     A: [],
@@ -140,29 +139,25 @@ export function TradeBalancer(): JSX.Element {
   entryMetaRef.current = entryMetaById;
 
   useEffect(() => {
-    const controller = new AbortController();
+    // The card list is shared (NFR-014 tier 3); unmounting never cancels the download.
+    let isMounted = true;
 
-    fetch(METADATA_URL, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Card list fetch failed with status ${response.status}`);
-        }
-        return response.json() as Promise<CardMetadataItem[]>;
-      })
+    loadCardMetadata()
       .then((payload) => {
-        setCardMetadata(payload);
+        if (isMounted) setCardMetadata(payload);
       })
       .catch((error: unknown) => {
-        if (controller.signal.aborted) return;
+        if (!isMounted) return;
         const reason = error instanceof Error ? error.message : String(error);
         setMetadataLoadError(`${METADATA_LOAD_ERROR_COPY} (${reason})`);
       })
       .finally(() => {
-        if (controller.signal.aborted) return;
-        setIsMetadataLoading(false);
+        if (isMounted) setIsMetadataLoading(false);
       });
 
-    return () => controller.abort();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // REQ-064: one fire-and-forget warm-up ping alongside the cardMetadata

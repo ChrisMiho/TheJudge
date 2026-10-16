@@ -1,6 +1,6 @@
 # Slice A — Shared card list
 
-## Status: planned
+## Status: done
 
 ## Goal
 
