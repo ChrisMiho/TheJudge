@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-061526/` (one file, `ci-warnings-capture.md`, copied verbatim to `intake/`)
-- Current node: `review` (attempt 1)
+- Current node: `close` (attempt 1)
 - Next action: `/graph-implement PRD/work/ci-warnings-cleanup/` resumes from the `STATUS.*` marker in `.worktrees/implement-ci-warnings-cleanup`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | 5 | plan | sonnet | failed | `0 → 11` | commit `fbe4d000` (= origin tip): `GAMEPLAN.md`, `slice-a-workflow-pins.md` + `slice-a.criteria.json` (7, 2 manual), `slice-b-lint-fixes.md` + `slice-b.criteria.json` (10, 1 manual), `STATUS.active`, board row under active; pins match `DESIGN-BRIEF.md:101-103`. Driver check failed it: `slice-a.criteria.json` A7 is post-merge only (`changes`/`deploy` never run on a PR, `slice-a-workflow-pins.md:24`), so `build` cannot earn it before the owner's merge and could not report `ok` honestly; precedent `PRD/instructions/receipts/follow-ups-keep-their-rules-2026-10-12.md:104` keeps post-merge checks as an owner-run GAMEPLAN reading. Re-dispatched as attempt 2 to move A7 there | 2026-10-16 |
 | 5 | plan (attempt 2) | sonnet | ok | `0 → 7` | commit `d36c13a8` (= origin tip): A7 removed from `slice-a.criteria.json` and the slice A checklist; full check from `DESIGN-BRIEF.md` criterion 5 now an owner-run `## Post-merge reading` at `GAMEPLAN.md:27`, pointer at `slice-a-workflow-pins.md:24`; slice A 6 criteria (1 manual, A6 — PR run annotations, earnable in `build`), slice B 10 (1 manual) unchanged, every `value` false; `STATUS.active` only marker; board row under active; worktree porcelain empty (published for `build`) | 2026-10-16 |
 | 6 | build | sonnet | ok | `0 → 65` | PR https://github.com/ChrisMiho/TheJudge/pull/316 (open, base `main`); 12 commits `6a6cfcf5` (A) … `cfdad454` (A6 evidence, ship-ready) = origin tip; 16/16 criteria `value: true` (A 6, B 10); reported `npm run lint` 0 errors / 0 warnings (was 19), `npm run typecheck` pass, 6 targeted test files / 119 tests pass, `ci-workflow-parity` 5/5 and `deploymentPipeline` 4/4 unedited, `npm run quality:check` 0; A6: PR run `38926130654` six jobs passed, annotations API 0 per job (final docs-only push started run `38926614536`, pending at return); no `PRD/sections/` change; `STATUS.ship-ready`; return side: launch-checkout porcelain empty before and after (identical), `classifyBuildWrites` over 42 paths (`git diff --name-only origin/main HEAD` + `.tmp/pr-body.md`) → `ok`, 0 outside `.worktrees/implement-ci-warnings-cleanup/`; worktree porcelain empty | 2026-10-16 |
+| 7 | review | opus | ok | `0 → 20` | APPROVE: 16/16 met (A1-A6, B1-B10), 0 Critical / 0 Important, 1 Minor (four formerly private helpers now exported from `frozenGameContextTriggerLabel.ts` and `ambientSceneFallback.ts`, required by the split; no change needed); `destinationRegistry` aliases were private constants on `origin/main`, exports unchanged; reviewer re-ran `npm run lint` 0, `npm run typecheck` 0, `ci-workflow-parity` 5/5, 13 frontend test files / 195 tests pass, `npm run quality:check` 0; A6 on head `2cfcfa43`: run `38926832228` (`pull_request`, success), six jobs 0 annotations each; launch and worktree porcelain empty (no reviewer writes) | 2026-10-16 |
 
 ## Gate verdicts
 
@@ -234,6 +235,25 @@ Also check the brief's behavior-preservation bar: the lint fixes change no app b
 Severity rule: Critical or Important only for a gap that breaks a quoted criterion or changes app behavior. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important — rate it Minor. Do not manufacture findings.
 
 Report back: verdict (`APPROVE` or `CHANGES REQUESTED`), each criterion A1-A6 and B1-B10 as met / not met with its evidence, every finding with severity and file:line, the commands you ran and their results, and confirm you wrote nothing (`git status --porcelain` empty).
+
+### close
+
+graph is controlling
+
+You are node 8 (`close`), attempt 1, of graph run `graph-20261016-092729`. Invoke the `thejudge-cleanup` skill (read `.claude/skills/thejudge-cleanup/SKILL.md` and its `reference.md` in the working directory below) and follow its controlled mode, PR-ready path: you run on the code branch before the owner merges. Tool-call cap 120 — spawn no subagents or forks, no sleeping or polling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory (branch `thejudge-auto/ci-warnings-cleanup-work`, code PR https://github.com/ChrisMiho/TheJudge/pull/316 into `main`, open). Never write under /Users/chrismiho/Coding/Projects/TheJudge outside `.worktrees/implement-ci-warnings-cleanup`.
+
+Package: `PRD/work/ci-warnings-cleanup/` at `STATUS.ship-ready`; review approved 16/16 criteria. No `PRD/sections/` truth changed (no `GATE-QUESTIONS.md`); confirm that and promote nothing. Write the receipt under `PRD/instructions/receipts/` per the skill, opening with the plain-language block from `PRD/instructions/plain-language-standard.md`. Fold `GRAPH-RUN.md`'s `## Node ledger` and `## Instruction ledger` verbatim into the receipt's `## Graph run` section, with a `- PR:` line and the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/316`. Name both run ids: spec-forming half `graph-20261016-061526` (docs PR #315), build half `graph-20261016-092729`. Write the `## Intake` section for `intake/ci-warnings-capture.md`. Carry into the receipt, as owner follow-ups, the `GAMEPLAN.md` `## Post-merge reading` (the `main` run's `changes` and `deploy` jobs with zero annotations, and one live answer with the embedder loaded — no lexical-fallback WARN in CloudWatch) and the brief's three offered follow-ups (make lint warnings fail CI, the Ubuntu 26.04 move, Dependabot), plus the reviewer's one Minor note. Remove the board row from `PRD/work/STATUS.md` and delete the package with `git rm -r PRD/work/ci-warnings-cleanup`.
+
+Mechanics: Write and Edit tools for files; git as short separate calls from the working directory (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Do not merge or close the PR. End the commit message with these two lines exactly:
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01MyoXR52i9TAid8cFQd7vZ3
+
+Report back: outcome (`ok` or `failed`), the receipt path, confirmation that no `PRD/sections/` change was needed, the board change, the number of tracked paths removed, the commit sha and push result, the PR state, and `git status --porcelain` for the worktree.
 
 ## Instruction ledger
 
