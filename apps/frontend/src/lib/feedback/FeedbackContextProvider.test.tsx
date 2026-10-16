@@ -1,10 +1,7 @@
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  FeedbackContextProvider,
-  useFeedbackContextReader,
-  useRegisterFeedbackContributor
-} from "./FeedbackContextProvider";
+import { FeedbackContextProvider } from "./FeedbackContextProvider";
+import { useFeedbackContextReader, useRegisterFeedbackContributor } from "./feedbackSeam";
 import type { FeedbackContext, FeedbackContextContributor, FeedbackFlowSnapshot } from "./types";
 
 afterEach(() => {
