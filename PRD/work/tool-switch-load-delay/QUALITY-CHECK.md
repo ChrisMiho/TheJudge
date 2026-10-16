@@ -1,79 +1,75 @@
 # Quality check — tool-switch-load-delay
 
-**Verdict: FAIL.** Package stays at `STATUS.refining`. One blocking finding,
-three advisory. Mode: graph controlling, attempt 2 (re-grade after `define`
-revised the package for the attempt-1 findings). Checked: `DESIGN-BRIEF.md`,
+**Verdict: PASS.** Package stays at `STATUS.refined`. No blocking findings, no
+advisories. Mode: graph controlling, attempt 3 (re-grade after `define`
+attempt 2 and the owner's Q-014 `accept`). Checked: `DESIGN-BRIEF.md`,
 `GATE-QUESTIONS.md`, `evidence/measurements.md` against `PRD/sections/`
-(unchanged since `ed3e96b8`) and `PRD/instructions/{technical-design-rules,plain-language-standard}.md`.
+(no change since `ed3e96b8`; `git diff --stat ed3e96b8 HEAD -- PRD/sections`
+is empty) and `PRD/instructions/{technical-design-rules,plain-language-standard}.md`.
 
-## Attempt-1 findings
+## Attempt-2 findings
 
 | # | Finding | Status |
 | --- | --- | --- |
-| 1 | Life Tracker landing pays the 1.96 MB list; package said nobody does | Resolved. Brief intro, tier paragraph, A6, A8, A10 and Diff 1's cost line (`GATE-QUESTIONS.md:54`) all state about 1.96 MB for a Life Tracker landing only, backed by the new live measurement (`measurements.md:119-151`). It is asked as Q-014. |
-| 2 | No contract for how each screen consumes the shared list | Resolved. `DESIGN-BRIEF.md:158-196` (design item 7) names what is handed over (the parsed array plus a synchronous read), what each screen keeps (state, flag, copy, index), seeding to avoid a loading flash, unmount guard instead of abort, failure clearing, and a test reset. Per-screen behaviour is criterion 9 (`:325-336`). |
-| 3 | Stale Trade Balancer / REQ-064 wording with no diff | Partly resolved. Diff 4 applies cleanly to six places (see below), but one spot was missed. See finding 1 now. |
-| 4 | Criteria did not pin tier order or the Life Tracker landing | Resolved. Criterion 3 (tier order) and 4 (Life Tracker landing) added; the 41/34 ms figures are labelled the two-tool approximation (`DESIGN-BRIEF.md:22-24`, `measurements.md:147-151`). |
-| 5 | Gitignored `measure.js`; noisy 50 ms threshold | Resolved. Script described as unshipped example (`:287-289`); criterion 5 is a trend over three runs. |
-| 6 | Dependencies hunk lacked trailing context | Resolved. Hunk now ends with ` - Notes:` and appends after `REQ-066` (`GATE-QUESTIONS.md:67-78`). |
+| 1 (blocker) | `integrations-and-data.md:165` missing from Diff 4, intro count wrong, grep missed the hyphenated spelling | Resolved. The hunk is in Diff 4 (`GATE-QUESTIONS.md:192-198`); the intro says seven hunks across five files (`:121`), which matches the 3 + 1 + 1 + 1 + 1 hunks present; the grep is widened (`DESIGN-BRIEF.md:251`) and returns 96 hits; the per-file counts in the brief (`:283-288`) sum to 96; each hit has a disposition row (`:262-281`) and the `:165` row points to Diff 4. |
+| 2 | Criterion 6 lacked the Q-014 clause | Resolved. `DESIGN-BRIEF.md:345-349` now says a Life Tracker landing requests the list too, exactly once. |
+| 3 | Criterion 4 fixed 3 s wait was thin | Resolved. `:334-338` waits until the card-list request has a `responseEnd`, not a fixed delay. |
+| 4 | Criterion 3 had no "landing rendered" marker | Resolved. `:327-333` defines the marker per landing (the "Ask a Question" text; the "-player life table" element) and requires every tier-2 `startTime` later than it. |
 
-## What passed
+## Checks run
 
-- Diff 4 old text matches current `PRD/sections/` exactly for
-  `trade-balancer/README.md:59-64`, `:185-189`, `:196-198`,
-  `functional-requirements.md:1512` (REQ-064), `user-flows.md:199` and
-  `system-map.md:564` (the full old line equals the file's line). The new text
-  keeps one ping, on open, no product data, never blocking, so the ping's
-  behaviour is unchanged. Amend in place; no new stable ID.
-- Diffs 1-3 old text still matches (`non-functional-requirements.md:239`,
-  `:245`, `:246`, Dependencies; `shared-chrome/README.md:91-100`;
-  `screen-layout.md:73`).
-- Design item 7 is implementable and measurable: the contract is explicit
-  (array only, sync read, per-screen flag/copy/index, mounted guard, failure
-  clears and retries on next caller, test reset in `setup.ts`).
-- Criteria 3, 4, 5 and 9 are measurable: 3 and 4 use Resource Timing and the
-  rAF tap; 9 is component-level per screen with exact copy.
-- Q-014 meets the plain-language standard: opens with the ask, inlines the
-  substance of the NFR-014 answer, product terms first, recommendation given.
-  Both answers are fully specified: "yes" is the diffs as written; "no" lists
-  the Diff 1 tier-3 sentence, the Diff 1 cost clause, the Diff 2 landing
-  clause, and brief design item 2 / criterion 4 (`DESIGN-BRIEF.md:136-137`,
-  `:310-311`). Blank verdict slots are expected and not a finding.
+- Every Diff 1-4 hunk (13 blocks) was extracted and its old and context text
+  tested as one exact string against the current file in `PRD/sections/`:
+  all 13 match, each exactly once (`non-functional-requirements.md` x4,
+  `shared-chrome/README.md`, `screen-layout.md`, `trade-balancer/README.md` x3,
+  `functional-requirements.md`, `user-flows.md`, `system-map.md`,
+  `integrations-and-data.md`).
+- The disposition grep was re-run: 96 hits, same as the brief claims.
+- Diff 4 keeps the ping's behaviour (one request on open, no product data,
+  never blocking); only the "overlaps the download" wording changes. Amend in
+  place, no new stable ID.
 
-## Blocking finding
+## Agreement with the two owner verdicts
 
-1. The disposition table claims full coverage of the ping-overlap wording but
-   misses a seventh place. `PRD/sections/integrations-and-data.md:165` says the
-   REQ-064 ping makes "the backend's cold start overlap the card-list download
-   instead of the first card's price fetch". With tier 3 the list is usually
-   done before the balancer opens, the same staleness Diff 4 fixes elsewhere.
-   It is in neither Diff 4 nor `DESIGN-BRIEF.md:253-266`. The brief's claimed
-   grep (`"while the card list downloa"`, `DESIGN-BRIEF.md:249-251`) cannot find
-   it because the text is hyphenated. Fix: add an `integrations-and-data.md:165`
-   hunk to Diff 4 (same wording: overlaps the player's typing, and the
-   card-list download when it has not already arrived in the background), add
-   it to the disposition table, and widen the quoted grep to include
-   `card-list`. Also correct Diff 4's intro "Five places"
-   (`GATE-QUESTIONS.md:122`): the package has six hunks across five files, now
-   seven with this one.
+- NFR-014 `edit` (tier 1 landing, tier 2 every other tool's code, tier 3 the
+  shared card list, last): brief intro (`:10-28`), design item 2 (`:123-136`),
+  Diff 1 (`GATE-QUESTIONS.md:52-53`), Diff 2 (`:95-108`) and Diff 3 (`:115`)
+  all describe the same three tiers and the same order. Brief scope, A4, A5 and
+  the touched-files list agree.
+- Q-014 `accept` (a Life Tracker landing downloads the list, about 1.96 MB,
+  still last): stated as settled in the brief header (`:3-8`), A6, A8, A10
+  (`:234-239`), design item 2 (`:136`), Diff 1's tier-3 sentence and cost line,
+  Diff 2 (`:101`, "on every landing including the Life Tracker"), and criteria
+  3, 4 and 6.
+- Tier order on every landing, Life Tracker included: design item 2 makes every
+  tier-2 `preload()` call before the tier-3 request; criterion 3 tests it by
+  Resource Timing on both landings; criterion 10 unit-tests the call order.
+- No passage hedges on a Q-014 answer the owner did not give. The only "no"
+  wording left is the question's own "What happens if you say no" record
+  (`GATE-QUESTIONS.md:245-252`), which is the retained question text above the
+  recorded verdict, not scope.
+- The brief, diffs and criteria agree with each other: the "seven hunks across
+  five files" count, the 36 KB / 107 KB / 1.96 MB figures and the criterion
+  numbers cited from the dispositions are consistent.
 
-## Advisory
+## Other checklist items
 
-2. Criterion 6 (`DESIGN-BRIEF.md:316-319`) says the list is requested exactly
-   once "whichever landing screen"; under a "no" on Q-014 a Life Tracker landing
-   requests it zero times until a card-search screen opens. Criterion 4
-   (`:310-311`) states the "no" case; add the same clause to criterion 6.
-3. Criterion 4 (`:306-311`) asserts no "Loading card list…" frame on the
-   balancer after a fixed 3 s wait on Fast 4G + CPU 4×. The measured list time
-   there is about 2.1 s from request start, so the margin is thin. Have the
-   script wait until the card-list request has finished (or state the wait
-   as "until the list request ends") so the check is deterministic.
-4. Criterion 3 (`:300-305`) needs a defined "landing destination has rendered"
-   marker (for example the first frame with the landing screen's primary
-   control) so the Resource Timing comparison is repeatable.
+- Contradictions with current specs: none; the diffs amend the sentences they
+  contradict (NFR-014, shared-chrome routing, screen-layout row, REQ-064
+  wording). NFR-013, REQ-066/067, REQ-049 and NFR-019 are dispositioned as
+  staying true.
+- `technical-design-rules.md`: no new endpoint, no rules engine, no chunk
+  config change; the card list file itself is unchanged.
+- `screen-layout.md` row: Diff 3 updates the existing fallback row, consistent
+  with DEC-149 / REQ-126; no new screen or overlay.
+- Implementable without hidden assumptions: design item 7 gives the shared-list
+  contract (array only, synchronous read, per-screen state/copy/index, mounted
+  guard, failure clears, test reset). Criteria are measurable.
+- Plain language: the brief and gate text lead with what the player sees; terms
+  are defined at first use.
+- Blank-verdict slots are not applicable now: both verdicts are recorded.
 
 ## Next step
 
-Return finding 1 (advisories 2-4 optional) to `graph-kickoff` refinement; the
-fix is a small addition to `GATE-QUESTIONS.md` Diff 4 and the brief's
-disposition table. Q-014 stays open for the owner.
+Hand to map-out via the driver. Truth living only in `GATE-QUESTIONS.md` is the
+expected shape for a graph run; implementation applies Diffs 1-4 at build.
