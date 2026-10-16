@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-020939/`
-- Current node: `owner-action` (gate-qc PASS — spec-forming half stopped)
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/in-depth-context-spacing/`
+- Current node: `gate-qc` (build-half re-grade)
+- Next action: `/graph-implement PRD/work/in-depth-context-spacing/`
 
 ## Node ledger
 
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 19` | `PRD/work/in-depth-context-spacing/` (IDEA.md, README.md, STATUS.ideation, intake/owner-request.md) committed `86d02fd9`; board row in `PRD/work/STATUS.md`; staged intake copy deleted | 2026-10-15 |
 | 3 | define | opus | ok | `0 → 85` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (one slot: REQ-023 amendment), `evidence/measurements.md`, `STATUS.refined`, board row moved — commit `f2ab5714`; live screenshots under `PRD/work/in-depth-context-spacing/.playwright-mcp/` (git-ignored); dev server stopped (listeners on :5173/:5273 belong to older worktrees) | 2026-10-15 |
 | 4 | gate-qc | sonnet | ok | `0 → 13` | PASS — `QUALITY-CHECK.md` committed `8fe2dc95`; README `## Preparation gate` recorded by the driver | 2026-10-15 |
+| 5 | gate-review | sonnet | ok | `0 → 13` | build half run `graph-20261016-023551`: kickoff worktree removed clean (`git worktree remove`; its git-ignored gate screenshots copied into this worktree's `.playwright-mcp/`); claim commit `86f3de9f` on `thejudge-auto/in-depth-context-spacing-work` cut from `origin/main` `95144615` (docs PR #311 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `b9d5f105`: 1 accept / 0 edit / 0 reject (REQ-023), `### Brief reconciliation` none (grep zero hits); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts docs` empty; worktree and launch-checkout porcelain empty | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -129,6 +130,20 @@ Invoke the `graph-gate-review` skill (Skill tool) on `PRD/work/in-depth-context-
 Change files only with the Write and Edit tools; never chain a heredoc or `sed -i` into a long Bash command. Run git as short separate calls from the working directory: `git add <explicit paths>` (a `git rm` for the old marker), then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
 
 Report back plainly: the verdict counts, the brief reconciliation (or none) with the grep, the restored status, every file changed, the commit hash, and the output of `git status --porcelain` in the working directory after the commit.
+
+### gate-qc (build-half re-grade)
+
+graph is controlling. You are node 4 (`gate-qc`), the build-half re-grade, attempt 1 of graph run `graph-20261016-023551` (build half; spec-forming half `graph-20261016-020939`). Tool-call cap 60 — verify directly, spawn no subagents or forks, no sleeping or polling, no dev server or browser, stay well under the cap.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-in-depth-context-spacing
+
+Work only inside that directory (the build worktree, on branch `thejudge-auto/in-depth-context-spacing-work`, cut from `origin/main` `95144615`). Never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Invoke the `thejudge-quality-check` skill (Skill tool) in graph mode on `PRD/work/in-depth-context-spacing/DESIGN-BRIEF.md`. The owner has answered the gate: `GATE-QUESTIONS.md` carries one slot, REQ-023 (the waiting bubble puts the seal, the phrase and the clock on one row), verdict accept, recorded under `## Gate verdicts` in `GRAPH-RUN.md`; the proposal is now finalized and unchanged. Re-grade the brief as a finalized package: PRD alignment and agent-readiness as the skill defines; the brief and the finalized REQ-023 diff state one rule; every hunk in `GATE-QUESTIONS.md` still anchors on `PRD/sections/functional-requirements.md` and `PRD/sections/in-depth/README.md` as they stand at this worktree's HEAD (the diff was written against `b9c922db`; name the current start lines); the files and line numbers the brief cites in `apps/frontend/` still match; every acceptance criterion is testable, including the one that depended on the owner's verdict; and scope still matches `intake/owner-request.md` (one row for icon, phrase and timer; nothing else).
+
+Rewrite `QUALITY-CHECK.md` as the skill prescribes. On PASS keep `STATUS.refined`; on FAIL set the marker the skill prescribes and list every finding with its file and line. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, or the README (the driver writes the README `## Preparation gate`). Change files only with the Write and Edit tools; run git as short separate calls: `git add <explicit paths>`, then `git commit -m ...`; do not push. If you write any prompt for another agent, copy the Working directory line above unchanged.
+
+Report back: verdict (PASS or FAIL), the findings in full (or none) and any minor notes, the current start lines of each hunk, files written, the commit hash, and `git status --porcelain` in the working directory after the commit.
 
 ## Instruction ledger
 
