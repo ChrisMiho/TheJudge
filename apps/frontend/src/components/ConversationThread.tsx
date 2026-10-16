@@ -134,6 +134,9 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
     };
   }
 
+  const scrollToLatestRef = useRef(scrollToLatest);
+  scrollToLatestRef.current = scrollToLatest;
+
   useLayoutEffect(() => {
     const container = logRef.current;
     if (!container) return;
@@ -149,14 +152,14 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
 
     if (previousMessageCount === 0) {
       setAnimatedFromIndex(0);
-      scrollToLatest(container);
+      scrollToLatestRef.current(container);
       setShowNewResponse(false);
     } else if (messages.length > previousMessageCount) {
       const readerSnapshot = readerSnapshotRef.current ?? readReaderSnapshot(container);
       setAnimatedFromIndex(previousMessageCount);
 
       if (readerSnapshot.nearBottom) {
-        scrollToLatest(container);
+        scrollToLatestRef.current(container);
         setShowNewResponse(false);
       } else {
         container.scrollTop = readerSnapshot.scrollTop;
@@ -165,7 +168,7 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
       }
     } else if (messages.length < previousMessageCount) {
       setAnimatedFromIndex(0);
-      scrollToLatest(container);
+      scrollToLatestRef.current(container);
       setShowNewResponse(false);
     }
 
