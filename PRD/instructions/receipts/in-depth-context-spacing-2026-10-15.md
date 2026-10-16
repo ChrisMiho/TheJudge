@@ -26,7 +26,7 @@ What it means for you: once you merge the pull request, the waiting bubble is sh
 
 Two Minor findings from review, neither blocking:
 
-1. In `.wait-inscription-bubble` in `apps/frontend/src/index.css`, the line `column-gap: 0.75rem` is overridden by the `gap: 0.5rem` shorthand after it. The shipped column gap is 8 px, not the 12 px of the owner-approved preview. Fix: move or drop the shorthand so the 12 px gap applies, or accept 8 px.
+1. Resolved before merge (2026-10-15, owner: 12 px at every width). In `.wait-inscription-bubble` in `apps/frontend/src/index.css`, the line `column-gap: 0.75rem` was overridden by the `gap: 0.5rem` shorthand after it, so the column gap was 8 px, not the 12 px of the owner-approved preview. Now `gap: 0.5rem 0.75rem`, pinned by the REQ-023 one-row test in `AskAiWaitingPanel.test.tsx` (red before the fix). Live on vite :5494 at 375x667 and 1440x900: column gap 12 px, bubble 68 px and 62 px, centres aligned, no horizontal scroll; `npm run quality:check` green.
 2. Two reworded comments run past the wrap width: `apps/frontend/src/index.css` around line 2943 and `apps/frontend/src/components/AskAiWaitingPanel.tsx` line 44.
 
 ## Intake

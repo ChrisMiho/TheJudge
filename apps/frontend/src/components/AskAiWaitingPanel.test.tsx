@@ -139,6 +139,9 @@ describe("AskAiWaitingPanel ink-in inscription (REQ-023)", () => {
     const bubble = rulesFor(".wait-inscription-bubble");
     expect(bubble).toMatch(/grid-template-columns:\s*auto minmax\(0, 1fr\) auto/);
     expect(bubble).toMatch(/align-items:\s*center/);
+    // 12px between seal, line and clock; a separate column-gap would be reset by the shorthand.
+    expect(bubble).toMatch(/(?:^|\n)\s*gap:\s*0\.5rem 0\.75rem;/);
+    expect(bubble).not.toMatch(/column-gap/);
     expect(rulesFor(".wait-inscription-clock")).toMatch(/white-space:\s*nowrap/);
   });
 
