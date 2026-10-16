@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); NFR-014 verdict `edit` applied, awaiting re-grade |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| tool-switch-load-delay | Life Tracker and Trade Balancer open without "Loading…" — answer `GATE-QUESTIONS.md` (NFR-014), then merge the docs PR to build |
 
 ## deferred
 
