@@ -21,7 +21,8 @@
 ## Open gate
 
 - Gate: `owner-action` after gate-qc PASS. Refinement proposed no product-truth change, so there is no `GATE-QUESTIONS.md`.
-- Owner action: review the docs PR, then merge to build.
+- Owner action: review the docs PR https://github.com/ChrisMiho/TheJudge/pull/315, then merge to build.
+- Terminal state: `PARKED` (lock released).
 - Evidence: `DESIGN-BRIEF.md`; README `## Preparation gate` (PASS, findings none).
 - Resume: merging the docs PR into `main` is the build signal; `/graph-implement PRD/work/ci-warnings-cleanup/` builds it.
 
