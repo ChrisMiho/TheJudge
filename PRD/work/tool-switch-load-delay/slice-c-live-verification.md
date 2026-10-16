@@ -15,7 +15,8 @@ Depends on slices A and B. No product code unless a check fails (then fix in the
 ## Acceptance criteria
 
 - [ ] Quick Question landing, wait 3 s, tap Life Tracker: no "Loading…" frame, tool on screen within 100 ms, at Fast 4G + CPU 4x and Slow 4G + CPU 4x
-- [ ] Continuing: Trade Balancer, In-Depth, Quick Question each with no "Loading…" frame within 100 ms; the Trade Balancer shows no "Loading card list…" frame
+- [ ] Continuing from C1: Trade Balancer, In-Depth, Quick Question each on screen within 100 ms with no "Loading…" frame, at both Fast 4G + CPU 4x and Slow 4G + CPU 4x; when the Trade Balancer opens after the card list has arrived, no "Loading card list…" frame
+  - Source: `DESIGN-BRIEF.md:318-321` (success criterion 2). The no-"Loading card list…" clause applies only after the list has arrived; trimming or compressing the list stays out of scope (NFR-014).
 - [ ] Tier order by Resource Timing on Quick Question and Life Tracker landings: every tier-2 chunk `startTime` is after the landing marker ("Ask a Question" text; the "-player life table") and before the tier-3 `/data/cardMetadata.json` request on the Life Tracker landing
 - [ ] Life Tracker landing on Fast 4G + CPU 4x, after the card list `responseEnd`: Quick Question, In-Depth, Trade Balancer each within 100 ms with no "Loading…" frame; the card list is requested exactly once; no "Loading card list…" frame
 - [ ] First screen not slower: "Ask a Question" time versus the pre-change build over three runs each, no consistent slowdown over 50 ms

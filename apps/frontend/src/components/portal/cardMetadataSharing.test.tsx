@@ -55,11 +55,15 @@ describe("Shared card list across screens (NFR-014 tier 3)", () => {
   it("Quick Question shows the unavailable copy after a failed list, and the question box still works", async () => {
     vi.stubGlobal("fetch", failingFetch());
     const user = userEvent.setup();
-    render(<QuickLookupApp />);
+    const onSubmit = vi.fn();
+    render(<QuickLookupApp onSubmit={onSubmit} />);
 
     await user.click(screen.getByRole("button", { name: "Add card" }));
     expect(await screen.findByText("Card search is unavailable. You can still ask without a card.")).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: /question/i })).toBeEnabled();
+    await user.type(screen.getByRole("textbox", { name: "Magic question" }), "How does priority work?");
+    await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0][0]).toContain("How does priority work?");
   });
 
   it("In-Depth shows no message and logs the error after a failed list", async () => {

@@ -37,7 +37,7 @@ import {
   type RosterPlayer
 } from "../PlayerRosterEditor";
 import { loadCardMetadata, readCardMetadata } from "../../lib/cardMetadataStore";
-import { appendZoneCard,buildZoneCardFromMetadata, validateZoneCardAdd } from "../../lib/zoneCards";
+import { appendZoneCard, buildZoneCardFromMetadata, validateZoneCardAdd } from "../../lib/zoneCards";
 import type {
   CardMetadataItem,
   CombatStep,
