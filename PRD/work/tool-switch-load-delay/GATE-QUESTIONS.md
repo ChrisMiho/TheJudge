@@ -119,10 +119,14 @@ a weak signal) the first time a player opens each tool in a session.
 ### Diff 4 — the Trade Balancer's wake-up ping wording (REQ-064; consequence of the verdict, added at define after the re-grade)
 
 The ping's behaviour does not change: one request when the balancer opens,
-never before. Five places say it overlaps "while the card list downloads".
+never before. Seven hunks across five files. Six of them say the ping overlaps
+the card-list download (four as "while the card list downloads", one as "with
+the `cardMetadata` download", one as "overlaps the card-list download"); the
+seventh (`trade-balancer/README.md:196`) says the list is loaded per screen.
 With tier 3 the list has usually arrived before the balancer opens, so the
 overlap is the player's typing, plus the download only when it has not
-finished. These hunks say so.
+finished. These hunks say so. Every other line the widened grep finds is
+dispositioned in `DESIGN-BRIEF.md`, `## Product truth dispositions`.
 
 `PRD/sections/trade-balancer/README.md` (line 59):
 
@@ -186,6 +190,14 @@ finished. These hunks say so.
 +- Summary: Ephemeral two-sided card-value comparison. The screen opens with only the shared `cardMetadata` index in hand (loaded once per page and shared with the question tools, often already downloaded in the background — NFR-014) and fires one fire-and-forget warm-up ping at the existing `GET /api/health` so a cold backend wakes while the player types (REQ-064). Each side is a list of card entries built via scan or manual search, priced by a read-only backend fetch (`GET /api/cards/:oracleId/prices`, cached per session): a scanned card is added immediately and priced on add, while a manual search fetches that card's printings when the suggestion is tapped and adds the card with the printing the player picks. Each entry resolves to a specific printing (the picked printing on search, the scanned printing on scan, changeable via the same picker either way; the picker heads with the card's printing count, lists newest release first, region-scrolls, lazy-loads row images, and filters by set above 8 printings), with a foil toggle (non-foil ↔ `usd_foil`) whose mode auto-selects from the printing's available prices, a quantity/multiples, and one-tap removal. Side total = `Σ qty × (foil ? usdFoil : usd)`; the view shows each side's total and the live difference. Missing prices, and a failed price fetch, both default to $0 with a distinct color + caution-triangle indicator; a failed fetch also carries a retry affordance, and a pre-add fetch failure adds the card in that same state rather than blocking the add. Scanning is per-side and one camera at a time; when the camera is unavailable the surface closes, manual search stays fully functional, and the reason is surfaced (DEC-050). Printing choice is a pricing/display concern only — it never reaches prompt context, rulings, or any request payload, and the AI answer path (`POST /api/ask-ai`) is untouched. The snapshot is surfaced as date-level copy (`Prices as of 5 June 2026`) formatted from the response's ISO `snapshotDate`, never the raw timestamp, so it cannot read as a live quote; an unparseable value omits the line rather than printing raw artifact data (REQ-145).
 ```
 
+`PRD/sections/integrations-and-data.md` (`GET /api/health` purposes, line 165):
+
+```diff
+ - uptime verification
+-- the Trade Balancer's fire-and-forget warm-up ping when the screen opens, so the backend's cold start overlaps the card-list download instead of the first card's price fetch (REQ-064). No product data travels in either direction, the response is discarded, and a failure is ignored
++- the Trade Balancer's fire-and-forget warm-up ping when the screen opens, so the backend's cold start overlaps the player's typing — and the card-list download, when the list has not already arrived in the background (NFR-014 tier 3) — instead of the first card's price fetch (REQ-064). No product data travels in either direction, the response is discarded, and a failure is ignored
+```
+
 - Verdict: edit
 - Reason: (owner, 2026-10-15, in session; transcribed by the driver) Widen from two tools to a tiered download so the player has everything they need when they hop from one screen to the next, with the first screen they open loading first. Tier 1: the screen the player lands on, exactly as today. Tier 2, once that screen is up and the phone is idle: the code for every other tool (Life Tracker, Trade Balancer, and the two question tools — this folds in follow-up F3). Tier 3: the card list (`/data/cardMetadata.json`), which Quick Question, the In-depth question flow, and the Trade Balancer all use — downloaded and read once, then shared by all three screens instead of each fetching and parsing its own copy (folds in the load-once part of follow-up F1). A player landing on a question screen already downloads the card list today, so tier 3 adds no data for them. Everything else stands: the background download opens no tool, the Trade Balancer's wake-up ping still fires only when the balancer opens (REQ-064), visited tools stay open (REQ-067), and a failed background download falls back to the normal first-open load. Brotli compression, caching headers, and trimming the list (rest of F1, F2) stay out of scope.
 
@@ -197,7 +209,7 @@ Applied by `graph-gate-review` on 2026-10-15 (1 block: 0 accept, 1 edit, 0 rejec
 | --- | --- | --- |
 | `NFR-014` | edit | "Widen from two tools to a tiered download so the player has everything they need when they hop from one screen to the next" — tier 1 landing screen, tier 2 code for every other tool, tier 3 shared card list; Brotli, caching headers, list trimming out of scope |
 
-The finalized NFR-014 text is Diffs 1-3 above, already rewritten to the tiered download. Diff 4 and the cost lines in Diff 1 were added at define after the re-grade (QUALITY-CHECK.md findings 1 and 3); Diffs 1-2 are written for a "yes" on Q-014.
+The finalized NFR-014 text is Diffs 1-3 above, already rewritten to the tiered download. Diff 4 and the cost lines in Diff 1 were added at define after the re-grade (QUALITY-CHECK.md findings 1 and 3); Diff 4's `integrations-and-data.md` hunk was added at the second define pass, after the second re-grade found it missing. Diffs 1-2 are written for a "yes" on Q-014.
 
 ## Blocker questions
 

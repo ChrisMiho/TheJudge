@@ -104,7 +104,8 @@ In:
   "Loading…" screen.
 - Amend NFR-014 and the places that describe the fallback (shared-chrome spec,
   screen-layout row) and the Trade Balancer's wake-up ping overlap (REQ-064
-  wording, four files) — proposal in `GATE-QUESTIONS.md`, Diffs 1-4.
+  wording, seven hunks across five files) — proposal in `GATE-QUESTIONS.md`,
+  Diffs 1-4.
 
 Out (see Follow-ups): Brotli compression, caching headers and trimming the card
 list (rest of F1, F2), backend cold start for answers, price data.
@@ -245,25 +246,49 @@ Technical detail for the implementer, below the player story.
 
 ## Product truth dispositions
 
-Every `PRD/sections/` line that mentions the card list download or the
-balancer's ping overlap (`grep -rn -e cardMetadata -e "card list"` and
-`"while the card list downloa"` over `PRD/sections/`), one row per hit that
-tier 3 could touch:
+Every `PRD/sections/` line that mentions the card list (any spelling) or the
+balancer's wake-up ping, found by one grep run at the second define pass
+(2026-10-15, `PRD/sections/` unchanged since `ed3e96b8`):
+
+```
+grep -rn -i -E "card[ -]list|cardMetadata|warm-up|health[ -]check|/api/health|cold backend|wakes? the backend" PRD/sections/
+```
+
+It returns 96 hits. Every hit has a row below, by line number. The earlier
+grep (`"while the card list downloa"`) missed `integrations-and-data.md:165`
+because it is spelled "card-list"; this one matches both spellings, the
+hyphenated "health-check", and `cardMetadata` / `CardMetadataItem`. The Diff 1-3
+spots that the grep does not hit (`non-functional-requirements.md:239`, `:246`,
+Dependencies; `shared-chrome/README.md:91`; `screen-layout.md:73`) are the
+NFR-014 fallback wording, listed first for completeness.
 
 | Spot | Disposition |
 | --- | --- |
-| `non-functional-requirements.md:239`, `:245`, `:246`, Dependencies | Diff 1 |
+| `non-functional-requirements.md:239`, `:245`, `:246`, Dependencies | Diff 1 (`:245` is a grep hit) |
 | `shared-chrome/README.md:91` | Diff 2 |
 | `screen-layout.md:73` | Diff 3 |
-| `trade-balancer/README.md:59-64`, `:185-189`, `:196-198` | Diff 4 |
-| `functional-requirements.md:1512` (REQ-064), `user-flows.md:199`, `system-map.md:564` | Diff 4 |
-| `non-functional-requirements.md:217` (NFR-013) | Stays true: it is about price data; "the balancer's only up-front frontend cost is the slim shared `cardMetadata` index" still holds, and tier 3 fetches no price data. |
-| `integrations-and-data.md:327` | Stays true: "users who never open the balancer pay no startup cost" is about price data, which tier 3 never fetches. |
-| `trade-balancer/data/cardPrintingPrices.md:131` | Stays true: same price-data statement as NFR-013. |
-| `non-functional-requirements.md:328-330` (NFR-019) | Stays true: a size gate on the list downloaded on entry to MTG Assistant and Quick Lookup; tier 3 changes neither the file nor those entries. |
-| `user-flows.md:197`, `:564`, `:568`, `trade-balancer/README.md:82`, `functional-requirements.md:1575` (REQ-066) | Stays true: they say the balancer reads the shared index; it still does, now loaded once. |
-| `functional-requirements.md:1060` (REQ-049) | Stays true: "runtime load unchanged" bounds REQ-049's own data-build change, which this does not reopen. |
+| `trade-balancer/README.md:59`, `:60`, `:61`, `:185`, `:187`, `:197` | Diff 4 (hunks at `:59`, `:185`, `:196`) |
+| `functional-requirements.md:1512` (REQ-064), `user-flows.md:199`, `system-map.md:564`, `integrations-and-data.md:165` | Diff 4 |
+| `non-functional-requirements.md:217` (NFR-013), `integrations-and-data.md:327`, `trade-balancer/data/cardPrintingPrices.md:131` | Stays true: "users who never open the balancer pay no startup cost" and "the balancer's only up-front frontend cost is the shared `cardMetadata` index" are about price data, which tier 3 never fetches. |
+| `non-functional-requirements.md:233` | Stays true: one health-check invocation each time the balancer opens; tier 3 never sends the ping. |
+| `non-functional-requirements.md:330` (NFR-019, with its description at `:328`) | Stays true: a size gate on the list's file; tier 3 changes neither the file nor the entries that download it. |
+| `trade-balancer/README.md:23` | Stays true: the balancer still opens with only the shared index in hand and wakes the backend with one ping as it opens; it does not say the ping overlaps the download. |
+| `trade-balancer/README.md:200` | Stays true: the ping on open downloads no data. |
+| `trade-balancer/README.md:207`, `:209` | Stays true: the closed door on adding a price to `cardMetadata.json`; tier 3 adds no field to the list. |
+| `user-flows.md:197`, `:564`, `:568`, `trade-balancer/README.md:82`, `:254`, `functional-requirements.md:1542`, `:1564`, `:1575` (REQ-066), `:4150`, `system-map.md:565`, `integrations-and-data.md:78`, `:156`, `:324`, `trade-balancer/data/cardPrintingPrices.md:109` | Stays true: they say the balancer (or the price route's caller) takes card names and identity from the shared index; it still does, now loaded once. |
+| `overview.md:43`, `integrations-and-data.md:160`, `:163`, `:321`, `trade-balancer/README.md:167`, `functional-requirements.md:1514`, `:1515`, `:4155`, `:5270`, `:5666`, `user-flows.md:578`, `system-map.md:151` | Stays true: they say the ping goes once when the balancer opens, carries no product data and adds no endpoint (or name the health-check route itself); none ties it to the card-list download, and the ping is unchanged. |
+| `functional-requirements.md:1059`, `:1060` (REQ-049), `system-map.md:445`, `:446` | Stays true: they bound the card-list build step ("runtime load unchanged" is REQ-049's own scope), which this does not reopen. |
 | `functional-requirements.md:36`, `:43` | Stays true: matching still runs in the browser over the same list. |
+| `functional-requirements.md:2236`, `:4116`, `:4120`, `:4129`, `:4288`, `:4293`, `:6170`, `:6195` | Stays true: they describe the list's fields, size or use as a name source; tier 3 changes no field and no byte of the file. |
+| `decisions.md:94`, `functional-requirements.md:711`, `:713`, `:716`, `:724`, `:1031`, `:1034`, `:1747`, `:1771`, `integrations-and-data.md:309`, `quick-lookup/README.md:64`, `scan/README.md:64`, `:232`, `:260`, `scan/data/cardScanMap.md:58`, `:65`, `:77`, `shared-chrome/README.md:306`, `system-map.md:299`, `:361`, `user-flows.md:159` | Unrelated: the `CardMetadataItem` record type a scan or a saved card resolves to, or the scan map following the list's static-file pattern; not the download. |
+| `user-flows.md:51`, `:134`, `:158`, `functional-requirements.md:424`, `:1220`, `:1221`, `:3182`, `:5614`, `:6308`, `scan/README.md:109`, `:129`, `:209`, `system-map.md:323`, `in-depth/README.md:204`, `:210` | Unrelated: a zone's or a side's on-screen list of cards (or, at `:6308`, a practice-suite question's cards), not the card-list download. |
+
+Hit count by file, to check the rows: `functional-requirements.md` 36,
+`trade-balancer/README.md` 13, `integrations-and-data.md` 9, `user-flows.md` 9,
+`system-map.md` 8, `scan/README.md` 6, `non-functional-requirements.md` 4,
+`scan/data/cardScanMap.md` 3, `in-depth/README.md` 2,
+`trade-balancer/data/cardPrintingPrices.md` 2, and one each in `decisions.md`,
+`overview.md`, `quick-lookup/README.md`, `shared-chrome/README.md` — 96.
 
 ## Touched files (build)
 
@@ -302,13 +327,22 @@ preview`), first visit, cache cleared:
    landing destination has rendered, and before the tier-3
    `/data/cardMetadata.json` request on the Life Tracker landing. (On a
    question landing the list is requested by the landing screen itself, as
-   today.)
-4. **Life Tracker landing.** Land on the Life Tracker, wait 3 s on Fast 4G +
-   CPU 4×, then tap Quick Question, then In-Depth, then Trade Balancer: each
-   on screen within 100 ms with no "Loading…" frame; `/data/cardMetadata.json`
-   is requested exactly once for the page; the Trade Balancer shows no
-   "Loading card list…" frame. On a "no" to Q-014: no card-list request before
-   the first card-search screen opens, then exactly one.
+   today.) "Rendered" is a fixed marker, recorded by the same rAF script as
+   `performance.now()` on the first animation frame where the landing
+   screen's own marker is in the page and the "Loading…" fallback is not: on
+   Quick Question, the "Ask a Question" text (the marker criterion 5 times);
+   on the Life Tracker, the life table (the element whose accessible name
+   ends in "-player life table"). Every tier-2 `startTime` must be later than
+   that time.
+4. **Life Tracker landing.** Land on the Life Tracker on Fast 4G + CPU 4×,
+   wait until the `/data/cardMetadata.json` request has finished (its
+   Resource Timing entry has a `responseEnd`) — not a fixed delay — then tap
+   Quick Question, then In-Depth, then Trade Balancer: each on screen within
+   100 ms with no "Loading…" frame; `/data/cardMetadata.json` is requested
+   exactly once for the page; the Trade Balancer shows no "Loading card list…"
+   frame. On a "no" to Q-014: there is no list request to wait on, so wait 3 s
+   for tier 2 instead; no card-list request is made before the first
+   card-search screen opens, then exactly one.
 5. The first screen is not slower: "Ask a Question" appears at about the same
    time as on the pre-change build on the same profile. Read it as a trend
    over three runs each, not a hard per-run threshold; a consistent slowdown
@@ -316,7 +350,9 @@ preview`), first visit, cache cleared:
 6. Before the balancer is opened, there is no `GET /api/health` request. The
    card list is requested exactly once per page load, whichever screen reads
    it and whichever landing screen, and no tool is mounted by the background
-   download.
+   download. On a "no" to Q-014, a Life Tracker landing requests it zero times
+   until the first card-search screen opens, then exactly once (as criterion
+   4 states).
 7. Tapping a tool before its background download finishes shows "Loading…" only until the
    in-flight download lands, with exactly one request for that chunk.
 8. A failed background download (block the chunk URL once, then unblock) leaves the tool
