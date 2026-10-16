@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/tool-switch-load-delay`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/tool-switch-load-delay/`
+- Current node: `owner-action` (gate-qc PASS — spec-forming half stopped)
+- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
 
@@ -16,10 +16,12 @@
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/tool-switch-load-delay` pushed (`git ls-remote` → `21243d52`) from `.worktrees/kickoff-tool-switch-load-delay`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261016-040838` | 2026-10-15 |
 | 2 | shape | sonnet | ok | `0 → 14` | `PRD/work/tool-switch-load-delay/` (IDEA.md, README.md, STATUS.ideation) and board row committed `f5cf16f6`, pushed | 2026-10-15 |
 | 3 | define | opus | ok | `0 → 76` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (one block, `NFR-014` amendment), `evidence/measurements.md` (live mtgjudge.gg + local preview, throttled and unthrottled), `STATUS.refined`, board row; committed `cf3c434c`, pushed `ed3e96b8..cf3c434c`; worktree `git status --porcelain` empty; port 4917 free | 2026-10-15 |
+| 4 | gate-qc | sonnet | ok | `0 → 16` | PASS — `QUALITY-CHECK.md` committed `80112ad7` (on origin); README `## Preparation gate` recorded by the driver | 2026-10-15 |
 
 ## Open gate
 
-- None
+- Owner action: answer `PRD/work/tool-switch-load-delay/GATE-QUESTIONS.md` (one slot, NFR-014: download the Life Tracker and Trade Balancer code in the background so their first open shows no Loading screen), then merge the docs PR to build. Read follow-up F1 in `DESIGN-BRIEF.md` first: the multi-second card-list wait on a slow network is not in this scope; widen it with an `edit` verdict if that is the wait you meant.
+- Resume: `/graph-implement PRD/work/tool-switch-load-delay/` after the merge.
 
 ## Dispatch prompts
 

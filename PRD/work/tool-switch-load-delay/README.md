@@ -1,5 +1,5 @@
 ---
-status: refined
+status: owner-action
 ---
 
 # tool-switch-load-delay
@@ -24,4 +24,10 @@ Facts from the code. Which of these costs the seconds is unmeasured; refinement 
 
 ## Evidence ranking
 
-Likely sources, in order of suspicion: (1) Trade Balancer's 4.9 MB card list download on open; (2) first-open code downloads with no head start; (3) the scan group shared chunk if the tool pulls it in. All unmeasured.
+Likely sources, in order of suspicion: (1) Trade Balancer's 4.9 MB card list download on open; (2) first-open code downloads with no head start; (3) the scan group shared chunk if the tool pulls it in. All unmeasured. (Superseded by define's live measurements in `evidence/measurements.md`: the code download is 0.2–0.7 s per tool; the multi-second wait is the card list on a slow network.)
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/tool-switch-load-delay/DESIGN-BRIEF.md`
+- Findings: none blocking (four advisory notes in `QUALITY-CHECK.md`: the fix removes 0.2–0.7 s per tool, while the only multi-second wait measured — the Trade Balancer card list on Slow 4G, 9.7 s — is follow-up F1, out of scope; NFR-014 dependencies hunk should append REQ-064 after REQ-066; the acceptance script `.playwright-mcp/measure.js` is gitignored and the 50 ms comparison is noise-sensitive; the no-fallback-frame claim is a build-time check covered by criteria 1, 2 and 6)
