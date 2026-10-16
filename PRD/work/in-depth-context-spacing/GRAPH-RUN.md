@@ -18,9 +18,21 @@
 | 3 | define | opus | ok | `0 → 85` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (one slot: REQ-023 amendment), `evidence/measurements.md`, `STATUS.refined`, board row moved — commit `f2ab5714`; live screenshots under `PRD/work/in-depth-context-spacing/.playwright-mcp/` (git-ignored); dev server stopped (listeners on :5173/:5273 belong to older worktrees) | 2026-10-15 |
 | 4 | gate-qc | sonnet | ok | `0 → 13` | PASS — `QUALITY-CHECK.md` committed `8fe2dc95`; README `## Preparation gate` recorded by the driver | 2026-10-15 |
 
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-023` | accept | "yes, these one row look great, and i love how the text stacks on itself in case its long, without affecting the other components, i was afraid the text would be too small but i think this looks alright" |
+
+### Brief reconciliation
+
+- grep: `grep -nE 'stays stacked|Edit this slot|if the owner (says|rejects|edits)|verdict (is|pending)' DESIGN-BRIEF.md README.md` — zero hits
+- none (one accept; no edit or reject, so `DESIGN-BRIEF.md`, the README intake pointer and `GATE-QUESTIONS.md` are unchanged)
+
 ## Open gate
 
-- Owner action: answer `PRD/work/in-depth-context-spacing/GATE-QUESTIONS.md` (one slot, REQ-023: waiting bubble's icon, phrase and timer on one row), then merge the docs PR to build. Screenshots to compare: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-in-depth-context-spacing/PRD/work/in-depth-context-spacing/.playwright-mcp/` (local, git-ignored).
+- RESOLVED 2026-10-15: 1 verdict (1 accept, 0 edit, 0 reject) applied; status restored to `refined`; run resumes at `gate-qc`.
+- Owner action (historical): answer `PRD/work/in-depth-context-spacing/GATE-QUESTIONS.md` (one slot, REQ-023: waiting bubble's icon, phrase and timer on one row), then merge the docs PR to build. Screenshots to compare: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-in-depth-context-spacing/PRD/work/in-depth-context-spacing/.playwright-mcp/` (local, git-ignored).
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/311
 - Resume: `/graph-implement PRD/work/in-depth-context-spacing/` after the merge.
 - Terminal state: `PARKED` (owner-action) — lock released.
