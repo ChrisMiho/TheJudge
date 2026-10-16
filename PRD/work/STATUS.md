@@ -23,7 +23,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); NFR-014 verdict `edit` applied; re-grade FAIL, see QUALITY-CHECK.md |
+| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); NFR-014 verdict `edit` applied; re-grade FAIL fixed at define; open blocker Q-014 (does a Life Tracker landing download the 1.96 MB card list?) awaits the owner |
 
 ## ideation
 

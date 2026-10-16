@@ -101,7 +101,7 @@ Supporting detail (live):
 | --- | --- | --- | --- |
 | unthrottled, first visit | 19 | 25 | 70 |
 | Slow 4G + CPU 4×, first visit | **688** | **685** | **9,785** |
-| Slow 4G + CPU 4×, first visit, **prefetched** | **41** | **34** | 8,916 |
+| Slow 4G + CPU 4×, first visit, **prefetched** (two-tool approximation) | **41** | **34** | 8,916 |
 | Fast 4G + CPU 4×, first visit, **prefetched** | **42** | **36** | 334 |
 
 - The local build reproduces the live slow-network numbers within 15 ms per
@@ -115,6 +115,40 @@ Supporting detail (live):
   for build, not yet measured.
 - Prefetch did not shorten the card list wait on Slow 4G: it is bandwidth, not
   code.
+
+## Life Tracker landing — what it downloads (live, define re-run)
+
+Taken 2026-10-15 after the re-grade, on the live site, unthrottled, first
+visit (HTTP cache and site storage cleared over CDP), Playwright MCP Chromium.
+Sizes are Resource Timing `transferSize` (gzipped bytes over the wire, headers
+included). Read-only; no timing claim rests on this run.
+
+| Step | Requests | Over the wire |
+| --- | --- | --- |
+| Land on `/life-tracker`, wait 6 s | entry `index` 27.3 KB, `vendor` 58.6 KB, CSS 35.9 KB, `PlayerLifeTrackerApp` 8.1 KB, `playerLabels` 0.5 KB, font 47.6 KB | **no `/data/cardMetadata.json`** |
+| ☰ → Ask a Question (Quick Question) | `QuickLookupApp` 4.6 KB, `ScanReviewBubble` 3.7 KB, `ConversationWorkspace` 56.2 KB, `scan` 15.7 KB, then `/data/cardMetadata.json` 1,911 KiB (about 1.96 MB) | code 80.2 KB + card list |
+| "In-depth" from Quick Question | `MtgAssistantApp` 18.7 KB, and a **second** `/data/cardMetadata.json` request served from the HTTP cache (0 bytes over the wire, parsed again) | 18.7 KB |
+
+What this settles:
+
+- A player who lands on the Life Tracker downloads no card list today. Tier 3
+  on that landing adds about 1.96 MB (Q-014 in `GATE-QUESTIONS.md`).
+- Tier 2 cost by landing, from the measured chunk sizes above and in the table
+  under "What each tool costs": Quick Question landing about 36 KB (Life
+  Tracker 8.1 + player-labels 0.5 + Trade Balancer 8.4 + In-Depth 18.7); Life
+  Tracker landing about 107 KB (the five question-tool chunks above, 98.9, plus
+  Trade Balancer 8.4). Trade Balancer and In-Depth landings are sums of these
+  chunk sizes, not separate runs: about 88 KB, and about 21–25 KB (the range is
+  whether In-Depth already holds the 3.7 KB scan-review chunk).
+- Opening scan-capable code downloads no scan data: no `cardhashes.bin` or
+  `cardScanMap.json` request followed the `scan` chunk.
+- Each card-search screen issues its own card-list request today; the second
+  one is a cache hit but is parsed again.
+- Not measured: tap-to-screen times for the question tools from a Life Tracker
+  landing, and the shared card-list load (it does not exist yet). The 41 ms /
+  34 ms prefetched figures below cover the Life Tracker and Trade Balancer
+  only, approximated with `modulepreload`; the build measures every tool
+  (`DESIGN-BRIEF.md`, acceptance criteria 2 and 4).
 
 ## Screenshots (gitignored, local only)
 
