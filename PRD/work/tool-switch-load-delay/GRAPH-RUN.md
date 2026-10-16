@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `review`
+- Current node: `close`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -28,6 +28,7 @@
 | 6 | build | sonnet | ok | `0 → 145` | PR https://github.com/ChrisMiho/TheJudge/pull/314 (open, base `main`); commits `8cff69ca` (A), `547d85ee` (B), `4b721b75` (C) = origin tip; 29/29 criteria `value: true` (A 10, B 10, C 9); `.graph-evidence.jsonl` holds 0 entries for this run id (known build-half gap: criteria are self-reported, review is the gate); reported `npm --workspace apps/frontend run test` 152 files / 1639 tests pass, `npm run typecheck` 0, `npm run quality:check` 0, build 0; C1-C7 dated observations in `slice-c.evidence.md`; Diffs 1-4 applied to `PRD/sections/`; `STATUS.ship-ready`; return side: launch-checkout porcelain empty before and after (identical), `classifyBuildWrites` over 41 reported paths → `ok`, 0 outside `.worktrees/implement-tool-switch-load-delay/`; worktree porcelain empty | 2026-10-15 |
 | 7 | review | opus | failed | `0 → 32` | CHANGES REQUESTED: 1 Important (C2 not met on Slow 4G + CPU 4x per `slice-c.evidence.md:9` — `Loading card list…` 1-2 frames, continuing-tap times unrecorded — and so C9), 3 Minor (A4 test thin; missing space `MtgAssistantApp.tsx:40`; in-flight lazy rejection sticks, outside rubric). A1-A10, B1-B10, C1, C3-C8 met; reviewer re-ran frontend tests 152/1639 pass, typecheck, format, lint 0 errors. Driver check: `DESIGN-BRIEF.md:318-321` (QC-passed) conditions the clause on the balancer opening after the list has arrived; `slice-c-live-verification.md:18` and `slice-c.criteria.json` C2 dropped that condition at `plan` — a transcription gap, settled by the brief and the owner's NFR-014 reason (list trimming out of scope). Launch and worktree porcelain empty (no reviewer writes). Loops to `build` (return 1 of 2) | 2026-10-15 |
 | 6 | build (attempt 2) | sonnet | ok | `0 → 24` | commit `04b71b78` (= origin tip): C2 reworded in `slice-c-live-verification.md` and `slice-c.criteria.json` to `DESIGN-BRIEF.md:318-321`, re-earned on Slow 4G + CPU 4x (Life Tracker 40 ms, Trade Balancer 32 ms, In-Depth 32 ms, Quick Question 9 ms, 0 code `Loading…` frames; list not yet arrived at those taps; after list `responseEnd` the balancer opened in 71 ms with 0 `Loading card list…` frames), dated lines in `slice-c.evidence.md`; C2, C9 true (29/29); Minor fixes in `cardMetadataSharing.test.tsx` and `MtgAssistantApp.tsx:40`; reported frontend tests 152/1639 pass, `npm run quality:check` 0; preview port 4941 released, `browser_close` called; return side: launch-checkout porcelain empty before and after, 5 committed paths plus gitignored captures all inside `.worktrees/implement-tool-switch-load-delay/`; worktree porcelain empty; `STATUS.ship-ready` | 2026-10-16 |
+| 7 | review (attempt 2) | opus | ok | `0 → 25` | APPROVE: 29/29 met (A1-A10, B1-B10, C1-C9), 0 Critical / 0 Important, 2 Minor (A6 test does not assert search disabled while loading — code gates it at `TradeBalancer.tsx:434`; in-flight lazy rejection sticks, pre-existing and outside the rubric); C2 wording confirmed to match `DESIGN-BRIEF.md:318-321`, no other criterion reworded; reviewer re-ran frontend tests 152/1639, typecheck, eslint, format 0; ports 4931/4932/4941 free; PR #314 CI backend, frontend shards 1-3, static pass (coverage-merge pending); launch and worktree porcelain empty | 2026-10-16 |
 
 ## Gate verdicts
 
@@ -373,6 +374,24 @@ Slice C: (1) Quick Question landing, wait 3 s, tap Life Tracker: no `Loading…`
 Grade each criterion as met, not met, or not evidenced, citing file and line or evidence-file line. Flag only gaps affecting correctness or these stated requirements. Severity rule: a preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never sends the work back to `build`; rate it Minor or omit it. Critical means a stated requirement is broken in a way that harms players or product truth; Important means a stated criterion is not met or not evidenced. Also confirm C2's new wording matches `DESIGN-BRIEF.md:318-321` and no other criterion's wording was changed.
 
 Report back: verdict `APPROVE` or `CHANGES REQUESTED`, then each finding with severity (Critical, Important, Minor), the criterion it concerns, file and line, and the concrete fix; then a per-criterion table (A1-A10, B1-B10, C1-C9) of met / not met / not evidenced.
+
+### close
+
+graph is controlling
+
+You are node 8 (`close`), attempt 1, of graph run `graph-20261016-050510`, package `tool-switch-load-delay`. Invoke the `thejudge-cleanup` skill (read `.claude/skills/thejudge-cleanup/SKILL.md` and its reference material in the working directory below) and follow its PR-ready path under graph control: on the code branch, before the owner's merge. Tool-call cap 120; spawn no subagents or forks; no sleeping or polling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Branch `thejudge-auto/tool-switch-load-delay-work`; code PR https://github.com/ChrisMiho/TheJudge/pull/314 (open; never merge or close it). Every file you write must lie inside that worktree.
+
+The package is `STATUS.ship-ready`; review approved 29/29 criteria. Durable product truth was applied at `build` (Diffs 1-4 of `GATE-QUESTIONS.md` in `PRD/sections/`): confirm it is present and promote only any leftover — never re-write it. Write the receipt under `PRD/instructions/receipts/` named per the skill (`tool-switch-load-delay-<date>.md`), opening with the plain-language block `PRD/instructions/plain-language-standard.md` requires (what a player experiences: every tool opens without a Loading screen; the card list downloads once, in the background, last). Fold `GRAPH-RUN.md`'s `## Node ledger` and `## Instruction ledger` verbatim into a `## Graph run` section, with the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/314` and a `- PR:` line; record both run ids (build half `graph-20261016-050510`, spec-forming half `graph-20261016-040838`) and the docs PR #313. Record the review's two Minor notes and the reviewer's follow-up (in-flight lazy rejection) plus the brief's remaining follow-ups (card-list Brotli/trimming, caching headers) as follow-up items. Update `PRD/work/STATUS.md` (remove the package's row from the board per the skill) and delete `PRD/work/tool-switch-load-delay/` with `git rm` of its tracked paths. Its gitignored `.playwright-mcp/` captures go with the folder; name their path in the receipt.
+
+Do not append the `close` row to the receipt's node ledger — the driver writes it after you return. Do not edit `.claude/`, `CLAUDE.md`, or any `thejudge-*` skill.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git rm <explicit paths>` or `git rm -r PRD/work/tool-switch-load-delay`, `git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`, never force-push, never chain a heredoc or `sed -i`. A denied command is reported, never retried verbatim.
+
+Report back: outcome (`ok` or `failed`), the receipt path, the truth-present check result per diff, the board change, the package deletion, the commit sha and push result, and `git status --porcelain`.
 
 ## Mid-node relays
 
