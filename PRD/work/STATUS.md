@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); NFR-014 verdict `edit` applied, awaiting re-grade |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| tool-switch-load-delay | Every tool opens without "Loading…": tiered background download (tool code, then one shared card list); NFR-014 verdict `edit` applied; re-grade FAIL, see QUALITY-CHECK.md |
 
 ## ideation
 
