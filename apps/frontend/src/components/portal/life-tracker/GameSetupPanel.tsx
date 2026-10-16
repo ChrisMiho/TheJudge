@@ -3,7 +3,7 @@ import { MAX_PLAYER_COUNT, MIN_PLAYER_COUNT } from "../../../lib/lifeTracker/sta
 import type { PlayerLabel } from "../../../types";
 import type { CardStyle, LayoutMode } from "../../../lib/lifeTracker/types";
 import { ConfirmSheet } from "../../ConfirmSheet";
-import { useSheetClose } from "../../SheetShell";
+import { useSheetClose } from "../../sheetCloseContext";
 
 export interface GameSetupPanelPlayer {
   label: PlayerLabel;

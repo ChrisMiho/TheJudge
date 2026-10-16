@@ -323,7 +323,6 @@ describe("Backend - Eval", () => {
       );
 
       const checklistReport = buildChecklistReport(results);
-      // eslint-disable-next-line no-console
       console.log(`Semantic-path relevance report:\n${checklistReport}`);
 
       // REQ-032 (Slice B): hard gate, same pattern as the golden-scenario

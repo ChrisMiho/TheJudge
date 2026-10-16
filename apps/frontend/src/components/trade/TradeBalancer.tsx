@@ -404,7 +404,6 @@ export function TradeBalancer(): JSX.Element {
           : { key: current.B.key + 1, transition: nextB > prev.B ? "up" : "down" }
     }));
     prevTiersRef.current = { A: nextA, B: nextB };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tierA, tierB]);
 
   function openNewTradeConfirm(): void {

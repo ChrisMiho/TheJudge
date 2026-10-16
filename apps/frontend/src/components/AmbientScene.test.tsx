@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { AmbientScene, shouldFallbackToStatic } from "./AmbientScene"
+import { AmbientScene } from "./AmbientScene"
+import { shouldFallbackToStatic } from "./ambientSceneFallback"
 import {
   blueLinkRadius,
   createBlueFamilyPicker,

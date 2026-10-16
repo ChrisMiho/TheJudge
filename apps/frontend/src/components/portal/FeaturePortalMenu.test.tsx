@@ -4,7 +4,7 @@ import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FeaturePortalMenu } from "./FeaturePortalMenu";
 import { PortalSlot } from "./PortalSlot";
-import { LeftEdgeDrawerProvider } from "../../lib/portal/leftEdgeDrawerContext";
+import { LeftEdgeDrawerProvider } from "../../lib/portal/LeftEdgeDrawerProvider";
 import type { DestinationId, PortalEntry } from "../../lib/portal/types";
 import { navigateToPath, startOnInDepthQuestion } from "../../test/appTestHelpers";
 import { appCss, jsonResponse, getUrlFromRequest } from "../../test/appTestHelpers";

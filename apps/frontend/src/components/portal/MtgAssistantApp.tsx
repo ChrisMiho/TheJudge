@@ -25,7 +25,7 @@ import {
   mergeSelectedZonesOnPhaseChange,
   type FlowStepId
 } from "../../lib/contextFlow";
-import { useRegisterFeedbackContributor } from "../../lib/feedback/FeedbackContextProvider";
+import { useRegisterFeedbackContributor } from "../../lib/feedback/feedbackSeam";
 import { formatPlayerDisplayLabel } from "../../lib/playerLabels";
 import { useAssistantSeed } from "../../lib/portal/seedContext";
 import { useAskAiSubmitOrchestration } from "../../hooks/useAskAiSubmitOrchestration";

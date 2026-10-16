@@ -1,7 +1,8 @@
 import { cleanup, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { ReactNode } from "react";
-import { AssistantSeedProvider, useAssistantSeed } from "./seedContext";
+import { AssistantSeedProvider } from "./AssistantSeedProvider";
+import { useAssistantSeed } from "./seedContext";
 import type { RosterSeed } from "../lifeTracker/seed";
 
 afterEach(cleanup);

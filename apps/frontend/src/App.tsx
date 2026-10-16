@@ -8,16 +8,15 @@ import type { PortalDestination } from "./lib/portal/types";
 import { useActiveDestination } from "./hooks/useActiveDestination";
 import { useThemePalette } from "./hooks/useThemePalette";
 import { feedbackFormspreeId, isMockProvider } from "./lib/env";
-import {
-  FeedbackContextProvider,
-  useFeedbackContextReader
-} from "./lib/feedback/FeedbackContextProvider";
+import { FeedbackContextProvider } from "./lib/feedback/FeedbackContextProvider";
+import { useFeedbackContextReader } from "./lib/feedback/feedbackSeam";
 import { loadTrackerState } from "./lib/lifeTracker/persistence";
 import { trackerStateToRosterSeed } from "./lib/lifeTracker/seed";
-import { BrandTapProvider } from "./lib/portal/brandTapContext";
+import { BrandTapProvider } from "./lib/portal/BrandTapProvider";
 import { InDepthCarryContext } from "./lib/portal/inDepthCarryContext";
-import { LeftEdgeDrawerProvider } from "./lib/portal/leftEdgeDrawerContext";
-import { AssistantSeedProvider, useAssistantSeed } from "./lib/portal/seedContext";
+import { LeftEdgeDrawerProvider } from "./lib/portal/LeftEdgeDrawerProvider";
+import { AssistantSeedProvider } from "./lib/portal/AssistantSeedProvider";
+import { useAssistantSeed } from "./lib/portal/seedContext";
 import type { DestinationId, PortalActionEntry } from "./lib/portal/types";
 import type { CardMetadataItem } from "./types";
 

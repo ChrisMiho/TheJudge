@@ -99,7 +99,6 @@ export function ThemeSection({
     const observer = new ResizeObserver(updateBandState);
     observer.observe(band);
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
