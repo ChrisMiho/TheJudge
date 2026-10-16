@@ -18,4 +18,10 @@ Facts from the code. Which of these costs the seconds is unmeasured; refinement 
 - Chunk split config: `apps/frontend/vite.config.ts` `manualChunks` (vendor and scan groups only); no per-tool prefetch hint.
 - Life Tracker has no data fetch found on entry in the search done; its delay, if any, is the code download alone (`components/portal/life-tracker/PlayerLifeTrackerApp`). Not confirmed.
 
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/tool-switch-load-delay
+
+## Evidence ranking
+
 Likely sources, in order of suspicion: (1) Trade Balancer's 4.9 MB card list download on open; (2) first-open code downloads with no head start; (3) the scan group shared chunk if the tool pulls it in. All unmeasured.
