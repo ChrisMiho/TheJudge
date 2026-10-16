@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-061526/` (one file, `ci-warnings-capture.md`, copied verbatim to `intake/`)
-- Current node: `plan` (attempt 2)
+- Current node: `build` (attempt 1)
 - Next action: `/graph-implement PRD/work/ci-warnings-cleanup/` resumes from the `STATUS.*` marker in `.worktrees/implement-ci-warnings-cleanup`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 5 | gate-review | driver | ok | `degraded (no run state)` | build half run `graph-20261016-092729`: docs PR #315 merged (`origin/main` `d94b34e1`); kickoff worktree removed clean (`git worktree remove`); claim commit `c006c90c` on `thejudge-auto/ci-warnings-cleanup-work` cut from `origin/main` `d94b34e1`, pushed; lock taken from the launch root; graph canary `nohup true` denied; no `GATE-QUESTIONS.md` → nothing to apply, driver restored `STATUS.refined` (only marker), README status, board row under refined | 2026-10-16 |
 | 4 | gate-qc (build half, attempt 1) | sonnet | ok | `0 → 10` | PASS, findings none; brief re-checked against `origin/main` `d94b34e1`: `npx eslint .` in the worktree → 19 warnings (15 fast-refresh in 9 files, `ConversationThread.tsx:173` hook deps, 3 unused-disable) = brief; six jobs in `.github/workflows/quality-check.yml` all `runs-on: ubuntu-latest`, pins checkout/setup-node/upload-artifact/download-artifact/configure-aws-credentials `@v4` as described; no `PRD/sections/` change (only mention `non-functional-requirements.md:206` stays true on `ubuntu-24.04`); no files written; README `## Preparation gate` PASS recorded by the driver; worktree and launch-checkout porcelain empty | 2026-10-16 |
 | 5 | plan | sonnet | failed | `0 → 11` | commit `fbe4d000` (= origin tip): `GAMEPLAN.md`, `slice-a-workflow-pins.md` + `slice-a.criteria.json` (7, 2 manual), `slice-b-lint-fixes.md` + `slice-b.criteria.json` (10, 1 manual), `STATUS.active`, board row under active; pins match `DESIGN-BRIEF.md:101-103`. Driver check failed it: `slice-a.criteria.json` A7 is post-merge only (`changes`/`deploy` never run on a PR, `slice-a-workflow-pins.md:24`), so `build` cannot earn it before the owner's merge and could not report `ok` honestly; precedent `PRD/instructions/receipts/follow-ups-keep-their-rules-2026-10-12.md:104` keeps post-merge checks as an owner-run GAMEPLAN reading. Re-dispatched as attempt 2 to move A7 there | 2026-10-16 |
+| 5 | plan (attempt 2) | sonnet | ok | `0 → 7` | commit `d36c13a8` (= origin tip): A7 removed from `slice-a.criteria.json` and the slice A checklist; full check from `DESIGN-BRIEF.md` criterion 5 now an owner-run `## Post-merge reading` at `GAMEPLAN.md:27`, pointer at `slice-a-workflow-pins.md:24`; slice A 6 criteria (1 manual, A6 — PR run annotations, earnable in `build`), slice B 10 (1 manual) unchanged, every `value` false; `STATUS.active` only marker; board row under active; worktree porcelain empty (published for `build`) | 2026-10-16 |
 
 ## Gate verdicts
 
@@ -161,6 +162,37 @@ Package: `PRD/work/ci-warnings-cleanup/`. Attempt 1 (commit `fbe4d000`) is good 
 Mechanics: Write and Edit tools for files; git as short separate calls from the working directory (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Do not edit `GRAPH-RUN.md`, `PRD/sections/`, workflow files, or code.
 
 Report back: outcome (`ok` or `failed`), the criteria count per slice now (and how many are manual), where the post-merge reading now lives (file and line), the files changed, the commit sha and push result, and `git status --porcelain` for the worktree.
+
+### build
+
+graph is controlling
+
+You are node 6 (`build`), attempt 1, of graph run `graph-20261016-092729`. Invoke the `thejudge-implement-all` skill (read `.claude/skills/thejudge-implement-all/SKILL.md` and its `reference.md` in the working directory below) and follow its controlled mode. Tool-call cap 4000. Spawn no subagents or forks — implement the slices yourself, sequentially, in this one worktree.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup
+
+Copy that Working directory line unchanged into any prompt you write. Work in place in that worktree — no second worktree, no contributor branch. Shared branch: `thejudge-auto/ci-warnings-cleanup-work` (already checked out there; the code PR is `thejudge-auto/ci-warnings-cleanup-work` into `main`). Every path you write must lie inside `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup/`; never write to the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+Package: `PRD/work/ci-warnings-cleanup/` — `GAMEPLAN.md`, `slice-a-workflow-pins.md` + `slice-a.criteria.json` (6), `slice-b-lint-fixes.md` + `slice-b.criteria.json` (10), `DESIGN-BRIEF.md`. No `GATE-QUESTIONS.md`: no `PRD/sections/` truth changes, so write none. Implement every slice to its acceptance criteria. Lint fixes must not change app behavior: the fast-refresh splits move non-component exports into sibling modules and update imports only; the `ConversationThread.tsx` fix keeps scroll-to-latest identical, as the brief explains. Leave the brief's offered follow-ups (making lint warnings fail CI, the Ubuntu 26.04 move, Dependabot) out.
+
+Open the code PR into `main` per the skill. The PR body opens with the plain-language block from `PRD/instructions/plain-language-standard.md` and ends with these two lines exactly:
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_01MyoXR52i9TAid8cFQd7vZ3
+
+End every commit message with these two lines exactly:
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01MyoXR52i9TAid8cFQd7vZ3
+
+Criterion A6 reads the PR's own Quality Check run. After the PR is open and your last push is made, you may wait on it with one blocking `gh pr checks <number> --watch` call (Bash timeout up to 600000 ms, repeat at most twice if still running); then read each job's annotations with `gh api repos/ChrisMiho/TheJudge/check-runs/<job-id>/annotations`. Record the observation as a dated line naming A6. If any annotation remains, fix it and re-check rather than marking A6 true.
+
+Flip a criterion to `true` only on evidence you actually produced; a criterion you cannot meet stays `false` and you report `failed` with the reason. Set `STATUS.ship-ready` only when every criterion in both files is `true`, per the skill.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A`, `--all`, or `.`. No `nohup`, no background `&`, no `git stash`, no `git reset --hard`, no `git clean`. Do not edit `GRAPH-RUN.md`, any `thejudge-*` skill, `.claude/settings*.json`, or `CLAUDE.md`. Stop any dev server or preview you start, and call `browser_close` if you use a browser.
+
+Report back: outcome (`ok` or `failed`), the PR URL, each commit sha with its slice, every path you wrote (absolute or worktree-relative, one per line), the criteria tally per slice, the test, lint, typecheck, and `npm run quality:check` results you ran, the A6 annotation reading, the status marker now present, and `git status --porcelain` for the worktree.
 
 ## Instruction ledger
 
