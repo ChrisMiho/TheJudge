@@ -20,7 +20,7 @@
 
 ## Open gate
 
-- Owner action: answer `PRD/work/tool-switch-load-delay/GATE-QUESTIONS.md` (one slot, NFR-014: download the Life Tracker and Trade Balancer code in the background so their first open shows no Loading screen), then merge the docs PR to build. Read follow-up F1 in `DESIGN-BRIEF.md` first: the multi-second card-list wait on a slow network is not in this scope; widen it with an `edit` verdict if that is the wait you meant.
+- Owner action: answer `PRD/work/tool-switch-load-delay/GATE-QUESTIONS.md` (one slot, NFR-014: download the Life Tracker and Trade Balancer code in the background so their first open shows no Loading screen), then merge the docs PR (https://github.com/ChrisMiho/TheJudge/pull/313) to build. Read follow-up F1 in `DESIGN-BRIEF.md` first: the multi-second card-list wait on a slow network is not in this scope; widen it with an `edit` verdict if that is the wait you meant.
 - Resume: `/graph-implement PRD/work/tool-switch-load-delay/` after the merge.
 
 ## Dispatch prompts
