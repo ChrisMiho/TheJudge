@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 5 | gate-review | sonnet | ok | `0 → 25` | build half run `graph-20261016-050510`: kickoff worktree removed clean (`git worktree remove`); claim commit `8abc7f2d` on `thejudge-auto/tool-switch-load-delay-work` cut from `origin/main` `a6b127da` (docs PR #313 merge), pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `063915ff` (= origin tip): 0 accept / 1 edit / 0 reject (NFR-014 widened to three tiers); `### Brief reconciliation` 15 passages in `DESIGN-BRIEF.md`; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; worktree and launch-checkout porcelain empty | 2026-10-15 |
 | 4 | gate-qc (build half, attempt 1) | sonnet | failed | `0 → 20` | FAIL — 4 blocking, 2 advisory; `QUALITY-CHECK.md` overwritten, commit `e256532b` (= origin tip); `STATUS.refining`; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 1 of 3) | 2026-10-15 |
 | 3 | define (build half, attempt 1) | opus | ok | `0 → 53` | commit `24176fc1` (= origin tip): all 6 findings addressed in `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (Diff 4 under NFR-014 rewording the REQ-064 ping overlap; NFR-014 verdict and reason untouched), `evidence/measurements.md` (live-site Life Tracker landing, read-only); new blocker question `Q-014` with blank slots (`GATE-QUESTIONS.md:202-252`: does a Life Tracker landing also download the card list in the background); `STATUS.refining`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts | 2026-10-15 |
+| 4 | gate-qc (build half, attempt 2) | sonnet | failed | `0 → 17` | FAIL — 1 blocking (`integrations-and-data.md:165` missing from Diff 4 and the dispositions table), 3 advisory; attempt-1 findings 1, 2, 4, 5, 6 resolved; Diff 4 applies cleanly; Q-014 meets the plain-language standard; `QUALITY-CHECK.md` commit `6edb3a71` (= origin tip); `STATUS.refining`; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 2 of 3) | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -200,6 +201,26 @@ Overwrite the package's `QUALITY-CHECK.md` with the new report. On FAIL set the 
 Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
 
 Report back: PASS or FAIL, the complete findings list (each with file and line), the report path, the commit sha and push result, the status marker, and `git status --porcelain`.
+
+### define (build half, attempt 2)
+
+graph is controlling
+
+You are node 3 (`define`), attempt 2 of the build half, graph run `graph-20261016-050510`, for package `tool-switch-load-delay`. The gate-qc re-grade FAILED again (FAIL 2 of 3; a third FAIL still loops, a fourth parks). Invoke the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory below) in its controlled mode and revise the package to resolve the findings in `PRD/work/tool-switch-load-delay/QUALITY-CHECK.md`. Spawn no subagents or forks; no sleeping or polling; tool-call cap 150, stay well under it. Do not re-run browser measurements.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory, on branch `thejudge-auto/tool-switch-load-delay-work`.
+
+Read `QUALITY-CHECK.md` in full first. One blocking finding: `PRD/sections/integrations-and-data.md:165` states the REQ-064 ping overlaps the card-list download, which tier 3 makes stale exactly as the spots Diff 4 already rewords, yet it is in neither Diff 4 nor the `Product truth dispositions` table, and the brief's quoted grep misses it because of the hyphenated spelling; Diff 4's intro count is also wrong. Three advisory notes follow (criterion 6 needs the Q-014 no-answer clause criterion 4 already has; criterion 4's fixed wait should wait for the card-list request to end; criterion 3 needs a defined landing-rendered marker). Resolve the blocker and the advisories.
+
+Before writing, re-run the brief's disposition grep widened to every spelling (`card list`, `card-list`, `cardMetadata`, and the ping/overlap wording) across all of `PRD/sections/`, and add a Diff 4 hunk or a dispositions row for every hit, so no further spot is left for a third re-grade. Keep the open blocker question `Q-014` exactly as the owner will see it unless a fix requires its text to change; its verdict slots stay blank. The owner's NFR-014 verdict and reason stay untouched.
+
+Never edit `PRD/sections/` or code. Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` section — the driver owns both. Keep one status marker per the skill and the `PRD/work/STATUS.md` board row in step.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
+
+Report back: outcome (`ok` or `failed`), how each of the four findings was resolved (file and line), the widened grep command and its hit count with each hit's disposition, whether Q-014 changed, files changed, the commit sha and push result, the status marker, and `git status --porcelain`.
 
 ## Mid-node relays
 
