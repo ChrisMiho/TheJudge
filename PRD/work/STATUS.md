@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| tool-switch-load-delay | Life Tracker and Trade Balancer code downloads in the background so they open without "Loading…" (NFR-014 amendment) |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| tool-switch-load-delay | Few-second load when first opening Life Tracker and Trade Balancer from the question flow |
 
 ## owner-action
 
