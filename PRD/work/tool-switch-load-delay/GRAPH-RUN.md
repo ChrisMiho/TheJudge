@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/tool-switch-load-delay`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/tool-switch-load-delay` pushed (`git ls-remote` → `21243d52`) from `.worktrees/kickoff-tool-switch-load-delay`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261016-040838` | 2026-10-15 |
 | 2 | shape | sonnet | ok | `0 → 14` | `PRD/work/tool-switch-load-delay/` (IDEA.md, README.md, STATUS.ideation) and board row committed `f5cf16f6`, pushed | 2026-10-15 |
+| 3 | define | opus | ok | `0 → 76` | `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (one block, `NFR-014` amendment), `evidence/measurements.md` (live mtgjudge.gg + local preview, throttled and unthrottled), `STATUS.refined`, board row; committed `cf3c434c`, pushed `ed3e96b8..cf3c434c`; worktree `git status --porcelain` empty; port 4917 free | 2026-10-15 |
 
 ## Open gate
 
@@ -94,8 +95,33 @@ Mechanics: change files with the Write and Edit tools. Run git as short separate
 
 Report back: outcome (`ok` or `failed`), the measurements (numbers and method), the chosen design in plain words, the files written, whether `GATE-QUESTIONS.md` exists and the stable IDs in it, the commit sha and push result, and `git status --porcelain` for the worktree.
 
+### gate-qc
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261016-040838`. Invoke the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory below) and follow its controlled mode. Tool-call cap 60 — verify directly, spawn no subagents or forks, no sleeping or polling, do not re-run the browser measurements, stay well under the cap.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory (branch `thejudge-auto/tool-switch-load-delay`).
+
+Grade `PRD/work/tool-switch-load-delay/DESIGN-BRIEF.md` together with `GATE-QUESTIONS.md` and `evidence/measurements.md` against PRD alignment and agent-readiness. In graph runs refinement proposes product truth in `GATE-QUESTIONS.md` instead of writing `PRD/sections/`, so a brief whose truth lives only in that file is the expected shape, not a finding — but check that each proposed diff applies cleanly to current `PRD/sections/` text, that it amends existing rules in place rather than contradicting them, and that each block opens with the three plain-language lines from `PRD/instructions/plain-language-standard.md`. Check that the brief's design actually addresses the owner's reported symptom (a few seconds of loading when switching from the question flow to the Life Tracker and then the Trade Balancer, seen on the live site) and that the measurements support the scope it chose.
+
+Write the report the skill produces into the package. On FAIL set the status marker the skill names. Do not edit `README.md`'s `## Preparation gate` section or `GRAPH-RUN.md` — the driver owns both. Never edit `PRD/sections/` or code.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`.
+
+Report back: PASS or FAIL, the complete findings list (each with file and line), the report path, the commit sha and push result, and `git status --porcelain`.
+
+## Mid-node relays
+
+Messages sent to a running node (not dispatches; no new attempt), verbatim.
+
+- define attempt 1, via SendMessage: Owner update: the owner says they notice the tool-switch delay on the live site, not only locally. Treat the live site as the primary measurement target (first visit, repeat visit, throttled and unthrottled), and use the local production build to confirm causes and test whether a candidate fix helps. Record in the brief that the symptom was reported on the live site. This is an observation about where to measure, not a product decision; everything else in your dispatch stands.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | owner launch request (verbatim in IDEA.md): why is there such a delay when going from the question flow to the life tracker to the trade balancer, can we fix it | answered-once | shape | — |
+| owner mid-run note: the delay is seen on the live server — relayed to define as a measurement target | answered-once | define | — |
