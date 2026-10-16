@@ -33,7 +33,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| in-depth-context-spacing | waiting bubble on one row — answer `GATE-QUESTIONS.md` (REQ-023), then merge the docs PR to build |
 
 ## deferred
 
