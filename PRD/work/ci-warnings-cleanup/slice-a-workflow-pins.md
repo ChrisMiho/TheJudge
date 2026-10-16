@@ -21,7 +21,7 @@ Move every GitHub action in the Quality Check workflow to its current major vers
 - [ ] A4. No other workflow line changes: the diff against `origin/main` touches only `uses:` and `runs-on:` lines.
 - [ ] A5. The tests that read the workflow (`scripts/ci-workflow-parity.test.mjs`, `apps/frontend/src/lib/deploymentPipeline.test.ts`) pass with no edit.
 - [ ] A6. The PR's Quality Check run: every job that runs (`static`, `backend`, three frontend shards, `coverage-merge`) succeeds and shows zero annotations, checked with `gh api repos/ChrisMiho/TheJudge/check-runs/<job-id>/annotations`. (PR run only.)
-- [ ] A7. After merge (post-merge only; `changes` and `deploy` never run on a PR): the `main` run's `changes` and `deploy` jobs succeed with zero annotations, and one live question is answered with the embedder loaded (CloudWatch shows no lexical-fallback WARN).
+Post-merge reading (not a criterion; owner-run, recorded in `GAMEPLAN.md` under `## Post-merge reading`): the `main` run's `changes` and `deploy` jobs, and one live answer with the embedder loaded.
 
 ## Verification
 

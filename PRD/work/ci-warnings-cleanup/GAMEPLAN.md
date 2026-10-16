@@ -23,7 +23,10 @@ A and B are parallel-ready. Suggested order: B then A, or either; A's workflow e
 - [ ] `npm run quality:check` passes, no test assertion edited (B)
 - [ ] Workflow has no `@v4`, exact pins, six `ubuntu-24.04` (A)
 - [ ] PR Quality Check run: zero annotations on every job that runs (A, manual, on the PR)
-- [ ] Post-merge: `changes` and `deploy` succeed with zero annotations; one live answer with the embedder loaded (A, manual, post-merge only)
+
+## Post-merge reading
+
+Owner-run, after merge (a reading, not a gate; `changes` and `deploy` never run on a PR, so the build cannot earn it): the `main` run's `changes` and `deploy` jobs succeed with zero annotations, and one live question is answered with the embedder loaded (CloudWatch shows no lexical-fallback WARN), the usual native-chain check after a deploy.
 
 ## Non-goals
 

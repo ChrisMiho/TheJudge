@@ -58,14 +58,6 @@
       "evidence": {
         "manual": true
       }
-    },
-    {
-      "id": "A7",
-      "statement": "Post-merge: changes and deploy succeed with zero annotations and a live answer loads the embedder (no lexical-fallback WARN)",
-      "value": false,
-      "evidence": {
-        "manual": true
-      }
     }
   ]
 }
