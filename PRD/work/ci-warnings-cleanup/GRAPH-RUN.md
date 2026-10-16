@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-061526/` (one file, `ci-warnings-capture.md`, copied verbatim to `intake/`)
-- Current node: `build` (attempt 1)
+- Current node: `review` (attempt 1)
 - Next action: `/graph-implement PRD/work/ci-warnings-cleanup/` resumes from the `STATUS.*` marker in `.worktrees/implement-ci-warnings-cleanup`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 4 | gate-qc (build half, attempt 1) | sonnet | ok | `0 → 10` | PASS, findings none; brief re-checked against `origin/main` `d94b34e1`: `npx eslint .` in the worktree → 19 warnings (15 fast-refresh in 9 files, `ConversationThread.tsx:173` hook deps, 3 unused-disable) = brief; six jobs in `.github/workflows/quality-check.yml` all `runs-on: ubuntu-latest`, pins checkout/setup-node/upload-artifact/download-artifact/configure-aws-credentials `@v4` as described; no `PRD/sections/` change (only mention `non-functional-requirements.md:206` stays true on `ubuntu-24.04`); no files written; README `## Preparation gate` PASS recorded by the driver; worktree and launch-checkout porcelain empty | 2026-10-16 |
 | 5 | plan | sonnet | failed | `0 → 11` | commit `fbe4d000` (= origin tip): `GAMEPLAN.md`, `slice-a-workflow-pins.md` + `slice-a.criteria.json` (7, 2 manual), `slice-b-lint-fixes.md` + `slice-b.criteria.json` (10, 1 manual), `STATUS.active`, board row under active; pins match `DESIGN-BRIEF.md:101-103`. Driver check failed it: `slice-a.criteria.json` A7 is post-merge only (`changes`/`deploy` never run on a PR, `slice-a-workflow-pins.md:24`), so `build` cannot earn it before the owner's merge and could not report `ok` honestly; precedent `PRD/instructions/receipts/follow-ups-keep-their-rules-2026-10-12.md:104` keeps post-merge checks as an owner-run GAMEPLAN reading. Re-dispatched as attempt 2 to move A7 there | 2026-10-16 |
 | 5 | plan (attempt 2) | sonnet | ok | `0 → 7` | commit `d36c13a8` (= origin tip): A7 removed from `slice-a.criteria.json` and the slice A checklist; full check from `DESIGN-BRIEF.md` criterion 5 now an owner-run `## Post-merge reading` at `GAMEPLAN.md:27`, pointer at `slice-a-workflow-pins.md:24`; slice A 6 criteria (1 manual, A6 — PR run annotations, earnable in `build`), slice B 10 (1 manual) unchanged, every `value` false; `STATUS.active` only marker; board row under active; worktree porcelain empty (published for `build`) | 2026-10-16 |
+| 6 | build | sonnet | ok | `0 → 65` | PR https://github.com/ChrisMiho/TheJudge/pull/316 (open, base `main`); 12 commits `6a6cfcf5` (A) … `cfdad454` (A6 evidence, ship-ready) = origin tip; 16/16 criteria `value: true` (A 6, B 10); reported `npm run lint` 0 errors / 0 warnings (was 19), `npm run typecheck` pass, 6 targeted test files / 119 tests pass, `ci-workflow-parity` 5/5 and `deploymentPipeline` 4/4 unedited, `npm run quality:check` 0; A6: PR run `38926130654` six jobs passed, annotations API 0 per job (final docs-only push started run `38926614536`, pending at return); no `PRD/sections/` change; `STATUS.ship-ready`; return side: launch-checkout porcelain empty before and after (identical), `classifyBuildWrites` over 42 paths (`git diff --name-only origin/main HEAD` + `.tmp/pr-body.md`) → `ok`, 0 outside `.worktrees/implement-ci-warnings-cleanup/`; worktree porcelain empty | 2026-10-16 |
 
 ## Gate verdicts
 
@@ -193,6 +194,46 @@ Flip a criterion to `true` only on evidence you actually produced; a criterion y
 Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A`, `--all`, or `.`. No `nohup`, no background `&`, no `git stash`, no `git reset --hard`, no `git clean`. Do not edit `GRAPH-RUN.md`, any `thejudge-*` skill, `.claude/settings*.json`, or `CLAUDE.md`. Stop any dev server or preview you start, and call `browser_close` if you use a browser.
 
 Report back: outcome (`ok` or `failed`), the PR URL, each commit sha with its slice, every path you wrote (absolute or worktree-relative, one per line), the criteria tally per slice, the test, lint, typecheck, and `npm run quality:check` results you ran, the A6 annotation reading, the status marker now present, and `git status --porcelain` for the worktree.
+
+### review
+
+graph is controlling
+
+You are node 7 (`review`), attempt 1, of graph run `graph-20261016-092729`: a fresh-context, no-write reviewer. You have read and search tools only — no Write, Edit, or NotebookEdit — and you must not change any file, commit, push, or comment on the PR. Tool-call cap 120. Spawn no subagents.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory (branch `thejudge-auto/ci-warnings-cleanup-work`, PR https://github.com/ChrisMiho/TheJudge/pull/316 into `main`).
+
+Inputs: the diff `git diff origin/main...HEAD` in that worktree; the slice docs `PRD/work/ci-warnings-cleanup/slice-a-workflow-pins.md` and `slice-b-lint-fixes.md` with their `.criteria.json` files; `GAMEPLAN.md` and `DESIGN-BRIEF.md`. You have not seen how the build was done, and should not ask.
+
+Rubric — the slices' own acceptance criteria, quoted:
+
+Slice A:
+- A1. `.github/workflows/quality-check.yml` contains no `@v4` action reference.
+- A2. The pins are exactly `actions/checkout@v7`, `actions/setup-node@v7`, `actions/upload-artifact@v7`, `actions/download-artifact@v8`, `aws-actions/configure-aws-credentials@v6`.
+- A3. All six `runs-on` lines read `ubuntu-24.04`; no `ubuntu-latest` remains.
+- A4. No other workflow line changes: the diff against `origin/main` touches only `uses:` and `runs-on:` lines.
+- A5. The tests that read the workflow (`scripts/ci-workflow-parity.test.mjs`, `apps/frontend/src/lib/deploymentPipeline.test.ts`) pass with no edit.
+- A6. The PR's Quality Check run: every job that runs (`static`, `backend`, three frontend shards, `coverage-merge`) succeeds and shows zero annotations, checked with `gh api repos/ChrisMiho/TheJudge/check-runs/<job-id>/annotations`. (PR run only.)
+
+Slice B:
+- B1. `npm run lint` on the work branch prints no problems (0 errors, 0 warnings).
+- B2. Each of the nine fast-refresh files is split as listed in Requirement 1 and the new files exist.
+- B3. Each `createContext` call appears exactly once in the codebase for the moved contexts (feedback seam, sheet close, brand tap, left-edge drawer, assistant seed); provider and hook share that one object.
+- B4. `ConversationThread.tsx` keeps the layout effect's dependency list exactly `[messages.length]` and calls `scrollToLatestRef.current(...)` at all three former call sites.
+- B5. The three unused `eslint-disable` comments are gone.
+- B6. `npm run typecheck` passes.
+- B7. `ConversationThread.test.tsx` and the provider-plus-hook tests (`seedContext.test.tsx`, `FeaturePortalMenu.test.tsx`, `FeedbackContextProvider.test.tsx`, `SheetShell.test.tsx`, `GameSetupPanel.test.tsx`) pass.
+- B8. `npm run quality:check` passes locally.
+- B9. No test assertion is edited: the diff of test files shows only import-path changes (reviewer reads the diff).
+- B10. `eslint.config.mjs` is unchanged.
+
+Also check the brief's behavior-preservation bar: the lint fixes change no app behavior (moved exports keep the same values; no export removed that a caller still needs — look closely at the `destinationRegistry` change, which removed aliases; scroll-to-latest is identical). Re-run lint, typecheck, the B7 tests, and the two A5 tests yourself. For A6, read the PR's latest Quality Check run on the current head (`gh pr checks 316`, then the annotations API per job); one blocking `gh pr checks 316 --watch` call (Bash timeout up to 600000 ms) is allowed if it is still running.
+
+Severity rule: Critical or Important only for a gap that breaks a quoted criterion or changes app behavior. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important — rate it Minor. Do not manufacture findings.
+
+Report back: verdict (`APPROVE` or `CHANGES REQUESTED`), each criterion A1-A6 and B1-B10 as met / not met with its evidence, every finding with severity and file:line, the commands you ran and their results, and confirm you wrote nothing (`git status --porcelain` empty).
 
 ## Instruction ledger
 
