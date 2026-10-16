@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
-- Current node: `define`
+- Current node: `gate-review`
 - Next action: `/graph-implement PRD/work/tool-switch-load-delay/`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 4 | gate-qc (build half, attempt 1) | sonnet | failed | `0 → 20` | FAIL — 4 blocking, 2 advisory; `QUALITY-CHECK.md` overwritten, commit `e256532b` (= origin tip); `STATUS.refining`; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 1 of 3) | 2026-10-15 |
 | 3 | define (build half, attempt 1) | opus | ok | `0 → 53` | commit `24176fc1` (= origin tip): all 6 findings addressed in `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (Diff 4 under NFR-014 rewording the REQ-064 ping overlap; NFR-014 verdict and reason untouched), `evidence/measurements.md` (live-site Life Tracker landing, read-only); new blocker question `Q-014` with blank slots (`GATE-QUESTIONS.md:202-252`: does a Life Tracker landing also download the card list in the background); `STATUS.refining`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts | 2026-10-15 |
 | 4 | gate-qc (build half, attempt 2) | sonnet | failed | `0 → 17` | FAIL — 1 blocking (`integrations-and-data.md:165` missing from Diff 4 and the dispositions table), 3 advisory; attempt-1 findings 1, 2, 4, 5, 6 resolved; Diff 4 applies cleanly; Q-014 meets the plain-language standard; `QUALITY-CHECK.md` commit `6edb3a71` (= origin tip); `STATUS.refining`; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 2 of 3) | 2026-10-15 |
+| 3 | define (build half, attempt 2) | opus | ok | `0 → 42` | commit `df85db45` (= origin tip): blocker fixed (Diff 4 hunk for `integrations-and-data.md:165`, intro count corrected), 3 advisories fixed (criteria 3, 4, 6); widened disposition grep over `PRD/sections/` → 96 hits, each dispositioned in `DESIGN-BRIEF.md`; Q-014 unchanged, slots blank at return; `STATUS.refining`; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts. Owner then answered Q-014 in session (accept, transcribed by the driver) | 2026-10-15 |
 
 ## Gate verdicts
 
@@ -222,6 +223,24 @@ Mechanics: change files with the Write and Edit tools. Run git as short separate
 
 Report back: outcome (`ok` or `failed`), how each of the four findings was resolved (file and line), the widened grep command and its hit count with each hit's disposition, whether Q-014 changed, files changed, the commit sha and push result, the status marker, and `git status --porcelain`.
 
+### gate-review (build half, attempt 2)
+
+graph is controlling
+
+You are the gate-resolution step (`gate-review`), attempt 2, of graph run `graph-20261016-050510` (build half of `tool-switch-load-delay`). Invoke the `graph-gate-review` skill (read `.claude/skills/graph-gate-review/SKILL.md` in the working directory below) and follow it for the one newly answered item. Spawn no subagents or forks; no sleeping or polling; stay well under 60 tool calls.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory, on branch `thejudge-auto/tool-switch-load-delay-work`.
+
+`PRD/work/tool-switch-load-delay/GATE-QUESTIONS.md` carries blocker question `Q-014` under `## Blocker questions`; the owner answered it in session and the driver transcribed the answer into its slots (`- Verdict: accept`, with the owner's words in `- Reason:`). The NFR-014 verdict (`edit`) was already applied at gate-review attempt 1 and is not to be touched. Apply the Q-014 verdict: the package's diffs must carry the accepted answer, and `DESIGN-BRIEF.md` must be reconciled to it — every passage that still offers or hedges on the other answer (for example the alternative clauses in acceptance criteria 4 and 6, the A10 assumption, and any pending-Q-014 wording in the header, the plain-terms block, or the board row) is rewritten to the accepted answer; passages that already agree stay. Bound the reconciliation to contradictions and hedges. Add a `Q-014` row to the `## Gate verdicts` table in `GATE-QUESTIONS.md`.
+
+Restore `STATUS.refined` as the only status marker (the package is awaiting a re-grade) and move the `PRD/work/STATUS.md` board row to match (remove from the old section, add to the new). Never edit `PRD/sections/` or code. Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` section — the driver owns both.
+
+Mechanics: change files with the Write and Edit tools. Run git as short separate calls (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Never chain a heredoc or `sed -i`.
+
+Report back: outcome (`ok` or `failed`), the verdict applied, a `### Brief reconciliation` list (each passage changed, before and after in one line each), files changed, the commit sha and push result, the status marker, and `git status --porcelain`.
+
 ## Mid-node relays
 
 Messages sent to a running node (not dispatches; no new attempt), verbatim.
@@ -235,3 +254,4 @@ Messages sent to a running node (not dispatches; no new attempt), verbatim.
 | owner launch request (verbatim in IDEA.md): why is there such a delay when going from the question flow to the life tracker to the trade balancer, can we fix it | answered-once | shape | — |
 | owner mid-run note: the delay is seen on the live server — relayed to define as a measurement target | answered-once | define | — |
 | owner build signal: merged, go ahead (docs PR #313 merged) | answered-once | gate-review | — |
+| owner answer to blocker Q-014: Q-014 yes, Life Tracker landings download it too — transcribed by the driver into the Q-014 verdict slot as `accept` | answered-once | define | — |

@@ -260,5 +260,5 @@ this landing; (3) building either version silently decides the other.
 
 Answer `accept` for yes (recommended) or `reject` for no.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: (owner, 2026-10-15, in session; transcribed by the driver) Q-014 yes, Life Tracker landings download it too.
