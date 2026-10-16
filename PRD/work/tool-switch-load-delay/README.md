@@ -20,7 +20,7 @@ Facts from the code. Which of these costs the seconds is unmeasured; refinement 
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/tool-switch-load-delay
+- Autonomous base: origin/main
 
 ## Evidence ranking
 

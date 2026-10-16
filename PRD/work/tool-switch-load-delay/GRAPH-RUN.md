@@ -1,10 +1,10 @@
 # Graph run — tool-switch-load-delay
 
-- Run ID: `graph-20261016-040838`
-- Profile: `loaded (env sentinel)` — printed by `npm run graph:preflight` at node 1
+- Run ID: `graph-20261016-050510` (build half; spec-forming half `graph-20261016-040838`)
+- Profile: `loaded (env sentinel)` — printed by `npm run graph:preflight` at node 1 (spec-forming half); build half `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/tool-switch-load-delay`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tool-switch-load-delay`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tool-switch-load-delay`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-040838/` (no intake staged; the request is quoted in IDEA.md)
 - Current node: `owner-action` (gate-qc PASS — spec-forming half stopped)
 - Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/tool-switch-load-delay/`
