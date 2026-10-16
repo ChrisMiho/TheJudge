@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-061526/` (one file, `ci-warnings-capture.md`, copied verbatim to `intake/`)
-- Current node: `plan` (attempt 1)
+- Current node: `plan` (attempt 2)
 - Next action: `/graph-implement PRD/work/ci-warnings-cleanup/` resumes from the `STATUS.*` marker in `.worktrees/implement-ci-warnings-cleanup`
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 11` | Quality-check PASS, findings none; recorded in README `## Preparation gate`; run stops here — docs PR opened, park at `owner-action` (`STATUS.owner-action`, board row moved) | 2026-10-16 |
 | 5 | gate-review | driver | ok | `degraded (no run state)` | build half run `graph-20261016-092729`: docs PR #315 merged (`origin/main` `d94b34e1`); kickoff worktree removed clean (`git worktree remove`); claim commit `c006c90c` on `thejudge-auto/ci-warnings-cleanup-work` cut from `origin/main` `d94b34e1`, pushed; lock taken from the launch root; graph canary `nohup true` denied; no `GATE-QUESTIONS.md` → nothing to apply, driver restored `STATUS.refined` (only marker), README status, board row under refined | 2026-10-16 |
 | 4 | gate-qc (build half, attempt 1) | sonnet | ok | `0 → 10` | PASS, findings none; brief re-checked against `origin/main` `d94b34e1`: `npx eslint .` in the worktree → 19 warnings (15 fast-refresh in 9 files, `ConversationThread.tsx:173` hook deps, 3 unused-disable) = brief; six jobs in `.github/workflows/quality-check.yml` all `runs-on: ubuntu-latest`, pins checkout/setup-node/upload-artifact/download-artifact/configure-aws-credentials `@v4` as described; no `PRD/sections/` change (only mention `non-functional-requirements.md:206` stays true on `ubuntu-24.04`); no files written; README `## Preparation gate` PASS recorded by the driver; worktree and launch-checkout porcelain empty | 2026-10-16 |
+| 5 | plan | sonnet | failed | `0 → 11` | commit `fbe4d000` (= origin tip): `GAMEPLAN.md`, `slice-a-workflow-pins.md` + `slice-a.criteria.json` (7, 2 manual), `slice-b-lint-fixes.md` + `slice-b.criteria.json` (10, 1 manual), `STATUS.active`, board row under active; pins match `DESIGN-BRIEF.md:101-103`. Driver check failed it: `slice-a.criteria.json` A7 is post-merge only (`changes`/`deploy` never run on a PR, `slice-a-workflow-pins.md:24`), so `build` cannot earn it before the owner's merge and could not report `ok` honestly; precedent `PRD/instructions/receipts/follow-ups-keep-their-rules-2026-10-12.md:104` keeps post-merge checks as an owner-run GAMEPLAN reading. Re-dispatched as attempt 2 to move A7 there | 2026-10-16 |
 
 ## Gate verdicts
 
@@ -144,6 +145,22 @@ Package: `PRD/work/ci-warnings-cleanup/`. The README `## Preparation gate` recor
 Mechanics: Write and Edit tools for files; git as short separate calls from the working directory (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Do not edit `GRAPH-RUN.md`, `PRD/sections/`, workflow files, or code.
 
 Report back: outcome (`ok` or `failed`), the slices with a one-line summary each, the criteria count per slice (and how many are manual), the files written, the commit sha and push result, the status marker now present, and `git status --porcelain` for the worktree.
+
+### plan (attempt 2)
+
+graph is controlling
+
+You are node 5 (`plan`), attempt 2, of graph run `graph-20261016-092729`. Use the `thejudge-map-out` skill (read `.claude/skills/thejudge-map-out/SKILL.md` and its `reference.md` in the working directory below) in its controlled mode. Tool-call cap 120 — spawn no subagents or forks, no sleeping or polling; this is a small correction and should take few calls.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory (branch `thejudge-auto/ci-warnings-cleanup-work`). Never write under /Users/chrismiho/Coding/Projects/TheJudge outside `.worktrees/implement-ci-warnings-cleanup`.
+
+Package: `PRD/work/ci-warnings-cleanup/`. Attempt 1 (commit `fbe4d000`) is good except one defect. Criterion A7 in `slice-a.criteria.json` and `slice-a-workflow-pins.md:24` is post-merge only: the `changes` and `deploy` jobs never run on a PR, so the `build` node cannot earn it before the owner merges, and `build` may report `ok` only when every criterion is `true`. Fix it this way: remove A7 from `slice-a.criteria.json` and from the slice doc's acceptance-criteria checklist, and record the same check, with its full wording from `DESIGN-BRIEF.md` acceptance criterion 5 (around line 240), as an owner-run post-merge reading in `GAMEPLAN.md` (a reading, not a gate — the shape `PRD/instructions/receipts/follow-ups-keep-their-rules-2026-10-12.md:104` shows) and as a pointer line in the slice doc. Keep the check itself intact — this moves where it lives, not what it checks. Leave every other criterion, slice B, the status marker, and the board row unchanged. Also confirm A6 (the PR run with zero annotations) is earnable inside `build`, since `build` opens the PR and CI runs on it; leave it as is if so.
+
+Mechanics: Write and Edit tools for files; git as short separate calls from the working directory (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Do not edit `GRAPH-RUN.md`, `PRD/sections/`, workflow files, or code.
+
+Report back: outcome (`ok` or `failed`), the criteria count per slice now (and how many are manual), where the post-merge reading now lives (file and line), the files changed, the commit sha and push result, and `git status --porcelain` for the worktree.
 
 ## Instruction ledger
 
