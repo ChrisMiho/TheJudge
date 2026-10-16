@@ -21,7 +21,9 @@
 ## Open gate
 
 - Owner action: answer `PRD/work/in-depth-context-spacing/GATE-QUESTIONS.md` (one slot, REQ-023: waiting bubble's icon, phrase and timer on one row), then merge the docs PR to build. Screenshots to compare: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-in-depth-context-spacing/PRD/work/in-depth-context-spacing/.playwright-mcp/` (local, git-ignored).
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/311
 - Resume: `/graph-implement PRD/work/in-depth-context-spacing/` after the merge.
+- Terminal state: `PARKED` (owner-action) — lock released.
 
 ## Dispatch prompts
 
