@@ -61,11 +61,6 @@ const tradeBalancer = lazyDestination(() =>
   import("../trade/TradeBalancer").then((module) => ({ default: module.TradeBalancer }))
 );
 
-const QuickLookupApp = quickLookup.Component;
-const MtgAssistantApp = mtgAssistant.Component;
-const PlayerLifeTrackerApp = playerLifeTracker.Component;
-const TradeBalancer = tradeBalancer.Component;
-
 /** Test-runtime seam only: loads every destination before a test file runs so renders stay synchronous. */
 export async function preloadPortalDestinations(): Promise<void> {
   await Promise.all([
@@ -145,27 +140,27 @@ export const PORTAL_DESTINATIONS: PortalDestination[] = [
     id: "quick-lookup",
     path: "/quick-lookup",
     label: "Quick Question",
-    render: (isActive) => <QuickLookupApp isActive={isActive} />
+    render: (isActive) => <quickLookup.Component isActive={isActive} />
   },
   {
     kind: "destination",
     id: "mtg-assistant",
     path: "/in-depth",
     label: "In-Depth Question",
-    render: (isActive) => <MtgAssistantApp isActive={isActive} />
+    render: (isActive) => <mtgAssistant.Component isActive={isActive} />
   },
   {
     kind: "destination",
     id: "player-life-tracker",
     path: "/life-tracker",
     label: "Life Tracker",
-    render: () => <PlayerLifeTrackerApp />
+    render: () => <playerLifeTracker.Component />
   },
   {
     kind: "destination",
     id: "trade-balancer",
     path: "/trade-balancer",
     label: "Trade Balancer",
-    render: () => <TradeBalancer />
+    render: () => <tradeBalancer.Component />
   }
 ];
