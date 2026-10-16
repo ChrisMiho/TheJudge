@@ -14,7 +14,7 @@ Clear the warnings and notices on the Quality Check workflow: Node 20 action dep
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/ci-warnings-cleanup
+- Autonomous base: origin/main
 
 ## Preparation gate
 

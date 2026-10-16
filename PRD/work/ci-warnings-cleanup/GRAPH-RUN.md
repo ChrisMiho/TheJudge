@@ -1,10 +1,10 @@
 # Graph run — ci-warnings-cleanup
 
-- Run ID: `graph-20261016-061526`
-- Profile: `loaded (env sentinel)` — printed by `npm run graph:preflight` at node 1
+- Run ID: `graph-20261016-061526` (spec-forming half); build half `graph-20261016-092729`
+- Profile: `loaded (env sentinel)` — printed by `npm run graph:preflight` at node 1; build half `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/ci-warnings-cleanup`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ci-warnings-cleanup`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-warnings-cleanup`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-061526/` (one file, `ci-warnings-capture.md`, copied verbatim to `intake/`)
 - Current node: `owner-action` (spec-forming half complete; gate-qc PASS)
 - Next action: owner reviews the docs PR and merges it; then `/graph-implement PRD/work/ci-warnings-cleanup/` (the background build loop picks it up from `main`)
