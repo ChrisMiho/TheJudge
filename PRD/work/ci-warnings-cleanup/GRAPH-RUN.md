@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ci-warnings-cleanup`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ci-warnings-cleanup`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261016-061526/` (one file, `ci-warnings-capture.md`, copied verbatim to `intake/`)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/ci-warnings-cleanup/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/ci-warnings-cleanup` pushed (`git ls-remote` → `f0241ec4`) from `.worktrees/kickoff-ci-warnings-cleanup`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261016-061526` | 2026-10-16 |
 | 2 | shape | sonnet | ok | `0 → 12` | `PRD/work/ci-warnings-cleanup/` (IDEA.md, README.md, STATUS.ideation, intake/ci-warnings-capture.md) and board row committed `c122658a`, pushed; local `npm run lint` = 0 errors, 19 warnings | 2026-10-16 |
+| 3 | define | opus | ok | `0 → 56` | `DESIGN-BRIEF.md`, `STATUS.refined`, board row committed `3c484ba8`, pushed; no `GATE-QUESTIONS.md` (no product-truth change) → no gate; driver re-checked chosen majors via `gh api repos/<action>/contents/action.yml?ref=<tag>` → all `node24` | 2026-10-16 |
 
 ## Open gate
 
@@ -88,6 +89,22 @@ Then write `DESIGN-BRIEF.md` per the skill. Product truth is proposed, not writt
 Mechanics: change files with the Write and Edit tools. Run git as short separate calls from the working directory (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`. Set the package status marker per the skill. Do not edit `GRAPH-RUN.md` — the driver owns the ledger.
 
 Report back: outcome (`ok` or `failed`), the verified action and runner facts (with sources), the chosen design in plain words, the files written, whether `GATE-QUESTIONS.md` exists and the stable IDs in it, the commit sha and push result, and `git status --porcelain` for the worktree.
+
+### gate-qc
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 1, of graph run `graph-20261016-061526`. Invoke the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory below) and follow its controlled mode. Tool-call cap 60 — spawn no subagents or forks, no sleeping or polling, stay well under the cap.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ci-warnings-cleanup
+
+Copy that Working directory line unchanged into any prompt you write. Work only inside that directory (branch `thejudge-auto/ci-warnings-cleanup`).
+
+Package: `PRD/work/ci-warnings-cleanup/`. Grade `DESIGN-BRIEF.md` against PRD alignment and agent-readiness per the skill. Refinement wrote no `GATE-QUESTIONS.md` and states that no `PRD/sections/` truth changes; check that claim against `PRD/sections/` (anything stating CI, workflow, runner image, action versions, or lint policy). Check that every acceptance criterion in the brief is observable and that the behavior-preservation argument for the lint fixes (especially the `ConversationThread.tsx` scroll-to-latest change) is sound against the current code. The brief's external facts (action majors and their Node runtimes, runner labels) were re-checked by the driver against each action's `action.yml`; spot-check any you doubt with `gh api` rather than memory.
+
+Write only what the skill writes on PASS or FAIL (its report and, on FAIL, the status marker change). Never edit `PRD/sections/`, workflow files, code, `GRAPH-RUN.md`, or the README `## Preparation gate` section — the driver owns the last two. Mechanics: Write and Edit tools for files; git as short separate calls from the working directory (`git add <explicit paths>`, then `git commit -m ...`, then `git push`). Never `git add -A` or `.`.
+
+Report back: verdict (`PASS` or `FAIL`), the complete findings list (or `none`), the files written, the commit sha and push result (if any), and `git status --porcelain` for the worktree.
 
 ## Instruction ledger
 
