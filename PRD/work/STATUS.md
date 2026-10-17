@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-desktop-nav | From 768px up the Life Tracker shows the shared banner, Day/Night and Game Setup on its right; phone unchanged. Proposal: REQ-248 (new), REQ-207 (amended) |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| life-tracker-desktop-nav | Align desktop Life Tracker top nav with the rest of the app; phone layout unchanged |
 
 ## owner-action
 
