@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| life-tracker-desktop-nav | From 768px up the Life Tracker shows the shared banner, Day/Night and Game Setup on its right; phone unchanged; the ☰ follows whichever header CSS shows. Re-check after QC FAIL 1 of 3. Proposal: REQ-248 (new), REQ-207 and REQ-067 (amended) |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-desktop-nav | QC PASS (attempt 2). Answer `GATE-QUESTIONS.md` (REQ-248 new: from 768px up the Life Tracker shows the shared banner with Day/Night and Game Setup on its right, phone unchanged; REQ-207 and REQ-067 amended), then merge the docs PR to build |
 
 ## deferred
 

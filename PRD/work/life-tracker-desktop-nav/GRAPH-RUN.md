@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/life-tracker-desktop-nav` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-desktop-nav` by the build half's claim)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/life-tracker-desktop-nav/`
+- Current node: `owner-action`
+- Next action: answer `PRD/work/life-tracker-desktop-nav/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/life-tracker-desktop-nav/` picks it up
 
 ## Node ledger
 
@@ -18,10 +18,14 @@
 | 3 | define | opus | ok | `0 → 93` | commit `d5bf785b` (= origin tip): `DESIGN-BRIEF.md` (38 disposition rows, 5 amend), `GATE-QUESTIONS.md` (REQ-248 new, REQ-207 amended; `## Blocker questions` none), `evidence/measurements.md` (live, dev server port 5180 at 1440×900, 768×1024, 390×844; port released, `browser_close` called), `STATUS.refined` only marker, board row moved to refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; worktree porcelain empty; REQ-248 unused in `PRD/sections/` (highest REQ-247) | 2026-10-16 |
 | 4 | gate-qc | sonnet | failed | `0 → 38` | FAIL — 1 blocking (☰ docking: `FeaturePortalMenu.tsx:182-184` skips only `[hidden]` slots, so a media-query-hidden header still counts as visible; confirmed by the driver), 3 advisory; `QUALITY-CHECK.md` commit `320ee899` (= origin tip); `STATUS.refining`, board row moved; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 1 of 3) | 2026-10-16 |
 | 3 | define (attempt 2) | opus | ok | `0 → 86` | commit `f9d4390b` (= origin tip): blocker resolved — Menu docks the ☰ into the slot with a layout box (`getClientRects`), re-checked by a `ResizeObserver`, `FeaturePortalMenu.tsx` only, no REQ-096 exception; live resize probe across 768px in `evidence/measurements.md` (port 5180 released, `browser_close`); disposition rows 39–46 added; new REQ-067 block (phone-row pointer), REQ-202 no-change reason in row 31; REQ-248 tests name the resize check attached to the PR; `GATE-QUESTIONS.md` REQ-248, REQ-207, REQ-067, blockers none; `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts | 2026-10-16 |
+| 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 19` | PASS, 0 blocking, 1 advisory (mock-strip rule may need `PageShell.tsx`; build confirms early); attempt-1 findings 1–4 resolved; 13 diff hunks match `PRD/sections/` once each; `QUALITY-CHECK.md` commit `2800cfd2` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-16 |
 
 ## Open gate
 
-- None
+- Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 2).
+- Question: answer `PRD/work/life-tracker-desktop-nav/GATE-QUESTIONS.md` — three verdict slots (REQ-248 new, REQ-207 amended, REQ-067 amended), each accept / edit / reject with a reason for edit or reject; no blocker questions.
+- Evidence: `QUALITY-CHECK.md` (PASS, commit `2800cfd2`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
+- Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/life-tracker-desktop-nav/`) picks it up.
 
 ## Dispatch prompts
 
