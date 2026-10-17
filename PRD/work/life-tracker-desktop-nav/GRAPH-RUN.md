@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/life-tracker-desktop-nav` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-desktop-nav` by the build half's claim)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/life-tracker-desktop-nav/`
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 17` | `PRD/work/life-tracker-desktop-nav/` (IDEA.md with 10 `## Prior run` lines, README.md, STATUS.ideation) and board row committed `c6563964`, pushed; worktree porcelain empty | 2026-10-16 |
 | 3 | define | opus | ok | `0 → 93` | commit `d5bf785b` (= origin tip): `DESIGN-BRIEF.md` (38 disposition rows, 5 amend), `GATE-QUESTIONS.md` (REQ-248 new, REQ-207 amended; `## Blocker questions` none), `evidence/measurements.md` (live, dev server port 5180 at 1440×900, 768×1024, 390×844; port released, `browser_close` called), `STATUS.refined` only marker, board row moved to refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; worktree porcelain empty; REQ-248 unused in `PRD/sections/` (highest REQ-247) | 2026-10-16 |
 | 4 | gate-qc | sonnet | failed | `0 → 38` | FAIL — 1 blocking (☰ docking: `FeaturePortalMenu.tsx:182-184` skips only `[hidden]` slots, so a media-query-hidden header still counts as visible; confirmed by the driver), 3 advisory; `QUALITY-CHECK.md` commit `320ee899` (= origin tip); `STATUS.refining`, board row moved; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 1 of 3) | 2026-10-16 |
+| 3 | define (attempt 2) | opus | ok | `0 → 86` | commit `f9d4390b` (= origin tip): blocker resolved — Menu docks the ☰ into the slot with a layout box (`getClientRects`), re-checked by a `ResizeObserver`, `FeaturePortalMenu.tsx` only, no REQ-096 exception; live resize probe across 768px in `evidence/measurements.md` (port 5180 released, `browser_close`); disposition rows 39–46 added; new REQ-067 block (phone-row pointer), REQ-202 no-change reason in row 31; REQ-248 tests name the resize check attached to the PR; `GATE-QUESTIONS.md` REQ-248, REQ-207, REQ-067, blockers none; `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty both checkouts | 2026-10-16 |
 
 ## Open gate
 
@@ -142,6 +143,30 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, how each finding was resolved (one line each), the mechanism chosen for the ☰ and why, the proposed stable IDs (one line each, plain words), any blocker questions, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/life-tracker-desktop-nav`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), `git status --porcelain` (must be empty), and any port released.
+
+### gate-qc (attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav
+
+You are node 4 (`gate-qc`) of graph run `graph-20261017-043546`, attempt 2, re-grading after define attempt 2. Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/life-tracker-desktop-nav/DESIGN-BRIEF.md`, together with `GATE-QUESTIONS.md` and `evidence/measurements.md` in the same folder. The previous report is `QUALITY-CHECK.md` there. Work ONLY inside the working directory above — never in /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Check in particular:
+- Each finding in the previous `QUALITY-CHECK.md` is resolved or still open, one line each.
+- The new ☰ docking mechanism (slot with a layout box via `getClientRects`, re-checked by `ResizeObserver`, change confined to `apps/frontend/src/components/portal/FeaturePortalMenu.tsx`) is consistent with the current code, with REQ-096 (layout switches by CSS, no JS viewport detection) and REQ-202, and with every screen that has one header keeping today's behavior.
+- Every proposed diff in `GATE-QUESTIONS.md` (REQ-248, REQ-207, REQ-067) matches current `PRD/sections/` text exactly once and applies cleanly; every proposed new or amended stable ID has its own block; REQ-248 is unused in `PRD/sections/`.
+- Every block opens with the three plain-language lines from `PRD/instructions/plain-language-standard.md`, with cited IDs inlined; verdict and reason slots are blank.
+- The disposition table covers every hit of the brief's own greps over `PRD/sections/`.
+- The phone Life Tracker layout (below 768px) is left unchanged; the brief is agent-ready with measurable acceptance conditions.
+
+Overwrite `QUALITY-CHECK.md` per the skill with PASS or FAIL and the complete findings. Set the status marker as the skill directs (exactly one marker; on FAIL, `STATUS.refining`, and move the `PRD/work/STATUS.md` board row fully). Do NOT write the README `## Preparation gate` section — the driver owns it. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/life-tracker-desktop-nav`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
