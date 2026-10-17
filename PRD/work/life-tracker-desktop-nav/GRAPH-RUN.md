@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/life-tracker-desktop-nav` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-desktop-nav` by the build half's claim)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/life-tracker-desktop-nav/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/life-tracker-desktop-nav` pushed (`git ls-remote` → `041eab94`) from `.worktrees/kickoff-life-tracker-desktop-nav`; launch checkout still on `main`, porcelain empty; lock `.worktrees/.graph-run.lock` runId `graph-20261017-043546` pid 6563; universal canary and graph canary `nohup true` both denied | 2026-10-16 |
 | 2 | shape | sonnet | ok | `0 → 17` | `PRD/work/life-tracker-desktop-nav/` (IDEA.md with 10 `## Prior run` lines, README.md, STATUS.ideation) and board row committed `c6563964`, pushed; worktree porcelain empty | 2026-10-16 |
+| 3 | define | opus | ok | `0 → 93` | commit `d5bf785b` (= origin tip): `DESIGN-BRIEF.md` (38 disposition rows, 5 amend), `GATE-QUESTIONS.md` (REQ-248 new, REQ-207 amended; `## Blocker questions` none), `evidence/measurements.md` (live, dev server port 5180 at 1440×900, 768×1024, 390×844; port released, `browser_close` called), `STATUS.refined` only marker, board row moved to refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; worktree porcelain empty; REQ-248 unused in `PRD/sections/` (highest REQ-247) | 2026-10-16 |
 
 ## Open gate
 
@@ -97,6 +98,29 @@ What to produce:
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, files written, the proposed stable IDs (one line each, in plain words), any blocker questions, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/life-tracker-desktop-nav`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), `git status --porcelain` of the working directory (must be empty), and the dev-server port released.
+
+### gate-qc
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav
+
+You are node 4 (`gate-qc`) of graph run `graph-20261017-043546`, attempt 1. Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/life-tracker-desktop-nav/DESIGN-BRIEF.md`, together with `GATE-QUESTIONS.md` and `evidence/measurements.md` in the same folder. Work ONLY inside the working directory above — never in /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Check in particular:
+- Every proposed diff in `GATE-QUESTIONS.md` matches current `PRD/sections/` text exactly once and applies cleanly; every proposed new or amended stable ID has its own block; REQ-248 is unused in `PRD/sections/`.
+- Every block opens with the three plain-language lines from `PRD/instructions/plain-language-standard.md`, with the substance of any cited `REQ`/`DEC` inlined; verdict and reason slots are blank.
+- The brief's disposition table covers every hit of a line-level grep over `PRD/sections/` for the Life Tracker bar and shared banner wording.
+- The phone Life Tracker layout (below 768px) is left unchanged, per the owner's request.
+- The brief is agent-ready: acceptance conditions are measurable and the desktop breakpoint is stated.
+
+Write `QUALITY-CHECK.md` in the package folder per the skill, with PASS or FAIL and the complete findings. Set the status marker as the skill directs (exactly one marker; on FAIL, `STATUS.refining`, and move the `PRD/work/STATUS.md` board row fully). Do NOT write the README `## Preparation gate` section — the driver owns it. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/life-tracker-desktop-nav`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
