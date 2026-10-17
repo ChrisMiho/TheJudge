@@ -1,4 +1,4 @@
-status: refining
+status: refined
 
 # life-tracker-desktop-nav
 
@@ -6,9 +6,9 @@ On desktop, align the Life Tracker's top navigation bar with the bar on the rest
 
 See `IDEA.md` for the verbatim request, open questions, and prior runs.
 
-- Design: `DESIGN-BRIEF.md` — from 768px up the Life Tracker shows the shared banner header, with Day/Night and Game Setup in its right-hand slot; below 768px nothing changes.
-- Proposal: `GATE-QUESTIONS.md` — new REQ-248 and an amendment to REQ-207; no blocker questions.
-- Evidence: `evidence/measurements.md` (live, 2026-10-16).
+- Design: `DESIGN-BRIEF.md` — from 768px up the Life Tracker shows the shared banner header, with Day/Night and Game Setup in its right-hand slot; below 768px nothing changes. The ☰ goes in whichever header the stylesheet shows (Design item 3).
+- Proposal: `GATE-QUESTIONS.md` — new REQ-248, amendments to REQ-207 and REQ-067; no blocker questions.
+- Evidence: `evidence/measurements.md` (live, 2026-10-16, including the Menu docking probe across 768px).
 
 Next: `/thejudge-quality-check PRD/work/life-tracker-desktop-nav/`
 

@@ -2,8 +2,9 @@
 
 - Package: `life-tracker-desktop-nav`
 - Status: refined (graph-controlled refinement, run `graph-20261017-043546`)
-- Proposal: `GATE-QUESTIONS.md` — new REQ-248, amended REQ-207, no blockers
-- Evidence: `evidence/measurements.md` (live, 2026-10-16)
+- Proposal: `GATE-QUESTIONS.md` — new REQ-248, amended REQ-207 and REQ-067, no blockers
+- Evidence: `evidence/measurements.md` (live, 2026-10-16; Menu docking probe added on define attempt 2)
+- Define attempt 2 (after quality-check FAIL 1 of 3): the ☰ docking mechanism is now chosen and recorded (Design item 3, assumption 8); the advisory findings are folded in
 
 ## The answer in one paragraph
 
@@ -109,16 +110,49 @@ So "desktop" in this change means the whole `≥ 768px` range, tablets included.
 
 ## Design
 
-1. From `768px` up, the Life Tracker mounts the shared `StagedStepHeader`
-   with `plainBrand` and a `rightSlot` holding today's Day/Night and ⚙ buttons
-   (same markup, classes, labels and handlers).
-2. Below `768px`, the tracker's current inline row stays exactly as it is.
-3. One CSS media query at `768px` decides which header shows; no JavaScript
-   viewport detection (REQ-096). `FeaturePortalMenu` already tracks every
-   registered `PortalSlot` and docks the ☰ into whichever one is visible, so
-   the ☰ follows the visible header. The build must confirm the ☰ re-docks
-   when a window is resized across `768px`, and that only one ☰ is visible
-   and focusable at any width.
+1. The Life Tracker mounts the shared `StagedStepHeader` with `plainBrand`
+   and a `rightSlot` holding today's Day/Night and ⚙ buttons (same markup,
+   classes, labels and handlers). It is shown from `768px` up.
+2. The tracker's current inline row stays exactly as it is and is shown below
+   `768px`. Both are mounted at every width (item 3). The banner portals into
+   the page shell's header slot, outside the tracker's column, so its
+   below-`768px` hide is keyed to the tracker's own shell variant
+   (`full-bleed`, used by no other destination), never to `.app-header` for
+   everyone.
+3. **Which header shows, and where the ☰ goes.** Both headers stay mounted at
+   every width, and one CSS media query at `768px` shows exactly one of them —
+   the same dual placement the Trade Balancer's price date already uses
+   (REQ-215). The ☰ is a single button that the Menu (`FeaturePortalMenu`)
+   moves into one registered `PortalSlot`. Today it picks the first slot not
+   inside an element with the HTML `hidden` attribute
+   (`FeaturePortalMenu.tsx:182-184`), so a header hidden by a media query
+   still counts as visible; measured live, the ☰ then sits at 0,0,0,0 on one
+   side of `768px` (`evidence/measurements.md`, Menu docking probe). The build
+   changes that one choice, in `FeaturePortalMenu.tsx` only:
+   - **Pick the slot the stylesheet draws.** Among registered slots not inside
+     `[hidden]`, take the first one that has a layout box
+     (`getClientRects().length > 0`, which is 0 under any `display: none`
+     ancestor). Test for a box, not a size: the slot in the header that has
+     just come on screen is still empty, possibly 0px wide, until the ☰ moves
+     into it, and it must qualify. (While the tray is open the ☰ is
+     `visibility: hidden`, DEC-150, which keeps its box, so that does not
+     move it.)
+   - **Re-check when a slot appears or disappears.** A `ResizeObserver` on
+     every registered slot re-runs the choice. The slot holding the ☰ always
+     collapses to 0×0 when its header is hidden, so every crossing of `768px`,
+     either direction, fires it (measured live). Existing re-check triggers
+     (the slot set or the active destination changing) stay.
+   - **Keep today's rule as the fallback.** If no candidate has a layout box —
+     jsdom in unit tests, which reports no boxes and has no `ResizeObserver` —
+     use the first candidate not inside `[hidden]`, exactly as today; guard
+     the observer with `typeof ResizeObserver !== "undefined"`, as
+     `ThemeSection.tsx` already does. Existing tests keep today's behaviour.
+   No JavaScript reads the viewport width, a media query, or a resize event:
+   CSS decides which header shows, and the Menu only follows what CSS drew, so
+   REQ-096 holds without an exception. Other destinations have one slot each,
+   so their ☰ does not move. `PortalSlot.tsx` does not change; its comment
+   already says the Menu "picks whichever one is currently visible", which this
+   makes true.
 4. The life table's column keeps its width and seat layout. Its height is
    re-derived so the table fills the space under the banner with no page
    scroll at every player count; the desktop page must not scroll at 1440×900
@@ -157,10 +191,40 @@ that answers it (`PRD/instructions/preparation-contract.md`).
    (one-screen fit at every player count).
 6. **Phone is out of scope entirely.** Source: the owner's own words. The
    390×844 before/after screenshots must match.
-7. **Use the shared header as it is.** Source: REQ-202 — the tracker consumes
-   shared chrome with no fork or per-destination override. `StagedStepHeader`
-   already exposes `rightSlot` and `plainBrand`, so no shared component
-   changes.
+7. **Use the shared header as it is; change one shared rule, the ☰'s slot
+   choice.** Source: REQ-202 — the tracker consumes shared chrome with no fork
+   or per-destination override. `StagedStepHeader` already exposes `rightSlot`
+   and `plainBrand`, so it does not change. One shared component does change:
+   `FeaturePortalMenu.tsx`, whose choice of slot for the ☰ must follow what
+   the stylesheet shows (Design item 3). That is a fix to shared chrome for
+   every destination, not a tracker-specific override, so REQ-202 still holds;
+   every other destination has one slot and sees no difference.
+8. **The ☰ follows the header CSS draws, through a layout-box check and a
+   `ResizeObserver`.** The question: with two tracker headers mounted, how
+   does exactly one visible, focusable ☰ stay on screen at every width and
+   across every resize past `768px`? Ladder, applied to this question alone:
+   - Rung 1 (product truth) rules out two options. Mounting only one tracker
+     header by reading `matchMedia` or the window width is a "viewport check
+     in JavaScript" that "selects a mobile/desktop layout", which REQ-096
+     forbids ("one semantic component tree renders at every viewport"; no
+     "JS-managed viewport mode"). Drawing one header and restyling it for
+     phone needs a tracker override of the shared banner (REQ-202 forbids) or
+     changes the phone look (the owner forbids).
+   - Rung 3 (established patterns) supports the remaining option: both
+     variants mounted and CSS showing one is how the Trade Balancer's price
+     date already works (REQ-215); a guarded `ResizeObserver` is already used
+     in `ThemeSection.tsx`; and `PortalSlot.tsx` already documents the intent
+     ("picks whichever one is currently visible").
+   - Rung 4 (smallest reversible scope): one predicate and one observer in
+     one file, with today's rule kept as the fallback.
+   - Rung 5 (preserve behaviour): other destinations keep one slot, so their
+     ☰ never moves; jsdom tests take the fallback and keep today's results.
+   - Live check: in Chromium the rule kept one visible, focusable ☰ at
+     768, 767, 1440 and 390 px wide, moving on each crossing from the observer
+     alone (`evidence/measurements.md`, Menu docking probe).
+   Blocker test: condition 1 fails — every option that meets REQ-248 gives the
+   player the same thing (one ☰, in the header on screen), so the choice is
+   not product behaviour. Not a blocker; no REQ-096 exception is needed.
 
 ## Amendment set — line-level grep and dispositions
 
@@ -189,12 +253,13 @@ the shared bar wording and the Life Tracker bar:
 | 15 | `shared-chrome/README.md:140–141` | Life Tracker's title stays a plain heading | No change — kept by REQ-248 |
 | 16 | `shared-chrome/README.md:579` | Where the header chrome lives | No change |
 | 17 | `functional-requirements.md:944` | REQ-045 title: inline step label in the staged header | No change — In-Depth steps |
-| 18 | `functional-requirements.md:1591, 1593, 1596` | REQ-067: one ☰ at the left of every destination's banner header, docking through the destination's `PortalSlot` | No change — at `768px`+ now literally true for the tracker; below, the ☰ still docks through the tracker's `PortalSlot`; the phone exception is recorded in REQ-207 |
+| 18 | `functional-requirements.md:1591, 1593` | REQ-067: one ☰ at the left of every destination's banner header, docking through the destination's `PortalSlot` | **Amend** (REQ-067 block): a one-clause pointer to the phone tracker's own row (REQ-207's exception) in the Description and the docking criterion, plus "through the slot in the header the stylesheet is showing" for a destination with one header per width band. Added on define attempt 2 because REQ-067 is read alone as the Menu's home rule, and below `768px` it would otherwise name a banner the phone tracker does not have |
+| 18a | `functional-requirements.md:1596` | REQ-067: the Menu lists Ask a Question, Question History, Life Tracker, Trade Balancer | No change — the Menu's rows are untouched |
 | 19 | `functional-requirements.md:1936` | REQ-081: day/night always available in the tracker header | No change — still true |
 | 20 | `functional-requirements.md:2322` | REQ-096: mobile-first automatic rules for the staged header and others | No change — REQ-248 follows it (CSS media query, no JS detection) |
 | 21 | `functional-requirements.md:2607` | REQ-105 scope note: outer shell, header, banner untouched by the chat styling | No change |
 | 22 | `functional-requirements.md:2646, 2653` | REQ-107: every destination shows the same ☰ header control; no History rail zone | No change — one ☰ per screen, same control |
-| 23 | `functional-requirements.md:2749, 2751, 2755` | REQ-111: day/night control in the tracker header | No change — the banner is the tracker's header at `768px`+ |
+| 23 | `functional-requirements.md:2749, 2751, 2755, 2760` | REQ-111: day/night control in the tracker header | No change — the banner is the tracker's header at `768px`+ |
 | 24 | `functional-requirements.md:2793` | REQ-113: open Menu reads as the full left side of the shell | No change |
 | 25 | `functional-requirements.md:2823, 2826` | REQ-114: ☰ box equals its paint; on the tracker, life taps near the header never hit the Menu | No change — REQ-248 restates the tracker check |
 | 26 | `functional-requirements.md:2859` | REQ-115: Menu-only destinations keep an opaque tray | No change |
@@ -202,7 +267,7 @@ the shared bar wording and the Life Tracker bar:
 | 28 | `functional-requirements.md:3364` | REQ-136 amendment: corner rail retired for the banner's ☰ | No change |
 | 29 | `functional-requirements.md:3437` | REQ-140: tracker → In-Depth seed on Menu selection only | No change |
 | 30 | `functional-requirements.md:3521` | REQ-143: one outside-click implementation | No change |
-| 31 | `functional-requirements.md:5114–5160` | REQ-202: tracker inherits shared chrome; no fork, no per-destination override; screenshot pair at 390×844 and 1440×900 | No change — REQ-248 consumes the shared header unforked, and its slices attach the pair |
+| 31 | `functional-requirements.md:5114–5160` | REQ-202: tracker inherits shared chrome; no fork, no per-destination override; screenshot pair at 390×844 and 1440×900 | No change — REQ-248 consumes the shared header unforked, and its slices attach the pair. No phone pointer needed: REQ-202 never says which header a destination shows or that every destination shows the banner; it lists what the tracker inherits ("the menu rail, brand mark, theme section, overlays, and page shell") and forbids forking or overriding them. The phone tracker's row holds the shared ☰ and the shared brand mark themselves, not copies, and REQ-248 keeps that row untouched, so a reader of REQ-202 alone draws no false conclusion about the header. The one shared change here (the ☰'s slot choice) applies to every destination alike, which REQ-202 allows |
 | 32 | `functional-requirements.md:5213, 5235` | REQ-203: tracker shows the brand but is excluded from the tap count; cat under the banner header | No change — REQ-248 keeps the plain brand |
 | 33 | `functional-requirements.md:5393–5400` | REQ-207: the banner; right slot shows the price date at `768px`+; header top at y=0 at every width | **Amend** (REQ-207 block, Diff 1): add the tracker's buttons to the right slot and the phone-tracker exception |
 | 34 | `functional-requirements.md:5663` | REQ-215: price date in the staged header's right slot at `768px`+ | No change — the precedent |
@@ -210,6 +275,19 @@ the shared bar wording and the Life Tracker bar:
 | 36 | `non-functional-requirements.md:241` | NFR-014: Life Tracker download size | No change — unrelated |
 | 37 | `trade-balancer/README.md:50` | Price date in the staged header's right slot | No change |
 | 38 | `in-depth/README.md:534–535` | Cat under the banner header; tracker shows the title but never counts | No change |
+| 39 | `functional-requirements.md:5679` | REQ-215 "built by slice G" file list, naming `StagedStepHeader.tsx` | No change — a historical build record for the Trade Balancer |
+| 40 | `functional-requirements.md:1921` | REQ-081 title: Player Life Tracker surface and life screen | No change — title only; REQ-081's day/night-in-header line is row 19 |
+| 41 | `functional-requirements.md:2003` | REQ-084 title: Player Life Tracker persistence and cleanup | No change — persistence untouched (REQ-248 constraint) |
+| 42 | `functional-requirements.md:2021` | REQ-085 title: Tracker to MTG Assistant game-context seed | No change — the seed is untouched |
+| 43 | `user-flows.md:229` (FLOW-010 step 2) | The Menu tray slides in and lists its rows, the current one lit | No change — same tray from the tracker's banner |
+| 44 | `user-flows.md:301` (FLOW-013 step 7) | Switching to In-Depth seeds the roster from the tracker | No change — the seed is untouched |
+| 45 | `user-flows.md:409` (FLOW-017) | On Life Tracker, Question History stays reachable from the Menu | No change — the Menu is unchanged |
+| 46 | `system-map.md:221` | Theme settings summary: palette-only Theme section in the Menu | No change — unrelated to the header |
+
+Rows 39–46 were missed in attempt 1 and found by quality-check re-running the
+same two greps; `:2760` (REQ-111's "no turn tracker" line, no change) joins
+row 23. Re-run on define attempt 2 at `50061e1f`: both greps return 68
+distinct lines, and every one falls in a row above.
 
 ## Touched files (build)
 
@@ -220,8 +298,20 @@ the shared bar wording and the Life Tracker bar:
   show/hide pair and the height fit; no change to `.app-header` itself.
 - `apps/frontend/src/components/portal/life-tracker/PlayerLifeTrackerApp.test.tsx`
   — the structure tests in REQ-248.
-- Possibly `apps/frontend/src/components/PageShell.tsx` only if the single
-  mock-strip rule needs it for the full-bleed variant (REQ-123).
+- `apps/frontend/src/components/portal/FeaturePortalMenu.tsx` — the ☰'s slot
+  choice follows the slot the stylesheet draws, re-checked by a guarded
+  `ResizeObserver` on registered slots, today's rule kept as the fallback
+  (Design item 3). Its comment at lines 176–181 is updated to match.
+- `apps/frontend/src/components/portal/FeaturePortalMenu.test.tsx` — two
+  slots registered narrow-first, with `getClientRects` and `ResizeObserver`
+  stubbed: the ☰ docks in the slot with a layout box, moves when the observer
+  reports the other slot drawn, and with no boxes reported (plain jsdom) keeps
+  today's first-not-`[hidden]` choice.
+- `apps/frontend/src/components/portal/PortalSlot.tsx` — no change.
+- Possibly `apps/frontend/src/components/PageShell.tsx`, only if the single
+  mock-strip rule needs it for the full-bleed variant (REQ-123), or if the
+  banner's below-`768px` hide needs a variant class on the shell root to key
+  on (Design item 2).
 - `PRD/sections/` edits from the approved `GATE-QUESTIONS.md`, applied by intent
   at build.
 
@@ -234,14 +324,20 @@ the shared bar wording and the Life Tracker bar:
 - One mock-mode strip in mock builds, clear of every header control.
 - At 390×844 the header and table match today's numbers, and the before/after
   screenshots match.
-- Resizing across 768px swaps headers with no reload; one ☰ visible.
-- PR carries the REQ-202 screenshot pair (390×844 and 1440×900), plus 768×1024.
+- Resizing across 768px swaps headers with no reload; exactly one ☰ visible
+  and focusable at every width, in both directions.
+- PR carries the REQ-202 screenshot pair (390×844 and 1440×900), plus 768×1024,
+  and a live resize-across-768 record: one window resized 1440 → 767 → 768 →
+  390 → 1440 without reload, with the ☰'s rect, its focusability and the count
+  of visible ☰ at each step.
 
 ## Non-goals
 
 - Any change to the phone Life Tracker.
 - Any change to the other tools' banner, the Menu tray, or the shared header
-  component.
+  component (`StagedStepHeader`). The one shared change is the Menu's choice of
+  slot for the ☰ (Design item 3); on every other destination the ☰ stays where
+  it is.
 - Any change to life totals, counters, seats, persistence, the In-Depth seed,
   or the Game Setup, Counters and confirm sheets.
 - Resizing the Day/Night and ⚙ buttons.

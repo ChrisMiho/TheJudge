@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-desktop-nav | From 768px up the Life Tracker shows the shared banner, Day/Night and Game Setup on its right; phone unchanged; the ☰ follows whichever header CSS shows. Re-check after QC FAIL 1 of 3. Proposal: REQ-248 (new), REQ-207 and REQ-067 (amended) |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| life-tracker-desktop-nav | Quality-check FAIL: the ☰ does not re-dock by CSS when a media query hides one of two tracker headers; fix the docking design, then re-check. Proposal: REQ-248 (new), REQ-207 (amended) |
 
 ## ideation
 

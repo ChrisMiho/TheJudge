@@ -95,3 +95,58 @@ owner's request keeps it as it is, so these phone numbers are the
    is 24px top and bottom (48px). The phone (12px padding) fits.
 5. The Day/Night and ⚙ controls are 36px tall today, under the 44px touch floor
    (NFR-001). Pre-existing on both widths; noted, not in this change's scope.
+
+## Menu button docking across 768px — live probe (define attempt 2)
+
+**What happened:** quality-check found that the Menu picks the ☰'s home by
+skipping only slots inside an element with the HTML `hidden` attribute
+(`FeaturePortalMenu.tsx:182-184`). I checked that live, then tried the fix on
+the same page: pick the slot the stylesheet actually draws, and re-check when
+the slot holding the ☰ changes size.
+
+**What it means:** today's rule would leave the ☰ invisible on one side of
+768px once the tracker has two headers. The fix keeps exactly one visible,
+focusable ☰ at every width tested, in both resize directions, and never reads
+the screen width in JavaScript.
+
+Setup: same Vite dev server (port 5180, this worktree at `50061e1f`, non-mock),
+Playwright Chromium, Life Tracker reached through the ☰ Menu (Ask a Question
+mounted and `hidden` behind it). No repo code changed; the probe injected a
+`<style>` and test nodes from the browser console, then the page was closed.
+
+### 1. Today's rule misses a header hidden by a media query
+
+Injected `@media (min-width: 768px) { [data-probe-hide] { display: none } }`
+and put `data-probe-hide` on the tracker's own `<header>` (standing in for the
+compact row hidden at desktop). Two `.portal-slot` nodes were in the page:
+Ask a Question's (inside `[hidden]`) and the tracker's (holding the ☰).
+
+| Width | Tracker slot inside `[hidden]`? | Tracker slot has a layout box (`getClientRects().length`) | Today's rule picks | ☰ rect |
+| --- | --- | --- | --- | --- |
+| 1440 | no | 0 | the tracker slot | 0,0,0,0 (not visible) |
+| 700 | no | 1 | the tracker slot | 14,15,44,44 |
+| 768 | no | 0 | the tracker slot | 0,0,0,0 (not visible) |
+
+A `ResizeObserver` on the slot holding the ☰ fired on every crossing: 0×0 at
+1440, 240×44 at 700, 0×0 at 768.
+
+### 2. The proposed rule keeps one ☰ on screen
+
+Two probe headers with real media queries: "wide" shown at `min-width: 768px`,
+"narrow" shown at `max-width: 767px`, each holding one slot, registered
+narrow-first (the order the quality-check feared). Rule: among slots not inside
+`[hidden]`, take the first with a layout box (`getClientRects().length > 0`);
+re-run whenever a `ResizeObserver` on any registered slot fires. One probe
+button moved by the rule.
+
+| Width (in resize order) | ☰ docked in | ☰ rect | Focusable | Visible ☰ count |
+| --- | --- | --- | --- | --- |
+| 768×1024 (start) | wide | 0,0,54,54 | yes | 1 |
+| 767×1024 | narrow | 12,100,54,54 | yes | 1 |
+| 1440×900 | wide | 0,0,54,54 | yes | 1 |
+| 390×844 | narrow | 12,100,54,54 | yes | 1 |
+
+Every move was triggered by the observer (`resize-observer` in the log), with
+no `resize` or `matchMedia` listener. Capture (gitignored):
+`PRD/work/life-tracker-desktop-nav/.playwright-mcp/dock-probe-1440x900.png`.
+Server stopped afterwards; port 5180 free.

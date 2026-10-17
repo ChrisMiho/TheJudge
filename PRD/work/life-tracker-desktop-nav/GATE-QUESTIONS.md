@@ -1,8 +1,8 @@
 # Gate questions — the desktop Life Tracker gets the same top bar as every other tool
 
-**Decide:** two slots below. One new requirement (REQ-248, reserved here) and
-one amendment to an existing one (REQ-207, the shared banner header). No
-blocker questions.
+**Decide:** three slots below. One new requirement (REQ-248, reserved here)
+and two amendments to existing ones (REQ-207, the shared banner header; REQ-067,
+the Menu button's home). No blocker questions.
 
 Every diff is against `PRD/sections/` at `731e1bc0`. Line numbers are where the
 hunk starts today. Evidence: `evidence/measurements.md`. The full reasoning and
@@ -30,7 +30,10 @@ life table sits under the banner at today's width and still fits one screen
 with no scrolling at every player count (DEC-136). Below 768px, the phone, the
 Life Tracker keeps its own row exactly as today, as you asked. 768px is where
 the app already switches the banner and the Menu from phone form to desktop
-form.
+form. So the ☰ never goes missing when a window is resized across 768px, the
+Menu's rule for where to put its button changes on every screen: it goes in
+the header that is actually showing. Every other screen has one header, so
+nothing moves there.
 
 **What happens if you say no:** the desktop Life Tracker keeps its own smaller
 header row, and switching to it from another tool still changes the top bar.
@@ -51,12 +54,13 @@ header row, and switching to it from another tool still changes the top bar.
 +  - in mock provider mode the mock-mode strip sits directly under the tracker's banner, exactly one strip is mounted, and no header control intersects it (REQ-123)
 +  - the ☰ in the tracker's banner opens the same Menu tray as on every other destination, and is hidden and not hit-testable while the tray is open (REQ-127); a life-adjust tap near the banner never opens the Menu (REQ-114)
 +  - below `768px` nothing changes: the tracker keeps its compact header row (the ☰, the brand, Day/Night and ⚙ in one row inside the page padding, no lit band), measured at 390×844 on 2026-10-16 as header 12,12,366,45, ☰ 12,13,44,44, Day/Night 265,17,69,36, ⚙ 342,17,36,36 and the table 12,65,366,759, with no page scroll; the 390×844 before/after screenshots match
-+  - resizing across `768px` swaps between the two headers with no reload and no change to the game; at any width exactly one ☰ is visible and focusable
-+  - tests cover: at `768px`+ the shared banner renders with both controls in its right-hand slot and the compact row does not; below `768px` the reverse; the brand is not a tap target on the tracker; one mock-mode strip in mock mode; the controls still flip day/night and open Game Setup. The width switch is confirmed live at 390×844, 768×1024 and 1440×900 with the REQ-202 before/after screenshot pair attached to the PR
++  - resizing across `768px`, in either direction, swaps between the two headers with no reload and no change to the game; at any width exactly one ☰ is visible and focusable, and it sits in the header on screen
++  - tests cover: at `768px`+ the shared banner renders with both controls in its right-hand slot and the compact row does not; below `768px` the reverse; the brand is not a tap target on the tracker; one mock-mode strip in mock mode; the controls still flip day/night and open Game Setup; with two slots registered, the Menu docks the ☰ in the slot the stylesheet draws, moves it when the other slot is drawn, and keeps its earlier choice when no layout is available (unit-test DOM). Live checks attached to the PR: the width switch at 390×844, 768×1024 and 1440×900 with the REQ-202 before/after screenshot pair; and a resize-across-`768px` check in one window with no reload (1440 → 767 → 768 → 390 → 1440 wide), recording at each step the ☰'s rect, that it takes keyboard focus, and that exactly one ☰ is visible
 +- Constraints:
 +  - presentation only: no change to `lib/lifeTracker/` state, persistence, the commander-damage matrix, counters, the one-way In-Depth seed, the table's seat layout, or the Game Setup, Counters and confirm sheets
-+  - the switch is a CSS media query at `768px` (the header's existing phone/desktop boundary); no JavaScript viewport detection (REQ-096)
-+  - the shared header is consumed as it is, through its existing right-hand-slot and plain-brand options; no tracker-specific fork or override of shared chrome (REQ-202)
++  - the switch is a CSS media query at `768px` (the header's existing phone/desktop boundary): both headers stay mounted at every width and the stylesheet shows one, as Trade Balancer's price date already does (REQ-215); no JavaScript viewport detection (REQ-096)
++  - the shared header is consumed through its existing right-hand-slot and plain-brand options; no tracker-specific fork or override of shared chrome (REQ-202)
++  - one shared rule changes, for every destination alike: the Menu docks its ☰ into the registered `PortalSlot` the stylesheet is drawing (a slot inside a header hidden by a media query no longer counts as visible) and re-checks whenever a registered slot appears on or leaves the screen; it never reads the viewport width, a media query or a resize event in JavaScript, so CSS alone decides the layout (REQ-096); destinations with one slot see no change
 +  - the Day/Night and ⚙ controls keep today's size; raising them to the 44px touch floor (NFR-001) is a separate change
 +- Dependencies:
 +  - REQ-207
@@ -66,6 +70,7 @@ header row, and switching to it from another tool still changes the top bar.
 +  - REQ-123
 +  - REQ-215
 +  - REQ-096
++  - REQ-067
 +  - DEC-136
 +- Notes:
 +  - reserved and proposed by the `life-tracker-desktop-nav` package (2026-10-16). Owner request, verbatim: "the desktop life tracker has a different navigation bar then the rest of the app, id like to align it for desktop like the rest of the app, the mobile verion is its own unique thing"
@@ -201,6 +206,54 @@ If you reject REQ-248 too, reject this one.
 - Verdict:
 - Reason:
 
+## REQ-067 — the Menu button's home rule names the phone Life Tracker's own row
+
+**What this decides:** whether the Menu rule (REQ-067) gets a short pointer
+saying that on the phone Life Tracker the ☰ sits in the tracker's own row, and
+that on a screen with one header per width the ☰ goes in the header showing.
+
+**In plain terms:** REQ-067 is the rule for the ☰ Menu button itself: one ☰
+"at the left of every destination's banner header", placed through that
+screen's slot for it (a `PortalSlot`, the spot in a header the ☰ moves into).
+Below 768px the Life Tracker has no banner, it has its own compact row, and
+that stays true under REQ-207's phone exception. Someone reading REQ-067 on
+its own would expect a banner there. This adds one pointer in two places: on
+the phone Life Tracker the ☰ is at the left of its own row, and where a screen
+has a different header at each width (only Life Tracker, REQ-248), the ☰ goes
+in the header that is showing. Nothing changes for the player beyond REQ-248.
+
+**What happens if you say no:** REQ-067 keeps saying every screen's ☰ sits in
+a banner. REQ-207's exception still records the phone tracker, so nothing
+breaks; the Menu rule just reads wrong on the phone Life Tracker for anyone
+who reads it alone. If you reject REQ-248, reject this one too.
+
+### Diff 1 — `PRD/sections/functional-requirements.md` (REQ-067, Description line 1591, criterion line 1593, Dependencies and Notes lines 1613–1621)
+
+```diff
+-- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — one ☰ Menu button at the left of every destination's banner header (REQ-207) — opening the registered destinations, action entries, and palette-only Theme band. Destinations come from an extensible registry rather than shipping their own entry chrome; the Menu lists **Ask a Question** (`quick-lookup`, also current while `in-depth` is open), **Question History**, **Life Tracker** (`player-life-tracker`), and **Trade Balancer** (`trade-balancer`) (REQ-206, REQ-213).
++- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — one ☰ Menu button at the left of every destination's banner header (REQ-207; below `768px` on Player Life Tracker, at the left of its own compact header row, REQ-248) — opening the registered destinations, action entries, and palette-only Theme band. Destinations come from an extensible registry rather than shipping their own entry chrome; the Menu lists **Ask a Question** (`quick-lookup`, also current while `in-depth` is open), **Question History**, **Life Tracker** (`player-life-tracker`), and **Trade Balancer** (`trade-balancer`) (REQ-206, REQ-213).
+ - Acceptance Criteria:
+-  - an icon-only ☰ Menu button sits at the left of every destination's banner header (REQ-207), docks through the destination's inline `PortalSlot`, and scrolls with that header; the viewport-fixed path remains only a defensive fallback for a future headerless destination
++  - an icon-only ☰ Menu button sits at the left of every destination's banner header (REQ-207; below `768px` on Player Life Tracker, at the left of its own compact header row, REQ-248), docks through the destination's inline `PortalSlot` — where a destination mounts one header per width band, through the slot in the header the stylesheet is showing, so exactly one ☰ is visible at every width — and scrolls with that header; the viewport-fixed path remains only a defensive fallback for a future headerless destination
+```
+
+```diff
+   - NFR-001
+   - NFR-006
+   - FLOW-010
++  - REQ-248
+ - Notes:
+   - owned by the `feature-portal` package; hidden placeholders do not count as registered destinations
+```
+
+```diff
+   - amended for the `ui-reimagining-build` pass (2026-09-30): one question door (REQ-206), Question History as a Menu row (REQ-213), and the ☰ banner trigger (REQ-207); registry, action entries, state preservation and reload persistence unchanged
++  - amended by `life-tracker-desktop-nav` (2026-10-16): a pointer to the phone Life Tracker's own header row (REQ-207's exception, REQ-248), and the ☰ docks into the slot the stylesheet is showing when a destination mounts one header per width band; registry, action entries, Theme, state preservation and reload persistence unchanged
+```
+
+- Verdict:
+- Reason:
+
 ## Blocker questions
 
 None. The one open choice — whether "desktop" starts at 768px or at 1024px —
@@ -209,3 +262,10 @@ is answered by the app's own rules: `screen-layout.md` names everything under
 banner's right-hand slot all switch from phone form to desktop form at 768px.
 The reasoning is in `DESIGN-BRIEF.md`, under Assumptions. If you want tablets
 (768–1023px) to keep the phone row instead, say so on REQ-248 with an `edit`.
+
+How the ☰ stays in the header on screen is not a question for you either:
+every way that meets REQ-248 gives the player the same result, one ☰ in the
+visible header, and the app's rules leave one way that fits (the Menu follows
+what the stylesheet draws, with no JavaScript reading the screen width). It is
+recorded in `DESIGN-BRIEF.md`, Design item 3 and assumption 8, with a live
+check in `evidence/measurements.md`.
