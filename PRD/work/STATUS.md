@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-desktop-nav | Align desktop Life Tracker top nav with the rest of the app; phone layout unchanged |
 
 ## owner-action
 
