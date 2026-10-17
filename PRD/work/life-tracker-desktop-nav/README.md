@@ -15,3 +15,9 @@ Next: `/thejudge-quality-check PRD/work/life-tracker-desktop-nav/`
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/life-tracker-desktop-nav
+
+## Preparation gate
+
+- Quality-check: FAIL
+- Checked artifact: `PRD/work/life-tracker-desktop-nav/DESIGN-BRIEF.md`
+- Findings: 1 blocking — the brief assumes the ☰ Menu button docks into whichever header is visible, but `FeaturePortalMenu.tsx:182-184` picks the first registered slot not inside a `hidden` element, so a header hidden by a CSS media query still counts as visible; with two tracker slots mounted the ☰ can stay in the hidden header across a 768px resize, breaking REQ-248's one-visible-☰ and resize criteria and clashing with REQ-096 (CSS only, no JS viewport detection). Refinement must choose and record a mechanism that fits REQ-096 and fix the brief's Design item 3, assumption 7, the touched-files list and the REQ-248 constraint wording. 3 advisory — disposition table misses grep hits (`functional-requirements.md:5679`, `:1921`, `:2003`, `:2021`; `user-flows.md:229`, `:301`, `:409`; `system-map.md:221`); REQ-067 and REQ-202 say every destination with no phone exception pointer; REQ-248 tests item should name the resize-across-768 live check attached to the PR. Full report: `QUALITY-CHECK.md`.

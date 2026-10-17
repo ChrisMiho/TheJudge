@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/life-tracker-desktop-nav` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-desktop-nav` by the build half's claim)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff PRD/work/life-tracker-desktop-nav/`
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/life-tracker-desktop-nav` pushed (`git ls-remote` → `041eab94`) from `.worktrees/kickoff-life-tracker-desktop-nav`; launch checkout still on `main`, porcelain empty; lock `.worktrees/.graph-run.lock` runId `graph-20261017-043546` pid 6563; universal canary and graph canary `nohup true` both denied | 2026-10-16 |
 | 2 | shape | sonnet | ok | `0 → 17` | `PRD/work/life-tracker-desktop-nav/` (IDEA.md with 10 `## Prior run` lines, README.md, STATUS.ideation) and board row committed `c6563964`, pushed; worktree porcelain empty | 2026-10-16 |
 | 3 | define | opus | ok | `0 → 93` | commit `d5bf785b` (= origin tip): `DESIGN-BRIEF.md` (38 disposition rows, 5 amend), `GATE-QUESTIONS.md` (REQ-248 new, REQ-207 amended; `## Blocker questions` none), `evidence/measurements.md` (live, dev server port 5180 at 1440×900, 768×1024, 390×844; port released, `browser_close` called), `STATUS.refined` only marker, board row moved to refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; worktree porcelain empty; REQ-248 unused in `PRD/sections/` (highest REQ-247) | 2026-10-16 |
+| 4 | gate-qc | sonnet | failed | `0 → 38` | FAIL — 1 blocking (☰ docking: `FeaturePortalMenu.tsx:182-184` skips only `[hidden]` slots, so a media-query-hidden header still counts as visible; confirmed by the driver), 3 advisory; `QUALITY-CHECK.md` commit `320ee899` (= origin tip); `STATUS.refining`, board row moved; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 1 of 3) | 2026-10-16 |
 
 ## Open gate
 
@@ -121,6 +122,26 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/life-tracker-desktop-nav`), and `git status --porcelain` of the working directory (must be empty).
+
+### define (attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav
+
+You are node 3 (`define`) of graph run `graph-20261017-043546`, attempt 2, after a quality-check FAIL (1 of 3). Run the `thejudge-refinement` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-desktop-nav/.claude/skills/thejudge-refinement/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/life-tracker-desktop-nav/` to resolve every finding in `PRD/work/life-tracker-desktop-nav/QUALITY-CHECK.md`. Work ONLY inside the working directory above — never in /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+The blocking finding: the brief assumes the ☰ Menu button docks into whichever header is visible, but `apps/frontend/src/components/portal/FeaturePortalMenu.tsx:182-184` picks the first registered `PortalSlot` not inside a `hidden` element, so a header hidden by a CSS media query still counts as visible. With two tracker slots mounted, the ☰ can stay in the hidden header across a resize past 768px. Read that code and `PortalSlot.tsx` yourself, choose a mechanism that keeps exactly one visible, focusable ☰ at every width and on every resize across 768px, and that fits REQ-096 (layout switches by CSS, no JS viewport detection) or records a stated, narrow exception to it in the proposal. Pick by the assumption ladder in `PRD/instructions/preparation-contract.md`, applied fresh to this one question; if it is a genuine decision blocker under the three-condition test, write it under `## Blocker questions` in `GATE-QUESTIONS.md` instead, to the plain-language standard, with blank slots. If you can, confirm the chosen mechanism live in a browser (resize across 768px on the Life Tracker) and record it in `evidence/measurements.md`; captures go under `PRD/work/life-tracker-desktop-nav/.playwright-mcp/`; call `browser_close` and stop any server you start, reporting the port as free.
+
+Then update the brief's Design item 3, assumption 7, the touched-files list (name `FeaturePortalMenu.tsx` / `PortalSlot.tsx` if they change), and the REQ-248 constraint wording in `GATE-QUESTIONS.md` to match. Also resolve the three advisory findings: add disposition rows for the missed grep hits listed in `QUALITY-CHECK.md`; for REQ-067 and REQ-202 either propose a one-clause pointer to the phone exception (as its own `## <STABLE-ID>` block with full diff and blank slots) or state in the brief why a reader of those entries alone is not misled; and name the resize-across-768 live check, attached to the PR, in REQ-248's tests item.
+
+Rules: every proposed new or amended stable ID keeps its own block with the three plain-language lines first, the complete diff, and blank `- Verdict:` / `- Reason:`. Do NOT edit `PRD/sections/` or any code; refinement proposes only. Never add a `DEC-###`. The phone layout below 768px stays out of scope. Set the status marker per the refinement skill (exactly one) and move the `PRD/work/STATUS.md` board row fully. Do not edit `QUALITY-CHECK.md` or the README `## Preparation gate` / `## Autonomous metadata` sections.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, how each finding was resolved (one line each), the mechanism chosen for the ☰ and why, the proposed stable IDs (one line each, plain words), any blocker questions, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/life-tracker-desktop-nav`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), `git status --porcelain` (must be empty), and any port released.
 
 ## Instruction ledger
 
