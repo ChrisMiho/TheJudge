@@ -25,6 +25,7 @@
 - Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 2).
 - Question: answer `PRD/work/life-tracker-desktop-nav/GATE-QUESTIONS.md` — three verdict slots (REQ-248 new, REQ-207 amended, REQ-067 amended), each accept / edit / reject with a reason for edit or reject; no blocker questions.
 - Evidence: `QUALITY-CHECK.md` (PASS, commit `2800cfd2`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/317 (`thejudge-auto/life-tracker-desktop-nav` → `main`, opened by the driver, not merged).
 - Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/life-tracker-desktop-nav/`) picks it up.
 
 ## Dispatch prompts
