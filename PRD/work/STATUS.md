@@ -33,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-desktop-nav | QC PASS (attempt 2). Answer `GATE-QUESTIONS.md` (REQ-248 new: from 768px up the Life Tracker shows the shared banner with Day/Night and Game Setup on its right, phone unchanged; REQ-207 and REQ-067 amended), then merge the docs PR to build |
 
 ## deferred
 
