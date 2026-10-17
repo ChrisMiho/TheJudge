@@ -1,101 +1,95 @@
 # Quality check — life-tracker-desktop-nav
 
-- Result: **FAIL**
-- Mode: graph-controlled (`graph is controlling`), run `graph-20261017-043546`, node `gate-qc`, attempt 1
-- Checked: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `evidence/measurements.md`
-- Status set: `STATUS.refining`
+- Result: **PASS**
+- Mode: graph-controlled (`graph is controlling`), run `graph-20261017-043546`, node `gate-qc`, attempt 2 (re-grade after define attempt 2)
+- Checked: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `evidence/measurements.md`, against `PRD/sections/` and the code at `f4ecac0d`
+- Status: left at `STATUS.refined` (the only marker; board row under `## refined`)
 
-**What happened:** the proposal is sound on product truth and form, but the
-design rests on one claim about the Menu button that the code does not support.
-A player resizing a tablet or window across 768px could end up with the ☰
-inside the hidden header.
+**What happened:** the one blocking gap from attempt 1 is closed. The brief now
+says how the ☰ follows the header the stylesheet shows, and that mechanism
+fits the code and REQ-096. A player resizing across 768px keeps exactly one
+visible ☰. The phone Life Tracker is untouched.
 
-## Blocking findings (return to refinement)
+## Blocking findings
 
-1. **The ☰ does not follow "whichever header is visible" by CSS.** The brief
-   (Design item 3) and the gate text say `FeaturePortalMenu` "already tracks
-   every registered `PortalSlot` and docks the ☰ into whichever one is
-   visible", so a pure CSS media query at 768px is enough. In
-   `apps/frontend/src/components/portal/FeaturePortalMenu.tsx` (lines 178–184)
-   the visible slot is `slotEntries.find(e => e.node.closest("[hidden]") === null)`:
-   it only skips slots inside an element with the HTML `hidden` attribute (a
-   hidden destination). A slot inside a header that a media query hides with
-   `display: none` still counts as visible. The ☰ is a single button portalled
-   into one slot, chosen on registration order and active destination, not on
-   viewport width. With two `PortalSlot`s mounted in the tracker (banner and
-   compact row), the ☰ would sit in whichever registered first and stay there
-   across a resize, so at one of the two widths the player sees no ☰ or the
-   wrong one. This breaks the REQ-248 criteria "exactly one ☰ visible and
-   focusable at any width" and "resizing across 768px swaps headers", and it
-   conflicts with the constraint "CSS media query only, no JavaScript viewport
-   detection (REQ-096)". The brief's "build must confirm" wording hides a design
-   gap, not a verification step. Refinement must choose and record a concrete,
-   REQ-096-compatible mechanism, for example: make slot selection width-aware
-   with a CSS-based visibility check, mount only one tracker `PortalSlot` at a
-   time, or document that REQ-096 allows a narrow `matchMedia` for this swap.
-   It must then correct the "Design", "Decisions and assumptions" (item 7,
-   "no shared component changes") and "Touched files" sections, and the
-   REQ-248 Constraints bullet ("consumed as it is"), to name
-   `FeaturePortalMenu.tsx` / `PortalSlot.tsx` if they change. This is a hidden
-   assumption in scope (checklist: "Scope is implementable without hidden
-   assumptions"), and it changes the "Touched files" list.
+None.
 
-## Advisory findings (not blocking; fix in the same refinement pass)
+## Previous findings, one line each
 
-2. **Disposition table misses a few hits of its own grep.** Re-running the two
-   documented greps over `PRD/sections/` (retired `decisions*` excluded) returns
-   these hits that have no row: `functional-requirements.md:5679` (REQ-215
-   "built by slice G" file list naming `StagedStepHeader.tsx`),
-   `user-flows.md:229, 301, 409` (Menu tray list, tracker seed, History stays
-   reachable), `functional-requirements.md:1921` (REQ-081 title), `:2003`, `:2021`
-   (persistence and seed requirement titles), `system-map.md:221` (Theme settings
-   summary). All are clear no-change hits, but the table claims to cover every
-   hit. Add rows or narrow the grep text so the claim holds.
-3. **REQ-067 and REQ-202 still say "every destination" with no phone exception.**
-   Row 18 and row 31 of the table mark them no-change because REQ-207 records
-   the exception. REQ-067 says the ☰ sits "at the left of every destination's
-   banner header, docking through the destination's `PortalSlot`"; below 768px
-   the phone tracker has no banner header. Consider a one-clause pointer there,
-   or state in the table why a reader of REQ-067 alone is not misled.
-4. **Screenshot rule.** REQ-202 asks for a 390×844 and 1440×900 pair; the brief
-   adds 768×1024, which is good. Make sure the REQ-248 tests item names the
-   resize-across-768 check as a live check in the PR, since that is where
-   finding 1 will show.
+1. ☰ does not follow the visible header by CSS: **resolved.** Design item 3 and
+   assumption 8 choose a layout-box check (`getClientRects().length > 0`) plus a
+   guarded `ResizeObserver`, confined to `FeaturePortalMenu.tsx`; Design item 3,
+   assumption 7, Touched files, Non-goals and the REQ-248 Constraints now name
+   that file; live probe recorded in `evidence/measurements.md` (line 99).
+2. Disposition table missed greps hits: **resolved.** Rows 39–46 added; re-ran
+   both greps over `PRD/sections/` (excluding `decisions*`): 68 distinct
+   file:line hits, every one falls in a row (REQ-202 range 5114–5160, REQ-207
+   5393–5400, shared-chrome 125–139 cover their sub-hits).
+3. REQ-067 and REQ-202 phone exception: **resolved.** REQ-067 gets its own
+   block with a phone-row pointer in Description and docking criterion; REQ-202
+   gets a written no-change reason (row 31) that holds.
+4. Resize-across-768 live check in the REQ-248 tests item: **resolved.** The
+   tests item and the brief's acceptance list name the 1440 → 767 → 768 → 390
+   → 1440 record (☰ rect, focus, visible count).
+
+## Mechanism check
+
+- Code today (`FeaturePortalMenu.tsx:182-184`): the slot is the first not inside
+  `[hidden]`; the proposal keeps that as the fallback when no slot has a box
+  (jsdom), so existing tests keep their results. `ThemeSection.tsx:98` already
+  guards `ResizeObserver` with `typeof ... === "undefined"`, as the brief says.
+  `PortalSlot.tsx` comment (lines 19–21) already says "picks whichever one is
+  currently visible"; no change there is accurate.
+- Each destination has its own `PageShell` header slot inside its
+  `DestinationOutlet` wrapper (`hidden` for inactive ones), so an inactive
+  destination's banner cannot attract the ☰. Other destinations register one
+  slot each, so their ☰ does not move.
+- REQ-096 ("no ... viewport check in JavaScript selects a mobile/desktop
+  layout"): CSS picks the header; JS only follows a layout box and an observer
+  callback, never reads width, `matchMedia` or a resize event. Consistent, no
+  exception needed.
+- REQ-202: the change is one shared rule for all destinations, not a tracker
+  override; `StagedStepHeader` is consumed through existing `rightSlot` and
+  `plainBrand`. Consistent.
+- Screens with one header keep today's behavior: stated and supported by the
+  fallback and the single-slot case.
 
 ## What passed
 
-- **Diffs apply.** All ten diff hunks in `GATE-QUESTIONS.md` match current
-  `PRD/sections/` text exactly once (REQ-207 line 5399, its REQ-213 dependency
-  tail and the `small-fixes-cats-menu-white` note, `life-tracker/README.md`
-  Backed by, What it is and Day/night header control, `screen-layout.md` line
-  89 and the Player Life Tracker row, `shared-chrome/README.md` line 125). The
-  REQ-248 append goes after REQ-247 at the end of the file (line 6605).
-- **IDs.** REQ-248 is unused anywhere in `PRD/sections/`. Each new or amended
-  stable ID (REQ-248, REQ-207) has its own block, and the two other touched
-  files (`life-tracker/README.md`, `screen-layout.md`, `shared-chrome/README.md`)
-  ride under those blocks as their built-state mirrors.
-- **Plain-language blocks.** Both blocks open with the three lines (What this
-  decides, In plain terms, What happens if you say no) and the page opens with
-  Decide. REQ-111, REQ-203, REQ-215, REQ-207 and DEC-136 are inlined by
-  substance. Verdict and Reason slots are blank.
-- **Phone unchanged.** Every artifact leaves the phone tracker alone: REQ-248
-  below 768px records the measured baseline (header 12,12,366,45; ☰ 12,13,44,44;
-  Day/Night 265,17,69,36; ⚙ 342,17,36,36; table 12,65,366,759), the brief's
-  non-goals say so, and REQ-207's exception records it.
-- **Agent-ready (apart from finding 1).** The desktop breakpoint is stated
-  (768px, with product-truth and code basis). Acceptance conditions are
-  measured: banner 0,0,W,68 and ☰ 10,7,54,54 at 1440×900 and 768×1024, document
-  height equals viewport, one mock strip, one ☰. The `StagedStepHeader`
-  `rightSlot` (shown at `md`, 768px) and `plainBrand` options exist as claimed,
-  and the tracker's current `h-[calc(100dvh-2rem)]` column explains the 16px
-  scroll the brief cites.
-- **Other checklist items.** No contradiction with
-  `shared-chrome` / `life-tracker` specs beyond finding 3; current vocabulary
-  used; no stack, endpoint or prompt change; no new screen, so the
-  `screen-layout.md` DEC-149 / REQ-126 row rule is met by the added Header row.
+- Diffs apply: all 13 diff hunks in `GATE-QUESTIONS.md` match current
+  `PRD/sections/` text exactly once (REQ-207 line 5399, dependency tail and
+  small-fixes note; REQ-067 lines 1591/1593, dependency tail and ui-reimagining
+  note; `life-tracker/README.md` three hunks; `screen-layout.md` Life Tracker
+  row and line 89; `shared-chrome/README.md` Menu bullet). The REQ-248 append
+  goes after REQ-247 (last block, file ends line 6605).
+- IDs: REQ-248 appears nowhere in `PRD/sections/`. REQ-248 (new), REQ-207 and
+  REQ-067 (amended) each have their own block; the mirror files ride under
+  the blocks that drive them.
+- Plain-language blocks: each of the three blocks opens with What this decides,
+  In plain terms and What happens if you say no; the page opens with Decide.
+  REQ-111, REQ-203, REQ-215, REQ-207, REQ-067 and DEC-136 are inlined by
+  substance. Verdict and Reason slots are blank in all three.
+- Phone unchanged: REQ-248 records the measured 390×844 baseline (header
+  12,12,366,45; ☰ 12,13,44,44; Day/Night 265,17,69,36; ⚙ 342,17,36,36; table
+  12,65,366,759); REQ-207's exception and the non-goals say so.
+- Agent-ready: breakpoint 768px with product-truth and code basis; measured
+  acceptance numbers (banner 0,0,W,68; ☰ 10,7,54,54 at 1440×900 and 768×1024;
+  document height equals viewport; one mock strip; one ☰); touched files
+  listed, including the tests.
+- Other checklist items: current vocabulary; no stack, endpoint or prompt
+  change; no new screen, and `screen-layout.md` gets a Header row (DEC-149 /
+  REQ-126).
 
-## Return to refinement
+## Advisory findings (not blocking)
 
-Fix finding 1 (record the docking mechanism, update Design, assumptions,
-touched files and REQ-248 constraints, and re-check the REQ-096 position), fold
-in advisories 2–4, then re-run quality-check.
+- The brief's Status line says "refined"; the board and `STATUS.refined`
+  agree. No action.
+- The mock-strip rule (single strip under the banner) may need a `PageShell.tsx`
+  change; the brief lists it as "possibly". Build should confirm early, as the
+  known-gap note in `shared-chrome/README.md` (rows 13) is only updated if the
+  mock-mode measurement shows the tracker cleared.
+
+## Next
+
+Quality-check PASS. The driver records the result in the README `Preparation
+gate` section; map-out follows after the owner answers the gate.
