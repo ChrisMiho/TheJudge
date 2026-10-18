@@ -1,6 +1,6 @@
 # Slice H — In-Depth's question flow loses dead wiring
 
-## Status: planned
+## Status: done
 
 Depends on: none. Findings: Q-04, Q-06, Q-08, Q-12 (hook part), Q-13, Q-19 (id part), Q-17 (these files only).
 
@@ -45,7 +45,7 @@ git diff --name-only origin/main
 
 ## Reverted findings
 
-None yet.
+None. Evidence: `slice-h.evidence.md`.
 
 ## Files touched
 

@@ -1,13 +1,10 @@
 import { debugLoggingEnabled } from "./env";
+import { randomId } from "./randomId";
 
 type DebugPayload = Record<string, unknown>;
 
 export function createCorrelationId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-
-  return `corr-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+  return randomId("corr");
 }
 
 export function logFrontendDebug(event: string, payload: DebugPayload = {}): void {

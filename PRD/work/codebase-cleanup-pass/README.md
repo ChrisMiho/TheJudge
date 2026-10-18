@@ -25,7 +25,7 @@ Built strictly in order; each ships alone.
 | E | [slice-e.md](slice-e.md) — combo matching skips incomplete combos | none | done |
 | F | [slice-f.md](slice-f.md) — prompt pipeline written once | none | done |
 | G | [slice-g.md](slice-g.md) — rule search scoring behind an order snapshot | E, F | done |
-| H | [slice-h.md](slice-h.md) — In-Depth question flow loses dead wiring | none | planned |
+| H | [slice-h.md](slice-h.md) — In-Depth question flow loses dead wiring | none | done |
 | I | [slice-i.md](slice-i.md) — scanner hook keeps only what screens use | none | planned |
 | J | [slice-j.md](slice-j.md) — dead and duplicated CSS goes; parse errors fail the build | B | planned |
 | K | [slice-k.md](slice-k.md) — Life Tracker cleanups | J | planned |

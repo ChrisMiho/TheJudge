@@ -44,7 +44,8 @@ export interface ComposerPillProps {
   placeholders?: readonly string[];
   textareaAriaLabel: string;
   submitLabel: string;
-  pendingLabel: string;
+  /** The label while `isSubmitting`; a box that is never shown mid-submit omits both. */
+  pendingLabel?: string;
   isSubmitting?: boolean;
   disabled?: boolean;
   /** When present, renders the in-depth chip at the box's bottom-left; click carries the cards and the question. */

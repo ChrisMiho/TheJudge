@@ -1,4 +1,4 @@
-import { FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { buildEnrichmentQueue, CANONICAL_ZONE_ORDER, resolveFallbackQuestion } from "../lib/contextFlow";
 import { getCardIdentityRingStyle } from "../lib/cardIdentityRing";
 import { fetchCardDetail, peekCardDetail } from "../lib/cardDetail";
@@ -39,14 +39,12 @@ type EnrichmentStepProps = {
   activePlayers: PlayerLabel[];
   question: string;
   onQuestionChange: (q: string) => void;
-  onDecryptStack: (event: FormEvent) => Promise<void>;
-  /** Look-matching pass (slice N), requirement 3: no longer rendered as a per-step
-   * "Back to zones" button — the caller's shared header ‹ is the only way back now.
-   * Kept in the prop contract so `MtgAssistantApp`'s wiring is unchanged. */
+  onDecryptStack: () => Promise<void>;
+  /** No longer rendered as a per-step "Back to zones" button — the caller's shared header ‹ is
+   * the only way back now. Kept in the prop contract so `MtgAssistantApp`'s wiring is unchanged. */
   onBack: () => void;
   canDecrypt: boolean;
   isSubmitting: boolean;
-  answer: string | null;
   error: string | null;
   canRetry: boolean;
   retryCountdown: number;
@@ -77,7 +75,6 @@ export function EnrichmentStep({
   onDecryptStack,
   canDecrypt,
   isSubmitting,
-  answer,
   error,
   canRetry,
   retryCountdown,
@@ -98,13 +95,12 @@ export function EnrichmentStep({
   // in order, with a review (not a second list mode) once every card is reviewed.
   const [cardIndex, setCardIndex] = useState(0);
   const [reviewing, setReviewing] = useState(false);
-  // Look-matching pass (slice N), requirement 9: the review plate's own "Collapse ▴"
-  // toggle and zone filter pills — presentation-only, no effect on the data submitted.
+  // The review plate's own "Collapse ▴" toggle and zone filter pills — presentation-only, no
+  // effect on the data submitted.
   const [reviewCollapsed, setReviewCollapsed] = useState(false);
   const [reviewZoneFilter, setReviewZoneFilter] = useState<ZoneId | null>(null);
-  // Look-matching pass (slice N), requirement 9: "N cards · scroll the list for the
-  // rest" (`in-depth-question.html:1072` `markReviewScroll()`) shows only once the
-  // list's own content is actually taller than its capped-height box.
+  // "N cards · scroll the list for the rest" (`in-depth-question.html:1072` `markReviewScroll()`)
+  // shows only once the list's own content is actually taller than its capped-height box.
   const reviewListRef = useRef<HTMLDivElement>(null);
   const [reviewListOverflowing, setReviewListOverflowing] = useState(false);
   const [cardAnimKey, setCardAnimKey] = useState(0);
@@ -237,9 +233,9 @@ export function EnrichmentStep({
     if (index >= 0) goToCard(index);
   }
 
-  // Look-matching pass (slice N), requirement 9: the review row's one-line summary
-  // (`in-depth-question.html:1229-1239` `summarize()`) — "cast by X" / "X's", mana
-  // spent only when the player actually set one, targets, and a quoted note.
+  // The review row's one-line summary (`in-depth-question.html:1229-1239` `summarize()`) —
+  // "cast by X" / "X's", mana spent only when the player actually set one, targets, and a
+  // quoted note.
   function summarizeReviewCard(zone: ZoneId, card: ZoneCardItem): string {
     const bits: string[] = [];
     if (zone === "stack") {
@@ -622,11 +618,10 @@ export function EnrichmentStep({
     );
   }
 
-  const hasAnswer = Boolean(answer);
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
   const showSheet = totalCards > 0 && !reviewing;
   const showReview = totalCards > 0 && reviewing;
-  const showQuestionForm = !hasAnswer && (totalCards === 0 || reviewing);
+  const showQuestionForm = totalCards === 0 || reviewing;
   const populatedZoneSummaries = CANONICAL_ZONE_ORDER.map((zone) => ({ zone, count: zones[zone]?.length ?? 0 })).filter(
     ({ count }) => count > 0
   );
@@ -635,12 +630,11 @@ export function EnrichmentStep({
   const fallbackQuestion = resolveFallbackQuestion(zones);
   const questionTextareaRef = useRef<HTMLTextAreaElement>(null);
   useAutoGrowTextarea(question, questionTextareaRef);
-  // Look-matching pass (slice N, review 1 fix — finding 3): dictation now lives
-  // entirely inside `ComposerPill` (its own `handleSubmit` already stops
-  // dictation before calling `onSubmit`), so this step no longer needs its own
-  // `useDictation` instance for the question field.
+  // Dictation lives entirely inside `ComposerPill` (its own `handleSubmit` already stops
+  // dictation before calling `onSubmit`), so this step needs no `useDictation` instance of
+  // its own for the question field.
   function handleComposerSubmit(): void {
-    void onDecryptStack({ preventDefault: () => undefined } as unknown as FormEvent);
+    void onDecryptStack();
   }
 
   // REQ-209: the review lists each card's context in words before the question box,
@@ -872,12 +866,7 @@ export function EnrichmentStep({
             </div>
           ) : null}
 
-          {hasAnswer ? (
-            <div className="plate motion-success">
-              <h2>Answer</h2>
-              <p className="whitespace-pre-wrap">{answer}</p>
-            </div>
-          ) : isSubmitting ? (
+          {isSubmitting ? (
             <AskAiWaitingPanel isSubmitting={isSubmitting} />
           ) : (
             showQuestionForm && (
@@ -919,9 +908,7 @@ export function EnrichmentStep({
                     placeholder="How does this resolve?"
                     textareaAriaLabel="Optional question"
                     submitLabel="Decrypt Stack"
-                    pendingLabel="Decrypting…"
-                    isSubmitting={isSubmitting}
-                    disabled={isSubmitting || !canDecrypt}
+                    disabled={!canDecrypt}
                     textareaRef={questionTextareaRef}
                     surfaceClassName="ambient-accent-surface ambient-accent-interactive"
                   />

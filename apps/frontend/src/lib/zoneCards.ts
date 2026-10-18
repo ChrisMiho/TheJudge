@@ -1,5 +1,6 @@
 import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
 import { deriveCardImageUrl } from "./cardImage";
+import { randomId } from "./randomId";
 import { DUPLICATE_CARD_MESSAGE, MAX_STACK_SIZE, STACK_LIMIT_MESSAGE } from "./stackLimits";
 
 // Stable per-card identity used as the React key and removal handle. This is a
@@ -7,11 +8,7 @@ import { DUPLICATE_CARD_MESSAGE, MAX_STACK_SIZE, STACK_LIMIT_MESSAGE } from "./s
 // reusing createCorrelationId() coupled instance identity to logging and let a
 // mocked-constant correlation id collapse every card onto one key.
 export function createInstanceId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-
-  return `inst-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+  return randomId("inst");
 }
 
 export type ZoneCardAddValidationResult =
@@ -33,7 +30,7 @@ export function buildZoneCardFromMetadata(card: CardMetadataItem, scanImageUrl?:
     instanceId: createInstanceId(),
     cardId: card.cardId,
     name: card.name,
-    // REQ-174/Slice C: `card.imageUrl` no longer exists on `CardMetadataItem`
+    // REQ-174: `card.imageUrl` no longer exists on `CardMetadataItem`
     // (slimmed to `imageId`); derive the full url the same way everywhere.
     imageUrl: scanImageUrl ?? deriveCardImageUrl(card.imageId),
     colors: card.colors

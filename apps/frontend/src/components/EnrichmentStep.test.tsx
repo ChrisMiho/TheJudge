@@ -224,7 +224,6 @@ describe("EnrichmentStep ruling ✎ Edit (REQ-209)", () => {
     const onStartOver = vi.fn();
     const user = renderEnrichment({
       isConversationActive: true,
-      answer: "Initial answer",
       visibleMessages: [{ role: "assistant", content: "Initial answer" }],
       frozenGameContext: singlePlayerGameContext,
       onEditRequest,
