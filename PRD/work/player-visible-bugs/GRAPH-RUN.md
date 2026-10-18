@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/player-visible-bugs` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs` (in-place shape: the session is rooted in a linked worktree, so preflight created the branch here and no kickoff worktree exists; rewritten to `<root>/.worktrees/implement-player-visible-bugs` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/.graph-intake/graph-20261018-231413/` (one file, `IDEA.md`, copied verbatim to `PRD/work/player-visible-bugs/intake/IDEA.md`, `cmp` identical; node 2 removed the staged copy after committing it)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/player-visible-bugs/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | in-place shape; branch `thejudge-auto/player-visible-bugs` created from `origin/main` and pushed (`git ls-remote` → `30149327`); porcelain empty; lock `.worktrees/.graph-run.lock` runId `graph-20261018-231413` pid 98290; universal canary `rm -rf` and graph canary `nohup` both denied | 2026-10-18 |
 | 2 | shape | sonnet | ok | `0 → 13` | `PRD/work/player-visible-bugs/` (IDEA.md with 11 `## Prior run` lines, README.md, STATUS.ideation, `intake/IDEA.md` `cmp` identical to `PRD/ideasForLater/codebase-cleanup-followups/IDEA.md`) and board row committed `0b446c9d`, pushed; porcelain empty | 2026-10-18 |
+| 3 | define | opus | ok | `0 → 131` | commits `bb969b49`, `61152941`, `c2d2ac60` (= origin tip): `DESIGN-BRIEF.md` (seven bugs; 1, 3, 5, 7 fixed to existing spec lines; 6 unreachable, no change), `GATE-QUESTIONS.md` (REQ-214 and REQ-085 amended; `## Blocker questions` none), `evidence/measurements.md` (Vite on port 5391, bugs 1–5 and part of 7 reproduced live; port released, `browser_close` called); `STATUS.refined` only marker, board row moved to refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty; node left an empty ignored `apps/frontend/node_modules/` folder (`rm -rf` denied) | 2026-10-18 |
 
 ## Open gate
 
@@ -101,6 +102,33 @@ Budget: this node has a 150 tool-call cap. Do not dispatch subagents — their c
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you nevertheless dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, files written, per bug one line (live-confirmed or code-only, the fix in plain words), the proposed stable IDs (one line each, in plain words), any blocker questions, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/player-visible-bugs`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), `git status --porcelain` of the working directory (must be empty), and the dev-server port released.
+
+### gate-qc
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs
+
+You are node 4 (`gate-qc`) of graph run `graph-20261018-231413`, attempt 1. Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/player-visible-bugs/DESIGN-BRIEF.md`, together with `GATE-QUESTIONS.md`, `IDEA.md`, `intake/IDEA.md` and `evidence/measurements.md` in the same folder. Work ONLY inside the working directory above.
+
+Check in particular:
+- The brief covers all seven bugs from section a of `intake/IDEA.md`, and orders the work so the Trade scanned-printing bug ships first, as the owner asked.
+- Each bug's stated cause matches the code at the cited file:line (re-read the code), and each fix is kept to the player's symptom.
+- Every bug the brief says is fixed to match an existing spec line cites a line that really says that; every behavior no spec line covers is either proposed in `GATE-QUESTIONS.md` or justified in the brief. Check the bug 6 claim (unreachable, no change) against the request-validation code it cites.
+- Every proposed diff in `GATE-QUESTIONS.md` matches current `PRD/sections/` text exactly once and applies cleanly; every proposed new or amended stable ID has its own block; the brief's disposition rows cover every hit of the line-level greps it names.
+- Every block opens with the three plain-language lines from `PRD/instructions/plain-language-standard.md`, with the substance of any cited `REQ`/`DEC` inlined; verdict and reason slots are blank.
+- The file collision with the pending card-search brief is handled, and bug 7 names the REQ-202 Life Tracker screenshot pair where it touches the shared stylesheet.
+- The brief is agent-ready: each bug has a measurable proof test and a touched-files list.
+
+Write `QUALITY-CHECK.md` in the package folder per the skill, with PASS or FAIL and the complete findings. Set the status marker as the skill directs (exactly one marker; on FAIL, `STATUS.refining`, and move the `PRD/work/STATUS.md` board row fully). Do NOT write the README `## Preparation gate` section — the driver owns it. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Budget: this node has a 60 tool-call cap. Do not dispatch subagents — their calls charge this node's cap.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you nevertheless dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/player-visible-bugs`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
