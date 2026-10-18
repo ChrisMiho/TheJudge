@@ -13,6 +13,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| scanner-recovers-and-runs-lighter | Slices A–C done in PR #320; slice D (smaller scan map, made from the committed map) building |
 
 ## refined
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| scanner-recovers-and-runs-lighter | Build parked: slices A–C done in PR #320; slice D (smaller scan map) needs the owner to choose how the slim map is produced — see `GRAPH-RUN.md` `## Open gate` |
 
 ## deferred
 

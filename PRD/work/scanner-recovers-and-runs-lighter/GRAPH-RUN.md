@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-055113/` (one file, `GRAPH-BRIEF-scanner.md`, copied verbatim to `PRD/work/scanner-recovers-and-runs-lighter/intake/`)
-- Current node: `owner-action` (parked after `build` attempt 1)
-- Next action: answer the slice D question under `## Open gate`, then `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` re-enters at `build` attempt 2 (slice D only)
+- Current node: `build` (attempt 2, slice D only)
+- Next action: `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` (resume from the `STATUS.*` marker in the build worktree)
 
 ## Node ledger
 
@@ -24,10 +24,11 @@
 
 ## Open gate
 
+- RESOLVED 2026-10-18: the owner chose the recommendation — the slim scan map is produced from the committed map by a committed script step that drops only the image-address field; resumed at `build` attempt 2 for slice D only. Lock re-taken (run `graph-20261018-063434`, pid 6563); graph canary `nohup true` denied.
 - Terminal state: PARKED at `owner-action` after `build` attempt 1 (2026-10-18). Slices A–C are built and in PR #320; slice D is not.
 - Question: how should the slimmer scan map (REQ-048: the scan map stops storing image addresses) be produced? The rule in the brief was "rebuild only with `npm run data:scan-map`", but that script reads your local card dump, which is a newer card snapshot than the one the committed map — and the scanner's fingerprint file `cardhashes.bin` — were built from. Rebuilding from it would list 3,936 printings the scanner has no fingerprint for, lose 17 it does, and change 4 names or oracle ids, so the map and the fingerprints would disagree.
 - Recommendation: produce the slim map from the committed map itself — a committed script step that drops only the image-address field and leaves every key, `oracleId` and `name` byte-for-byte, so it stays paired with the fingerprint file — and keep the build-script change so the next full rebuild emits the slim shape too. Before the rebuild the builder confirmed all 95,895 committed image addresses are the derived address plus a `?<timestamp>`, with 0 exceptions, so nothing is lost. A full map-plus-fingerprint refresh stays its own later change.
-- Owner answer: <blank — answer here, or in the session>
+- Owner answer (in the session, 2026-10-18): go with the recommendation, finish slice D.
 - Also for the owner: two screenshots landed in the launch checkout, outside the build folder (gitignored, untracked): `PRD/work/scanner-recovers-and-runs-lighter/.playwright-mcp/a-failed.png` and `a-recovered.png`. The builder's removal was denied, so delete them yourself.
 - Evidence: `slice-d.md` `## Handoff` and `slice-d.evidence.md` (uncommitted in the build worktree, together with the slice D code: `scripts/build-card-scan-map.mjs`, `resolveScanCandidates.ts`, five test files — reported green); `## Node ledger` row 6; PR https://github.com/ChrisMiho/TheJudge/pull/320.
 - Resume: once answered, `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` re-enters at `build` attempt 2 for slice D only, then `review` grades all four slices.
@@ -264,9 +265,43 @@ When all four slices are done, set `STATUS.ship-ready` per the skill (exactly on
 
 Return a report with: `outcome: ok|failed|blocked`; the PR URL; one commit sha per slice and the origin tip (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`); criteria counts per slice (`true`/total); the exact final lines printed by `npm --workspace apps/frontend run test`, `npm run typecheck`, `npm run quality:check`, and the frontend build; the `PRD/sections/` files changed; the scan-map comparison result and size before/after; the status marker; `git status --porcelain` of the working directory (must be empty); the dev-server port released; and a complete list of every file path you wrote or deleted, as absolute paths, one per line, under a `### Paths written` heading.
 
+### build (attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter
+
+You are node 6 (`build`) of graph run `graph-20261018-063434`, attempt 2. Run the `thejudge-implement-all` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter/.claude/skills/thejudge-implement-all/SKILL.md and everything it tells you to read, and follow it in graph-controlled mode) on the package `PRD/work/scanner-recovers-and-runs-lighter/`, resuming at slice D only. Slices A, B and C are done and committed (`7ad402aa`, `be7fe746`, `ad5a0957`); do not redo them. Shared branch: `thejudge-auto/scanner-recovers-and-runs-lighter-work`, checked out in the working directory above and pushed; work in it in place. The code PR is already open: https://github.com/ChrisMiho/TheJudge/pull/320 (`thejudge-auto/scanner-recovers-and-runs-lighter-work` → `main`). Never merge or close it.
+
+Work ONLY inside the working directory above. Every file you write — code, tests, `PRD/sections/`, slice docs, criteria, evidence, screenshots — lies under /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter/. Give every Playwright screenshot an ABSOLUTE filename under /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter/PRD/work/scanner-recovers-and-runs-lighter/.playwright-mcp/ — attempt 1 used a relative name and the files landed in the launch checkout, which failed the node. Do not write to the session scratchpad or any other directory outside the worktree.
+
+Where slice D stands: its code is written and uncommitted in the worktree (`scripts/build-card-scan-map.mjs` emits `{ oracleId, name }`, `getImageUrl` removed; `resolveScanCandidates.ts` derives the image through `deriveCardImageUrl` with the oracle-level fallback; five test files updated), with a `## Handoff` block in `slice-d.md` and `slice-d.evidence.md`. Read both first. Attempt 1 stopped because `npm run data:scan-map` over the local card dump rebuilt 99,814 entries against the committed 95,895: the local dump is a newer Scryfall snapshot than the one the committed map and the fingerprint file `cardhashes.bin` were built from (manifest `sourceSnapshot.sha256` `07f75dcc…`; local dump `f178c478…`).
+
+The owner's decision for slice D (recorded under `## Open gate`): produce the slim map from the committed map itself. Implement it this way:
+1. Add one committed, tested script step that reads the committed `apps/frontend/public/data/cardScanMap.json`, removes only the `imageUrl` field from every entry, and writes the map back with every key, `oracleId` and `name` unchanged, in the same key order and the same JSON formatting `build-card-scan-map.mjs` writes. Make it idempotent (a second run changes nothing). Your choice of shape — a flag on `build-card-scan-map.mjs` or a small separate script with a `package.json` entry — but exactly one obvious command, and a `node --test` test beside it that runs under `npm run test:scripts`.
+2. Keep the `build-card-scan-map.mjs` change, so the next full rebuild from a matching snapshot also emits the slim shape.
+3. Do not read the local card dump at all this attempt: no symbolic link, no `npm run data:scan-map` over it, no `npm run data:refresh`, no Scryfall download. Never hand-edit the map.
+4. Run the step on the committed map. Then compare against `git show HEAD:apps/frontend/public/data/cardScanMap.json`: same 95,895 keys, identical `oracleId` and `name` per key, `imageUrl` the only field gone. Any other difference stops the slice and parks. Record the comparison output and the `gzip -c … | wc -c` size before and after in `slice-d.evidence.md`.
+5. Amend `slice-d.md` (Requirements 3–5 and the matching acceptance criteria lines) and `slice-d.criteria.json` (D3 and D5: their text and evidence) to the owner's decision, citing `GRAPH-RUN.md` `## Open gate` as the source; leave every other criterion's meaning unchanged. D5 becomes: no card dump was read or linked, and nothing from it is staged.
+6. Apply REQ-048 and REQ-066 to `PRD/sections/` by intent from the accepted `GATE-QUESTIONS.md` diffs, against current text. Where the accepted text describes how the map is produced, keep it true to what you built; never change the product rule itself. Never add a `DEC-###` entry.
+7. Live check D11: run the dev server and confirm a scanned (or previewed) printing shows its picture from the derived address. Start the server with the Bash tool's `run_in_background` option (never `&` or `nohup`), call `browser_close` when done, stop the server with `kill <pid>` (never `pkill`/`killall`), and report the port free.
+
+Acceptance criteria: a criterion flips to `true` only after you have run its evidence command or touched its evidence path; a `manual` one needs a dated observation line naming its id in `slice-d.evidence.md`. The node is `ok` only when every criterion in all four criteria files is `true`. Report what each command printed; never call a passing criterion proof of correctness.
+
+Verification before finishing: `npm --workspace apps/frontend run test`, `npm run test:scripts`, `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run quality:check` (if the permission system denies it, do not retry; run its parts separately and say so), and the frontend production build `npm --workspace apps/frontend run build`.
+
+Finish: commit slice D with explicit paths (one commit), push, set `STATUS.ship-ready` per the skill (exactly one marker), move the `PRD/work/STATUS.md` board row fully, and update PR #320 with `gh pr edit` so its title reads READY instead of BLOCKED and its body covers all four slices, ending with these two lines: a line reading 🤖 Generated with [Claude Code](https://claude.com/claude-code) and then a line with https://claude.ai/code/session_01MyoXR52i9TAid8cFQd7vZ3
+
+Budget: this node has a 4000 tool-call cap that counts every call, including any subagent's. Subagent fan-out is off: work as a single agent; spawn no subagents or forks. No sleeping or polling loops.
+
+Mechanics: change files with the Write and Edit tools only — no heredocs, no `python3`/`node -e` edits of source files, no `sed -i`, no long chained Bash. Run git as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`, never force-push, never `git stash`, never `git reset --hard` or `git clean`. Never edit `.claude/`, `CLAUDE.md`, any `thejudge-*` skill, or `GRAPH-RUN.md` (the driver owns it). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a report with: `outcome: ok|failed|blocked`; the PR URL and its new title; the slice D commit sha and the origin tip (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`); criteria counts per slice (`true`/total); the exact final lines printed by each verification command; the `PRD/sections/` files changed; the slim step's command, the comparison result, and the gzip size before/after; the status marker; `git status --porcelain` of the working directory (must be empty); the dev-server port released; and a complete list of every file path you wrote or deleted, as absolute paths, one per line, under a `### Paths written` heading.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | Scanner recovers from a failed download, builds its data once, and shares one panel across tools | answered-once | shape | — |
 | owner build signal: verdicts merged (PR #319, accept all five), then invoked `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` | answered-once | gate-review | — |
+| "go with your recommendation, finish slice D" (answering the build park: produce the slim scan map from the committed map by a committed step that drops only the image address) | answered-once | build | — |

@@ -1,4 +1,4 @@
-status: owner-action
+status: active
 
 # scanner-recovers-and-runs-lighter
 
