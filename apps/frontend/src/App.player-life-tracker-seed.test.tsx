@@ -10,28 +10,12 @@ import {
   setCommanderDamage
 } from "./lib/lifeTracker/state";
 import { saveTrackerState, TRACKER_STORAGE_KEY } from "./lib/lifeTracker/persistence";
-import { expandSecondaryPlayerDetails,
-  navigateToPath,
-  startOnInDepthQuestion
+import {
+  expandSecondaryPlayerDetails,
+  startOnInDepthQuestion,
+  selectDestination
 } from "./test/appTestHelpers";
-
-function createMemoryStorage(): Storage {
-  const entries = new Map<string, string>();
-  return {
-    get length() {
-      return entries.size;
-    },
-    clear: () => entries.clear(),
-    getItem: (key) => entries.get(key) ?? null,
-    key: (index) => Array.from(entries.keys())[index] ?? null,
-    removeItem: (key) => {
-      entries.delete(key);
-    },
-    setItem: (key, value) => {
-      entries.set(key, String(value));
-    }
-  };
-}
+import { createMemoryStorage } from "./test/memoryStorage";
 
 function seededTrackerState() {
   let state = createInitialState(4, 40);
@@ -44,16 +28,6 @@ function seededTrackerState() {
 // REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
 // "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
 // Question" is reached by direct navigation instead of a menu click.
-async function selectDestination(user: ReturnType<typeof userEvent.setup>, name: string): Promise<void> {
-  if (name === "In-Depth Question") {
-    await navigateToPath("/in-depth");
-    return;
-  }
-  const menuLabel = name === "Quick Question" ? "Ask a Question" : name;
-  await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
-}
-
 // REQ-206 (slice C, 2026-10-01): the Life Tracker -> Assistant roster-seed hand-off's
 // only live trigger now is Ask a Question's "Add in-depth details" carry — the Menu's
 // retired "In-Depth Question" row was the old one-hop gesture; this is the new one-hop

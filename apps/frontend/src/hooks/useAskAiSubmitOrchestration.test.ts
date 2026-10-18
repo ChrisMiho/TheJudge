@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { LookupAskAiPayload, ZoneAskAiPayload } from "../lib/contextFlow";
 import { useAskAiSubmitOrchestration } from "./useAskAiSubmitOrchestration";
+import { jsonResponse } from "../test/appTestHelpers";
 
 const { createCorrelationIdMock, logFrontendDebugMock } = vi.hoisted(() => ({
   createCorrelationIdMock: vi.fn(),
@@ -12,13 +13,6 @@ vi.mock("../lib/debugLogger", () => ({
   createCorrelationId: createCorrelationIdMock,
   logFrontendDebug: logFrontendDebugMock
 }));
-
-function jsonResponse(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "Content-Type": "application/json", ...headers }
-  });
-}
 
 const payloadFixture: ZoneAskAiPayload = {
   question: "How does this resolve?",

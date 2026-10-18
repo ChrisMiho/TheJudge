@@ -3,12 +3,30 @@ import { resolve } from "node:path";
 import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NO_MATCH_COPY } from "../lib/search";
+import { createMemoryStorage } from "./memoryStorage";
 import type { CardDetailBlock } from "../lib/cardDetail";
 import type { CardMetadataItem } from "../types";
 
 export const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
 export const flowCss = readFileSync(resolve(process.cwd(), "src/styles/flow.css"), "utf8");
 export const shellCss = readFileSync(resolve(process.cwd(), "src/styles/shell.css"), "utf8");
+
+/** The `{ ... }` block (balanced braces) that starts at the first `startMarker` in `index.css`, or "" when absent. */
+export function cssBlock(startMarker: string): string {
+  const start = appCss.indexOf(startMarker);
+  if (start === -1) return "";
+
+  const openingBrace = appCss.indexOf("{", start);
+  let depth = 0;
+
+  for (let index = openingBrace; index < appCss.length; index += 1) {
+    if (appCss[index] === "{") depth += 1;
+    if (appCss[index] === "}") depth -= 1;
+    if (depth === 0) return appCss.slice(start, index + 1);
+  }
+
+  return "";
+}
 
 /**
  * Test-fixture shape: the slim up-front `CardMetadataItem` fields (REQ-174)
@@ -91,23 +109,7 @@ export function getUrlFromRequest(input: RequestInfo | URL): string {
   return input.url;
 }
 
-export function createMemoryStorage(): Storage {
-  const map = new Map<string, string>();
-  return {
-    get length() {
-      return map.size;
-    },
-    clear: () => map.clear(),
-    getItem: (key: string) => (map.has(key) ? (map.get(key) as string) : null),
-    setItem: (key: string, value: string) => {
-      map.set(key, String(value));
-    },
-    removeItem: (key: string) => {
-      map.delete(key);
-    },
-    key: (index: number) => Array.from(map.keys())[index] ?? null
-  };
-}
+export { createMemoryStorage };
 
 export function installMemoryLocalStorage(): void {
   const storage = createMemoryStorage();
@@ -173,6 +175,23 @@ export async function navigateToPath(path: string): Promise<void> {
     window.history.pushState({ idx: currentIdx + 1, key: Math.random().toString(36).slice(2) }, "", path);
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
+}
+
+/** Switches feature by name: In-Depth Question by URL, every other one through the Menu. */
+export async function selectDestination(user: ReturnType<typeof userEvent.setup>, name: string): Promise<void> {
+  if (name === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = name === "Quick Question" ? "Ask a Question" : name;
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
+}
+
+/** Opens Question History from the Menu. */
+export async function openHistory(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: "Question History" }));
 }
 
 export function startOnInDepthQuestion(): void {

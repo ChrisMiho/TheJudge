@@ -14,7 +14,8 @@ import {
   uninstallMemorySessionStorage,
   startOnInDepthQuestion,
   setSelectedZones,
-  finishEnrichmentWizard
+  finishEnrichmentWizard,
+  openHistory
 } from "./test/appTestHelpers";
 
 // REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
@@ -32,11 +33,6 @@ async function switchToDestination(user: ReturnType<typeof userEvent.setup>, lab
 
 // REQ-114/115/213: the dedicated "Conversation history" rail icon retires — History
 // opens from the Menu's "Question History" row instead.
-async function openHistory(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: "Question History" }));
-}
-
 // A history row's select button and its Delete control (DEC-143) both mention the question
 // preview in their accessible name, so selecting a row by preview text alone is ambiguous —
 // exclude the delete control's "Delete: ..." name to land on the select button.

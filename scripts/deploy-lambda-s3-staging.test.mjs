@@ -3,6 +3,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import test from "node:test"
+import { codeOnly } from "./lib/shell-source.mjs"
 
 /**
  * Both AWS scripts that install the Lambda's code must stage the package in S3
@@ -28,15 +29,6 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 
 /** The scripts that install Lambda code, and must therefore stage via S3. */
 const DEPLOY_SCRIPTS = ["aws-deploy.sh", "aws-bootstrap.sh"]
-
-/** Drop whole-line shell comments so explanatory prose (which names these very
- *  flags) can neither satisfy nor trip an assertion — only real commands count. */
-function codeOnly(source) {
-  return source
-    .split("\n")
-    .filter((line) => !/^\s*#/.test(line))
-    .join("\n")
-}
 
 for (const script of DEPLOY_SCRIPTS) {
   test(`${script} stages the Lambda package in S3, never inline --zip-file`, () => {

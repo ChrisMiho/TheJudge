@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
@@ -8,10 +6,10 @@ import { CardSelectionPreview } from "./CardSelectionPreview";
 import { ConversationThread } from "./ConversationThread";
 import { FrozenGameContextDetails } from "./FrozenGameContextDetails";
 import type { CardMetadataItem, ConversationMessage, GameContext } from "../types";
+import { appCss } from "../test/appTestHelpers";
 
 afterEach(cleanup);
 
-const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
 
 const cardWithoutImage: CardMetadataItem = {
   cardId: "opt",

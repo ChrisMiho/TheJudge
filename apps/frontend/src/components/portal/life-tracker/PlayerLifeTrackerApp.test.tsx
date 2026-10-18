@@ -5,24 +5,7 @@ import { useState } from "react";
 import { DestinationOutlet } from "../DestinationOutlet";
 import type { DestinationId, PortalDestination } from "../../../lib/portal/types";
 import { PlayerLifeTrackerApp } from "./PlayerLifeTrackerApp";
-
-function createMemoryStorage(): Storage {
-  const entries = new Map<string, string>();
-  return {
-    get length() {
-      return entries.size;
-    },
-    clear: () => entries.clear(),
-    getItem: (key) => entries.get(key) ?? null,
-    key: (index) => Array.from(entries.keys())[index] ?? null,
-    removeItem: (key) => {
-      entries.delete(key);
-    },
-    setItem: (key, value) => {
-      entries.set(key, String(value));
-    }
-  };
-}
+import { createMemoryStorage } from "../../../test/memoryStorage";
 
 function trackerCards(): HTMLElement[] {
   return screen.getAllByTestId(/^life-card-Player /);

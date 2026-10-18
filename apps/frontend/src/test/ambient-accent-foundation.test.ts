@@ -1,26 +1,10 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { appCss, cssBlock } from "./appTestHelpers";
 
-const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
 const contractStart = "/* Ambient accent surface contract */";
 const contractEnd = "/* End ambient accent surface contract */";
-
-function cssBlock(startMarker: string): string {
-  const start = appCss.indexOf(startMarker);
-  if (start === -1) return "";
-
-  const openingBrace = appCss.indexOf("{", start);
-  let depth = 0;
-
-  for (let index = openingBrace; index < appCss.length; index += 1) {
-    if (appCss[index] === "{") depth += 1;
-    if (appCss[index] === "}") depth -= 1;
-    if (depth === 0) return appCss.slice(start, index + 1);
-  }
-
-  return "";
-}
 
 function ambientContract(): string {
   const start = appCss.indexOf(contractStart);

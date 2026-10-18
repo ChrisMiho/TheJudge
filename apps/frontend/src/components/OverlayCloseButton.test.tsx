@@ -1,15 +1,12 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { createRef } from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { OverlayCloseButton } from "./OverlayCloseButton";
+import { appCss, shellCss } from "../test/appTestHelpers";
 
 afterEach(cleanup);
 
-const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
-const shellCss = readFileSync(resolve(process.cwd(), "src/styles/shell.css"), "utf8");
 
 describe("Frontend - Shared", () => {
   describe("OverlayCloseButton", () => {

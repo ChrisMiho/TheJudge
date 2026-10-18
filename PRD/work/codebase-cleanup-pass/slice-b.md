@@ -1,6 +1,6 @@
 # Slice B — Frontend tests: lighter setup, shared helpers
 
-## Status: planned
+## Status: done
 
 Depends on: none. Findings: T-03, T-04.
 
@@ -41,7 +41,10 @@ git diff --name-only origin/main
 
 ## Reverted findings
 
-None yet.
+Not applied, because replacing them would change what the test does (details in `slice-b.evidence.md`):
+
+- `queueAskAiResponses` in `App.answered-state.test.tsx` and `App.theming.test.tsx`: a setter over each file's own fetch mock and queue, not a copy of the harness function.
+- `selectDestination` in `App.mtg-color-themes.test.tsx` (uses its own `openPortalMenu`) and `jsonResponse` in `lib/trade/fetchCardPrintings.test.ts` (returns a plain object).
 
 ## Files touched
 

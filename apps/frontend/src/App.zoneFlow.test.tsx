@@ -84,7 +84,7 @@ vi.mock("./components/ScanCameraSurface", () => ({
 
 import App from "./App";
 import { PHASE_ZONE_DEFAULTS } from "./lib/contextFlow/phaseZoneDefaults";
-import { startOnInDepthQuestion, toSlimMetadata, type CardFixture } from "./test/appTestHelpers";
+import { startOnInDepthQuestion, toSlimMetadata, type CardFixture, jsonResponse } from "./test/appTestHelpers";
 
 const metadataFixture: CardFixture[] = [
   {
@@ -112,13 +112,6 @@ const metadataFixture: CardFixture[] = [
     subtypes: []
   }
 ];
-
-function jsonResponse(payload: unknown, status = 200): Response {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
-}
 
 function binaryResponse(bytes: Uint8Array): Response {
   const body = new ArrayBuffer(bytes.byteLength);
