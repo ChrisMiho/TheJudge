@@ -184,15 +184,6 @@ h1, h2, .display {
   justify-self: start;
 }
 
-.header-side {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
 /* the brand mark: a breathing orb of the colour's badge, the wordmark, the tagline */
 .brand-mark {
   display: inline-flex;
@@ -842,51 +833,10 @@ h1, h2, .display {
   padding: 1rem 0 2rem;
 }
 
-.card-panel {
-  background: var(--surface-panel);
-  border: 1px solid var(--surface-edge);
-  border-radius: 0.9rem;
-  padding: 1rem;
-}
-
 /* (round 6) the hairline corner brackets of rounds 4–5 are gone — the owner
    read them as sci-fi. No lit surface carries corner decoration now. */
 
 /* ---- Generic overlay (feedback modal / view-context) --- */
-
-.overlay-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(2px);
-  z-index: 40;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-[data-open="true"].overlay-backdrop {
-  display: flex;
-}
-
-.overlay-panel {
-  background: var(--surface-panel);
-  border: 1px solid var(--surface-edge);
-  border-radius: 0.9rem;
-  max-width: 28rem;
-  width: 100%;
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: 1rem;
-  position: relative;
-}
-
-.overlay-panel .overlay-close {
-  position: absolute;
-  top: 0.4rem;
-  right: 0.4rem;
-}
 
 /* The card-detail box, History and the printing picker at >=768px: a floating
    glass card that sizes to its content — never a full-height grey column
@@ -1017,10 +967,6 @@ h1, h2, .display {
   100% { left: 130%; }
 }
 
-.btn.ghost {
-  background: transparent;
-}
-
 .field {
   min-height: 44px;
   width: 100%;
@@ -1041,77 +987,8 @@ h1, h2, .display {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
-.before-after {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin: 1rem 0;
-}
-
-.before-after figure {
-  margin: 0;
-  flex: 1 1 16rem;
-}
-
-.before-after img {
-  width: 100%;
-  border-radius: 0.6rem;
-  border: 1px solid var(--surface-edge);
-  display: block;
-}
-
-.before-after figcaption {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-top: 0.25rem;
-}
-
 /* ---- demo controls (mockup only, never app code): a dashed strip that
    reads as scaffolding, kept out of the main composition ---- */
-.demo-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  align-items: center;
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  margin: 1.4rem 0 0;
-  padding: 0.45rem 0.6rem;
-  border: 1px dashed color-mix(in srgb, var(--text-muted) 45%, transparent);
-  border-radius: 0.5rem;
-}
-
-.demo-bar .tag {
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 0.6rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--text-muted) 25%, transparent);
-  color: var(--text-primary);
-}
-
-.demo-bar button {
-  font-size: 0.68rem;
-  padding: 0.18rem 0.5rem;
-  border-radius: 999px;
-  border: 1px solid var(--surface-edge);
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-}
-
-.demo-bar button[aria-pressed="true"] {
-  color: var(--text-primary);
-  border-color: var(--accent-soft);
-}
-
-.foot-note {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 0.8rem;
-}
 
 /* round 10 ("I think there is only stuff cut off now due to the demo
    buttons"): on a phone the demo strip and the foot-note no longer sit under
@@ -1120,22 +997,8 @@ h1, h2, .display {
    the page, a second tap or Escape folds it away. The app screen alone fills
    the phone, as it will in the build. Desktop is unchanged. */
 @media (max-width: 719px) {
-  .demo-bar, .foot-note { display: none; }
   /* a slim tab on the right edge, clear of every foot control (New trade, the send pill) */
-  .demo-toggle {
-    position: fixed; right: 0; top: 62%; z-index: 60; writing-mode: vertical-rl;
-    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 0.5rem 0.22rem; border-radius: 0.4rem 0 0 0.4rem; cursor: pointer;
-    border: 1px dashed color-mix(in srgb, var(--text-muted) 55%, transparent); border-right: 0;
-    background: rgba(9, 9, 11, 0.78); color: var(--text-muted); opacity: 0.7;
-  }
-  .demo-toggle[aria-expanded="true"] { color: var(--text-primary); border-style: solid; opacity: 1; }
-  body[data-demo-open="true"] .demo-bar {
-    display: flex; position: fixed; left: 0.6rem; right: 0.6rem; bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); z-index: 59; margin: 0;
-    background: rgba(9, 9, 11, 0.94); box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.9);
-  }
 }
-@media (min-width: 720px) { .demo-toggle { display: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .brand-mark .orb, .brand-mark img, .brand-mark svg, .tray-flair::after { animation: none; }

@@ -26,7 +26,6 @@
 .flow-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
 .flow-head h1 { font-size: 1.35rem; margin: 0; white-space: nowrap; }
 .flow-head .attach { display: flex; gap: 0.4rem; }
-.flow-hint { margin: -0.3rem 0 0; font-size: 0.82rem; color: var(--text-muted); }
 @media (max-width: 719px) {
   .flow-head h1 { font-size: 1.15rem; }
   .icon-chip { font-size: 0.8rem; padding: 0 0.6rem; }
@@ -390,54 +389,8 @@
   transition: background-color 160ms ease, box-shadow 160ms ease; }
 .msg.judge .ref:hover, .msg.judge .ref:focus-visible { background: color-mix(in srgb, var(--accent-soft) 26%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), inset 0 -2px 0 0 var(--accent-soft); }
-.thinking { display: inline-flex; gap: 4px; align-items: center; height: 20px; }
-.thinking i { width: 6px; height: 6px; border-radius: 999px; background: var(--accent-soft); animation: think 1.2s ease-in-out infinite; }
-.thinking i:nth-child(2) { animation-delay: 0.15s; } .thinking i:nth-child(3) { animation-delay: 0.3s; }
 @keyframes think { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
-/* the wait (round 8): today's wait lines, typed out in the judge's bubble —
-   the bubble's edge breathes in the colour's light, each line types behind a
-   caret, the last one lifts away, the clock ticks at the foot. The absurd
-   lines lean in italics. */
-/* round 9: the wait is slower and more arcane — the clock runs at real speed,
-   every letter inks itself in with a glow that fades, two motes of the
-   colour's light drift up through the bubble, and a faint dashed ring turns
-   round the seal while the judge reads. */
-.msg.judge.waiting > div { position: relative; overflow: hidden; min-width: min(20rem, 70vw); animation: wait-breathe 2.4s ease-in-out infinite; }
-.msg.judge.waiting > div::before, .msg.judge.waiting > div::after {
-  content: ""; position: absolute; left: 16%; bottom: 8%; width: 3px; height: 3px; border-radius: 999px; pointer-events: none;
-  background: var(--accent-soft); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--accent-soft) 55%, transparent);
-  opacity: 0; animation: mote 5.5s ease-in-out infinite;
-}
-.msg.judge.waiting > div::after { left: 74%; width: 2px; height: 2px; animation-duration: 7s; animation-delay: 2.6s; }
-@keyframes mote { 0% { transform: none; opacity: 0; } 15% { opacity: 0.9; } 100% { transform: translate(8px, -72px); opacity: 0; } }
 .msg.judge .seal { position: relative; }
-.msg.judge.waiting .seal::after { content: ""; position: absolute; inset: -6px; border-radius: 999px; border: 1px dashed color-mix(in srgb, var(--accent-soft) 60%, transparent); animation: seal-ring 9s linear infinite; }
-@keyframes seal-ring { to { transform: rotate(360deg); } }
-.wait-line .ch { animation: ink-in 720ms ease-out both; }
-@keyframes ink-in {
-  0% { opacity: 0; filter: blur(3px); text-shadow: 0 0 14px var(--accent-soft), 0 0 3px #fff; }
-  45% { opacity: 1; filter: none; text-shadow: 0 0 10px var(--accent-soft); }
-  100% { opacity: 1; text-shadow: 0 0 0 transparent; }
-}
-@keyframes wait-breathe {
-  0%, 100% { border-color: var(--surface-edge); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9), 0 0 0 0 transparent; }
-  50% { border-color: color-mix(in srgb, var(--accent-soft) 45%, transparent); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9), 0 0 22px -6px color-mix(in srgb, var(--accent) 80%, transparent); }
-}
-.msg.judge.waiting .seal { animation: seal-in 900ms ease-out both, seal-scry 3s ease-in-out 900ms infinite; }
-@keyframes seal-scry { 0%, 100% { transform: none; } 50% { transform: rotate(-8deg) scale(1.06); } }
-.wait { display: grid; gap: 0.35rem; }
-.wait-lines { position: relative; display: grid; min-height: 1.5em; }
-.wait-line { grid-area: 1 / 1; color: var(--text-primary); }
-.wait-line::after { content: ""; display: inline-block; width: 2px; height: 1em; margin-left: 3px; vertical-align: -0.12em; background: var(--accent-soft); box-shadow: 0 0 8px 1px var(--accent-soft); animation: caret 0.9s steps(1) infinite; }
-.wait-line.typed::after { animation: caret 0.9s steps(1) infinite; opacity: 0.8; }
-@keyframes caret { 50% { opacity: 0; } }
-.wait-line[data-v="curious"] { color: color-mix(in srgb, var(--accent-soft) 35%, var(--text-primary)); }
-.wait-line[data-v="absurd"] { font-style: italic; color: color-mix(in srgb, var(--accent-soft) 55%, var(--text-primary)); }
-.wait-line.out { animation: wait-out 650ms ease-in forwards; }
-.wait-line.out::after { display: none; }
-@keyframes wait-out { to { opacity: 0; transform: translateY(-0.9em); filter: blur(2px); } }
-.wait-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
-.wait-time { font-size: 0.72rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
 /* the chat head: the title, then the tools — View context (In-Depth) and the round Start over ↺ at the far right */
 .chat-head .tools { display: flex; align-items: center; gap: 0.4rem; }
@@ -446,5 +399,5 @@
 [hidden] { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ring .card.summon, .msg, .msg.judge .seal, .thinking i, .msg.judge.waiting > div, .msg.judge.waiting > div::before, .msg.judge.waiting > div::after, .msg.judge.waiting .seal::after, .wait-line, .wait-line .ch, .wait-line::after, .send-pair .mic { animation: none !important; }
+  .ring .card.summon, .msg, .msg.judge .seal, .send-pair .mic { animation: none !important; }
 }

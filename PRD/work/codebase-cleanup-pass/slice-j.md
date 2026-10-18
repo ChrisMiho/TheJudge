@@ -1,6 +1,6 @@
 # Slice J — Dead and duplicated styles go; parse errors fail the build
 
-## Status: planned
+## Status: done
 
 Depends on: B (shared CSS test helpers). Findings: C-02, C-03, C-04, C-05, C-06, C-08, C-12, C-13, D-14, U-12 (CSS part).
 
@@ -56,7 +56,7 @@ ls docs/design/codebase-cleanup-pass/slice-j
 
 ## Reverted findings
 
-None yet. A deletion whose computed-style or built-CSS proof fails is restored and listed here.
+None. No deletion failed its computed-style or built-CSS proof. Evidence: `slice-j.evidence.md`.
 
 ## Files touched
 
