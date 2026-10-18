@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| scanner-recovers-and-runs-lighter | All four slices done in PR #320; awaiting review and owner merge |
 
 ## active
 

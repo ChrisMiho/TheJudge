@@ -1,4 +1,0 @@
-# Slice A evidence
-
-- A8 (manual) 2026-10-18: Quick Question on dev server 127.0.0.1:5391, `cardhashes.bin` answered 503 by a Playwright route. Opening the scanner showed one `role="alert"` line reading exactly the REQ-249 sentence (no status code or file name). After Exit scan, the route was lifted; reopening showed no alert and no loading line, without a page reload. Captures: `.playwright-mcp/a-failed.png`, `.playwright-mcp/a-recovered.png`.
-- A9 (manual) 2026-10-18: `browser_close` called; the owned dev server (port 5391) was stopped with `kill <pid>`; `lsof -ti :5391 -sTCP:LISTEN` then printed nothing (port free). Captures are under `PRD/work/scanner-recovers-and-runs-lighter/.playwright-mcp/` in this worktree. An earlier first pass wrote two same-named captures to the launch checkout's gitignored `.playwright-mcp/` folder (relative path); removing them was denied by the permission system and is reported to the caller.
