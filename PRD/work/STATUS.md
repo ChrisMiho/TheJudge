@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first. Brief + two gate questions (REQ-214, REQ-085) |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first |
 
 ## owner-action
 
