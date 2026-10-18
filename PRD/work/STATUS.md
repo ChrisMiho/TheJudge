@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| browser-smoke-suite | PR check: built site opens in a headless browser, each tool loads and does one basic action |
 
 ## owner-action
 
