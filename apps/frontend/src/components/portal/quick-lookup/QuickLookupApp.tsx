@@ -578,7 +578,11 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                 />
               </div>
             )}
-            {scanCapture.error && <p className="motion-error aq-error">{scanCapture.error}</p>}
+            {scanCapture.error && (
+              <p role="alert" className="motion-error aq-error">
+                {scanCapture.error}
+              </p>
+            )}
           </section>
         </div>
       ) : (

@@ -34,6 +34,7 @@ let lockedOracleCard: CardMetadataItem | null = null;
 let frameCandidates: Candidate[] = [];
 let capturedOptions: ScanCaptureOptions | null = null;
 let heldIdCounter = 0;
+let scanError: string | null = null;
 const captureSetCameraStatus = vi.fn();
 
 // REQ-214: a real `useState` inside the mock, so pushing/clearing the holding
@@ -79,7 +80,7 @@ vi.mock("../../hooks/useScanCapture", () => ({
     return {
       isOpen: true,
       isLoading: false,
-      error: null,
+      error: scanError,
       convergence: undefined,
       addConfirmation: null,
       scanDebug: null,
@@ -256,6 +257,7 @@ describe("Frontend - Trade", () => {
     });
 
     afterEach(() => {
+      scanError = null;
       lockedOracleCard = null;
       frameCandidates = [];
       capturedOptions = null;
@@ -384,6 +386,18 @@ describe("Frontend - Trade", () => {
       const entry = within(side("A")).getByRole("listitem");
       expect(entry).toHaveTextContent("Unlimited Edition · 2ED");
       expect(sideTotalText("A")).toBe("$10.00");
+    });
+
+    it("announces the scan-data failure line with role=alert (REQ-249)", async () => {
+      const user = userEvent.setup();
+      await renderBalancer();
+      scanError = "Card scanning is unavailable right now";
+
+      await user.click(within(side("A")).getByLabelText("Scan a card onto Side A"));
+
+      expect(within(side("A")).getByRole("alert")).toHaveTextContent(
+        "Card scanning is unavailable right now"
+      );
     });
 
     it("keeps manual search working and surfaces the reason when the camera is unavailable", async () => {

@@ -4,6 +4,7 @@ import { CARD_HEIGHT, CARD_WIDTH } from "../lib/scan/identify";
 import type { CardScanMap } from "../lib/scan/resolveScanCandidates";
 import type { HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { CardMetadataItem } from "../types";
+import { SCAN_DATA_UNAVAILABLE_MESSAGE } from "../lib/scan/scanDataMessage";
 import { SCAN_STABILIZER_CONFIG } from "../lib/scan/tuning";
 import { DETECTOR_FAILURE_NUDGE_COUNT, LOW_CONFIDENCE_ESCALATION_COUNT, useScanCapture } from "./useScanCapture";
 
@@ -100,6 +101,75 @@ describe("Frontend - Card Scan", () => {
       expect(loadHashDb).toHaveBeenCalledTimes(1);
       expect(loadScanMap).toHaveBeenCalledTimes(1);
       expect(createIdentifier).toHaveBeenCalledTimes(1);
+    });
+
+    it("REQ-249: a failed first open shows the plain sentence, and the next open retries and builds the identifier", async () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });
+      const loadHashDb = vi
+        .fn<() => Promise<HashDb>>()
+        .mockRejectedValueOnce(new Error("Could not load card hash DB: 503 Service Unavailable"))
+        .mockResolvedValue(db);
+      const loadScanMap = vi.fn(async () => scanMap);
+      const createIdentifier = vi.fn(() => identifier);
+      const { result } = renderHook(() =>
+        useScanCapture({
+          cardMetadata,
+          onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+          dependencies: { loadHashDb, loadScanMap, createIdentifier }
+        })
+      );
+
+      await act(async () => {
+        await result.current.openScan();
+      });
+
+      expect(result.current.error).toBe(SCAN_DATA_UNAVAILABLE_MESSAGE);
+      expect(result.current.error).not.toMatch(/503|hash DB/);
+      expect(consoleError).toHaveBeenCalled();
+      expect(createIdentifier).not.toHaveBeenCalled();
+
+      await act(async () => {
+        result.current.closeScan();
+        await result.current.openScan();
+      });
+
+      expect(result.current.error).toBeNull();
+      expect(loadHashDb).toHaveBeenCalledTimes(2);
+      expect(createIdentifier).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        await result.current.identify(image);
+      });
+      expect(identifier.identify).toHaveBeenCalledTimes(1);
+      consoleError.mockRestore();
+    });
+
+    it("REQ-249: camera frames after a failed load do not re-request scan data", async () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const loadHashDb = vi.fn<() => Promise<HashDb>>().mockRejectedValue(new Error("offline"));
+      const loadScanMap = vi.fn(async () => scanMap);
+      const { result } = renderHook(() =>
+        useScanCapture({
+          cardMetadata,
+          onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+          dependencies: {
+            loadHashDb,
+            loadScanMap,
+            createIdentifier: () => makeIdentifier({ matched: false, was_rotated: false, candidates: [] })
+          }
+        })
+      );
+
+      await act(async () => {
+        await result.current.openScan();
+        await result.current.identify(image);
+        await result.current.identify(image);
+      });
+
+      expect(loadHashDb).toHaveBeenCalledTimes(1);
+      expect(result.current.error).toBe(SCAN_DATA_UNAVAILABLE_MESSAGE);
+      consoleError.mockRestore();
     });
 
     it("REQ-214: a recognised card waits in the holding list, not the destination, and resumes searching", async () => {

@@ -6603,3 +6603,25 @@
   - motivated by the intake probe (2026-10-10, pre-#293, cited, committed corpus cases only): the same pushback text on the 62 diagnostic cases with 3 repeats; right first answers held 176 of 181 and flipped on the outcome once, and 2 or 3 of 4 side flips were judge errors on unchanged answers — the reason the report keeps outcome flips and side flips apart
   - measured 2026-10-12 at `0461969f`: the 62 diagnostic cases are all approved with matching hashes, 9 In-Depth and 53 lookup; a turn-1 answer longer than the 10,000-character history-message cap the code enforces would make a request the app itself could not send, which is why a schema rejection is recorded as an error rather than sent
   - the lone judge never sees attached cards' oracle text (noted by the cap-15 answer check, #295); that holds for both turns and is not changed here
+
+### REQ-249
+- Title: Card scanner recovers from a failed scan-data download, in plain words
+- Priority: high
+- Description: When the scanner's data — the fingerprint library `cardhashes.bin` or the scan map `cardScanMap.json` — fails to download, the failure lasts only until the player tries again. Closing the scanner and opening it again, from any of the three tools that scan (In-Depth's Cards station, Ask a Question, Trade Balancer), downloads the failed file again. The player reads one plain sentence that says what to do, never the raw error.
+- Acceptance Criteria:
+  - a failed download of either scan file is not remembered: the next time any scanner opens, in any tool, that file is requested again; a file that already arrived is reused, never downloaded twice; a download already in flight is shared, not repeated
+  - after a failure followed by a successful retry, the scanner identifies cards exactly as if the first attempt had succeeded, without a page reload
+  - while scan data has failed to load, the scanner panel shows exactly: "Card scanning is unavailable right now — check your connection, then close the scanner and open it again. You can still add cards with search." — the same sentence in all three tools, announced to assistive technology (`role="alert"`); the raw error text (status codes, file names) never reaches the player and goes to the browser console only
+  - manual search keeps working throughout, as before
+  - tests cover fail-then-succeed for each of the two scan files, fail-then-succeed through the scanner's open path, and that the player-facing line is the sentence above rather than the raw error
+- Constraints:
+  - scan data still downloads only when a player first opens a scanner; it never joins the background download (NFR-014, NFR-010)
+  - no automatic retry loop and no new retry control: the retry is the player closing and reopening the scanner
+  - no change to what a scan identifies, the lock gate, or the scan files' contents
+- Dependencies:
+  - REQ-214
+  - NFR-010
+  - NFR-014
+  - FLOW-006
+- Notes:
+  - reserved and proposed by the `scanner-recovers-and-runs-lighter` package (2026-10-18); REQ-248 is held by the open life-tracker-desktop-nav proposal

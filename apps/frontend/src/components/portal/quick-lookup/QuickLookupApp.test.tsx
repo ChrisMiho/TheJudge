@@ -76,7 +76,7 @@ const allLookupCards = [
 ];
 
 const scrollIntoView = vi.fn();
-const scanState = vi.hoisted(() => ({ isOpen: false }));
+const scanState = vi.hoisted(() => ({ isOpen: false, error: null as string | null }));
 
 vi.mock("../../../hooks/useScanCapture", () => ({
   useScanCapture: ({
@@ -90,7 +90,7 @@ vi.mock("../../../hooks/useScanCapture", () => ({
     heldEntries: [],
     removeHeld: vi.fn(),
     isLoading: false,
-    error: null,
+    error: scanState.error,
     convergence: {
       phase: "searching",
       leaderName: null,
@@ -192,6 +192,7 @@ describe("Frontend - Quick Lookup", () => {
 describe("QuickLookupApp", () => {
   beforeEach(() => {
     scanState.isOpen = false;
+    scanState.error = null;
     scrollIntoView.mockClear();
     Object.defineProperty(Element.prototype, "scrollIntoView", {
       configurable: true,
@@ -261,6 +262,13 @@ describe("QuickLookupApp", () => {
     const scanning = render(<QuickLookupApp />);
     expect(scanning.container.querySelector(".page-content-narrow-fit")).not.toBeNull();
     expect(scanning.container.querySelector(".page-content-narrow-fit > .idq .scan-exit")).not.toBeNull();
+  });
+
+  it("announces the scan-data failure line with role=alert (REQ-249)", () => {
+    scanState.isOpen = true;
+    scanState.error = "Card scanning is unavailable right now";
+    render(<QuickLookupApp />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Card scanning is unavailable right now");
   });
 
   it("renders the Ask a Question title with Add card/Scan beside it, then the card search, then the question box — and no General rules topics panel (REQ-079 retired)", async () => {

@@ -8,6 +8,7 @@ import {
   resolveScanCandidatesRanked,
   type CardScanMap
 } from "../lib/scan/resolveScanCandidates";
+import { SCAN_DATA_UNAVAILABLE_MESSAGE } from "../lib/scan/scanDataMessage";
 import { ScanStabilizer } from "../lib/scan/stabilizer";
 import {
   FRAME_SELECTOR_WINDOW_SIZE,
@@ -190,6 +191,8 @@ export function useScanCapture({
   const addCounterRef = useRef(0);
   const resourcesRef = useRef<ScanResources | null>(null);
   const resourcesPromiseRef = useRef<Promise<ScanResources> | null>(null);
+  // REQ-249: set when scan data failed this open; frames stop asking until the next open.
+  const resourcesFailedRef = useRef(false);
   const stabilizerRef = useRef<ScanStabilizer>(new ScanStabilizer(SCAN_STABILIZER_CONFIG));
   const frameSelectorRef = useRef<FrameSelector>(new FrameSelector(FRAME_SELECTOR_WINDOW_SIZE));
   const onSelectRef = useRef(onScanCandidateSelected);
@@ -243,7 +246,10 @@ export function useScanCapture({
 
     if (!resourcesPromiseRef.current) {
       // Lazy static scan assets only; real-device NFR-010 size/latency/memory metrics stay at the manual validation gate.
-      resourcesPromiseRef.current = Promise.all([dependencies.loadHashDb(), dependencies.loadScanMap()]).then(
+      const attempt: Promise<ScanResources> = Promise.all([
+        dependencies.loadHashDb(),
+        dependencies.loadScanMap()
+      ]).then(
         ([db, scanMap]) => {
           const resources = {
             identifier: dependencies.createIdentifier(db),
@@ -251,8 +257,14 @@ export function useScanCapture({
           };
           resourcesRef.current = resources;
           return resources;
+        },
+        (error: unknown) => {
+          // REQ-249: a failure is not remembered, so the next openScan retries.
+          if (resourcesPromiseRef.current === attempt) resourcesPromiseRef.current = null;
+          throw error;
         }
       );
+      resourcesPromiseRef.current = attempt;
     }
 
     return resourcesPromiseRef.current;
@@ -277,11 +289,14 @@ export function useScanCapture({
     setError(null);
     setHeldEntries([]);
     resetScanState();
+    resourcesFailedRef.current = false;
     try {
       await ensureResources();
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : "Could not load scan resources";
-      setError(message);
+      // REQ-249: the raw error goes to the console only; the player reads one plain sentence.
+      console.error("Could not load scan resources", caught);
+      resourcesFailedRef.current = true;
+      setError(SCAN_DATA_UNAVAILABLE_MESSAGE);
     } finally {
       setIsLoading(false);
     }
@@ -320,12 +335,17 @@ export function useScanCapture({
 
   const identify = useCallback(
     async (image: RgbImage): Promise<IdentifyResult> => {
+      // REQ-249: after a failed download, frames do not re-request; closing and reopening retries.
+      if (resourcesFailedRef.current) {
+        return EMPTY_IDENTIFY_RESULT;
+      }
       let resources: ScanResources;
       try {
         resources = await ensureResources();
       } catch (caught) {
-        const message = caught instanceof Error ? caught.message : "Could not load scan resources";
-        setError(message);
+        console.error("Could not load scan resources", caught);
+        resourcesFailedRef.current = true;
+        setError(SCAN_DATA_UNAVAILABLE_MESSAGE);
         return EMPTY_IDENTIFY_RESULT;
       }
 

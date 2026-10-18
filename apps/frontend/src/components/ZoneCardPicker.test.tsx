@@ -183,6 +183,11 @@ describe("ZoneCardPicker scan focus", () => {
     expect(exitBtn).toHaveClass("absolute", "right-3", "top-3");
   });
 
+  it("announces the scan-data failure line with role=alert (REQ-249)", () => {
+    renderPicker({ isOpen: true, error: "Card scanning is unavailable right now" });
+    expect(screen.getByRole("alert")).toHaveTextContent("Card scanning is unavailable right now");
+  });
+
   it("Exit scan closes scan when clicked", async () => {
     const user = userEvent.setup();
     const { onExitToManual } = renderPicker({ isOpen: true });

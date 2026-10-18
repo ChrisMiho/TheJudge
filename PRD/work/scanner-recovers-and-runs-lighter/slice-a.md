@@ -1,6 +1,6 @@
 # Slice A — Recovery fix
 
-## Status: planned
+## Status: done
 
 ## Goal
 

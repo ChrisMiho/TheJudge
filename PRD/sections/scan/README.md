@@ -51,6 +51,13 @@ becomes the only way to add a card. It sits outside the core product loop
 - Built: identification runs fully on-device with no network calls; the
   fingerprint library and the metadata bridge are lazy-loaded only on first
   scan, so a user who never scans pays no startup cost. (DEC-051, NFR-010)
+- Built: a failed download of either scan file lasts only until the player
+  tries again — closing the scanner and opening it again, in any tool,
+  requests the failed file again while reusing one that already arrived. Until
+  then the panel shows one plain sentence, "Card scanning is unavailable right
+  now — check your connection, then close the scanner and open it again. You
+  can still add cards with search.", announced to assistive technology; the
+  raw error never reaches the player. (REQ-249, NFR-014)
 
 ### Identifying a card (the engine)
 
