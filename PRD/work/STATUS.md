@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-built-server-smoke | CI check: start the built backend, call /api/health and one card lookup on every PR |
 
 ## owner-action
 
