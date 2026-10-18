@@ -2,15 +2,29 @@
 
 Status: refined (graph-controlled refinement, 2026-10-18, run `graph-20261018-162925`)
 
-**Review:** this package is a cleanup that players never notice. It builds 47 of
-the 68 findings from the 2026-10-18 probes, in whole or in part, in ten slices. The other 21 wait for
+**Review:** this package is a cleanup that players never notice. It builds 49 of
+the 68 findings from the 2026-10-18 probes, in whole or in part, in eleven slices. The other 19 wait for
 the four pending cluster runs, go to the `codehealth` overnight loop, or need
 the owner. It changes no product truth, so there is no questions file.
+
+## Owner decisions (2026-10-18, on the docs PR)
+
+1. **CI `master` trigger (T-11):** drop it, and change
+   `PRD/instructions/ci.md` to say the gate runs on pushes to `main` (slice D).
+2. **Personal files at the repo root (T-17):** remove `exampleoutput.txt` and
+   `purple-gold-handoff/` from the repo, no backup copy (slice D). Git history
+   keeps them.
+3. **Life Tracker cleanups (C-09, Q-10's `useLifeTracker` move, Q-12's
+   `lib/lifeTracker` barrel):** build them (new slice K), with the REQ-202
+   screenshot pair.
+4. **Prettier over every TypeScript file (Q-18):** later, as its own PR after
+   this package lands (follow-up 25).
 
 ## What a player experiences
 
 Nothing changes. Same answers, same prompts sent to the AI, same rules
-retrieved in the same order, same screens, same messages, same timing.
+retrieved in the same order, same screens, same messages, same timing, except
+that In-Depth combo matching gets faster (slice E).
 
 One gain sits under the hood. In In-Depth, when a heavily comboed card is on the
 board and the question does not mention combos, the server stops unpacking
@@ -21,20 +35,21 @@ Developers get the rest: the test suites run faster and stop leaving temp
 folders behind, the Lambda package stops shipping test code, copied code is
 written once, and dead code and dead styles are gone.
 
-## The ten slices (built in this order)
+## The eleven slices (built in this order)
 
 | Slice | In plain words | Findings |
 | --- | --- | --- |
 | A | Backend tests stop rebuilding the same slow input and stop leaking temp folders | T-01, T-02 |
 | B | Frontend tests that never draw a screen stop loading the whole app; tests import the shared helpers | T-03, T-04 |
 | C | Type and lint checks that already pass are switched on, so the clean state stays clean | T-06, T-07, T-08, T-09, T-16 |
-| D | The Lambda package ships only runtime code; CI stops building the frontend twice; scripts share small helpers | K-08/T-10, T-11, T-12, T-13, T-15 |
+| D | The Lambda package ships only runtime code; CI stops building the frontend twice; scripts share small helpers; two personal files leave the repo | K-08/T-10, T-11, T-12, T-13, T-15, T-17 |
 | E | Combo matching skips combos that cannot be complete before unpacking them | K-01 |
 | F | The prompt pipeline is written once instead of four times; card blocks are built in their final order | K-02, K-06, K-07, K-09, K-10, K-11, K-13, K-15, K-18 |
 | G | Rule search scoring loses its duplicate formula and repeated work, guarded by a new order snapshot | K-05, K-06, K-12, K-14, K-15 |
 | H | In-Depth's question flow loses dead wiring (the Answer plate that never shows, a double Decrypt path, a faked form event) | Q-04, Q-06, Q-08, Q-12, Q-13, Q-17, Q-19 |
 | I | The scanner hook stops returning values no screen reads and drops a duplicate scan-map cache | Q-02, Q-10, Q-11, Q-12, U-12 (one constant) |
 | J | Dead and duplicated CSS is deleted, and a check fails the build on stylesheet parse errors | C-02, C-03, C-04, C-05, C-06, C-08, C-12, C-13, D-14, U-12 (CSS) |
+| K | Life Tracker loses eight style settings that do nothing, an unused index file, and a misplaced hook file (owner-approved) | C-09, Q-10, Q-12 |
 
 Each slice stands on its own: if the build stops after any slice, what landed is
 complete and proven. Slices touch disjoint files with two exceptions, both
@@ -69,7 +84,7 @@ prefilter, G later drops one unused export), and F and G both edit
 9. **Life Tracker screenshot pair.** REQ-202 requires every slice that touches
    the shared stylesheet or the token set to attach a Life Tracker before/after
    screenshot pair at 390x844 and 1440x900 to its PR, so the owner sees exactly
-   what changed. That binds slice J. Captures go under
+   what changed. That binds slices J and K. Captures go under
    `PRD/work/codebase-cleanup-pass/.playwright-mcp/`.
 
 ## Slice detail
@@ -161,7 +176,11 @@ Others are as the probe recorded them; the builder re-reads them first.
   job's "Build project" step (`:255-256`) becomes the backend-only build, since
   `scripts/aws-deploy.sh` rebuilds the frontend itself; drop the unused
   `nproc` step (`:48`) and the `master` trigger (`:7`). Node versions stay as
-  they are.
+  they are. In the same commit, change `PRD/instructions/ci.md:6` from
+  "every push to `main`/`master`" to "every push to `main`" (owner decision 1).
+- **T-17 (owner decision 2).** `git rm` `exampleoutput.txt` and
+  `purple-gold-handoff/` (three files) at the repo root. No backup copy. First
+  grep the repo for either name; nothing referenced them on 2026-10-18.
 - **T-15.** One `scripts/lib/fs-helpers.mjs` with `ensureParentDirectory`
   (8 copies, confirmed), `writeWhole`, `escapeRegExp` and the three-tier
   `formatBytes`. `refresh-scryfall-data.mjs` keeps its own four-tier
@@ -447,7 +466,34 @@ overrides, or an exact duplicate.
   profiles, before and after, and compare: identical. (3) The frontend build
   prints zero CSS warnings. (4) Full frontend suite green with no edit to a
   stylesheet-reading guard test. (5) REQ-202 Life Tracker screenshot pair at
-  390x844 and 1440x900 attached to the PR.
+  390x844 and 1440x900 attached to the PR. The PR states that the Life Tracker
+  table's elements are part of the computed-style dump.
+
+### K — Life Tracker cleanups (owner decision 3)
+
+REQ-202 keeps the Life Tracker table pixel-untouched and asks every touching
+slice for a before/after screenshot pair; it does not forbid edits to the files.
+
+- **C-09 (light version).** In `PlayerLifeTrackerApp.tsx:39-40` remove the eight
+  Tailwind classes on the Game setup header's `<p>` and `<h2>`. The
+  `[data-testid="life-tracker-game-setup"] .sheet-legacy-head` rule
+  (`index.css:5312-5329`) already sets every property they set, so the pixels
+  stay the same. The fuller version (moving the test-id block onto the
+  `lt-sheet` class) is follow-up 27.
+- **Q-12 (Life Tracker part).** Delete `lib/lifeTracker/index.ts`, the
+  re-export file nothing imports. Re-check that nothing imports
+  `lib/lifeTracker` bare before deleting.
+- **Q-10 (Life Tracker part).** Move `lib/lifeTracker/useLifeTracker.ts` and its
+  test to `hooks/`. Update the importer (`PlayerLifeTrackerApp.tsx`), the test's
+  own relative imports, and the jsdom entry in `apps/frontend/vite.config.ts:62`.
+  Keep the test file's `describe` title.
+- **Confinement.** The pop-ups brief edits the Game setup `SheetShell` at
+  `PlayerLifeTrackerApp.tsx:31`; this slice touches only the import line and
+  lines 39-40. Whichever lands second rebases.
+- **Proof.** Computed style of the Game setup header before and after: identical.
+  Life Tracker test files green with the same test count; frontend typecheck and
+  build exit 0. REQ-202 screenshot pair at 390x844 and 1440x900, with the Game
+  setup sheet open, attached to the PR.
 
 ## Collisions with the four pending briefs
 
@@ -491,18 +537,14 @@ files.
   `.claude/**`, `CLAUDE.md`, every `thejudge-*` and `codehealth` skill.
 - **T-14.** `scripts/lib/boundary-rules.mjs` is the engine of the protected guard.
   Splitting it is the owner's review call.
-- **T-17.** `exampleoutput.txt` and `purple-gold-handoff/` at the repo root are
-  personal assets. Delete or move them to `TheJudge-backups` by owner choice.
-- **C-09.** Life Tracker's Game setup header carries eight Tailwind classes a
-  test-id rule overrides. The fix edits `PlayerLifeTrackerApp.tsx`, which REQ-202
-  keeps untouched in Life Tracker's table area; owner call.
-- **Q-12 (barrel) and Q-10 (`useLifeTracker` move).** Both edit
-  `lib/lifeTracker/`, which REQ-202 says stays untouched; owner call.
+- **T-17, C-09, Q-12 (barrel), Q-10 (`useLifeTracker` move).** Decided by the
+  owner on 2026-10-18 and now built (slices D and K).
 - **T-12 (scan-vector path).** `scripts/build-scan-vectors.mjs:25, 28` default
   to a folder in the owner's other repository. Replacing it needs a new flag or
   environment value; owner call.
 - **Q-18.** Formatting every TypeScript file with Prettier is a style decision
-  and a 400–575-file diff. The config half is built (T-09).
+  and a 400–575-file diff. The config half is built (T-09). The owner chose to
+  run it later as its own PR (follow-up 25).
 
 ## Disposition of every finding
 
@@ -521,15 +563,15 @@ ships), **brief** (the pending brief should fold it in), **codehealth**,
 | Q-07 | later — after card-search (all three `onBack` props together) | |
 | Q-08 | built — H | |
 | Q-09 | later — after card-search | |
-| Q-10 | built in part — I (`ScanCameraStatus`) | `FrozenAskAiContext`: later with Q-03; `oracleSearch` and `useTradeScan` moves: later, after card-search; `useLifeTracker` move: owner |
+| Q-10 | built in part — I (`ScanCameraStatus`) | `FrozenAskAiContext`: later with Q-03; `oracleSearch` and `useTradeScan` moves: later, after card-search; `useLifeTracker` move: built — K |
 | Q-11 | built — I | |
-| Q-12 | built in part — H (`hiddenInitialQuestion`), I (tuning constants) | `palette`: codehealth 11; `QuickLookupApp` `onSubmit`: later, after card-search; `lib/lifeTracker` barrel: owner |
+| Q-12 | built in part — H (`hiddenInitialQuestion`), I (tuning constants) | `palette`: codehealth 11; `QuickLookupApp` `onSubmit`: later, after card-search; `lib/lifeTracker` barrel: built — K |
 | Q-13 | built — H | whether the seed should fire: follow-up 3 |
 | Q-14 | later — after card-search | |
 | Q-15 | later — after all four briefs | |
 | Q-16 | later | moving `hashLibBuild.ts` needs product-truth path edits (`system-map.md`, `scan/data/cardhashes.md` name it); moving `detectorFixtures.ts` is a follow-up |
 | Q-17 | built in part — H and I files no brief owns | rest: later, after the briefs ship |
-| Q-18 | built in part — C (config, via T-09) | formatting the code: owner |
+| Q-18 | built in part — C (config, via T-09) | formatting the code: follow-up 25 (owner chose its own PR) |
 | Q-19 | built in part — H (`randomId`) | `countLabel`: later, after card-search; `apiBaseUrl`: codehealth 3 |
 | C-01 | later — after card-search, pop-ups and card-rings | |
 | C-02 | built — J | |
@@ -539,7 +581,7 @@ ships), **brief** (the pending brief should fold it in), **codehealth**,
 | C-06 | built — J | `--sheet-breakpoint`: codehealth 12 |
 | C-07 | brief — card-rings (its U-07 de-dup owns `body`/`html`/`*`) | |
 | C-08 | built — J | |
-| C-09 | owner | |
+| C-09 | built in part — K (dead header classes) | moving the test-id block onto `lt-sheet`: follow-up 27 |
 | C-10 | later — with C-01 (Trade region beside card-search's search box) | |
 | C-11 | codehealth — item 12, with U-10 | |
 | C-12 | built — J | `.ring` blocklist: brief — card-rings |
@@ -579,10 +621,10 @@ ships), **brief** (the pending brief should fold it in), **codehealth**,
 | T-14 | owner | |
 | T-15 | built — D | |
 | T-16 | built — C | |
-| T-17 | owner | |
+| T-17 | built — D | |
 
-**Counts (68 ids).** Built 47 (27 fully, 20 in part, each remainder routed above). Later 14. Pending brief 3
-(Q-05, C-07, K-19). `codehealth` 1 (C-11). Owner 3 (C-09, T-14, T-17). Behavior
+**Counts (68 ids).** Built 49 (37 fully, 12 in part, each remainder routed above). Later 14. Pending brief 3
+(Q-05, C-07, K-19). `codehealth` 1 (C-11). Owner 1 (T-14). Behavior
 change as the whole finding: 0 — every behavior change sits in the follow-ups.
 
 ## Follow-ups (recorded, never built here)
@@ -629,9 +671,13 @@ behavior-change and appearance-change lists.
 23. Moving `detectorFixtures.ts` out of `src/lib/scan` (shifts the coverage
     numerator).
 24. Typechecking `scripts/*.mjs` with `checkJs`.
-25. Formatting TypeScript with Prettier (Q-18).
+25. Formatting TypeScript with Prettier (Q-18). Owner decision 4: its own PR,
+    after this package lands.
 26. **Owner housekeeping:** pause `codehealth` items 3, 5, 6, 7, 8 and 9 until
     this package merges (see the queue table).
+27. C-09's fuller version: give `GameSetupModal` `panelClassName="lt-sheet"` and
+    point the ~57-line test-id block in `index.css` at that class, removing the
+    copy of the `.lt-head` rules. Needs the REQ-202 screenshot pair.
 
 ## Product truth
 
@@ -679,6 +725,7 @@ assumption ladder, or by leaving the item out).
 - Scripts: `npm run test:scripts`
 - Repo: `npm run lint`, `npm run format:check`, `npm run typecheck`
 - Slice J also: the computed-style dump and the REQ-202 screenshot pair.
+- Slice K also: the Game setup header's computed style and the REQ-202 screenshot pair.
 - Never: `npm run data:refresh`, data rebuilds, paid evals, deploys from a build.
 
 ## After the code PR (owner)

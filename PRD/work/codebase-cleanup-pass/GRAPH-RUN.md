@@ -24,6 +24,7 @@
 - Question: review the docs PR, then merge to build. There is no `GATE-QUESTIONS.md`: refinement proposed no product-truth change and found no blocker.
 - Evidence: `DESIGN-BRIEF.md`, `QUALITY-CHECK.md`, `## Node ledger` rows 1–4; docs PR https://github.com/ChrisMiho/TheJudge/pull/321 (opened, not merged).
 - Resume: merging the docs PR is the build signal; then `/graph-implement PRD/work/codebase-cleanup-pass/`.
+- Owner answers (2026-10-18, in session, recorded under `DESIGN-BRIEF.md` `## Owner decisions`): (1) drop the CI `master` trigger and fix `ci.md`; (2) remove `exampleoutput.txt` and `purple-gold-handoff/` from the repo, no backup; (3) build the three Life Tracker cleanups as slice K with the REQ-202 screenshot pair; (4) Prettier reformat later as its own PR. Gate-qc advisories A1, A2, A3 and A5 are folded into the brief; A4 was already required.
 - Also for the owner: the staging folder `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-162925/` is still on disk (node 2's `rm -rf` was denied); remove it by hand when convenient.
 
 ## Dispatch prompts
