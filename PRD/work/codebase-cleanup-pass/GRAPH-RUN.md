@@ -198,6 +198,41 @@ Mechanics: change files with the Write and Edit tools (no heredocs, no `sed -i`,
 
 Return a short report: `outcome: ok|failed|blocked`; one line per slice (letter, done or blocked, criteria true/total, anything reverted); the PR URL; the final commit sha and `git ls-remote --heads origin thejudge-auto/codebase-cleanup-pass-work`; `git status --porcelain` of the working directory (must be empty); and a list of every file path you wrote, as absolute paths.
 
+### build (attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass
+
+You are node 6 (`build`) of graph run `graph-20261018-175940`, attempt 2, for the package `PRD/work/codebase-cleanup-pass/`, on the shared branch `thejudge-auto/codebase-cleanup-pass-work` (already checked out in the working directory above; code PR https://github.com/ChrisMiho/TheJudge/pull/322 is open). Follow the `thejudge-implement-all` skill (/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass/.claude/skills/thejudge-implement-all/SKILL.md and `reference.md`) in graph-controlled mode for bookkeeping and the completion gate. Work ONLY inside the working directory above; never write to /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+State: attempt 1 built slices A–K; 113 of 114 criteria are `true`. The one open criterion is `I2` (finding Q-11). Read `GRAPH-RUN.md` `## Open gate` and `slice-i.evidence.md` first.
+
+The owner's decision (recorded in the ledger's instruction table): defer Q-11, defer the Trade scanned-printing bug, and defer every other identified fix to a follow-up pass — and make sure all of them are well documented for that pass. Nothing new is built in this attempt: no source or test file changes.
+
+Do these, in order:
+
+1. Defer Q-11 in this package. Remove criterion `I2` from `slice-i.criteria.json` and leave every other criterion untouched. In `slice-i.md`, add a dated note saying `I2` was removed on 2026-10-18 by owner decision, with the reason: Q-11's proof needs `TradeBalancer.scan.test.tsx`, which the pending card-search brief owns. In `DESIGN-BRIEF.md`, change Q-11's disposition row to later (after card-search ships, and after the Trade scanned-printing bug is fixed), and add the Trade bug as a new numbered follow-up at the top of the player-visible bugs. Note the change in `slice-i.evidence.md`.
+
+2. Write the durable follow-up record. `close` deletes `PRD/work/codebase-cleanup-pass/` (the brief, the intake and every evidence log) before the owner merges, so the next pass needs a home that survives. Create `PRD/ideasForLater/codebase-cleanup-followups/`, modelled on the existing folders under `PRD/ideasForLater/`:
+   - `IDEA.md`, self-contained, so a fresh agent needs nothing else. Open with the plain-language block `PRD/instructions/plain-language-standard.md` requires, in player terms first. Then sections in this order:
+     (a) **Player-visible bugs.** First the Trade scanned-printing bug, in full. Player terms: a scanned card is added, but Trade does not default to the printing you scanned, so its price can come from another printing; the player can fix it by picking the printing by hand. Then the cause with file and line (`apps/frontend/src/hooks/useScanCapture.ts` `votingCandidates` near `:410` and `:482`; `scannedPrintingIdForOracle` in `apps/frontend/src/components/trade/useTradeScan.ts`; the scan map is keyed by printing id), the spec line it breaks (`PRD/sections/trade-balancer/README.md:77`), the commit that introduced it (`be04fb1b`), why the existing test misses it (its fake hook passes printing ids), the suggested fix (store `result.candidates` on the held entry), and the proof needed (a test that drives the real hook). Re-read those lines before writing. Then the brief's other player-visible bugs, starting with the In-Depth duplicate Stack scan refused with no message.
+     (b) **Deferred from this pass:** Q-11, what it is, why it was deferred, what it needs, and that it should come after the Trade bug fix and the card-search brief.
+     (c) **Every other follow-up** from the brief's `## Follow-ups` list. Write each one so it reads on its own, without the brief: what it is, where in the code, why it was not built, and which decision it needs.
+     (d) **Findings waiting on other work.** Every disposition row that is later, brief, codehealth or owner, plus the unbuilt remainder of each built-in-part row. Give each one its id, a one-line what, the file, and what it waits for (which pending brief, or which owner call).
+     (e) **Housekeeping after this PR merges:** the held `codehealth` queue items to resume, and the brief's `## After the code PR (owner)` steps.
+     (f) **Where the source detail lives:** the `evidence/` folder below, and that this package's own brief and slice logs are in git history on PR #322's branch.
+   - `evidence/`: copy all 13 files of `PRD/work/codebase-cleanup-pass/intake/` byte-for-byte with `cp`, and confirm each with `cmp`. These copies are what keep every Q-, C-, K-, T- id readable after `close`. Say in `IDEA.md` that they are an unedited snapshot from 2026-10-18.
+   - Add the folder to the `## parked in ideasForLater` table in `PRD/work/STATUS.md`, in the existing row format, with stage `unregistered (follow-up pass from codebase-cleanup-pass, PR #322)`.
+
+3. Update PR #322's body with `gh pr edit 322 --body-file <file>`, writing the file inside the worktree under `PRD/work/codebase-cleanup-pass/.tmp-pr-body.md` and deleting it before committing. Replace the Q-11 question with: deferred by the owner, along with the Trade scanned-printing bug and the other follow-ups, all recorded in `PRD/ideasForLater/codebase-cleanup-followups/IDEA.md`. Keep the registration marker and the title unchanged.
+
+4. Completion: once every criterion in all eleven criteria files is `true`, set the slice I row in the README and slice doc to done, set `STATUS.ship-ready` per the skill (the only marker), and move the board row under `## ship-ready` in `PRD/work/STATUS.md`.
+
+Mechanics: change files with the Write and Edit tools; the `cp` and `cmp` calls for the evidence copy are the exception. No heredocs, no `python3` or `sed -i` edits, no long chained Bash. Run git as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`, never `--force`, never `git stash`. Never retry a denied call verbatim; report it. Budget: stay under 150 tool calls. Spawn no subagents; if you dispatch any subagent at all, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`; criteria true/total across all eleven files; the follow-up folder's file list and `IDEA.md`'s section headings; the number of evidence files and `cmp` results; the PR body update result; the final commit sha and `git ls-remote --heads origin thejudge-auto/codebase-cleanup-pass-work`; `git status --porcelain` of the working directory (must be empty); and every file path you wrote, as absolute paths.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
