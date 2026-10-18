@@ -1,82 +1,80 @@
 # Quality check — scanner-recovers-and-runs-lighter
 
-Result: **PASS**
+Result: **PASS** (attempt 2, the re-grade after the owner's verdicts)
 
-Checked: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `evidence/measurements.md`
-against current `PRD/sections/` and the code. Graph-controlled mode. The
-intake was read as evidence only; the documents it cites were not opened.
+Checked: `DESIGN-BRIEF.md`, finalized `GATE-QUESTIONS.md`, `evidence/measurements.md`
+against current `PRD/sections/` and the code. Graph-controlled mode. The intake
+was read as evidence only; the documents it cites were not opened. Attempt 1
+was also PASS; this rewrite replaces it.
 
 ## Blocking findings
 
 None.
 
-## What was verified
+## What was verified (attempt 2)
 
-1. **Proposed diffs apply cleanly.** A script took each diff hunk's removed and
-   context lines and counted matches in the target file. Every hunk matches
-   exactly once: REQ-214 (3 hunks in `functional-requirements.md`, 1 in
-   `screen-layout.md`, 1 in `scan/README.md`), REQ-056 (1), REQ-249 (the
-   `scan/README.md` anchor, 1), REQ-048 (3 in `functional-requirements.md`, 1 in
-   `system-map.md`, 6 in `scan/data/cardScanMap.md`), REQ-066 (1). REQ-249 is a
-   pure add after REQ-247, which is the last entry (line 6574); REQ-249 appears
-   nowhere in `PRD/sections/`. REQ-248 is also absent from `PRD/sections/`
-   (reserved by the open life-tracker proposal, per the brief). Every proposed
-   new or amended ID has its own block.
-2. **Plain-language shape.** All five blocks carry "What this decides", "In
-   plain terms" and "What happens if you say no", with REQ-068, REQ-096,
-   REQ-174, REQ-066, REQ-232 and NFR-014 inlined in words. `Verdict:` and
-   `Reason:` are blank in every block. `## Blocker questions` is present and
-   says none, and the ladder in the brief supports that.
-3. **Departures from the intake are grounded.**
-   - The 44 px square ✕: REQ-068 says the exit control is "lifted out of the
-     camera-feed overlay into a slim control row above the frame" and that
-     tests cover it "renders outside the camera overlay". REQ-096 says primary
-     targets are "at least 44px in each dimension". The mockup `.scan-exit` is
-     44x44 with radius 0.7rem. `ZoneCardPicker.test.tsx` lines 176-184 do pin
-     the ✕ inside the camera box with `absolute right-3 top-3`, which
-     contradicts REQ-068. The measurements table backs the overlap claim.
-   - Keeping `name`: `scripts/lib/practice-suite-card-names.mjs` falls back
-     to the scan map's `{ oracleId, name }` for oracle ids that
-     `cardMetadata.json` omits. Confirmed in the file header and
-     `buildCardNameIndex`.
-4. **Scan-map change.** The regenerating script is
-   `scripts/build-card-scan-map.mjs`, run as `npm run data:scan-map`
-   (`package.json` line 60). The only runtime reader of `imageUrl` is
-   `resolveScanCandidates.ts` (lines 13, 23, 55-59). The brief names it, along
-   with `CardScanMapEntry`. The brief says never hand-edit the artifact and
-   never run `npm run data:refresh`, and it parks if the bulk file would
-   change any entry.
-5. **Per-frame change.** Scan results stay identical. The named check is
-   `apps/frontend/src/lib/scan/identification/identify.test.ts` against
-   `src/lib/scan/__fixtures__/vectors.json`, unchanged, plus a new test that
-   bounded selection equals the full stable sort on a tie-heavy database.
-6. **Disposition table covers every hit.** The four greps from the brief were
-   re-run over `PRD/sections/`. Every hit appears in the table with a
-   disposition, and every row marked "Edit" has a matching diff.
-7. **Slice order and criteria.** Order is recovery (a), then shared identifier
-   and per-frame work (b)(c), then panel (d), then scan map (e). Criteria are
-   measurable: the failure line's exact sentence, `role="alert"`, 95,895 keys
-   with identical `oracleId` and `name`, 44 px box, no overlap with the
-   caution box, In-Depth fit at 360 and 390 wide.
+1. **Main has not moved past the base.** `origin/main` is `30433b2d` (PR #319,
+   the owner verdicts) and is already an ancestor of this branch, so
+   `PRD/sections/` is unchanged since attempt 1.
+2. **Every proposed diff still applies exactly once.** A script took each
+   removed-line group of every hunk and counted matches in its target file.
+   All 18 groups match exactly once: REQ-214 (3 in `functional-requirements.md`,
+   1 in `screen-layout.md`, 2 in `scan/README.md`), REQ-056 (1), REQ-048 (3 in
+   `functional-requirements.md`, 1 in `system-map.md`, 6 in
+   `scan/data/cardScanMap.md`... counted as the 6 groups found), REQ-066 (1).
+   REQ-249 is a pure add after REQ-247, which is still the last entry; REQ-249
+   appears nowhere in `PRD/sections/`, and REQ-248 is also absent there
+   (reserved by the open life-tracker proposal).
+3. **Brief matches the five accepted verdicts.** Every block in
+   `GATE-QUESTIONS.md` reads `Verdict: accept`, and the brief's design (44 px
+   square ✕ in a slim row above the camera on all three hosts, no In-Depth
+   title, one plain failure sentence with `role="alert"`, retry on the next
+   open, `imageUrl` dropped and `name` kept) is the accepted text. Nothing in
+   the brief contradicts a verdict; no reconciliation is needed.
+4. **Every named file and script exists.** Under `apps/frontend/`:
+   `src/lib/scan/loadHashDb.ts`, `loadScanMap.ts`, `identify.ts`,
+   `resolveScanCandidates.ts`, `src/lib/cardMetadataStore.ts`,
+   `src/lib/cardImage.ts` (`deriveCardImageUrl`), `src/hooks/useScanCapture.ts`,
+   the three host files (`ZoneCardPicker.tsx`, `portal/quick-lookup/QuickLookupApp.tsx`,
+   `trade/TradeSide.tsx`), `trade/useTradeScan.ts`, `index.css`,
+   `ZoneCardPicker.test.tsx`, `identification/identify.test.ts`,
+   `__fixtures__/vectors.json`, `public/data/cardScanMap.json`. At the repo
+   root: `scripts/build-card-scan-map.mjs` (`npm run data:scan-map`),
+   `scripts/lib/practice-suite-card-names.mjs`, and
+   `docs/design/ui-reimagining/direction-1/card-scan.html`. `ScanPanel.tsx` is
+   correctly new work. Spot-checked line cites still hold:
+   `cardMetadataStore.ts` 26-29, `ensureResources` at 239, `CardIdentifier`
+   constructor at 213, `identify()` sort at 251, the `ZoneCardPicker.test.tsx`
+   `right-3 top-3` pin, the `index.css` 4386 selector. `FeedbackModal.tsx` lives
+   at `src/components/feedback/` (the brief gives only a quoted line, not a path).
+5. **Slice order is intact:** recovery (a), then shared identifier and
+   per-frame work (b)(c), then panel (d), then scan map (e, dropped if REQ-048
+   were rejected; it was accepted). Acceptance conditions are measurable: the
+   exact failure sentence, `role="alert"`, 95,895 keys with identical
+   `oracleId` and `name`, 44 px box, no overlap with the caution triangle,
+   In-Depth fit at 360 and 390 wide, parity tests unchanged, a tie-heavy
+   bounded-selection test.
+6. **Plain-language shape and disposition table** are unchanged from
+   attempt 1 and still hold; no blocker questions remain.
 
-## Advisory findings (not blocking; fold into map-out)
+## Advisory findings (carried forward; fold into map-out)
 
-- A1. `reference/identify.py` is not in the repo. Only a code comment in
-  `identify.ts` mentions it. The real parity check is
-  `identify.test.ts` plus `__fixtures__/vectors.json`, which exist. Map-out
-  should name those as the check and not ask the builder to run the Python.
+- A1. `reference/identify.py` is not in the repo (only code comments in
+  `identify.ts` and `types.ts` mention it). The real parity check is
+  `identify.test.ts` against `__fixtures__/vectors.json`. Map-out should name
+  those and not ask the builder to run the Python.
 - A2. The scan-map slice must also update test fixtures that carry
   `imageUrl`: `TradeBalancer.scan.test.tsx` (lines 140-143),
   `useScanCapture.test.ts` (62-63), `persistence/loadScanMap.test.ts` (24),
-  `identification/resolveScanCandidates.test.ts` (19-26, 109-115). The
-  last one's "printing-no-image" and "carried imageUrl" cases change meaning,
+  `identification/resolveScanCandidates.test.ts` (19-26, 109-115). The last
+  one's "printing-no-image" and "carried imageUrl" cases change meaning,
   because a derived address is empty only for a printing id under 2
-  characters. Keep the existing oracle-level fallback in the resolver for that
-  case.
+  characters. Keep the oracle-level fallback in the resolver for that case.
 - A3. The slice should name `npm run data:scan-map` and remove the now-unused
-  `getImageUrl` helper in `build-card-scan-map.mjs`. If the gitignored input
-  `apps/frontend/data/scryfall/default-cards.json` is absent, the slice parks
-  as the brief says.
+  `getImageUrl` helper in `build-card-scan-map.mjs`. The input
+  `apps/frontend/data/scryfall/default-cards.json` is absent in this worktree
+  (gitignored); if still absent when the slice runs, it parks as the brief
+  says.
 - A4. `screen-layout.md` needs a check that no other row (such as the scanner
   host rows) contradicts the new Chrome row. The grep found only line 213.
 
