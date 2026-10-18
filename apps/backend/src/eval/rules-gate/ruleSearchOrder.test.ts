@@ -15,9 +15,15 @@ import { buildCaseQueryText, checkReFreeze, hashQueryText, loadFrozenVectors } f
 
 // A characterization test for rule search scoring. For every rules-gate case it records, on two paths
 // (semantic: the committed frozen vectors; lexical: no query vector), the ordered selected and
-// runner-up rule ids, whether the semantic score was used, and a SHA-256 of the full scored debug
-// output (rule ids and exact scores). The committed snapshot must match exactly, so a refactor of the
-// scoring code that moves any rule, order or score fails here.
+// runner-up rule ids, whether the semantic score was used, every rule score in output order, and a
+// SHA-256 of the rest of the scored debug output. Everything but the scores must match exactly; each
+// score must match to one part in a billion. A refactor of the scoring code that moves any rule or
+// order, or changes any score by more than rounding, fails here.
+//
+// Why scores are not hashed exactly: the IDF weight uses `Math.log`, whose last bit differs between
+// CPU architectures (CI runs x86-64, a Mac and Lambda run arm64). The same code gives the same rule
+// order on both, but an exact hash of the raw scores would only pass on the architecture that wrote
+// the snapshot.
 //
 // A case whose retrieval query text changed since the snapshot was written (a card-data refresh that
 // changed a keyword, say) is skipped and listed instead of failed, the way the rules gate treats a
@@ -42,8 +48,14 @@ type PathRecord = {
   usedSemantic: boolean;
   selected: string[];
   runnerUp: string[];
+  /** Every `score` in the scored debug output, in output order. */
+  scores: number[];
+  /** SHA-256 of the scored debug output with each `score` replaced by null. */
   scoredOutputSha256: string;
 };
+
+/** Matches the architecture noise in `Math.log` with a wide margin; any real scoring change is far larger. */
+const SCORE_RELATIVE_TOLERANCE = 1e-9;
 
 type CaseRecord = {
   /** SHA-256 of the retrieval query text this record was made from. */
@@ -57,6 +69,34 @@ type Snapshot = { supplementalRuleCap: number; cases: Record<string, CaseRecord>
 
 function sha256(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
+}
+
+/** Splits the debug output into its scores and a hash of everything else. */
+function fingerprintScoredOutput(debug: unknown): { scores: number[]; scoredOutputSha256: string } {
+  const scores: number[] = [];
+  const withoutScores = JSON.stringify(debug, (key, value: unknown) => {
+    if (key === "score" && typeof value === "number") {
+      scores.push(value);
+      return null;
+    }
+    return value;
+  });
+  return { scores, scoredOutputSha256: sha256(withoutScores) };
+}
+
+function expectPathToMatch(actual: PathRecord | null, expected: PathRecord | null, label: string): void {
+  if (!actual || !expected) {
+    expect(actual, label).toEqual(expected);
+    return;
+  }
+  const { scores: actualScores, ...actualRest } = actual;
+  const { scores: expectedScores, ...expectedRest } = expected;
+  expect(actualRest, label).toEqual(expectedRest);
+  expect(actualScores, `${label} score count`).toHaveLength(expectedScores.length);
+  actualScores.forEach((score, index) => {
+    const tolerance = SCORE_RELATIVE_TOLERANCE * Math.max(1, Math.abs(expectedScores[index]));
+    expect(Math.abs(score - expectedScores[index]), `${label} score ${index}`).toBeLessThanOrEqual(tolerance);
+  });
 }
 
 describe("Backend - Game Rules", () => {
@@ -90,7 +130,7 @@ describe("Backend - Game Rules", () => {
             usedSemantic: debug.usedSemantic,
             selected: debug.selected.map((rule) => rule.ruleId),
             runnerUp: debug.runnerUp.map((rule) => rule.ruleId),
-            scoredOutputSha256: sha256(JSON.stringify(debug))
+            ...fingerprintScoredOutput(debug)
           };
         };
         record.cases[caseEntry.id] = {
@@ -116,7 +156,7 @@ describe("Backend - Game Rules", () => {
       for (const [id, expected] of Object.entries(snapshot.cases)) {
         const actual = current.cases[id];
         if (!actual || actual.queryTextHash !== expected.queryTextHash) continue;
-        expect(actual.lexical, `${id} (lexical)`).toEqual(expected.lexical);
+        expectPathToMatch(actual.lexical, expected.lexical, `${id} (lexical)`);
         compared += 1;
       }
       // Most of the corpus must still be compared, or the guard has silently stopped guarding.
@@ -129,7 +169,7 @@ describe("Backend - Game Rules", () => {
       for (const [id, expected] of Object.entries(snapshot.cases)) {
         const actual = current.cases[id];
         if (!actual || actual.queryTextHash !== expected.queryTextHash) continue;
-        expect(actual.semantic, `${id} (semantic)`).toEqual(expected.semantic);
+        expectPathToMatch(actual.semantic, expected.semantic, `${id} (semantic)`);
         if (expected.semantic) {
           expect(expected.semantic.usedSemantic, `${id} used the semantic score`).toBe(true);
           compared += 1;
