@@ -43,24 +43,17 @@ function mockScanCapture(isOpen: boolean): void {
     isOpen,
     isLoading: false,
     error: null,
-    cameraStatus: "idle",
     setCameraStatus: vi.fn(),
-    resolvedCandidates: [],
-    lockedCandidate: null,
-    scanPhase: "searching",
     convergence: searching,
     scanDebug: null,
-    scanAcquisitionDiagnostic: null,
     blockedNotice: null,
     addConfirmation: null,
     heldEntries: [],
     removeHeld: vi.fn(),
     openScan: vi.fn(),
     closeScan: vi.fn(),
-    rescan: vi.fn(),
     identify: vi.fn(async () => ({ matched: false, was_rotated: false, candidates: [] })),
-    recordAcquisitionDiagnostic: vi.fn(),
-    acceptCandidate: vi.fn()
+    recordAcquisitionDiagnostic: vi.fn()
   });
 }
 

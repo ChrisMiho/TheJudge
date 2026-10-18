@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { CARD_HEIGHT, CARD_WIDTH, MAX_DETECT_DIMENSION, detectCard, type GuideRect, type Point } from "../lib/scan/detector"
 import { loadScanAudioMuted, saveScanAudioMuted } from "../lib/scan/audioPrefs"
 import type { ConditionReason } from "../lib/scan/frameQuality"
-import type { IdentifyResult, RgbImage } from "../lib/scan/types"
+import type { IdentifyResult, RgbImage, ScanCameraStatus } from "../lib/scan/types"
 import type { AcquisitionFrameDiagnostic, CaptureDiagnostic } from "../lib/scan/acquisitionDiagnostics"
 import { ScanCardOutline } from "./ScanCardOutline"
 import { ScanDebugOverlay } from "./ScanDebugOverlay"
@@ -10,7 +10,9 @@ import { ScanDebugOverlay } from "./ScanDebugOverlay"
 // view-model shapes; this presentational component just renders them.
 import type { ScanAddConfirmation, ScanConvergence, ScanDebugMetrics, ScanDetectorNudge } from "../hooks/useScanCapture"
 
-export type ScanCameraStatus = "idle" | "camera-error" | "scanning" | "no-card" | "captured" | "no-match"
+// Defined in lib/scan/types so the scan hook can name it without importing this component; re-exported
+// here for the hosts that already import it from this file.
+export type { ScanCameraStatus }
 
 function downloadCanvasAsPng(canvas: HTMLCanvasElement): void {
   canvas.toBlob((blob) => {

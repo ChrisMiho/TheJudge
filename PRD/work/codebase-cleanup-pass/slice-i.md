@@ -1,6 +1,6 @@
 # Slice I — The scanner hook keeps only what screens use
 
-## Status: planned
+## Status: done
 
 Depends on: none. Findings: Q-02, Q-11, Q-10 (scan part), Q-12 (scan part), U-12 (one constant).
 
@@ -44,7 +44,8 @@ git diff --name-only origin/main
 
 ## Reverted findings
 
-None yet.
+- **Q-11 (the scanned-printing side channel and the per-hook promise), not applied; criterion I2 stays false.** Doing it needs the card-search-owned `TradeBalancer.scan.test.tsx` rewritten (its hook double, its `loadScanMap` mock and a wait in its `openScan` helper), the per-hook promise is what the hook's injected-loader tests and REQ-249's retry rely on, and reading the code showed Trade scans never default to the scanned printing today (the held entry carries oracle-id candidates, not printing-id ones, since `be04fb1b`), so a faithful move would copy a bug and a correct one would change what players see. The owner decides; details in `slice-i.evidence.md`.
+- The five tests that asserted only the removed `rescan` and `scanAcquisitionDiagnostic` values are removed (listed in the evidence log).
 
 ## Files touched
 

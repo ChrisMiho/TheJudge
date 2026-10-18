@@ -6,7 +6,10 @@ import type { HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { CardMetadataItem } from "../types";
 import { SCAN_DATA_UNAVAILABLE_MESSAGE } from "../lib/scan/scanDataMessage";
 import { SCAN_STABILIZER_CONFIG } from "../lib/scan/tuning";
-import { DETECTOR_FAILURE_NUDGE_COUNT, LOW_CONFIDENCE_ESCALATION_COUNT, useScanCapture } from "./useScanCapture";
+import { DETECTOR_FAILURE_NUDGE_COUNT, useScanCapture } from "./useScanCapture";
+
+// How many unmatched captures in a row the "stays open" test feeds the scanner.
+const LOW_CONFIDENCE_ESCALATION_COUNT = 3;
 
 function makeImage(
   width: number,
@@ -230,8 +233,6 @@ describe("Frontend - Card Scan", () => {
         card: cardMetadata[0],
         scanImageUrl: "https://cards.scryfall.io/normal/front/p/r/printing-opt.jpg"
       });
-      expect(result.current.scanPhase).toBe("searching");
-      expect(result.current.lockedCandidate).toBeNull();
       expect(result.current.blockedNotice).toBeNull();
     });
 
@@ -343,8 +344,6 @@ describe("Frontend - Card Scan", () => {
       });
 
       expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
-      expect(result.current.scanPhase).toBe("searching");
-      expect(result.current.lockedCandidate).toBeNull();
       expect(result.current.blockedNotice).toBe("Card already in stack");
     });
 
@@ -411,7 +410,6 @@ describe("Frontend - Card Scan", () => {
       });
 
       expect(onScanCandidateSelected).not.toHaveBeenCalled();
-      expect(result.current.scanPhase).toBe("searching");
     });
 
     it("single confident frame converges (locking) without auto-adding", async () => {
@@ -439,47 +437,10 @@ describe("Frontend - Card Scan", () => {
       });
 
       expect(onScanCandidateSelected).not.toHaveBeenCalled();
-      expect(result.current.scanPhase).toBe("searching");
       expect(result.current.convergence.phase).toBe("locking");
       expect(result.current.convergence.leaderName).toBe("Opt");
       expect(result.current.convergence.votes).toBe(1);
       expect(result.current.convergence.votesNeeded).toBe(SCAN_STABILIZER_CONFIG.minVotes);
-    });
-
-    it("rescan() resets convergence and notice to a clean searching state", async () => {
-      const identifier = makeIdentifier({
-        matched: true,
-        was_rotated: false,
-        candidates: [{ card_id: "printing-opt", distance: 7 }]
-      });
-      const onScanCandidateSelected = vi.fn(() => ({ added: true } as const));
-      const { result } = renderHook(() =>
-        useScanCapture({
-          cardMetadata,
-          onScanCandidateSelected,
-          dependencies: {
-            loadHashDb: vi.fn(async () => db),
-            loadScanMap: vi.fn(async () => scanMap),
-            createIdentifier: vi.fn(() => identifier)
-          }
-        })
-      );
-
-      await act(async () => {
-        await result.current.openScan();
-        for (let i = 0; i < 2; i++) {
-          await result.current.identify(image);
-        }
-      });
-
-      act(() => {
-        result.current.rescan();
-      });
-
-      expect(result.current.convergence.phase).toBe("searching");
-      expect(result.current.convergence.leaderName).toBeNull();
-      expect(result.current.blockedNotice).toBeNull();
-      expect(result.current.scanPhase).toBe("searching");
     });
 
     it("surfaces and resets a detector nudge after sustained no-card statuses", async () => {
@@ -615,7 +576,6 @@ describe("Frontend - Card Scan", () => {
 
       expect(identifier.identify).not.toHaveBeenCalled();
       expect(onScanCandidateSelected).not.toHaveBeenCalled();
-      expect(result.current.scanPhase).toBe("searching");
       expect(result.current.convergence.conditionHint).toBe("blur");
     });
 
@@ -649,197 +609,6 @@ describe("Frontend - Card Scan", () => {
       expect(result.current.convergence.conditionHint).toBeNull();
     });
 
-    it("reports quality-abstain acquisition diagnostics when the frame selector abstains", async () => {
-      const identifier = makeIdentifier({
-        matched: true,
-        was_rotated: false,
-        candidates: [{ card_id: "printing-opt", distance: 7 }]
-      });
-      const { result } = renderHook(() =>
-        useScanCapture({
-          cardMetadata,
-          onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
-          dependencies: {
-            loadHashDb: vi.fn(async () => db),
-            loadScanMap: vi.fn(async () => scanMap),
-            createIdentifier: vi.fn(() => identifier)
-          }
-        })
-      );
-
-      await act(async () => {
-        await result.current.openScan();
-        await result.current.identify(makePoorImage());
-      });
-
-      expect(identifier.identify).not.toHaveBeenCalled();
-      expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
-        reason: "quality-abstain",
-        frameSelection: {
-          abstain: true,
-          source: "abstain",
-          qualityReason: "blur"
-        },
-        stabilizer: {
-          votesAccumulated: 0,
-          votesNeeded: SCAN_STABILIZER_CONFIG.minVotes
-        }
-      });
-      expect(result.current.scanAcquisitionDiagnostic?.identity).toBeUndefined();
-    });
-
-    it("reports unresolved-candidate when identify returns no resolved ranked card", async () => {
-      const identifier = makeIdentifier({
-        matched: true,
-        was_rotated: false,
-        candidates: [{ card_id: "unknown-printing", distance: 7 }]
-      });
-      const { result } = renderHook(() =>
-        useScanCapture({
-          cardMetadata,
-          onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
-          dependencies: {
-            loadHashDb: vi.fn(async () => db),
-            loadScanMap: vi.fn(async () => scanMap),
-            createIdentifier: vi.fn(() => identifier)
-          }
-        })
-      );
-
-      await act(async () => {
-        await result.current.openScan();
-        await result.current.identify(image);
-      });
-
-      expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
-        reason: "unresolved-candidate",
-        frameSelection: { source: "current", selectedFrameAge: 0 },
-        identity: {
-          bestName: null,
-          bestDistance: null,
-          runnerUpName: null,
-          runnerUpDistance: null,
-          margin: null,
-          unresolved: true
-        },
-        stabilizer: {
-          votesAccumulated: 0,
-          votesNeeded: SCAN_STABILIZER_CONFIG.minVotes
-        }
-      });
-    });
-
-    it("reports distance and margin vote-gate diagnostics without locking", async () => {
-      const identifier = makeIdentifier({
-        matched: true,
-        was_rotated: false,
-        candidates: [{ card_id: "printing-opt", distance: SCAN_STABILIZER_CONFIG.lockDistance + 1 }]
-      });
-      const { result } = renderHook(() =>
-        useScanCapture({
-          cardMetadata,
-          onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
-          dependencies: {
-            loadHashDb: vi.fn(async () => db),
-            loadScanMap: vi.fn(async () => scanMap),
-            createIdentifier: vi.fn(() => identifier)
-          }
-        })
-      );
-
-      await act(async () => {
-        await result.current.openScan();
-        await result.current.identify(image);
-      });
-
-      expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
-        reason: "distance-above-lock",
-        identity: {
-          bestName: "Opt",
-          bestDistance: SCAN_STABILIZER_CONFIG.lockDistance + 1,
-          margin: null,
-          unresolved: false
-        },
-        stabilizer: { votesAccumulated: 0 }
-      });
-
-      identifier.identify.mockReturnValue({
-        matched: true,
-        was_rotated: false,
-        candidates: [
-          { card_id: "printing-opt", distance: 50 },
-          { card_id: "printing-bolt", distance: 55 }
-        ]
-      });
-
-      await act(async () => {
-        await result.current.identify(image);
-      });
-
-      expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
-        reason: "margin-below-min",
-        identity: {
-          bestName: "Opt",
-          bestDistance: 50,
-          runnerUpName: "Lightning Bolt",
-          runnerUpDistance: 55,
-          margin: 5,
-          unresolved: false
-        },
-        stabilizer: { votesAccumulated: 0 }
-      });
-    });
-
-    it("reports accepted-vote diagnostics with current stabilizer progress", async () => {
-      const identifier = makeIdentifier({
-        matched: true,
-        was_rotated: false,
-        candidates: [
-          { card_id: "printing-opt", distance: 7 },
-          { card_id: "printing-bolt", distance: 30 }
-        ]
-      });
-      const { result } = renderHook(() =>
-        useScanCapture({
-          cardMetadata,
-          onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
-          dependencies: {
-            loadHashDb: vi.fn(async () => db),
-            loadScanMap: vi.fn(async () => scanMap),
-            createIdentifier: vi.fn(() => identifier)
-          }
-        })
-      );
-
-      await act(async () => {
-        await result.current.openScan();
-        await result.current.identify(image);
-      });
-
-      expect(result.current.scanAcquisitionDiagnostic).toMatchObject({
-        reason: "accepted-vote",
-        frameSelection: {
-          source: "current",
-          selectedFrameAge: 0,
-          selectedFrameIndex: 1
-        },
-        identity: {
-          bestName: "Opt",
-          bestDistance: 7,
-          runnerUpName: "Lightning Bolt",
-          runnerUpDistance: 30,
-          margin: 23,
-          unresolved: false
-        },
-        stabilizer: {
-          votesAccumulated: 1,
-          votesNeeded: SCAN_STABILIZER_CONFIG.minVotes,
-          lockDistance: SCAN_STABILIZER_CONFIG.lockDistance,
-          marginMin: SCAN_STABILIZER_CONFIG.marginMin
-        }
-      });
-    });
-
     it("does not let a stale detector-miss diagnostic hide a later close-to-voting identity state", async () => {
       const identifier = makeIdentifier({
         matched: true,
@@ -867,8 +636,6 @@ describe("Frontend - Card Scan", () => {
         await result.current.identify(image);
       });
 
-      expect(result.current.scanAcquisitionDiagnostic?.reason).toBe("accepted-vote");
-      expect(result.current.scanAcquisitionDiagnostic?.detector).toBeUndefined();
       expect(result.current.convergence.inZone).toBe(true);
     });
   });

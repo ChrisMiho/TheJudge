@@ -1,10 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 
-import type { ScanCameraStatus } from "../ScanCameraSurface";
 import { useScanCapture, type HeldScanEntry } from "../../hooks/useScanCapture";
 import { loadScanMap } from "../../lib/scan/loadScanMap";
 import type { CardScanMap } from "../../lib/scan/resolveScanCandidates";
-import type { Candidate, IdentifyResult, RgbImage } from "../../lib/scan/types";
+import type { Candidate, IdentifyResult, RgbImage, ScanCameraStatus } from "../../lib/scan/types";
 import type { TradeSideId } from "../../lib/trade/pricing";
 import type { CardMetadataItem } from "../../types";
 

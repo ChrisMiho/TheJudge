@@ -22,17 +22,6 @@ export const SCAN_STABILIZER_CONFIG: StabilizerConfig = {
   marginMin: 14
 };
 
-/**
- * A frame's best resolved candidate is only surfaced as a live "possible match"
- * hint when its distance is <= this. Above it the match is near-random noise and
- * is suppressed so the picker no longer floods with wrong names. Looser than the
- * stabilizer's lockDistance: a hint may show before there is enough evidence to lock.
- */
-export const SURFACE_DISTANCE = 90;
-
-/** Cap on how many live hint candidates are shown while still searching. */
-export const MAX_SURFACED_CANDIDATES = 3;
-
 /** Query-side percentile stretch bounds. DB hashes are never conditioned with these. */
 export const QUERY_AUTO_CONTRAST_BLACK_PERCENTILE = 0.5;
 export const QUERY_AUTO_CONTRAST_WHITE_PERCENTILE = 99.5;
