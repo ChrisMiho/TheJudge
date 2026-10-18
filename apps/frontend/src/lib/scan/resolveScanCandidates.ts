@@ -10,7 +10,6 @@ import type { Candidate } from "./types";
 export interface CardScanMapEntry {
   oracleId: string;
   name: string;
-  imageUrl: string;
 }
 
 /** cardScanMap.json shape: Scryfall printing id -> { oracleId, name }. */
@@ -20,8 +19,21 @@ export type CardScanMap = Record<string, CardScanMapEntry>;
 export interface ResolvedScanCandidate {
   card: CardMetadataItem;
   distance: number;
-  /** Scanned printing's imageUrl; falls back to card.imageUrl when printing image is absent. */
+  /** Scanned printing's image, derived from its printing id; falls back to the oracle-level image when empty. */
   scanImageUrl: string;
+}
+
+// The card-id lookup is built once per card-list array, not once per camera frame.
+const metadataLookups = new WeakMap<CardMetadataItem[], Map<string, CardMetadataItem>>();
+
+/** @internal exported for tests: the cached card-id lookup for a card list. */
+export function metadataLookupFor(cardMetadata: CardMetadataItem[]): Map<string, CardMetadataItem> {
+  let lookup = metadataLookups.get(cardMetadata);
+  if (!lookup) {
+    lookup = new Map(cardMetadata.map((item) => [item.cardId, item]));
+    metadataLookups.set(cardMetadata, lookup);
+  }
+  return lookup;
 }
 
 /**
@@ -37,7 +49,7 @@ export function resolveScanCandidatesRanked(
   scanMap: CardScanMap,
   cardMetadata: CardMetadataItem[]
 ): ResolvedScanCandidate[] {
-  const metadataByCardId = new Map(cardMetadata.map((item) => [item.cardId, item]));
+  const metadataByCardId = metadataLookupFor(cardMetadata);
   const ordered = [...candidates].sort((a, b) => a.distance - b.distance);
 
   const resolved: ResolvedScanCandidate[] = [];
@@ -52,11 +64,10 @@ export function resolveScanCandidatesRanked(
     if (!metadataItem) continue;
 
     seenOracleIds.add(scanEntry.oracleId);
-    // REQ-174/Slice C: `cardScanMap.json`'s per-scanned-printing `imageUrl` is
-    // unchanged (REQ-066 constraint); the metadata fallback derives from the
-    // representative printing's `imageId` now that `CardMetadataItem` no
-    // longer stores a full url.
-    const scanImageUrl = scanEntry.imageUrl || deriveCardImageUrl(metadataItem.imageId);
+    // REQ-048: the scanned printing's image is derived from its printing id (REQ-174's
+    // single template); an empty derived address falls back to the oracle-level image.
+    const scanImageUrl =
+      deriveCardImageUrl(candidate.card_id) || deriveCardImageUrl(metadataItem.imageId);
     resolved.push({ card: metadataItem, distance: candidate.distance, scanImageUrl });
   }
 

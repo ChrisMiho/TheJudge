@@ -4,6 +4,7 @@ import { CARD_HEIGHT, CARD_WIDTH } from "../lib/scan/identify";
 import type { CardScanMap } from "../lib/scan/resolveScanCandidates";
 import type { HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { CardMetadataItem } from "../types";
+import { SCAN_DATA_UNAVAILABLE_MESSAGE } from "../lib/scan/scanDataMessage";
 import { SCAN_STABILIZER_CONFIG } from "../lib/scan/tuning";
 import { DETECTOR_FAILURE_NUDGE_COUNT, LOW_CONFIDENCE_ESCALATION_COUNT, useScanCapture } from "./useScanCapture";
 
@@ -59,8 +60,8 @@ function makeCard(cardId: string, name: string): CardMetadataItem {
 const image: RgbImage = makeGoodImage();
 const db: HashDb = { ids: [], hashes: new Uint8Array(), count: 0 };
 const scanMap: CardScanMap = {
-  "printing-opt": { oracleId: "opt", name: "Opt", imageUrl: "https://img/opt-print.jpg" },
-  "printing-bolt": { oracleId: "lightning-bolt", name: "Lightning Bolt", imageUrl: "https://img/bolt-print.jpg" }
+  "printing-opt": { oracleId: "opt", name: "Opt" },
+  "printing-bolt": { oracleId: "lightning-bolt", name: "Lightning Bolt" }
 };
 const cardMetadata = [makeCard("opt", "Opt"), makeCard("lightning-bolt", "Lightning Bolt")];
 
@@ -102,6 +103,101 @@ describe("Frontend - Card Scan", () => {
       expect(createIdentifier).toHaveBeenCalledTimes(1);
     });
 
+    it("two scanners using the shared loader get the same resources object", async () => {
+      const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });
+      const shared = Promise.resolve({ identifier, scanMap });
+      const loadResources = vi.fn(() => shared);
+      const mount = () =>
+        renderHook(() =>
+          useScanCapture({
+            cardMetadata,
+            onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+            dependencies: { loadResources }
+          })
+        );
+      const a = mount();
+      const b = mount();
+
+      await act(async () => {
+        await a.result.current.openScan();
+        await b.result.current.openScan();
+        await a.result.current.identify(image);
+        await b.result.current.identify(image);
+      });
+
+      expect(loadResources).toHaveBeenCalledTimes(2);
+      expect(identifier.identify).toHaveBeenCalledTimes(2);
+    });
+
+    it("REQ-249: a failed first open shows the plain sentence, and the next open retries and builds the identifier", async () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });
+      const loadHashDb = vi
+        .fn<() => Promise<HashDb>>()
+        .mockRejectedValueOnce(new Error("Could not load card hash DB: 503 Service Unavailable"))
+        .mockResolvedValue(db);
+      const loadScanMap = vi.fn(async () => scanMap);
+      const createIdentifier = vi.fn(() => identifier);
+      const { result } = renderHook(() =>
+        useScanCapture({
+          cardMetadata,
+          onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+          dependencies: { loadHashDb, loadScanMap, createIdentifier }
+        })
+      );
+
+      await act(async () => {
+        await result.current.openScan();
+      });
+
+      expect(result.current.error).toBe(SCAN_DATA_UNAVAILABLE_MESSAGE);
+      expect(result.current.error).not.toMatch(/503|hash DB/);
+      expect(consoleError).toHaveBeenCalled();
+      expect(createIdentifier).not.toHaveBeenCalled();
+
+      await act(async () => {
+        result.current.closeScan();
+        await result.current.openScan();
+      });
+
+      expect(result.current.error).toBeNull();
+      expect(loadHashDb).toHaveBeenCalledTimes(2);
+      expect(createIdentifier).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        await result.current.identify(image);
+      });
+      expect(identifier.identify).toHaveBeenCalledTimes(1);
+      consoleError.mockRestore();
+    });
+
+    it("REQ-249: camera frames after a failed load do not re-request scan data", async () => {
+      const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      const loadHashDb = vi.fn<() => Promise<HashDb>>().mockRejectedValue(new Error("offline"));
+      const loadScanMap = vi.fn(async () => scanMap);
+      const { result } = renderHook(() =>
+        useScanCapture({
+          cardMetadata,
+          onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+          dependencies: {
+            loadHashDb,
+            loadScanMap,
+            createIdentifier: () => makeIdentifier({ matched: false, was_rotated: false, candidates: [] })
+          }
+        })
+      );
+
+      await act(async () => {
+        await result.current.openScan();
+        await result.current.identify(image);
+        await result.current.identify(image);
+      });
+
+      expect(loadHashDb).toHaveBeenCalledTimes(1);
+      expect(result.current.error).toBe(SCAN_DATA_UNAVAILABLE_MESSAGE);
+      consoleError.mockRestore();
+    });
+
     it("REQ-214: a recognised card waits in the holding list, not the destination, and resumes searching", async () => {
       const identifier = makeIdentifier({
         matched: true,
@@ -132,7 +228,7 @@ describe("Frontend - Card Scan", () => {
       expect(result.current.heldEntries).toHaveLength(1);
       expect(result.current.heldEntries[0]).toMatchObject({
         card: cardMetadata[0],
-        scanImageUrl: "https://img/opt-print.jpg"
+        scanImageUrl: "https://cards.scryfall.io/normal/front/p/r/printing-opt.jpg"
       });
       expect(result.current.scanPhase).toBe("searching");
       expect(result.current.lockedCandidate).toBeNull();
@@ -171,7 +267,7 @@ describe("Frontend - Card Scan", () => {
       });
 
       expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
-      expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0], "https://img/opt-print.jpg", [
+      expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0], "https://cards.scryfall.io/normal/front/p/r/printing-opt.jpg", [
         { card_id: "opt", distance: 7 }
       ]);
       expect(result.current.heldEntries).toHaveLength(0);

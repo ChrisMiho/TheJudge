@@ -1027,17 +1027,18 @@
 - Priority: medium
 - Description: A scanned card must display the specific printing's artwork that was scanned — in the scan preview and persisted on the added card's thumbnail — so the on-screen art matches the physical card. The printing image is carried as presentation only; card identity, prompt context, and rulings stay oracle-level and unchanged (DEC-070, refining DEC-053/REQ-036).
 - Acceptance Criteria:
-  - the build-time bridge artifact `cardScanMap.json` carries a per-printing image so each printing id resolves to its own art; the entry shape becomes `{ oracleId, name, imageUrl }`, produced by `build-card-scan-map.mjs` from the same Scryfall printing object it already reads
-  - the scan candidate resolver (`resolveScanCandidatesRanked`, REQ-036) threads the best-distance printing's image through to the locked candidate alongside the resolved oracle-level `CardMetadataItem`
+  - each printing id resolves to its own art: the build-time bridge artifact `cardScanMap.json` keeps the entry shape `{ oracleId, name }`, produced by `build-card-scan-map.mjs` from the same Scryfall printing object it already reads, and the printing's image url is derived from the printing id through the app's single Scryfall image template (`deriveCardImageUrl`, REQ-174) — the same `normal`-size front-face address Scryfall serves, without Scryfall's `?<timestamp>` cache-buster suffix
+  - the scan candidate resolver (`resolveScanCandidatesRanked`, REQ-036) threads the best-distance printing's derived image through to the locked candidate alongside the resolved oracle-level `CardMetadataItem`
   - the scan preview shows the scanned printing's art (not the oracle-level representative image)
   - on auto-add (DEC-056), the scanned printing image is written to `ZoneCardItem.imageUrl` for that card so the stack/zone thumbnail (REQ-008/DEC-018) matches the scanned printing
-  - graceful fallback: when a printing image is missing/empty in the bridge, the card still previews and adds using the oracle-level `CardMetadataItem.imageUrl`; the DEC-053 collapse-by-best-distance and drop-unresolvable behavior is otherwise unchanged
+  - graceful fallback: when the derived printing image is empty, the card still previews and adds using the oracle-level image derived from `CardMetadataItem.imageId`; the DEC-053 collapse-by-best-distance and drop-unresolvable behavior is otherwise unchanged
   - oracle-level identity is unchanged: `cardId`, the duplicate-stack key, prompt context (`buildPromptContext`/`buildPromptText`), and rulings lookup remain keyed on the oracle id; no printing-level data other than the display image is pushed into `ZoneCardItem`, prompt, or rulings
   - existing scan/zone-collection/resolver tests are extended, not replaced; the resolver image carry-through is unit-tested including the missing-image fallback
 - Constraints:
   - frontend-only at scan time with zero network calls; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
   - presentation only and not a scan-robustness lever: no change to the shared resize+DCT+hash recipe (`recipe.ts`), `cardhashes.bin`, the matching/orientation/distance logic (`identify.ts`), the stabilizer/lock gate, or the byte-exact parity gates (REQ-034/DEC-051) (distinct from DEC-062/DEC-069)
-  - the bridge file grows by one URL per printing but stays lazy-loaded on first scan (NFR-010); app startup is unaffected for users who never scan
+  - the bridge file carries no image url and stays lazy-loaded on first scan (NFR-010); app startup is unaffected for users who never scan
+  - the committed `cardScanMap.json` is produced by `build-card-scan-map.mjs` (or, to slim the existing file without a card-data refresh, `npm run data:scan-map:slim`), never hand-edited; the slimmed file keeps exactly the same printing ids with the same `oracleId` and `name` values (no card-data refresh rides along)
 - Dependencies:
   - DEC-070
   - DEC-053
@@ -1217,7 +1218,7 @@
 - Acceptance Criteria:
   - **game context:** the cat-wizard hero image is not in the document on initial render; after 10 taps on the `TheJudge` brand mark — counted session-wide across every in-scope screen under REQ-203, not only on this step — it appears (`/assets/cats-homescreen.png`) and stays visible for the browser session only; turn phase and active player render in one merged panel side-by-side on `sm+` widths with combat sub-step full-width below when phase is `combat`; `(recommended)` does not appear in active-player labeling; player expand/collapse and add/remove controls use wider tap targets
   - **zone collection:** cards render in a horizontal left-to-right strip in add order with horizontal region scroll (DEC-151 / REQ-130), for every zone including stack; remove buttons, images sized to the tile under DEC-160, truncated names, and stack-position labels are preserved; overflow cards are reachable via horizontal scroll; the empty-state `Select a suggestion to preview and add a card to …` placeholder is removed
-  - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface are not in the document; the `Scan card` heading is removed; **Exit scan** is reachable on the camera surface top-right; the scan-local **Capture** button remains available; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
+  - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface are not in the document; the `Scan card` heading is removed, so the slim row above the camera carries only the exit box; **Exit scan** is reachable from that row, above the camera's top-right corner and never over the camera frame (REQ-214, REQ-068); the scan-local **Capture** button remains available; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
   - **enrichment:** in **View all cards** mode, each zone's card list shows at most 4 full-width edit rows before internal scroll; card-by-card wizard mode is unchanged; all enrichment fields remain reachable by scrolling within the zone list
   - **zone confirmation:** no screen-specific control compaction; it may inherit the automatic responsive shell/spacing from REQ-096 while its existing control layout and behavior remain unchanged
   - tests cover representative cases for the Easter egg (its cross-screen tap count is covered by REQ-203), zone strip scroll, scan chrome hide/show, and enrichment list scroll cap
@@ -1572,7 +1573,7 @@
 - Constraints:
   - static committed snapshot: no live/real-time price sync and no scheduled refresh; the on-demand backend read serves the committed snapshot in memory and makes no external call (DEC-012 posture)
   - raw downloaded bulk data remains gitignored and is not committed; only the trimmed price artifact is committed
-  - no change to `cardScanMap.json`, `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, or the provider boundary; `cardMetadata.json` is slimmed and reused as the shared identity index per REQ-174; the backend gains the read-only price route per REQ-175
+  - this requirement makes no change to `cardScanMap.json` (its entry shape is owned by REQ-048), `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, or the provider boundary; `cardMetadata.json` is slimmed and reused as the shared identity index per REQ-174; the backend gains the read-only price route per REQ-175
 - Dependencies:
   - DEC-012
   - REQ-065
@@ -5609,17 +5610,18 @@
 ### REQ-214
 - Title: Card scanner: a scanner-local holding list, committed on close, with a count pill on every host
 - Priority: medium
-- Description: The shared camera scanner (FLOW-006) keeps its detection, lock and ding unchanged. A recognised card now waits in the scanner's own holding list instead of joining the destination the instant it is recognised; the list is shown by a top-right count pill, with Remove on each entry. A caution control naming scanning as experimental sits in the top-right from the moment the scanner opens — present before any card is held, independent of the holding list and the count pill — with its note opening only on tap. Closing the scanner (the "Exit scan" control, now a square box with an X above the camera's top-right corner) commits every held card to the zone or trade side it was opened from, in one step. The count pill, previously built only for In-Depth's zones, now appears on every host that scans: In-Depth's Cards station, Ask a Question, and Trade Balancer.
+- Description: The shared camera scanner (FLOW-006) keeps its detection, lock and ding unchanged. A recognised card now waits in the scanner's own holding list instead of joining the destination the instant it is recognised; the list is shown by a top-right count pill, with Remove on each entry. A caution control naming scanning as experimental sits in the top-right from the moment the scanner opens — present before any card is held, independent of the holding list and the count pill — with its note opening only on tap. Closing the scanner (the "Exit scan" control, a square box with an X in a slim row directly above the camera's top-right corner, never over the camera picture) commits every held card to the zone or trade side it was opened from, in one step. The count pill, previously built only for In-Depth's zones, now appears on every host that scans: In-Depth's Cards station, Ask a Question, and Trade Balancer. All three hosts render the scanner through one shared panel, so the row above the camera, the "Exit scan" box, the loading line and the error line look and sit the same everywhere.
 - Acceptance Criteria:
   - a recognised card is added to the scanner's own holding list, not the destination's own card list, the moment it is recognised; the destination's own list is unchanged until the scanner closes
   - the top-right pill shows the holding list's count and expands to each held card with its own Remove; Remove drops that card from the holding list with nothing added for it
   - closing the scanner commits every remaining held card to the zone or trade side it was opened from, in one step, then returns to where it was; every "Scan" entry point opens the scanner at an empty holding list
   - the same duplicate/cap rule each destination already applies on a manual add (the Stack's duplicate block; Ask a Question's already-attached block and 10-card cap, REQ-167) is checked the instant a card is recognised, against both the destination's current cards and anything already held but not yet committed - not deferred to the close commit, so a blocked re-scan still surfaces its message immediately; Trade Balancer passes no such rule, so a duplicate scan is always held and committed (REQ-065's existing duplicates-allowed behaviour)
-  - the "Exit scan" control is a square box carrying an X, positioned above the camera's top-right corner on every host, with the accessible name "Exit scan" unchanged; the manual Capture control keeps the accessible name "Capture"
+  - the "Exit scan" control is a 44px square box with rounded corners carrying an X (the mockup's `.scan-exit` box), at the right end of a slim row directly above the camera frame, its right edge aligned with the camera frame's right edge — identical on every host, never inside or over the camera frame, and never overlapping the caution control or the count pill; the row carries the host's scanner title at its left where the host has one (Ask a Question "Scan a card", Trade Balancer "Scanning onto <side>") and only the box on In-Depth's Cards station (REQ-056); the accessible name "Exit scan" is unchanged; the manual Capture control keeps the accessible name "Capture"
+  - all three hosts render the scanner through one shared panel component: the row above the camera, the "Loading scan data..." line, the scan-data failure line (REQ-249) and the holding-list entries passed to the count pill are built once; each host passes only its title (if any), its destination label and its handlers
   - a caution control — a yellow triangle in the scanner's top-right — is visible from the moment the scanner opens, before any card is held, independent of the holding list and whether the count pill is shown; it opens a one-line note that card scanning is experimental only when tapped, dismissed with "Got it"
   - a one-line static hint under the viewfinder, in the wording and position the mockup's scanner page (`docs/design/ui-reimagining/direction-1/card-scan.html`) shows (today: "Auto-scan is on: a confident match adds the card and keeps scanning. The shutter reads one frame by hand."); it is text, not a control, and is an allowed exception to REQ-070's no-net-new-guidance rule; if the mockup page carries no such line, none renders
   - detection, lock, the ding, and the opt-in Debug overlay's metrics are unchanged; the Debug panel takes a themed accent border
-  - tests cover the holding-list accumulate/commit-on-close/Remove behaviour, the hold-time duplicate/cap check, the hint line on every host, and that detection/lock/capture are unchanged
+  - tests cover the holding-list accumulate/commit-on-close/Remove behaviour, the hold-time duplicate/cap check, the hint line on every host, that on every host the "Exit scan" box renders outside the camera overlay in the row above it and does not overlap the caution control, and that detection/lock/capture are unchanged
 - Constraints:
   - presentation and sequencing only: detection, fingerprint matching, lock thresholds, the stabilizer, the ding, mute persistence and debug frame export are unchanged (DEC-052...062; NFR-006's scan-motion exclusion is unaffected)
   - no new request field or prompt change; a held-but-uncommitted card never reaches `AskAiRequest` or a trade side's totals
@@ -6603,3 +6605,25 @@
   - motivated by the intake probe (2026-10-10, pre-#293, cited, committed corpus cases only): the same pushback text on the 62 diagnostic cases with 3 repeats; right first answers held 176 of 181 and flipped on the outcome once, and 2 or 3 of 4 side flips were judge errors on unchanged answers — the reason the report keeps outcome flips and side flips apart
   - measured 2026-10-12 at `0461969f`: the 62 diagnostic cases are all approved with matching hashes, 9 In-Depth and 53 lookup; a turn-1 answer longer than the 10,000-character history-message cap the code enforces would make a request the app itself could not send, which is why a schema rejection is recorded as an error rather than sent
   - the lone judge never sees attached cards' oracle text (noted by the cap-15 answer check, #295); that holds for both turns and is not changed here
+
+### REQ-249
+- Title: Card scanner recovers from a failed scan-data download, in plain words
+- Priority: high
+- Description: When the scanner's data — the fingerprint library `cardhashes.bin` or the scan map `cardScanMap.json` — fails to download, the failure lasts only until the player tries again. Closing the scanner and opening it again, from any of the three tools that scan (In-Depth's Cards station, Ask a Question, Trade Balancer), downloads the failed file again. The player reads one plain sentence that says what to do, never the raw error.
+- Acceptance Criteria:
+  - a failed download of either scan file is not remembered: the next time any scanner opens, in any tool, that file is requested again; a file that already arrived is reused, never downloaded twice; a download already in flight is shared, not repeated
+  - after a failure followed by a successful retry, the scanner identifies cards exactly as if the first attempt had succeeded, without a page reload
+  - while scan data has failed to load, the scanner panel shows exactly: "Card scanning is unavailable right now — check your connection, then close the scanner and open it again. You can still add cards with search." — the same sentence in all three tools, announced to assistive technology (`role="alert"`); the raw error text (status codes, file names) never reaches the player and goes to the browser console only
+  - manual search keeps working throughout, as before
+  - tests cover fail-then-succeed for each of the two scan files, fail-then-succeed through the scanner's open path, and that the player-facing line is the sentence above rather than the raw error
+- Constraints:
+  - scan data still downloads only when a player first opens a scanner; it never joins the background download (NFR-014, NFR-010)
+  - no automatic retry loop and no new retry control: the retry is the player closing and reopening the scanner
+  - no change to what a scan identifies, the lock gate, or the scan files' contents
+- Dependencies:
+  - REQ-214
+  - NFR-010
+  - NFR-014
+  - FLOW-006
+- Notes:
+  - reserved and proposed by the `scanner-recovers-and-runs-lighter` package (2026-10-18); REQ-248 is held by the open life-tracker-desktop-nav proposal

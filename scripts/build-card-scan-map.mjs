@@ -80,20 +80,8 @@ function hasOracleId(card) {
   return typeof card?.oracle_id === "string" && card.oracle_id.length > 0;
 }
 
-function getImageUrl(card) {
-  if (card.image_uris?.normal) return card.image_uris.normal;
-  if (card.image_uris?.small) return card.image_uris.small;
-  if (Array.isArray(card.card_faces)) {
-    for (const face of card.card_faces) {
-      if (face?.image_uris?.normal) return face.image_uris.normal;
-      if (face?.image_uris?.small) return face.image_uris.small;
-    }
-  }
-  return "";
-}
-
 export function buildScanMapEntry(card) {
-  return { oracleId: card.oracle_id, name: card.name.trim(), imageUrl: getImageUrl(card) };
+  return { oracleId: card.oracle_id, name: card.name.trim() };
 }
 
 export async function buildScanMap(inputPath) {

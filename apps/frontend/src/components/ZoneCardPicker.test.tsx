@@ -173,14 +173,29 @@ describe("ZoneCardPicker scan focus", () => {
     expect(document.querySelector(".zone-card-grid")).toBeNull();
   });
 
-  it("renders Exit scan as a box above the camera's top-right corner (REQ-214)", () => {
+  it("renders Exit scan as the 44px box in the row above the camera, not over it (REQ-214, REQ-068)", () => {
     renderPicker({ isOpen: true });
     const exitBtn = screen.getByRole("button", { name: "Exit scan" });
     const camera = screen.getByTestId("scan-camera");
     const cameraOverlay = camera.parentElement;
 
-    expect(cameraOverlay).toContainElement(exitBtn);
-    expect(exitBtn).toHaveClass("absolute", "right-3", "top-3");
+    // Outside the camera overlay (where the caution control and count pill live) and before it.
+    expect(cameraOverlay).not.toContainElement(exitBtn);
+    expect(exitBtn.compareDocumentPosition(camera) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(exitBtn).toHaveClass("scan-exit");
+    expect(exitBtn.className).not.toMatch(/absolute|right-3|top-3/);
+    // In-Depth shows the box alone: the row carries no title (REQ-056).
+    expect(exitBtn.parentElement).toHaveClass("scan-head");
+    expect(exitBtn.parentElement?.querySelector(".scan-title")).toBeNull();
+    // The caution control sits in the camera overlay, never in the exit row.
+    const caution = screen.getByRole("button", { name: "Card scanning is experimental" });
+    expect(exitBtn.parentElement).not.toContainElement(caution);
+    expect(cameraOverlay).toContainElement(caution);
+  });
+
+  it("announces the scan-data failure line with role=alert (REQ-249)", () => {
+    renderPicker({ isOpen: true, error: "Card scanning is unavailable right now" });
+    expect(screen.getByRole("alert")).toHaveTextContent("Card scanning is unavailable right now");
   });
 
   it("Exit scan closes scan when clicked", async () => {

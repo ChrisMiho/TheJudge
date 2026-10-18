@@ -1,8 +1,8 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { CardDetailPopup } from "./CardPresentation";
 import { CardSelectionPreview } from "./CardSelectionPreview";
-import { ScanCameraSurface, type ScanCameraStatus } from "./ScanCameraSurface";
-import { ScanReviewBubble } from "./ScanReviewBubble";
+import type { ScanCameraStatus } from "./ScanCameraSurface";
+import { ScanPanel } from "./ScanPanel";
 import { ZoneCardMenu } from "./ZoneCardMenu";
 import type { HeldScanEntry, ScanAddConfirmation, ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture";
 import type { AcquisitionFrameDiagnostic } from "../lib/scan/acquisitionDiagnostics";
@@ -261,48 +261,20 @@ export function ZoneCardPicker({
           it also holds the scan camera while scanning — and the foot hides during a scan. */}
       <div className="stage" data-accent-current="true">
         {isScanOpen && scan && (
-          <div className="scan-panel">
-            {scan.isLoading ? (
-              <p className="px-3 py-2 text-sm">Loading scan data...</p>
-            ) : (
-              <div className="relative">
-                <ScanCameraSurface
-                  onCapture={() => undefined}
-                  identify={scan.identify}
-                  onStatusChange={scan.onCameraStatusChange}
-                  onAcquisitionDiagnostic={scan.onAcquisitionDiagnostic}
-                  convergence={scan.convergence}
-                  confirmation={scan.addConfirmation}
-                  debug={scan.scanDebug}
-                  autoScanFps={3}
-                />
-                {/* REQ-214: a box with an ✕ above the camera's top-right corner — the only
-                    way out; closing commits the holding list below to this zone. */}
-                <button
-                  type="button"
-                  aria-label="Exit scan"
-                  onClick={scan.onExitToManual}
-                  className="icon-round absolute right-3 top-3 z-10"
-                >
-                  <span aria-hidden="true">✕</span>
-                </button>
-                <ScanReviewBubble
-                  entries={scan.heldEntries.map((entry) => ({
-                    id: entry.id,
-                    card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
-                    colors: entry.card.colors
-                  }))}
-                  onRemove={scan.onRemoveHeld}
-                  destinationLabel={`the ${ZONE_LABELS[zoneId]}`}
-                />
-              </div>
-            )}
-            {scan.error && (
-              <p className="motion-error idq-error" role="alert">
-                {scan.error}
-              </p>
-            )}
-          </div>
+          <ScanPanel
+            destinationLabel={`the ${ZONE_LABELS[zoneId]}`}
+            isLoading={scan.isLoading}
+            error={scan.error}
+            convergence={scan.convergence}
+            addConfirmation={scan.addConfirmation}
+            scanDebug={scan.scanDebug}
+            heldEntries={scan.heldEntries}
+            onRemoveHeld={scan.onRemoveHeld}
+            onExit={scan.onExitToManual}
+            identify={scan.identify}
+            onCameraStatusChange={scan.onCameraStatusChange}
+            onAcquisitionDiagnostic={scan.onAcquisitionDiagnostic}
+          />
         )}
 
         {!isScanOpen && (

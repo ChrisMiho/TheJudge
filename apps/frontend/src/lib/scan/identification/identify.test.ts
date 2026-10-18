@@ -5,6 +5,7 @@ import {
   autoLevels,
   CardIdentifier,
   conditionQueryImage,
+  selectSmallest,
   suppressQueryGlare,
   whiteBalanceQueryImage
 } from "../identify";
@@ -158,6 +159,35 @@ describe("CardIdentifier.identify", () => {
     result.candidates.forEach((candidate, i) => {
       expect(candidate.distance).toBeCloseTo(expected.candidates[i].distance, 2);
     });
+  });
+});
+
+describe("bounded top-N selection", () => {
+  it("equals the full stable sort's prefix on a tie-heavy synthetic database", () => {
+    let seed = 12345;
+    const next = () => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return seed;
+    };
+    for (const n of [0, 1, 9, 10, 11, 200, 2000]) {
+      // Few distinct values so ties dominate.
+      const dists = Float64Array.from({ length: n }, () => (next() % 7) / 2);
+      for (const topN of [1, 3, 10]) {
+        const full = Array.from({ length: n }, (_, i) => i)
+          .sort((a, b) => dists[a] - dists[b])
+          .slice(0, topN);
+        expect(selectSmallest(dists, n, topN)).toEqual(full);
+      }
+    }
+  });
+
+  it("builds the searchable set without _card_back, ids and order unchanged", () => {
+    const hashes = new Uint8Array(3 * 96);
+    hashes.fill(1, 0, 96);
+    hashes.fill(2, 96, 192);
+    hashes.fill(3, 192, 288);
+    const identifier = new CardIdentifier({ ids: ["a", "_card_back", "c"], hashes, count: 3 });
+    expect(identifier.ids).toEqual(["a", "c"]);
   });
 });
 });

@@ -263,7 +263,11 @@ describe("Target gating and pickers", () => {
 
     await user.click(screen.getByRole("button", { name: "Exit scan" }));
     expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack1");
-    expect(screen.getByText("Opt")).toBeInTheDocument();
+    // REQ-048: the scanned printing's picture is derived from its printing id.
+    expect(screen.getByRole("img", { name: "Opt" })).toHaveAttribute(
+      "src",
+      "https://cards.scryfall.io/normal/front/p/r/printing-opt.jpg"
+    );
     // REQ-008/REQ-209: one card on the Stack reads TOP (not "bottom & top").
     expect(screen.getByText("TOP")).toBeInTheDocument();
   });

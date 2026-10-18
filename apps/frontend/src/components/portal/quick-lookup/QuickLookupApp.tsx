@@ -28,8 +28,7 @@ import { getCardIdentityRingStyle } from "../../../lib/cardIdentityRing";
 import { ComposerPill } from "../../ComposerPill";
 import { ConversationWorkspace } from "../../ConversationWorkspace";
 import { PageShell } from "../../PageShell";
-import { ScanCameraSurface } from "../../ScanCameraSurface";
-import { ScanReviewBubble } from "../../ScanReviewBubble";
+import { ScanPanel } from "../../ScanPanel";
 import { StagedStepHeader } from "../../StagedStepHeader";
 
 const FLOW_LABEL = "Quick Question";
@@ -546,40 +545,21 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
       <StagedStepHeader />
       {scanCapture.isOpen ? (
         <div className="idq">
-          <div className="flow-head">
-            <h1>Scan a card</h1>
-            <button type="button" aria-label="Exit scan" onClick={scanCapture.closeScan} className="scan-exit">
-              <span aria-hidden="true">✕</span>
-            </button>
-          </div>
-          <section>
-            {scanCapture.isLoading ? (
-              <p className="aq-note">Loading scan data...</p>
-            ) : (
-              <div className="relative">
-                <ScanCameraSurface
-                  onCapture={() => undefined}
-                  identify={scanCapture.identify}
-                  onStatusChange={scanCapture.setCameraStatus}
-                  onAcquisitionDiagnostic={scanCapture.recordAcquisitionDiagnostic}
-                  convergence={scanCapture.convergence}
-                  confirmation={scanCapture.addConfirmation}
-                  debug={scanCapture.scanDebug}
-                  autoScanFps={3}
-                />
-                <ScanReviewBubble
-                  entries={scanCapture.heldEntries.map((entry) => ({
-                    id: entry.id,
-                    card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
-                    colors: entry.card.colors
-                  }))}
-                  onRemove={scanCapture.removeHeld}
-                  destinationLabel="your question"
-                />
-              </div>
-            )}
-            {scanCapture.error && <p className="motion-error aq-error">{scanCapture.error}</p>}
-          </section>
+          <ScanPanel
+            title="Scan a card"
+            destinationLabel="your question"
+            isLoading={scanCapture.isLoading}
+            error={scanCapture.error}
+            convergence={scanCapture.convergence}
+            addConfirmation={scanCapture.addConfirmation}
+            scanDebug={scanCapture.scanDebug}
+            heldEntries={scanCapture.heldEntries}
+            onRemoveHeld={scanCapture.removeHeld}
+            onExit={scanCapture.closeScan}
+            identify={scanCapture.identify}
+            onCameraStatusChange={scanCapture.setCameraStatus}
+            onAcquisitionDiagnostic={scanCapture.recordAcquisitionDiagnostic}
+          />
         </div>
       ) : (
         <section className="qq" data-searching={isSearchOpen ? "true" : "false"}>

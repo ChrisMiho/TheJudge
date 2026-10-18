@@ -34,6 +34,7 @@ let lockedOracleCard: CardMetadataItem | null = null;
 let frameCandidates: Candidate[] = [];
 let capturedOptions: ScanCaptureOptions | null = null;
 let heldIdCounter = 0;
+let scanError: string | null = null;
 const captureSetCameraStatus = vi.fn();
 
 // REQ-214: a real `useState` inside the mock, so pushing/clearing the holding
@@ -79,7 +80,7 @@ vi.mock("../../hooks/useScanCapture", () => ({
     return {
       isOpen: true,
       isLoading: false,
-      error: null,
+      error: scanError,
       convergence: undefined,
       addConfirmation: null,
       scanDebug: null,
@@ -137,10 +138,10 @@ const pricesByOracle: Record<string, { snapshotDate: string; printings: CardPrin
 
 /** `bolt-promo` is a scannable printing id absent from the price fixture (fallback path). */
 const scanMap: CardScanMap = {
-  "bolt-2ed": { oracleId: "oracle-bolt", name: "Lightning Bolt", imageUrl: "s/bolt-2ed.jpg" },
-  "bolt-m10": { oracleId: "oracle-bolt", name: "Lightning Bolt", imageUrl: "s/bolt-m10.jpg" },
-  "bolt-promo": { oracleId: "oracle-bolt", name: "Lightning Bolt", imageUrl: "s/bolt-promo.jpg" },
-  "lotus-lea": { oracleId: "oracle-lotus", name: "Black Lotus", imageUrl: "s/lotus-lea.jpg" }
+  "bolt-2ed": { oracleId: "oracle-bolt", name: "Lightning Bolt" },
+  "bolt-m10": { oracleId: "oracle-bolt", name: "Lightning Bolt" },
+  "bolt-promo": { oracleId: "oracle-bolt", name: "Lightning Bolt" },
+  "lotus-lea": { oracleId: "oracle-lotus", name: "Black Lotus" }
 };
 
 function jsonResponse(payload: unknown, status = 200): Response {
@@ -256,6 +257,7 @@ describe("Frontend - Trade", () => {
     });
 
     afterEach(() => {
+      scanError = null;
       lockedOracleCard = null;
       frameCandidates = [];
       capturedOptions = null;
@@ -384,6 +386,35 @@ describe("Frontend - Trade", () => {
       const entry = within(side("A")).getByRole("listitem");
       expect(entry).toHaveTextContent("Unlimited Edition · 2ED");
       expect(sideTotalText("A")).toBe("$10.00");
+    });
+
+    it("shows the Exit scan box in the row above the camera, beside the side title, outside the camera overlay (REQ-214)", async () => {
+      const user = userEvent.setup();
+      await renderBalancer();
+
+      await user.click(within(side("A")).getByLabelText("Scan a card onto Side A"));
+
+      const exitBtn = within(side("A")).getByRole("button", { name: "Exit scan" });
+      const head = exitBtn.parentElement as HTMLElement;
+      expect(head).toHaveClass("scan-head");
+      expect(exitBtn).toHaveClass("scan-exit");
+      expect(within(head).getByText("Scanning onto Side A")).toBeInTheDocument();
+      expect(head.nextElementSibling).not.toContainElement(exitBtn);
+      const caution = within(side("A")).getByRole("button", { name: "Card scanning is experimental" });
+      expect(head).not.toContainElement(caution);
+      expect(head.nextElementSibling).toContainElement(caution);
+    });
+
+    it("announces the scan-data failure line with role=alert (REQ-249)", async () => {
+      const user = userEvent.setup();
+      await renderBalancer();
+      scanError = "Card scanning is unavailable right now";
+
+      await user.click(within(side("A")).getByLabelText("Scan a card onto Side A"));
+
+      expect(within(side("A")).getByRole("alert")).toHaveTextContent(
+        "Card scanning is unavailable right now"
+      );
     });
 
     it("keeps manual search working and surfaces the reason when the camera is unavailable", async () => {
