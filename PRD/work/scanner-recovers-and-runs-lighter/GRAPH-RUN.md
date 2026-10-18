@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-055113/` (one file, `GRAPH-BRIEF-scanner.md`, copied verbatim to `PRD/work/scanner-recovers-and-runs-lighter/intake/`)
-- Current node: `gate-qc`
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` (build half claimed on `thejudge-auto/scanner-recovers-and-runs-lighter-work`; resume from the `STATUS.*` marker in the build worktree)
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 89` | commit `3b548f5c` (= origin tip): `DESIGN-BRIEF.md` (five changes, slice order recovery → shared identifier + per-frame → panel → scan map, ladder per open decision, disposition rows), `GATE-QUESTIONS.md` (REQ-214, REQ-056, REQ-048, REQ-066 amended; REQ-249 new — REQ-248 held by open PR #317; `## Blocker questions` none; 5 blank verdict slots), `evidence/measurements.md` (live, dev server port 5181, canvas fake camera, 390×844 and 1280×800: In-Depth ✕ covers the caution triangle at both widths, Quick Question and Trade do not; failed download stays stuck after the 503 lifts; port released, `browser_close`); `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; REQ-249 unused in `PRD/sections/`; porcelain empty both checkouts (launch: pre-existing probe folder only) | 2026-10-18 |
 | 4 | gate-qc | sonnet | ok | `0 → 26` | PASS, 0 blocking, 4 advisory (A1 parity check is `identify.test.ts` + `vectors.json`, `reference/identify.py` absent; A2 four test fixtures carry `imageUrl`; A3 name `npm run data:scan-map`, drop unused `getImageUrl`; A4 confirm no other `screen-layout.md` row contradicts); every diff hunk matches `PRD/sections/` once; REQ-249 unused; `QUALITY-CHECK.md` commit `c82d38c2` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 | 5 | gate-review | sonnet | ok | `0 → 18` | build half run `graph-20261018-063434`: docs PR #318 and verdict PR #319 merged (`origin/main` `30433b2d`); kickoff worktree removed clean (`git worktree remove`); claim commit `4a4da393` on `thejudge-auto/scanner-recovers-and-runs-lighter-work` cut from `origin/main` `30433b2d`, pushed; lock taken from the launch root (pid 6563); graph canary `nohup true` denied; `graph-gate-review` commit `24ed40ca` (= origin tip): 5 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree, launch checkout only the pre-existing untracked `PRD/work/probe-codebase-health-pass/` | 2026-10-18 |
+| 4 | gate-qc (build half, attempt 2) | sonnet | ok | `0 → 18` | PASS, 0 blocking, A1–A4 carried forward (A3 adds: gitignored `apps/frontend/data/scryfall/default-cards.json` absent in the worktree); `origin/main` still `30433b2d`; 18 removed-line groups each match `PRD/sections/` once; REQ-249 unused; `QUALITY-CHECK.md` commit `2c840a0d` (= origin tip); `STATUS.refined` only marker; README `## Preparation gate` PASS rewritten by the driver; porcelain empty | 2026-10-18 |
 
 ## Open gate
 
@@ -198,6 +199,33 @@ Budget: this node has a 60 tool-call cap that counts every call, including any s
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`), and `git status --porcelain` of the working directory (must be empty).
+
+### plan
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter
+
+You are node 5 (`plan`) of graph run `graph-20261018-063434`. Run the `thejudge-map-out` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter/.claude/skills/thejudge-map-out/SKILL.md and its `reference.md`, and follow them in graph-controlled mode) on the package `PRD/work/scanner-recovers-and-runs-lighter/`. Work ONLY inside the working directory above — never in /Users/chrismiho/Coding/Projects/TheJudge itself. The worktree is on the shared branch `thejudge-auto/scanner-recovers-and-runs-lighter-work`; the code PR will be `thejudge-auto/scanner-recovers-and-runs-lighter-work` → `main`.
+
+Before writing anything, confirm the README `## Preparation gate` reads `Quality-check: PASS` (the driver wrote it after `gate-qc` attempt 2); if it does not, stop and report.
+
+Inputs: `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (all five accepted: REQ-214, REQ-056, REQ-249 new, REQ-048, REQ-066), `QUALITY-CHECK.md` (advisory A1–A4 — fold each into the slice it concerns), `evidence/measurements.md`. `intake/GRAPH-BRIEF-scanner.md` is evidence, not authority; never open the documents it cites.
+
+Required:
+1. `GAMEPLAN.md` and one lettered `slice-<letter>.md` per slice in the brief's order: the failed-download recovery fix first, then the shared identifier and per-frame work, then the one shared scanner panel, then the smaller scan map. Each slice names the `PRD/sections/` edits it applies from the accepted `GATE-QUESTIONS.md` diffs (build applies them by intent, together with the code) and the tests it adds or changes.
+2. One `slice-<letter>.criteria.json` beside each slice doc, per the schema in `thejudge-map-out/reference.md`, every criterion `false`. Every criterion must be earnable inside the build node, in this worktree, before the PR merges: no post-merge, deploy, or production checks. Live browser checks (for example the ✕ position on all three scanners, and the plain-words message after a failed download) are `manual` criteria with a dated observation line.
+3. The per-frame slice keeps scan results identical; name the parity check as `identify.test.ts` with `__fixtures__/vectors.json` (A1 — `reference/identify.py` does not exist).
+4. The scan-map slice regenerates `apps/frontend/public/data/cardScanMap.json` only with `npm run data:scan-map`, never by hand, and never runs `npm run data:refresh` or any Scryfall download. Its input `apps/frontend/data/scryfall/default-cards.json` is gitignored and absent from this worktree; it exists in the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge/apps/frontend/data/scryfall/default-cards.json. Plan the slice to create a symbolic link to that file at the worktree's gitignored path (read-only use; never copy it, never stage it), run the script, and confirm the rebuilt map has the same entry count and keys as the committed map with only the image-address field gone. Any other difference stops the slice and parks rather than being committed.
+5. Set exactly one marker, `STATUS.active`, per the skill, and move the `PRD/work/STATUS.md` board row fully to the active section (remove from old, add to new).
+6. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `QUALITY-CHECK.md`, or `GRAPH-RUN.md`.
+7. Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Budget: this node has a 120 tool-call cap that counts every call, including any subagent's. Work directly; spawn no subagents or forks; no sleeping or polling loops.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, the slice list (one line each, in player terms first), criteria count per slice and how many are `manual`, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 

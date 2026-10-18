@@ -20,4 +20,4 @@ Card scanning recovers from a failed download, builds its data once, and the thr
 
 - Quality-check: PASS
 - Checked artifact: `PRD/work/scanner-recovers-and-runs-lighter/DESIGN-BRIEF.md`
-- Findings: none blocking; advisory A1–A4 for map-out in `QUALITY-CHECK.md` (parity check is `identify.test.ts` + `vectors.json`, not the absent `reference/identify.py`; scan-map slice updates the four test fixtures carrying `imageUrl`; name `npm run data:scan-map` and drop the unused `getImageUrl` helper; confirm no other `screen-layout.md` row contradicts the new scanner row)
+- Findings: none blocking (attempt 2, build-half re-grade after five accept verdicts, commit `2c840a0d`); advisory A1–A4 for map-out in `QUALITY-CHECK.md` (parity check is `identify.test.ts` + `vectors.json`, not the absent `reference/identify.py`; scan-map slice updates the four test fixtures carrying `imageUrl`; name `npm run data:scan-map` and drop the unused `getImageUrl` helper; confirm no other `screen-layout.md` row contradicts the new scanner row)
