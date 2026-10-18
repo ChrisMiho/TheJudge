@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ci-built-server-smoke` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke` (in-place shape: the session is rooted in this linked worktree; rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-built-server-smoke` by the build half's claim)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/ci-built-server-smoke/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | in-place shape in `.worktrees/session-ci-smoke` (detached HEAD → `thejudge-auto/ci-built-server-smoke`); branch pushed (`git ls-remote` → `30149327`); porcelain empty; lock `.worktrees/.graph-run.lock` runId `graph-20261018-231424` pid 98719; universal canary and graph canary `nohup true` both denied | 2026-10-18 |
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/ci-built-server-smoke/` (IDEA.md with 5 `## Prior run` lines and related-material citations, README.md, STATUS.ideation) and board row committed `eaad6f32`, pushed (`git ls-remote` → `eaad6f32`); porcelain empty | 2026-10-18 |
+| 3 | define | opus | ok | `0 → 81` | commit `415e40db` (= origin tip): `DESIGN-BRIEF.md` (disposition table, 52 grep hits + 12 deploy-wording rows), `GATE-QUESTIONS.md` (NFR-020 new, REQ-166 and NFR-012 amended; no blocker questions), `evidence/measurements.md` (live: build 1.2 s, listen ~0.5 s, `/api/health` 200, Sol Ring `/api/cards/6ad8011d-…` 200; data folder removed → health 200 but card 404; Lambda handler in-process on Node 22/24/26); `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; porcelain empty; port 3917 released (`lsof` empty); NFR-020 unused in `PRD/sections/` | 2026-10-18 |
 
 ## Open gate
 
@@ -97,6 +98,29 @@ What to produce:
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. Do not edit the README `## Autonomous metadata` section or `GRAPH-RUN.md`. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, files written, the proposed stable IDs (one line each, in plain words), any blocker questions, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` (must be empty), `git status --porcelain` of the working directory (must be empty), and the server port released.
+
+### gate-qc
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke
+
+You are node 4 (`gate-qc`) of graph run `graph-20261018-231424`, attempt 1. Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/ci-built-server-smoke/DESIGN-BRIEF.md`, together with `GATE-QUESTIONS.md` and `evidence/measurements.md` in the same folder. Work ONLY inside the working directory above.
+
+Check in particular:
+- Every proposed diff in `GATE-QUESTIONS.md` matches current `PRD/sections/` text exactly once and applies cleanly; every proposed new or amended stable ID (NFR-020, REQ-166, NFR-012, and any companion edit to `integrations-and-data.md` or `system-map.md`) has a full diff and its own block or is plainly carried inside one; NFR-020 is unused in `PRD/sections/`.
+- Every block opens with the three plain-language lines from `PRD/instructions/plain-language-standard.md`, with the substance of any cited `REQ`/`NFR`/`DEC` inlined; verdict and reason slots are blank.
+- The brief's technical claims hold against the repository: the CI workflow file and job names under `.github/workflows/`, the backend build command, the built entry point and the Lambda entry point, the health and card-lookup routes, the committed data files a card lookup reads, and the `deploy` job's `needs` list.
+- The design catches both failures the brief names: a server that does not start, and a server that starts with no card data (health 200 but card lookup failing).
+- The brief is agent-ready: acceptance conditions are measurable, the smoke command, port handling, timeout and pass/fail rule are stated, and nothing depends on a paid API, `.secrets/`, AWS access, or a gitignored local data dump.
+
+Write `QUALITY-CHECK.md` in the package folder per the skill, with PASS or FAIL and the complete findings. Set the status marker as the skill directs (exactly one marker; on FAIL, `STATUS.refining`, and move the `PRD/work/STATUS.md` board row fully). Do NOT write the README `## Preparation gate` section — the driver owns it. Do not edit `PRD/sections/`, code, `.github/`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, or `GRAPH-RUN.md`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
