@@ -1,6 +1,6 @@
 # Slice G — Rule search scoring, guarded by an order snapshot
 
-## Status: planned
+## Status: done
 
 Depends on: E and F (G drops one export from `matcher.ts` after E, and exports from `promptFormatting.ts` after F). Findings: K-05, K-06 (retrieval part), K-12 (non-owned files), K-14, K-15 (search part).
 
@@ -45,7 +45,7 @@ git diff origin/main -- apps/backend/src/gameRulesRetrieval.ts
 
 ## Reverted findings
 
-None yet.
+None. Evidence: `slice-g.evidence.md`.
 
 ## Files touched
 

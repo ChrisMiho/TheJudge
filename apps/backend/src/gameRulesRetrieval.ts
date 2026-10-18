@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 import { runtimeEmbeddingModelId } from "./embeddingModel.js";
 import type { GameRulesTopic } from "./gameRules.js";
 import { conceptTermsForCards } from "./gameRulesConceptMap.js";
-import { tokenizeSearchText } from "./gameRulesStemmer.js";
+import { foldApostrophes, tokenizeSearchText } from "./gameRulesStemmer.js";
+import { STEP_SUMMARIES, turnStepKeyFor } from "./prompt/phaseGuidance.js";
+import { escapeRegExp } from "./textHelpers.js";
 import type { PromptContext } from "./types/index.js";
 
 export type GameRulesRuleIndexEntry = {
@@ -669,46 +671,59 @@ export function perCardTextKey(text: string): string {
   return createHash("sha256").update(text, "utf8").digest("hex");
 }
 
-/** REQ-178: the rule-book name of a turn step, for the In-Depth query. */
+/** The two main phases are named for when they fall in the turn; every other name comes from the step tables. */
+const MAIN_PHASE_SEARCH_NAMES: Readonly<Record<string, string>> = {
+  main_1: "precombat main phase",
+  main_2: "postcombat main phase"
+};
+
+/**
+ * REQ-178: the rule-book name of a turn step, for the In-Depth query. The names come from the step
+ * tables in `prompt/phaseGuidance.ts`, with three explicit overrides: the two main phases (above) and
+ * a combat with no (or an unknown) step, which is "combat phase". A phase outside the schema has no name.
+ */
 export function turnStepSearchName(turnPhase: string, combatStep?: string): string {
-  if (turnPhase === "combat") {
-    switch (combatStep) {
-      case "beginning_of_combat":
-        return "beginning of combat step";
-      case "declare_attackers":
-        return "declare attackers step";
-      case "declare_blockers":
-        return "declare blockers step";
-      case "combat_damage":
-        return "combat damage step";
-      case "end_of_combat":
-        return "end of combat step";
-      default:
-        return "combat phase";
-    }
-  }
-  switch (turnPhase) {
-    case "untap":
-      return "untap step";
-    case "upkeep":
-      return "upkeep step";
-    case "draw":
-      return "draw step";
-    case "main_1":
-      return "precombat main phase";
-    case "main_2":
-      return "postcombat main phase";
-    case "end_step":
-      return "end step";
-    case "cleanup":
-      return "cleanup step";
-    default:
-      return "";
-  }
+  const mainPhaseName = Object.prototype.hasOwnProperty.call(MAIN_PHASE_SEARCH_NAMES, turnPhase)
+    ? MAIN_PHASE_SEARCH_NAMES[turnPhase]
+    : undefined;
+  if (mainPhaseName !== undefined) return mainPhaseName;
+  const key = turnStepKeyFor(turnPhase, combatStep);
+  if (key !== undefined) return STEP_SUMMARIES[key].name;
+  return turnPhase === "combat" ? "combat phase" : "";
 }
 
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+type ObsoleteAlternate = {
+  /** The alternate's first search token when it is a single word, else null. */
+  singleWordToken: string | null;
+  pattern: RegExp;
+};
+type ObsoleteGlossaryPattern = { entry: GameRulesGlossaryEntry; alternates: ObsoleteAlternate[] };
+
+const obsoleteGlossaryPatterns = new WeakMap<readonly GameRulesGlossaryEntry[], ObsoleteGlossaryPattern[]>();
+
+/** The obsolete glossary entries and their compiled phrase patterns, built once per glossary. */
+function obsoletePatternsFor(glossary: readonly GameRulesGlossaryEntry[]): ObsoleteGlossaryPattern[] {
+  const cached = obsoleteGlossaryPatterns.get(glossary);
+  if (cached) return cached;
+
+  const built: ObsoleteGlossaryPattern[] = [];
+  for (const entry of glossary) {
+    if (!entry.obsolete || entry.obsoleteSense) continue;
+    const alternates = entry.term.split(",").map((alternate) => alternate.trim().toLowerCase()).filter((alternate) => alternate.length > 0);
+    built.push({
+      entry,
+      alternates: alternates.map((alternate) => {
+        const isSingleWord = !/[\s-]/.test(alternate);
+        const phrase = escapeRegExp(alternate).replace(/\\-/g, "[- ]").replace(/-/g, "[- ]").replace(/\s+/g, "\\s+");
+        return {
+          singleWordToken: isSingleWord ? tokenize(alternate)[0] || null : null,
+          pattern: new RegExp(`(?<![a-z0-9])${phrase}(?![a-z0-9])`)
+        };
+      })
+    });
+  }
+  obsoleteGlossaryPatterns.set(glossary, built);
+  return built;
 }
 
 /**
@@ -722,20 +737,13 @@ export function findObsoleteGlossaryTerms(
   glossary: readonly GameRulesGlossaryEntry[],
   tokenStats: GameRulesTokenStats | null
 ): { terms: string[]; definitionText: string } {
-  const question = questionText.toLowerCase().replace(/[‘’]/g, "'");
+  const question = foldApostrophes(questionText.toLowerCase());
   const terms: string[] = [];
   const definitions: string[] = [];
-  for (const entry of glossary) {
-    if (!entry.obsolete || entry.obsoleteSense) continue;
-    const alternates = entry.term.split(",").map((alternate) => alternate.trim().toLowerCase()).filter((alternate) => alternate.length > 0);
-    const used = alternates.some((alternate) => {
-      const isSingleWord = !/[\s-]/.test(alternate);
-      if (isSingleWord) {
-        const [token] = tokenize(alternate);
-        if (token && (tokenStats?.df.get(token) ?? 0) >= LIVE_WORD_DOCUMENT_FREQUENCY) return false;
-      }
-      const phrase = escapeRegExp(alternate).replace(/\\-/g, "[- ]").replace(/-/g, "[- ]").replace(/\s+/g, "\\s+");
-      return new RegExp(`(?<![a-z0-9])${phrase}(?![a-z0-9])`).test(question);
+  for (const { entry, alternates } of obsoletePatternsFor(glossary)) {
+    const used = alternates.some(({ singleWordToken, pattern }) => {
+      if (singleWordToken !== null && (tokenStats?.df.get(singleWordToken) ?? 0) >= LIVE_WORD_DOCUMENT_FREQUENCY) return false;
+      return pattern.test(question);
     });
     if (!used) continue;
     terms.push(entry.term);
@@ -813,7 +821,11 @@ export function retrievalInputFromPromptContext(
 // Scoring (DEC-046)
 // ---------------------------------------------------------------------------
 
-type ScoredEntry = { entry: GameRulesRuleIndexEntry; score: number; topTokenIdf: number };
+/**
+ * `boost` is the exact-id, parent-id and cross-reference boost already inside `score`; the hybrid
+ * path records it so `selectSupplemental` can take it back out without recomputing it.
+ */
+type ScoredEntry = { entry: GameRulesRuleIndexEntry; score: number; topTokenIdf: number; boost?: number };
 
 /**
  * REQ-182: the exact-rule-id/parent-rule-id boost, factored out so it can be
@@ -851,10 +863,22 @@ function computeIdBoost(entry: GameRulesRuleIndexEntry, queryRuleIds: ReadonlySe
  * A rule's own number, restated in its own text, is excluded — that's
  * `computeIdBoost`'s exact-rule-id case, not a cross-reference to itself.
  */
+const citedRuleIdsByEntry = new WeakMap<GameRulesRuleIndexEntry, string[]>();
+
+/** The rule numbers an entry's own text cites, found once per entry. */
+function citedRuleIdsOf(entry: GameRulesRuleIndexEntry): string[] {
+  let cited = citedRuleIdsByEntry.get(entry);
+  if (!cited) {
+    cited = extractRuleIds(entry.text);
+    citedRuleIdsByEntry.set(entry, cited);
+  }
+  return cited;
+}
+
 function computeCrossReferenceBoost(entry: GameRulesRuleIndexEntry, questionRuleIds: ReadonlySet<string>): number {
   if (questionRuleIds.size === 0) return 0;
 
-  for (const citedId of extractRuleIds(entry.text)) {
+  for (const citedId of citedRuleIdsOf(entry)) {
     if (citedId === entry.ruleId) continue;
     if (questionRuleIds.has(citedId)) return SCORE_CROSS_REFERENCE;
   }
@@ -863,22 +887,21 @@ function computeCrossReferenceBoost(entry: GameRulesRuleIndexEntry, questionRule
 }
 
 /**
- * REQ-182: the lexical word-overlap component only — no id boost. `scoreEntry`
- * below adds the boost on top of this, in the same order (boost first, word
- * overlap accumulated after) the pre-hybrid implementation used, so the
- * mock/lexical-only path stays byte-identical (REQ-182 acceptance:
- * byte-identical scoring under `EMBEDDING_PROVIDER=mock`). The hybrid blend
- * uses this same word-overlap component unboosted, normalizing it against the
- * query's own top lexical score before merging the boost back in once, after
- * blending.
+ * The word-overlap loop both scorers share: adds each query token the rule's search text contains to
+ * `start`, one token at a time, in query order. The pure lexical path (`scoreEntry`) passes the
+ * exact-rule-id boost as `start`, so the boost is added first and each token weight to the same
+ * running total, exactly as the pre-hybrid implementation did. The hybrid blend passes `0`: it needs
+ * the word overlap alone, which it normalizes against the query's own top lexical score before
+ * merging the boost back in once, after blending (REQ-182).
  */
-function computeLexicalWordOverlapScore(
+function accumulateWordOverlap(
   entry: GameRulesRuleIndexEntry,
   tokens: QueryToken[],
   N: number,
-  df: Map<string, number> | null
+  df: Map<string, number> | null,
+  start: number
 ): { score: number; topTokenIdf: number } {
-  let score = 0;
+  let score = start;
   let topTokenIdf = 0;
 
   const searchTextTokenSet = searchTokensOf(entry);
@@ -898,14 +921,12 @@ function computeLexicalWordOverlapScore(
 }
 
 /**
- * Pure lexical scoring (the `EMBEDDING_PROVIDER=mock` / failure-fallback
- * path). Left byte-for-byte identical to the pre-hybrid implementation —
- * same accumulation order (boost first, then each token weight added to the
- * same running total) — so REQ-182's byte-identical-under-mock acceptance
- * gate holds: this is not rebuilt from `computeIdBoost` +
- * `computeLexicalWordOverlapScore` above, because summing those two results
- * as a single addition at the end would associate the floating-point
- * additions differently than accumulating them one at a time.
+ * Pure lexical scoring (the `EMBEDDING_PROVIDER=mock` / failure-fallback path). The id boost is
+ * built `0 -> +SCORE_EXACT_RULE_ID -> +SCORE_PARENT_RULE_ID` by `computeIdBoost`, the same order
+ * and the same running total this function always used, and the word overlap is then added token by
+ * token to it, so every floating-point addition happens in the same order and REQ-182's
+ * byte-identical-under-mock acceptance gate holds. (The boost must start the running total: adding
+ * it to a separately summed word-overlap score at the end would associate the additions differently.)
  */
 function scoreEntry(
   entry: GameRulesRuleIndexEntry,
@@ -914,34 +935,7 @@ function scoreEntry(
   N: number,
   df: Map<string, number> | null
 ): { score: number; topTokenIdf: number } {
-  let score = 0;
-  let topTokenIdf = 0;
-
-  if (queryRuleIds.has(entry.ruleId)) {
-    score += SCORE_EXACT_RULE_ID;
-  }
-
-  for (const parentId of entry.parentRuleIds) {
-    if (queryRuleIds.has(parentId)) {
-      score += SCORE_PARENT_RULE_ID;
-      break;
-    }
-  }
-
-  const searchTextTokenSet = searchTokensOf(entry);
-
-  for (const { token, source, isKeyword } of tokens) {
-    if (!searchTextTokenSet.has(token)) continue;
-    const tokenDf = df?.get(token) ?? 1;
-    const baseIdf = Math.log(N / Math.max(tokenDf, 1));
-    let weight = baseIdf;
-    weight *= SOURCE_MULTIPLIER[source];
-    if (isKeyword) weight *= KEYWORD_TOKEN_MULTIPLIER;
-    score += weight;
-    if (baseIdf > topTokenIdf) topTokenIdf = baseIdf;
-  }
-
-  return { score, topTokenIdf };
+  return accumulateWordOverlap(entry, tokens, N, df, computeIdBoost(entry, queryRuleIds));
 }
 
 /** Cosine similarity between two equal-length vectors, in [-1, 1]. */
@@ -955,6 +949,38 @@ export function cosineSimilarity(a: readonly number[], b: readonly number[]): nu
     normB += b[i]! * b[i]!;
   }
   const denominator = Math.sqrt(normA) * Math.sqrt(normB);
+  return denominator === 0 ? 0 : dot / denominator;
+}
+
+/** A vector's squared length, accumulated in index order (the same sum `cosineSimilarity` takes). */
+function squaredLength(vector: readonly number[]): number {
+  let sum = 0;
+  for (let i = 0; i < vector.length; i++) sum += vector[i]! * vector[i]!;
+  return sum;
+}
+
+const ruleVectorSquaredLengths = new WeakMap<readonly number[], number>();
+
+/** A committed rule vector's squared length, computed once for the life of the loaded embeddings. */
+function ruleVectorSquaredLength(ruleVector: readonly number[]): number {
+  let length = ruleVectorSquaredLengths.get(ruleVector);
+  if (length === undefined) {
+    length = squaredLength(ruleVector);
+    ruleVectorSquaredLengths.set(ruleVector, length);
+  }
+  return length;
+}
+
+/**
+ * `cosineSimilarity(query, ruleVector)` with the two squared lengths taken from caches instead of
+ * re-summed per pair: the query's once per query, each rule vector's once. Every sum runs over the
+ * same elements in the same order, so the result carries the same bits.
+ */
+function cosineToRuleVector(query: readonly number[], querySquaredLength: number, ruleVector: readonly number[]): number {
+  if (query.length !== ruleVector.length) return cosineSimilarity(query, ruleVector);
+  let dot = 0;
+  for (let i = 0; i < query.length; i++) dot += query[i]! * ruleVector[i]!;
+  const denominator = Math.sqrt(querySquaredLength) * Math.sqrt(ruleVectorSquaredLength(ruleVector));
   return denominator === 0 ? 0 : dot / denominator;
 }
 
@@ -1065,6 +1091,7 @@ function scoreIndex(
       boost: number;
     };
     const candidates: HybridCandidate[] = [];
+    const queryVectorSquaredLength = squaredLength(queryVector!);
 
     for (const entry of index) {
       // REQ-179: exact-id exclusion — only a rule number a selected curated
@@ -1079,8 +1106,8 @@ function scoreIndex(
       const entryVector = embeddingByRuleId!.get(entry.ruleId);
       if (!entryVector) continue; // no committed vector for this entry — cannot rank it semantically
 
-      const cosineRaw = cosineSimilarity(queryVector!, entryVector);
-      const { score: lexicalRaw, topTokenIdf } = computeLexicalWordOverlapScore(entry, tokens, N, df);
+      const cosineRaw = cosineToRuleVector(queryVector!, queryVectorSquaredLength, entryVector);
+      const { score: lexicalRaw, topTokenIdf } = accumulateWordOverlap(entry, tokens, N, df, 0);
       const boost = computeIdBoost(entry, queryRuleIdSet) + computeCrossReferenceBoost(entry, questionRuleIdSet);
       candidates.push({ entry, cosineRaw, lexicalRaw, topTokenIdf, boost });
     }
@@ -1097,7 +1124,7 @@ function scoreIndex(
       const lexicalNorm = maxLexical > 0 ? candidate.lexicalRaw / maxLexical : 0;
       const blended = HYBRID_BLEND_ALPHA * cosineNorm + (1 - HYBRID_BLEND_ALPHA) * lexicalNorm + candidate.boost;
       if (blended > 0) {
-        scored.push({ entry: candidate.entry, score: blended, topTokenIdf: candidate.topTokenIdf });
+        scored.push({ entry: candidate.entry, score: blended, topTokenIdf: candidate.topTokenIdf, boost: candidate.boost });
       }
     }
   } else {
@@ -1191,12 +1218,13 @@ function selectWithPerCardSlots(
   const topHits: Array<{ cardName: string; entry: GameRulesRuleIndexEntry; cosine: number }> = [];
   for (const card of cardVectors) {
     if (card.vector.length !== dimensions) continue;
+    const cardSquaredLength = squaredLength(card.vector);
     let best: { entry: GameRulesRuleIndexEntry; cosine: number } | null = null;
     for (const [ruleId, ruleVector] of ruleVectorById) {
       if (excludeRuleIds.has(ruleId)) continue;
       const entry = entryById.get(ruleId);
       if (!entry) continue;
-      const cosine = cosineSimilarity(card.vector, ruleVector);
+      const cosine = cosineToRuleVector(card.vector, cardSquaredLength, ruleVector);
       if (best === null || cosine > best.cosine || (cosine === best.cosine && compareRuleIds(ruleId, best.entry.ruleId) < 0)) {
         best = { entry, cosine };
       }
@@ -1299,7 +1327,9 @@ function selectSupplemental(
   if (ruleVectorById !== null && scored.length > 0) {
     const queryRuleIdSet = new Set(queryRuleIds);
     const questionRuleIdSet = new Set(questionRuleIds);
+    // The hybrid path records each candidate's boost; recompute only for an entry that lacks it.
     const boostOf = (candidate: ScoredEntry): number =>
+      candidate.boost ??
       computeIdBoost(candidate.entry, queryRuleIdSet) + computeCrossReferenceBoost(candidate.entry, questionRuleIdSet);
     let top = 0;
     for (const candidate of scored) top = Math.max(top, candidate.score - boostOf(candidate));

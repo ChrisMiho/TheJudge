@@ -8,7 +8,9 @@
  *
  * Detection is deterministic and word/phrase-boundary anchored. No model call.
  */
-export const COMBO_INTENT_TERMS: readonly string[] = Object.freeze([
+import { escapeRegExp } from "../textHelpers.js";
+
+const COMBO_INTENT_TERMS: readonly string[] = Object.freeze([
   "combo",
   "combos",
   "infinite",
@@ -17,10 +19,6 @@ export const COMBO_INTENT_TERMS: readonly string[] = Object.freeze([
   "loop",
   "win condition"
 ]);
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 /**
  * One alternation of boundary-anchored terms. Multi-word phrases tolerate any

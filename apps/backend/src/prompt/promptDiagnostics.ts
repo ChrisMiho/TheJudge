@@ -3,7 +3,7 @@ import type { ResolvedRulings } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 
-export function estimatePromptChars(prompt: string): number {
+function estimatePromptChars(prompt: string): number {
   return prompt.length;
 }
 

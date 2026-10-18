@@ -301,7 +301,7 @@ function buildCandidate(variant: ComboVariant, request: ComboMatchRequest, ancho
  * candidates, so an explicit "does X combo with anything?" cannot drag in
  * unrelated staples that merely happen to be on the board.
  */
-export function resolveAnchorCardIds(instances: ComboMatchInstance[], questionText: string): Set<string> {
+function resolveAnchorCardIds(instances: ComboMatchInstance[], questionText: string): Set<string> {
   const normalizedQuestion = questionText.toLowerCase().replace(/\s+/g, " ");
   const anchors = new Set<string>();
   for (const instance of instances) {

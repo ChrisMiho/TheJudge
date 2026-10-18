@@ -18,6 +18,7 @@
 
 import type { GoldCase } from "../../../../../scripts/lib/gold-cases.mjs";
 import { getPhaseGuidance } from "../../prompt/phaseGuidance.js";
+import { escapeRegExp } from "../../textHelpers.js";
 
 type Player = { label?: string; displayName?: string; lifeTotal?: number };
 type Target = { kind?: string; targetPlayer?: string; cardName?: string; targetDescription?: string };
@@ -29,10 +30,6 @@ type ZoneCard = {
   targets?: Target[];
   contextNotes?: string;
 };
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 function collapse(value: string): string {
   return value.replace(/\s+/g, " ").trim();

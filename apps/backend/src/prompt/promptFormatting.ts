@@ -24,7 +24,7 @@ const PREAMBLE_TAIL = [
 ] as const;
 
 /** REQ-243: the stack is numbered one way, 1-based like the stack section's `Stack item N` labels. */
-export const STACK_ORDER_PREAMBLE_LINE =
+const STACK_ORDER_PREAMBLE_LINE =
   "Treat ordered stack semantics as authoritative: Stack item 1 is the bottom of the stack and the highest-numbered Stack item is the top.";
 
 /** In-Depth preamble: carries the stack-order line, since only In-Depth sends a stack. */
@@ -86,7 +86,7 @@ function formatList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "(none)";
 }
 
-export function buildPlayerDisplayNameLookup(
+function buildPlayerDisplayNameLookup(
   players: PromptContext["gameContext"]["players"]
 ): Record<PlayerLabel, string | undefined> {
   return Object.fromEntries(players.map((player) => [player.label, player.displayName])) as Record<
@@ -95,7 +95,7 @@ export function buildPlayerDisplayNameLookup(
   >;
 }
 
-export function formatPlayerRef(
+function formatPlayerRef(
   label: PlayerLabel | undefined,
   displayNamesByPlayer: Record<PlayerLabel, string | undefined>
 ): string {
@@ -111,12 +111,12 @@ export function formatPlayerRef(
   return `${label} (${displayName})`;
 }
 
-export function toPlayerLabelIndex(label: string): number {
+function toPlayerLabelIndex(label: string): number {
   const index = PLAYER_LABELS.indexOf(label as (typeof PLAYER_LABELS)[number]);
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
 
-export function formatTargets(
+function formatTargets(
   targets: PromptContext["orderedStack"][number]["targets"],
   displayNamesByPlayer: Record<PlayerLabel, string | undefined>
 ): string {
