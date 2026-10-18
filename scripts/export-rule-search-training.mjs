@@ -24,6 +24,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
+import { buildEmbeddingText } from "./build-rule-embeddings.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
@@ -61,7 +62,7 @@ const index = resources.gameRulesRuleIndex;
 const idSet = new Set(index.map((entry) => entry.ruleId));
 const committedVectors = R.loadGameRulesRuleEmbeddings(join(REPO, "apps/backend/data/gameRulesRuleEmbeddings.json"));
 
-const documentText = (entry, text = entry.text) => `${entry.sectionTitle}: ${text}`.slice(0, 2000);
+const documentText = (entry, text = entry.text) => buildEmbeddingText({ sectionTitle: entry.sectionTitle, text });
 writeFileSync(join(OUT, "rules.json"), JSON.stringify(Object.fromEntries(index.map((entry) => [entry.ruleId, documentText(entry)]))));
 
 const family = (id) => (/^(\d{3}\.\d+)/.exec(id) ?? [])[1] ?? id;

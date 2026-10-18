@@ -29,6 +29,7 @@ import { join, dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
+import { buildEmbeddingText } from "./build-rule-embeddings.mjs";
 import { mainCheckoutSuiteDir } from "./lib/practice-suite.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -153,7 +154,7 @@ async function loadPipe(name) {
   hf.env.localModelPath = join(MODELS, "onnx");
   return hf.pipeline("feature-extraction", name, { dtype: "q8" });
 }
-const DOCS = index.map((e) => `${e.sectionTitle}: ${e.text}`.slice(0, 2000));
+const DOCS = index.map((e) => buildEmbeddingText(e));
 async function modelScorer(name) {
   const pipe = await loadPipe(name);
   const embed = async (text) => Array.from((await pipe(text, { pooling: "mean", normalize: true })).data);
