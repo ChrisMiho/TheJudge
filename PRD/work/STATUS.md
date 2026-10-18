@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [codebase-cleanup-pass](codebase-cleanup-pass/) | Docs PR #321 merged; build half claimed (`thejudge-auto/codebase-cleanup-pass-work`); re-running quality-check on the owner-edited brief |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [codebase-cleanup-pass](codebase-cleanup-pass/) | Quality-check PASS; review the docs PR, then merge to build (no questions file — no product-truth change) |
 
 ## deferred
 
