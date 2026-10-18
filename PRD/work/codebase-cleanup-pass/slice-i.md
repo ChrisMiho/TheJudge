@@ -4,6 +4,8 @@
 
 Depends on: none. Findings: Q-02, Q-11, Q-10 (scan part), Q-12 (scan part), U-12 (one constant).
 
+> **Note, 2026-10-18 (owner decision):** criterion `I2` (Q-11) was removed from `slice-i.criteria.json` and Q-11 is deferred. Reason: Q-11's proof needs `TradeBalancer.scan.test.tsx` rewritten, and the pending card-search brief owns that test. Q-11 now waits for card-search to ship and for the Trade scanned-printing bug to be fixed first. The `I2` line below is kept for the record and is no longer a criterion. The follow-up record is `PRD/ideasForLater/codebase-cleanup-followups/IDEA.md`.
+
 ## Goal
 
 The scanner hook stops returning values no screen reads and drops a duplicate scan-map cache. Every scan resolves the same printing as today.
@@ -22,7 +24,7 @@ The scanner hook stops returning values no screen reads and drops a duplicate sc
 ## Acceptance criteria
 
 - [ ] I1. `useScanCapture` returns none of the seven removed values and still returns `blockedNotice`; no consumer breaks.
-- [ ] I2. `useTradeScan` has no scan-map side channel; the scan hook has no per-hook scan-map promise; `loadScanMap` / `loadScanResources` are unchanged.
+- [x] I2. (REMOVED 2026-10-18 by owner decision; Q-11 deferred, see the note at the top.) `useTradeScan` has no scan-map side channel; the scan hook has no per-hook scan-map promise; `loadScanMap` / `loadScanResources` are unchanged.
 - [ ] I3. `ScanCameraStatus` lives in `lib/scan/types.ts` and the `ScanCameraSurface -> ScanDebugOverlay -> useScanCapture` type cycle is gone.
 - [ ] I4. `SURFACE_DISTANCE` and `MAX_SURFACED_CANDIDATES` are deleted with zero references remaining.
 - [ ] I5. `LOW_CONFIDENCE_ESCALATION_COUNT` is no longer an export used only by a test.

@@ -2,8 +2,8 @@
 
 Status: refined (graph-controlled refinement, 2026-10-18, run `graph-20261018-162925`)
 
-**Review:** this package is a cleanup that players never notice. It builds 49 of
-the 68 findings from the 2026-10-18 probes, in whole or in part, in eleven slices. The other 19 wait for
+**Review:** this package is a cleanup that players never notice. It builds 48 of
+the 68 findings from the 2026-10-18 probes, in whole or in part, in eleven slices (Q-11 was deferred by the owner on 2026-10-18). The other 20 wait for
 the four pending cluster runs, go to the `codehealth` overnight loop, or need
 the owner. It changes no product truth, so there is no questions file.
 
@@ -391,7 +391,7 @@ Others are as the probe recorded them; the builder re-reads them first.
   `scanAcquisitionDiagnostic`, `rescan`, `acceptCandidate`, and the state that
   is only ever reset. **Keep `blockedNotice`**: the In-Depth duplicate-Stack bug
   (follow-up 1) needs it to show its message.
-- **Q-11.** Trade's scanner reloads the scan map into its own ref only to
+- **Q-11 (DEFERRED 2026-10-18, owner decision; not built here, see the disposition table and follow-up 28).** Trade's scanner reloads the scan map into its own ref only to
   resolve the scanned printing, and the scan hook caches a second promise over
   the module cache. Have `useScanCapture` resolve the scanned printing into the
   held entry; drop `useTradeScan`'s side channel and the per-hook promise. The
@@ -564,7 +564,7 @@ ships), **brief** (the pending brief should fold it in), **codehealth**,
 | Q-08 | built — H | |
 | Q-09 | later — after card-search | |
 | Q-10 | built in part — I (`ScanCameraStatus`) | `FrozenAskAiContext`: later with Q-03; `oracleSearch` and `useTradeScan` moves: later, after card-search; `useLifeTracker` move: built — K |
-| Q-11 | built — I | |
+| Q-11 | later — after card-search ships and after the Trade scanned-printing bug (follow-up 28) is fixed; deferred by the owner 2026-10-18 | its proof needs `TradeBalancer.scan.test.tsx`, which card-search owns |
 | Q-12 | built in part — H (`hiddenInitialQuestion`), I (tuning constants) | `palette`: codehealth 11; `QuickLookupApp` `onSubmit`: later, after card-search; `lib/lifeTracker` barrel: built — K |
 | Q-13 | built — H | whether the seed should fire: follow-up 3 |
 | Q-14 | later — after card-search | |
@@ -623,7 +623,7 @@ ships), **brief** (the pending brief should fold it in), **codehealth**,
 | T-16 | built — C | |
 | T-17 | built — D | |
 
-**Counts (68 ids).** Built 49 (37 fully, 12 in part, each remainder routed above). Later 14. Pending brief 3
+**Counts (68 ids).** Built 48 (36 fully, 12 in part, each remainder routed above; Q-11 moved to later on 2026-10-18 by owner decision). Later 15. Pending brief 3
 (Q-05, C-07, K-19). `codehealth` 1 (C-11). Owner 1 (T-14). Behavior
 change as the whole finding: 0 — every behavior change sits in the follow-ups.
 
@@ -632,6 +632,7 @@ change as the whole finding: 0 — every behavior change sits in the follow-ups.
 Player-visible bugs first, then every item from the four findings files'
 behavior-change and appearance-change lists.
 
+28. **Trade scanned-printing bug (added 2026-10-18; numbered 28 so the other numbers stay put, listed first because it is the top player-visible bug).** A scanned card is added in Trade Balancer, but Trade does not default to the printing you scanned, so its price can come from another printing. Cause: the scanner hook stores card-level `votingCandidates` on the held entry (`useScanCapture.ts:410`, `:482`), while `scannedPrintingIdForOracle` in `components/trade/useTradeScan.ts` looks them up in the scan map, which is keyed by printing id. Breaks `PRD/sections/trade-balancer/README.md:77`; introduced by `be04fb1b`; `TradeBalancer.scan.test.tsx` misses it because its fake hook passes printing ids. Fix: store `result.candidates` on the held entry and add a test that drives the real hook. Q-11 waits for this fix. Full record: `PRD/ideasForLater/codebase-cleanup-followups/IDEA.md`.
 1. **In-Depth scanner refuses a duplicate Stack card with no message.** The
    refusal is stored in `blockedNotice` and nothing renders it; the scan spec
    (`scan/README.md:140-143`) says a blocked re-scan surfaces its message.
