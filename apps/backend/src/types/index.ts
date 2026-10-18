@@ -38,7 +38,7 @@ export type AskAiResponse = {
 
 /**
  * Internal target shape used by the prompt builder.
- * Maps from the external ContextTarget via normalizeContextTarget in promptContext.ts.
+ * Maps from the external ContextTarget via normalizeContextTarget in prompt/context.ts.
  */
 export type PromptContextStackTarget =
   | { kind: "stack"; targetCardId: string; targetCardName: string }

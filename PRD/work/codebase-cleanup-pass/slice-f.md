@@ -1,6 +1,6 @@
 # Slice F — The prompt pipeline is written once
 
-## Status: planned
+## Status: done
 
 Depends on: none (must land before G; both edit `prompt/promptFormatting.ts`). Findings: K-02, K-06 (combo part), K-07, K-09, K-10, K-11 (non-owned parts), K-13, K-15 (prompt part), K-18 (non-owned parts).
 
@@ -50,7 +50,7 @@ git diff --stat origin/main -- apps/backend/src/eval/fixtures apps/backend/src/r
 
 ## Reverted findings
 
-None yet.
+None. Evidence: `slice-f.evidence.md`.
 
 ## Files touched
 

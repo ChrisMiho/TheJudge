@@ -29,9 +29,14 @@ export type ServerConfig = {
   openAiMaxRetries?: number;
 };
 
+/** Whether `value` is one of `modes` (narrows it to that literal type). */
+function isMode<Mode extends string>(modes: readonly Mode[], value: string): value is Mode {
+  return (modes as readonly string[]).includes(value);
+}
+
 function parseAskAiProviderMode(rawProvider: string | undefined): AskAiProviderMode {
-  const provider = (rawProvider?.trim().toLowerCase() ?? DEFAULT_ASK_AI_PROVIDER_MODE) as AskAiProviderMode;
-  if (!ASK_AI_PROVIDER_MODES.includes(provider)) {
+  const provider = rawProvider?.trim().toLowerCase() ?? DEFAULT_ASK_AI_PROVIDER_MODE;
+  if (!isMode(ASK_AI_PROVIDER_MODES, provider)) {
     throw new Error(`Invalid ASK_AI_PROVIDER value "${rawProvider}". Expected one of: mock, openai.`);
   }
 
@@ -39,8 +44,8 @@ function parseAskAiProviderMode(rawProvider: string | undefined): AskAiProviderM
 }
 
 function parseEmbeddingProviderMode(rawProvider: string | undefined): EmbeddingProviderMode {
-  const provider = (rawProvider?.trim().toLowerCase() ?? DEFAULT_EMBEDDING_PROVIDER_MODE) as EmbeddingProviderMode;
-  if (!EMBEDDING_PROVIDER_MODES.includes(provider)) {
+  const provider = rawProvider?.trim().toLowerCase() ?? DEFAULT_EMBEDDING_PROVIDER_MODE;
+  if (!isMode(EMBEDDING_PROVIDER_MODES, provider)) {
     throw new Error(`Invalid EMBEDDING_PROVIDER value "${rawProvider}". Expected one of: mock, local, openai.`);
   }
 

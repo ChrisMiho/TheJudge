@@ -1,13 +1,11 @@
 import {
-  EFFECTIVELY_UNLIMITED_CHARS,
   MAX_CONTEXT_NOTES_CHARS,
+  MAX_CONVERSATION_TURN_CHARS,
   MAX_TARGET_LABEL_CHARS,
   truncateOracleText
 } from "./normalization.js";
 import { CANONICAL_ZONE_ORDER, PLAYER_LABELS } from "../constants.js";
 import type { ResolvedRulings } from "../cardRulings.js";
-import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
-import { layoutPromptRuleSections } from "./ruleLayout.js";
 import type { ConversationTurn, PlayerLabel, PromptContext, ZoneId } from "../types/index.js";
 
 /**
@@ -78,13 +76,9 @@ const ZONE_ITEM_LABEL: Record<string, string> = {
   command: "Command"
 };
 
-function truncatePromptLabel(value: string, maxChars: number): string {
-  return truncateOracleText(value, maxChars);
-}
-
 export function formatConversationHistorySection(turns: ConversationTurn[]): string {
   if (turns.length === 0) return "";
-  const lines = turns.map((t) => `${t.role === "user" ? "User" : "Assistant"}: ${truncateOracleText(t.content, EFFECTIVELY_UNLIMITED_CHARS / 10)}`);
+  const lines = turns.map((t) => `${t.role === "user" ? "User" : "Assistant"}: ${truncateOracleText(t.content, MAX_CONVERSATION_TURN_CHARS)}`);
   return ["CONVERSATION HISTORY", ...lines].join("\n");
 }
 
@@ -95,13 +89,10 @@ function formatList(values: string[]): string {
 export function buildPlayerDisplayNameLookup(
   players: PromptContext["gameContext"]["players"]
 ): Record<PlayerLabel, string | undefined> {
-  return players.reduce<Record<PlayerLabel, string | undefined>>(
-    (accumulator, player) => ({
-      ...accumulator,
-      [player.label]: player.displayName
-    }),
-    {} as Record<PlayerLabel, string | undefined>
-  );
+  return Object.fromEntries(players.map((player) => [player.label, player.displayName])) as Record<
+    PlayerLabel,
+    string | undefined
+  >;
 }
 
 export function formatPlayerRef(
@@ -140,7 +131,7 @@ export function formatTargets(
       }
 
       if (target.kind === "other") {
-        return `other:${truncatePromptLabel(target.targetDescription, MAX_TARGET_LABEL_CHARS)}`;
+        return `other:${truncateOracleText(target.targetDescription, MAX_TARGET_LABEL_CHARS)}`;
       }
 
       if (target.kind === "player") {
@@ -148,10 +139,10 @@ export function formatTargets(
       }
 
       if (target.kind === "battlefield") {
-        return `battlefield:${truncatePromptLabel(target.targetPermanent, MAX_TARGET_LABEL_CHARS)}`;
+        return `battlefield:${truncateOracleText(target.targetPermanent, MAX_TARGET_LABEL_CHARS)}`;
       }
 
-      return `stack:${truncatePromptLabel(target.targetCardName, MAX_TARGET_LABEL_CHARS)}`;
+      return `stack:${truncateOracleText(target.targetCardName, MAX_TARGET_LABEL_CHARS)}`;
     })
     .join(" | ");
 }
@@ -217,11 +208,22 @@ export function formatGameContext(context: PromptContext): string {
   ].join("\n");
 }
 
-/** The index of the first line starting with `prefix` (the splice anchors below). */
-function lineIndex(lines: string[], prefix: string): number {
-  return lines.findIndex((line) => line.startsWith(prefix));
-}
+/** What a card's metadata lines add beyond the card's own fields, each in its final position. */
+export type CardMetadataLineOptions = {
+  /** Stack items only: the caster line, printed right before `targets:`. */
+  caster?: string;
+  /** Printed right after `targets:` when given. */
+  manaSpent?: number;
+  /** Stack items only (REQ-211): printed right after `manaSpent:` when given. */
+  copies?: number;
+  /** `false` leaves out `targets:` and `contextNotes:` (a looked-up card is not part of a game). Default `true`. */
+  includeTargetsAndNotes?: boolean;
+};
 
+/**
+ * One card's metadata lines in their final order: the card's own fields, then (for a card in a game)
+ * caster, targets, mana spent, copies and context notes, then the oracle text.
+ */
 export function formatZoneCardMetadataLines(
   card: {
     manaCost: string;
@@ -234,14 +236,16 @@ export function formatZoneCardMetadataLines(
     power?: string;
     toughness?: string;
     loyalty?: string;
-    targets: PromptContext["orderedStack"][number]["targets"];
+    targets?: PromptContext["orderedStack"][number]["targets"];
     contextNotes?: string;
     oracleText: string;
     /** REQ-245: the oracle text with its line breaks kept; falls back to `oracleText`. */
     oracleTextDisplay?: string;
   },
-  displayNamesByPlayer: Record<PlayerLabel, string | undefined>
+  displayNamesByPlayer: Record<PlayerLabel, string | undefined>,
+  options: CardMetadataLineOptions = {}
 ): string[] {
+  const includeTargetsAndNotes = options.includeTargetsAndNotes ?? true;
   return [
     `manaCost: ${card.manaCost || "(none)"}`,
     `manaValue: ${card.manaValue}`,
@@ -252,10 +256,13 @@ export function formatZoneCardMetadataLines(
     ...(card.power ? [`power: ${card.power}`] : []),
     ...(card.toughness ? [`toughness: ${card.toughness}`] : []),
     ...(card.loyalty ? [`loyalty: ${card.loyalty}`] : []),
-    `targets: ${formatTargets(card.targets, displayNamesByPlayer)}`,
-    `contextNotes: ${
-      card.contextNotes ? truncatePromptLabel(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"
-    }`,
+    ...(options.caster !== undefined ? [`caster: ${options.caster}`] : []),
+    ...(includeTargetsAndNotes ? [`targets: ${formatTargets(card.targets ?? [], displayNamesByPlayer)}`] : []),
+    ...(options.manaSpent !== undefined ? [`manaSpent: ${options.manaSpent}`] : []),
+    ...(options.copies !== undefined ? [`copies: ${options.copies}`] : []),
+    ...(includeTargetsAndNotes
+      ? [`contextNotes: ${card.contextNotes ? truncateOracleText(card.contextNotes, MAX_CONTEXT_NOTES_CHARS) : "(none)"}`]
+      : []),
     `oracleText: ${card.oracleTextDisplay || card.oracleText || "(none) — no oracle text recorded for this card"}`
   ];
 }
@@ -290,16 +297,14 @@ export function formatStackSection(context: PromptContext, rulings?: RulingsPlac
   const displayNamesByPlayer = buildPlayerDisplayNameLookup(context.gameContext.players);
   const cardsSection = context.orderedStack
     .map((card, index) => {
-      const metaLines = formatZoneCardMetadataLines(card, displayNamesByPlayer);
-      // Insert stack-only fields: caster after subtypes (index 6), manaSpent after targets (index 8)
-      metaLines.splice(lineIndex(metaLines, "targets:"), 0, `caster: ${formatPlayerRef(card.caster, displayNamesByPlayer)}`);
-      metaLines.splice(lineIndex(metaLines, "targets:") + 1, 0, `manaSpent: ${card.manaSpent ?? card.manaValue}`);
-      // REQ-211: copies (the storm case) is sent only when the player set it above 0 —
-      // an untouched card adds no line, keeping every prompt that doesn't use this
-      // byte-identical. Inserted right after manaSpent, before contextNotes.
-      if (card.copies !== undefined) {
-        metaLines.splice(lineIndex(metaLines, "manaSpent:") + 1, 0, `copies: ${card.copies}`);
-      }
+      // Stack-only fields: caster before targets, then manaSpent. REQ-211: copies (the storm case)
+      // is sent only when the player set it above 0 — an untouched card adds no line, keeping
+      // every prompt that doesn't use this byte-identical.
+      const metaLines = formatZoneCardMetadataLines(card, displayNamesByPlayer, {
+        caster: formatPlayerRef(card.caster, displayNamesByPlayer),
+        manaSpent: card.manaSpent ?? card.manaValue,
+        copies: card.copies
+      });
       return [
         `Stack item ${index + 1} (${card.stackRole})`,
         `card: ${card.name}`,
@@ -324,14 +329,10 @@ export function formatNonStackZoneSections(context: PromptContext, rulings?: Rul
       const itemLabel = ZONE_ITEM_LABEL[zone.zoneId] ?? zone.zoneId;
       const itemsText = zone.items
         .map((item, index) => {
-          const metaLines = formatZoneCardMetadataLines(item, displayNamesByPlayer);
-          // REQ-210: an explicitly sent mana-spent value is inserted right after
-          // targets (the same relative position the Stack's own manaSpent line
-          // takes) — an untouched card (no sent value) adds no line, so today's
-          // prompts stay byte-identical.
-          if (item.manaSpent !== undefined) {
-            metaLines.splice(lineIndex(metaLines, "targets:") + 1, 0, `manaSpent: ${item.manaSpent}`);
-          }
+          // REQ-210: an explicitly sent mana-spent value prints right after targets (the same
+          // relative position the Stack's own manaSpent line takes) — an untouched card (no
+          // sent value) adds no line, so today's prompts stay byte-identical.
+          const metaLines = formatZoneCardMetadataLines(item, displayNamesByPlayer, { manaSpent: item.manaSpent });
           return [
             `${itemLabel} ${index + 1}`,
             `name: ${item.name}`,
@@ -346,17 +347,12 @@ export function formatNonStackZoneSections(context: PromptContext, rulings?: Rul
     .join("\n\n");
 }
 
-/** REQ-239: the search excerpts in rule-book order, grouped and labelled (see `layoutPromptRuleSections`). */
-export function formatSupplementalRulesSection(rules: RetrievedGameRule[]): string {
-  return layoutPromptRuleSections({ topics: [], supplementalRules: rules }).supplementalRulesSection;
-}
-
 /**
  * Builds the scope sentence listing every canonical zone that has no cards in
  * this submission (all canonical zones minus the populated ones, in canonical
- * order). The selection set is not consulted — `_selectedZones` is unused.
+ * order). The selection set is not consulted.
  */
-export function buildZoneScopeSentence(_selectedZones: ZoneId[], populatedZoneIds: ZoneId[]): string {
+export function buildZoneScopeSentence(populatedZoneIds: ZoneId[]): string {
   const populatedSet = new Set<string>(populatedZoneIds);
   const scopeZones = CANONICAL_ZONE_ORDER.filter((z) => !populatedSet.has(z));
   if (scopeZones.length === 0) {

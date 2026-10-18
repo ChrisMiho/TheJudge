@@ -3,9 +3,9 @@ import {
   buildZoneScopeSentence,
   formatConversationHistorySection,
   formatGameContext,
-  formatNonStackZoneSections,
-  formatSupplementalRulesSection
+  formatNonStackZoneSections
 } from "./promptFormatting.js";
+import { formatSupplementalRulesSection } from "../test-utils/supplementalRulesSection.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 import type { ConversationTurn, PromptContext, PromptContextZoneItem } from "../types/index.js";
 
@@ -43,20 +43,20 @@ function minimalContext(items: PromptContextZoneItem[]): PromptContext {
 describe("Backend - Ask AI", () => {
   describe("buildZoneScopeSentence", () => {
     it("lists all zones when none are populated", () => {
-      const sentence = buildZoneScopeSentence(["stack"], []);
+      const sentence = buildZoneScopeSentence([]);
       expect(sentence).toContain("stack, battlefield, hand, graveyard, exile, library, command");
       expect(sentence).toContain("Zones with no cards or not included");
     });
 
     it("excludes populated zones from scope sentence", () => {
-      const sentence = buildZoneScopeSentence(["stack", "battlefield"], ["stack", "battlefield"]);
+      const sentence = buildZoneScopeSentence(["stack", "battlefield"]);
       expect(sentence).toContain("hand, graveyard, exile, library, command");
       expect(sentence).not.toContain("stack");
       expect(sentence).not.toContain("battlefield");
     });
 
     it("uses canonical zone order in scope sentence", () => {
-      const sentence = buildZoneScopeSentence(["stack"], ["stack"]);
+      const sentence = buildZoneScopeSentence(["stack"]);
       const colonIdx = sentence.indexOf(":");
       const zonesPart = sentence.slice(colonIdx + 2);
       expect(zonesPart.startsWith("battlefield")).toBe(true);
@@ -64,7 +64,7 @@ describe("Backend - Ask AI", () => {
 
     it("returns all-included string when every zone is populated", () => {
       const allZones = ["stack", "battlefield", "hand", "graveyard", "exile", "library", "command"] as const;
-      const sentence = buildZoneScopeSentence([...allZones], [...allZones]);
+      const sentence = buildZoneScopeSentence([...allZones]);
       expect(sentence).toBe("(all zones included)");
     });
   });

@@ -2,17 +2,17 @@
   "slug": "codebase-cleanup-pass",
   "slice": "F",
   "criteria": [
-    { "id": "F1", "statement": "preparation.ts has one assemble helper per request kind with a debug flag, same calls and arguments per pair", "value": false, "evidence": { "paths": ["apps/backend/src/prompt/preparation.ts"] } },
-    { "id": "F2", "statement": "formatComboSection is called once per request", "value": false, "evidence": { "paths": ["apps/backend/src/prompt/preparation.ts"] } },
-    { "id": "F3", "statement": "enrichmentDebug.ts imports no zod and exports a plain EnrichmentDebug type at the same path", "value": false, "evidence": { "paths": ["apps/backend/src/prompt/enrichmentDebug.ts"] } },
-    { "id": "F4", "statement": "No-op casts gone, lookup uses Object.fromEntries, isMode guard added, routes/askAi.ts unchanged", "value": false, "evidence": { "paths": ["apps/backend/src/config/index.ts", "apps/backend/src/prompt/promptFormatting.ts"] } },
-    { "id": "F5", "statement": "One card-metadata builder emits lines in final order; prefix patching and the lookup targets filter are gone", "value": false, "evidence": { "paths": ["apps/backend/src/prompt/promptFormatting.ts", "apps/backend/src/prompt/promptAssembly.ts"] } },
-    { "id": "F6", "statement": "Dead overload, unused parameter and test-only export are gone from production code", "value": false, "evidence": { "paths": ["apps/backend/src/prompt/promptDiagnostics.ts"] } },
-    { "id": "F7", "statement": "One shared helper builds stack and zone detail fields with the exact context key order", "value": false, "evidence": { "paths": ["apps/backend/src/prompt/context.ts"] } },
-    { "id": "F8", "statement": "truncatePromptLabel inlined, divisor named, stale pointer fixed, default message no longer passed explicitly", "value": false, "evidence": { "paths": ["apps/backend/src/types/index.ts", "apps/backend/src/errors.ts", "apps/backend/src/providers/openAiResponsesProvider.ts"] } },
-    { "id": "F9", "statement": "Every eval golden is byte-identical and the context evaluation harness test passes", "value": false, "evidence": { "command": "git diff --stat origin/main -- apps/backend/src/eval/fixtures" } },
-    { "id": "F10", "statement": "Backend suite is green with a test count no lower than the base", "value": false, "evidence": { "command": "npm --workspace apps/backend run test" } },
-    { "id": "F11", "statement": "Backend typecheck exits 0", "value": false, "evidence": { "command": "npm --workspace apps/backend run typecheck" } },
-    { "id": "F12", "statement": "Lint exits 0", "value": false, "evidence": { "command": "npm run lint" } }
+    { "id": "F1", "statement": "preparation.ts has one assemble helper per request kind with a debug flag, same calls and arguments per pair", "value": true, "evidence": { "paths": ["apps/backend/src/prompt/preparation.ts"] } },
+    { "id": "F2", "statement": "formatComboSection is called once per request", "value": true, "evidence": { "paths": ["apps/backend/src/prompt/preparation.ts"] } },
+    { "id": "F3", "statement": "enrichmentDebug.ts imports no zod and exports a plain EnrichmentDebug type at the same path", "value": true, "evidence": { "paths": ["apps/backend/src/prompt/enrichmentDebug.ts"] } },
+    { "id": "F4", "statement": "No-op casts gone, lookup uses Object.fromEntries, isMode guard added, routes/askAi.ts unchanged", "value": true, "evidence": { "paths": ["apps/backend/src/config/index.ts", "apps/backend/src/prompt/promptFormatting.ts"] } },
+    { "id": "F5", "statement": "One card-metadata builder emits lines in final order; prefix patching and the lookup targets filter are gone", "value": true, "evidence": { "paths": ["apps/backend/src/prompt/promptFormatting.ts", "apps/backend/src/prompt/promptAssembly.ts"] } },
+    { "id": "F6", "statement": "Dead overload, unused parameter and test-only export are gone from production code", "value": true, "evidence": { "paths": ["apps/backend/src/prompt/promptDiagnostics.ts"] } },
+    { "id": "F7", "statement": "One shared helper builds stack and zone detail fields with the exact context key order", "value": true, "evidence": { "paths": ["apps/backend/src/prompt/context.ts"] } },
+    { "id": "F8", "statement": "truncatePromptLabel inlined, divisor named, stale pointer fixed, default message no longer passed explicitly", "value": true, "evidence": { "paths": ["apps/backend/src/types/index.ts", "apps/backend/src/errors.ts", "apps/backend/src/providers/openAiResponsesProvider.ts"] } },
+    { "id": "F9", "statement": "Every eval golden is byte-identical and the context evaluation harness test passes", "value": true, "evidence": { "command": "git diff --stat origin/main -- apps/backend/src/eval/fixtures" } },
+    { "id": "F10", "statement": "Backend suite is green with a test count no lower than the base", "value": true, "evidence": { "command": "npm --workspace apps/backend run test" } },
+    { "id": "F11", "statement": "Backend typecheck exits 0", "value": true, "evidence": { "command": "npm --workspace apps/backend run typecheck" } },
+    { "id": "F12", "statement": "Lint exits 0", "value": true, "evidence": { "command": "npm run lint" } }
   ]
 }

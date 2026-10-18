@@ -198,7 +198,10 @@ describe("Backend - Ask AI", () => {
           excludedCuratedRuleCount: 0,
           selected: [{ ruleId: "405.1", sectionTitle: "The Stack", score: 5 }],
           runnerUp: [],
-          candidatesScored: 1
+          candidatesScored: 1,
+          usedSemantic: false,
+          perCardSelected: [],
+          keywordSetSelected: []
         },
         curatedGameRules: { topicIds: [], topics: [] },
         rulings: {

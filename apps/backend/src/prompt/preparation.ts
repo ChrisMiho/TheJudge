@@ -1,7 +1,10 @@
 import {
   collectCardsForRulings,
   resolveRulingsForPrompt,
-  type RulingEntry
+  type PromptRulingCard,
+  type ResolvedRulings,
+  type RulingEntry,
+  type RulingsDebug
 } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import { ALWAYS_ON_TOPIC_IDS, selectCardWordingTopicIds, selectGameRulesTopics } from "../gameRulesTopicSelection.js";
@@ -14,6 +17,7 @@ import {
   retrieveRulesForQueryWithDebug,
   type GameRulesRuleIndexEntry,
   type RetrievedGameRule,
+  type SupplementalRulesDebug,
   type PerCardSearchText,
   type PerCardVector,
   type RetrievalQuery,
@@ -106,7 +110,7 @@ export function preparePromptInput(request: AskAiRequest, options: PreparePrompt
     return prepareLookupPromptInput(request, options);
   }
 
-  return prepareGamePromptInput(request as GameAskAiRequest, options);
+  return prepareGamePromptInput(request, options);
 }
 
 /**
@@ -121,7 +125,7 @@ export function buildRetrievalQueryInput(
     const context = buildLookupPromptContext(request, options.cardDetailIndex);
     return { questionText: ruleSelectionQuestion(request), cards: context.cards ?? [] };
   }
-  const context = buildPromptContext(request as GameAskAiRequest, options.cardDetailIndex);
+  const context = buildPromptContext(request, options.cardDetailIndex);
   return retrievalInputFromPromptContext(context, gameRuleSelectionQuestion(request, context));
 }
 
@@ -259,12 +263,90 @@ function resolveLookupComboCandidates(
   });
 }
 
+type ResolvedRulingsResult = { resolved: ResolvedRulings; debug?: RulingsDebug };
+
+/** Card rulings for the prompt; with enrichment debug collected, also what was considered and skipped. */
+function resolveRulings(cards: PromptRulingCard[], options: PreparePromptInputOptions): ResolvedRulingsResult {
+  const index = options.cardRulingsIndex ?? new Map();
+  const limits = getRulingLimits();
+  if (options.collectEnrichmentDebug) {
+    const withDebug = resolveRulingsForPrompt(cards, index, limits, true);
+    return { resolved: withDebug, debug: withDebug.debug };
+  }
+  return { resolved: resolveRulingsForPrompt(cards, index, limits) };
+}
+
+type SupplementalRulesResult = { rules: RetrievedGameRule[]; debug?: SupplementalRulesDebug };
+
+/**
+ * System 3 search. The debug entry point runs when enrichment debug is collected, the plain one
+ * otherwise; they take the same inputs, and only the debug one takes the query text.
+ */
+function retrieveSupplementalRules(
+  query: RetrievalQuery,
+  curatedRuleIds: ReturnType<typeof collectCuratedRuleIds>,
+  cardVectors: PerCardVector[],
+  keywordSets: ReturnType<typeof keywordRuleSetsForCards>,
+  options: PreparePromptInputOptions
+): SupplementalRulesResult {
+  const ruleIndex = options.gameRulesRuleIndex ?? [];
+  const cap = options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP;
+  if (options.collectEnrichmentDebug) {
+    const withDebug = retrieveRulesForQueryWithDebug(
+      query.tokens,
+      query.queryRuleIds,
+      ruleIndex,
+      curatedRuleIds,
+      cap,
+      undefined,
+      options.queryEmbedding ?? null,
+      query.queryText,
+      query.questionRuleIds,
+      cardVectors,
+      keywordSets
+    );
+    return { rules: withDebug.selected, debug: withDebug.debug };
+  }
+  return {
+    rules: retrieveRulesForQuery(
+      query.tokens,
+      query.queryRuleIds,
+      ruleIndex,
+      curatedRuleIds,
+      cap,
+      undefined,
+      options.queryEmbedding ?? null,
+      query.questionRuleIds,
+      cardVectors,
+      keywordSets
+    )
+  };
+}
+
+/** The mock-only debug sidecar; present only when both retrievals ran with debug collection. */
+function buildEnrichmentDebug(
+  rulings: ResolvedRulingsResult,
+  supplemental: SupplementalRulesResult,
+  gameRulesTopics: GameRulesTopic[],
+  ruleSections: PromptRuleSections
+): EnrichmentDebug | undefined {
+  if (!rulings.debug || !supplemental.debug) return undefined;
+  return {
+    supplemental: supplemental.debug,
+    curatedGameRules: {
+      topicIds: gameRulesTopics.map((topic) => topic.id),
+      topics: gameRulesTopics.map((topic) => ({ id: topic.id, title: topic.title, ruleNumbers: topic.ruleNumbers }))
+    },
+    rulings: rulings.debug,
+    ruleLayout: ruleSections.stats
+  };
+}
+
 function prepareLookupPromptInput(
   request: LookupAskAiRequest,
   options: PreparePromptInputOptions
 ): PreparedPromptInput {
   const context = buildLookupPromptContext(request, options.cardDetailIndex);
-  const limits = getRulingLimits();
   const cardsForRulings = (context.cards ?? []).map((card) => ({ cardId: card.cardId, name: card.name }));
   const allGameRulesTopics = options.gameRulesTopics ?? [];
   // REQ-220: the four always-on topics, plus the replacement-and-prevention
@@ -293,102 +375,36 @@ function prepareLookupPromptInput(
   const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);
   const conversationHistoryChars = truncatedHistory.reduce((sum, turn) => sum + turn.content.length, 0);
   const comboCandidates = resolveLookupComboCandidates(request, context, options);
-  const comboSectionChars = formatComboSection(comboCandidates).length;
+  const comboSection = formatComboSection(comboCandidates);
 
-  if (options.collectEnrichmentDebug) {
-    const rulingsResult = resolveRulingsForPrompt(
-      cardsForRulings,
-      options.cardRulingsIndex ?? new Map(),
-      limits,
-      true
-    );
-    const supplementalResult = retrieveRulesForQueryWithDebug(
-      query.tokens,
-      query.queryRuleIds,
-      options.gameRulesRuleIndex ?? [],
-      curatedRuleIds,
-      options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
-      undefined,
-      options.queryEmbedding ?? null,
-      query.queryText,
-      query.questionRuleIds,
-      cardVectors,
-      keywordSets
-    );
-    const ruleSections = layoutRules(gameRulesTopics, supplementalResult.selected, options);
-    const promptText = buildLookupPromptText(context, {
-      rulings: rulingsResult,
-      gameRulesTopics,
-      supplementalRules: supplementalResult.selected,
-      ruleSections,
-      namedSteps,
-      comboCandidates
-    });
-    const diagnostics = getPromptDiagnostics(promptText, {
-      resolvedRulings: rulingsResult,
-      gameRulesTopics,
-      gameRulesSectionChars: ruleSections.gameRulesSection.length,
-      supplementalRules: supplementalResult.selected,
-      supplementalRulesSectionChars: ruleSections.supplementalRulesSection.length,
-      comboSectionChars,
-      comboCandidateCount: comboCandidates.length,
-      conversationHistoryChars
-    });
-    const enrichmentDebug: EnrichmentDebug = {
-      supplemental: supplementalResult.debug,
-      curatedGameRules: {
-        topicIds: gameRulesTopics.map((topic) => topic.id),
-        topics: gameRulesTopics.map((topic) => ({ id: topic.id, title: topic.title, ruleNumbers: topic.ruleNumbers }))
-      },
-      rulings: rulingsResult.debug,
-      ruleLayout: ruleSections.stats
-    };
-    return { context, promptText, diagnostics, enrichmentDebug, conversationHistory };
-  }
-
-  const resolvedRulings = resolveRulingsForPrompt(
-    cardsForRulings,
-    options.cardRulingsIndex ?? new Map(),
-    limits
-  );
-  const supplementalRules = retrieveRulesForQuery(
-    query.tokens,
-    query.queryRuleIds,
-    options.gameRulesRuleIndex ?? [],
-    curatedRuleIds,
-    options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
-    undefined,
-    options.queryEmbedding ?? null,
-    query.questionRuleIds,
-    cardVectors,
-    keywordSets
-  );
-  const ruleSections = layoutRules(gameRulesTopics, supplementalRules, options);
+  const rulings = resolveRulings(cardsForRulings, options);
+  const supplemental = retrieveSupplementalRules(query, curatedRuleIds, cardVectors, keywordSets, options);
+  const ruleSections = layoutRules(gameRulesTopics, supplemental.rules, options);
   const promptText = buildLookupPromptText(context, {
-    rulings: resolvedRulings,
+    rulings: rulings.resolved,
     gameRulesTopics,
-    supplementalRules,
+    supplementalRules: supplemental.rules,
     ruleSections,
     namedSteps,
-    comboCandidates
+    comboSection
   });
   const diagnostics = getPromptDiagnostics(promptText, {
-    resolvedRulings,
+    resolvedRulings: rulings.resolved,
     gameRulesTopics,
     gameRulesSectionChars: ruleSections.gameRulesSection.length,
-    supplementalRules,
+    supplementalRules: supplemental.rules,
     supplementalRulesSectionChars: ruleSections.supplementalRulesSection.length,
-    comboSectionChars,
+    comboSectionChars: comboSection.length,
     comboCandidateCount: comboCandidates.length,
     conversationHistoryChars
   });
-  return { context, promptText, diagnostics, conversationHistory };
+  const enrichmentDebug = buildEnrichmentDebug(rulings, supplemental, gameRulesTopics, ruleSections);
+  return { context, promptText, diagnostics, ...(enrichmentDebug ? { enrichmentDebug } : {}), conversationHistory };
 }
 
 function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromptInputOptions): PreparedPromptInput {
   const context = buildPromptContext(request, options.cardDetailIndex);
   const cardsForRulings = collectCardsForRulings(context);
-  const limits = getRulingLimits();
   const allGameRulesTopics = options.gameRulesTopics ?? [];
   // REQ-246: on a follow-up, both the curated-topic question words (REQ-242) and the System 3 query read
   // the conversation's opening question; the follow-up text stays the QUESTION section.
@@ -405,85 +421,29 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
   const truncatedHistory = truncateConversationHistory(conversationHistory ?? [], MAX_CONVERSATION_HISTORY_CHARS);
   const conversationHistoryChars = truncatedHistory.reduce((sum, t) => sum + t.content.length, 0);
   const comboCandidates = resolveGameComboCandidates(request, context, options);
-  const comboSectionChars = formatComboSection(comboCandidates).length;
+  const comboSection = formatComboSection(comboCandidates);
 
-  if (options.collectEnrichmentDebug) {
-    const rulingsResult = resolveRulingsForPrompt(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits, true);
-    const supplementalResult = retrieveRulesForQueryWithDebug(
-      query.tokens,
-      query.queryRuleIds,
-      options.gameRulesRuleIndex ?? [],
-      curatedRuleIds,
-      options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
-      undefined,
-      options.queryEmbedding ?? null,
-      query.queryText,
-      query.questionRuleIds,
-      cardVectors,
-      keywordSets
-    );
-    const ruleSections = layoutRules(gameRulesTopics, supplementalResult.selected, options);
-    const promptText = buildPromptText(context, {
-      rulings: rulingsResult,
-      gameRulesTopics,
-      supplementalRules: supplementalResult.selected,
-      ruleSections,
-      conversationHistory,
-      comboCandidates
-    });
-    const diagnostics = getPromptDiagnostics(promptText, {
-      resolvedRulings: rulingsResult,
-      gameRulesTopics,
-      gameRulesSectionChars: ruleSections.gameRulesSection.length,
-      supplementalRules: supplementalResult.selected,
-      supplementalRulesSectionChars: ruleSections.supplementalRulesSection.length,
-      comboSectionChars,
-      comboCandidateCount: comboCandidates.length,
-      conversationHistoryChars
-    });
-    const enrichmentDebug: EnrichmentDebug = {
-      supplemental: supplementalResult.debug,
-      curatedGameRules: {
-        topicIds: gameRulesTopics.map((t) => t.id),
-        topics: gameRulesTopics.map((t) => ({ id: t.id, title: t.title, ruleNumbers: t.ruleNumbers }))
-      },
-      rulings: rulingsResult.debug,
-      ruleLayout: ruleSections.stats
-    };
-    return { context, promptText, diagnostics, enrichmentDebug, conversationHistory };
-  }
-
-  const resolvedRulings = resolveRulingsForPrompt(cardsForRulings, options.cardRulingsIndex ?? new Map(), limits);
-  const supplementalRules = retrieveRulesForQuery(
-    query.tokens,
-    query.queryRuleIds,
-    options.gameRulesRuleIndex ?? [],
-    curatedRuleIds,
-    options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
-    undefined,
-    options.queryEmbedding ?? null,
-    query.questionRuleIds,
-    cardVectors,
-    keywordSets
-  );
-  const ruleSections = layoutRules(gameRulesTopics, supplementalRules, options);
+  const rulings = resolveRulings(cardsForRulings, options);
+  const supplemental = retrieveSupplementalRules(query, curatedRuleIds, cardVectors, keywordSets, options);
+  const ruleSections = layoutRules(gameRulesTopics, supplemental.rules, options);
   const promptText = buildPromptText(context, {
-    rulings: resolvedRulings,
+    rulings: rulings.resolved,
     gameRulesTopics,
-    supplementalRules,
+    supplementalRules: supplemental.rules,
     ruleSections,
     conversationHistory,
-    comboCandidates
+    comboSection
   });
   const diagnostics = getPromptDiagnostics(promptText, {
-    resolvedRulings,
+    resolvedRulings: rulings.resolved,
     gameRulesTopics,
     gameRulesSectionChars: ruleSections.gameRulesSection.length,
-    supplementalRules,
+    supplementalRules: supplemental.rules,
     supplementalRulesSectionChars: ruleSections.supplementalRulesSection.length,
-    comboSectionChars,
+    comboSectionChars: comboSection.length,
     comboCandidateCount: comboCandidates.length,
     conversationHistoryChars
   });
-  return { context, promptText, diagnostics, conversationHistory };
+  const enrichmentDebug = buildEnrichmentDebug(rulings, supplemental, gameRulesTopics, ruleSections);
+  return { context, promptText, diagnostics, ...(enrichmentDebug ? { enrichmentDebug } : {}), conversationHistory };
 }

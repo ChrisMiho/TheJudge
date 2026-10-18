@@ -5,6 +5,9 @@ export const ASK_AI_ERROR_CODES = [
   "UNEXPECTED_ERROR"
 ] as const;
 
+/** What the player sees for every provider or unexpected failure; callers leave the message out to get it. */
+const DEFAULT_ERROR_MESSAGE = "Miho is working on it";
+
 export type AskAiErrorCode = (typeof ASK_AI_ERROR_CODES)[number];
 
 type AppErrorParams = {
@@ -40,7 +43,7 @@ export function createValidationError(message: string, details?: string): AppErr
   });
 }
 
-export function createProviderUnavailableError(message = "Miho is working on it", details?: string): AppError {
+export function createProviderUnavailableError(message = DEFAULT_ERROR_MESSAGE, details?: string): AppError {
   return new AppError({
     code: "PROVIDER_UNAVAILABLE",
     status: 503,
@@ -50,7 +53,7 @@ export function createProviderUnavailableError(message = "Miho is working on it"
   });
 }
 
-export function createProviderTimeoutError(message = "Miho is working on it", details?: string): AppError {
+export function createProviderTimeoutError(message = DEFAULT_ERROR_MESSAGE, details?: string): AppError {
   return new AppError({
     code: "PROVIDER_TIMEOUT",
     status: 504,
@@ -60,7 +63,7 @@ export function createProviderTimeoutError(message = "Miho is working on it", de
   });
 }
 
-export function createUnexpectedError(message = "Miho is working on it", details?: string): AppError {
+export function createUnexpectedError(message = DEFAULT_ERROR_MESSAGE, details?: string): AppError {
   return new AppError({
     code: "UNEXPECTED_ERROR",
     status: 500,
@@ -76,11 +79,11 @@ export function classifyProviderError(cause: unknown): AppError {
 
   const causeMessage = cause instanceof Error ? cause.message : String(cause);
   if (/timeout/i.test(causeMessage)) {
-    return createProviderTimeoutError("Miho is working on it", causeMessage);
+    return createProviderTimeoutError(undefined, causeMessage);
   }
 
   if (cause instanceof Error) {
-    return createProviderUnavailableError("Miho is working on it", causeMessage);
+    return createProviderUnavailableError(undefined, causeMessage);
   }
 
   return createProviderUnavailableError();
