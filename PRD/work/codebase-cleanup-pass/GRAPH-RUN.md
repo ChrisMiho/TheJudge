@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-162925/` (13 files, copied verbatim to `PRD/work/codebase-cleanup-pass/intake/`; the staging folder's removal was denied to node 2 as `rm -rf` and is left for the owner)
-- Current node: `build` (attempt 2 — owner deferred Q-11 and the follow-ups)
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/codebase-cleanup-pass/`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 6 | gate-qc | sonnet | ok | `0 → 14` | attempt 2 PASS, 0 blocking, 2 advisory (A1 slice K must also fix the moved `useLifeTracker.ts`'s own relative imports — `../../types`, `./counters`, `./persistence`, `./state`, `./types`; A2 some cited lines are still the probes' and marked so); counts re-checked 37 + 12 built of 68; `## Owner decisions` consistent with slices, dispositions, follow-ups 25 and 27; `QUALITY-CHECK.md` commit `2742a2be` (= origin tip); `STATUS.refined` only marker; worktree porcelain empty; launch porcelain unchanged (only the pre-existing untracked probe folder) | 2026-10-18 |
 | 7 | plan | sonnet | ok | `0 → 40` | commit `6f3c3c1c` (= origin tip): `GAMEPLAN.md`, `slice-a.md`…`slice-k.md`, 11 `slice-*.criteria.json` (114 criteria, all `false`), `STATUS.active` only marker, README slice table, board row under active; Preparation gate PASS verified before writing; attempt-2 advisory folded into slice K step 4 / K4; deliverables kept outside `PRD/work/` at `docs/design/codebase-cleanup-pass/slice-j/` and `slice-k/`; no post-merge criteria; worktree porcelain empty; launch porcelain unchanged | 2026-10-18 |
 | 8 | build | sonnet | parked | `0 → 611` | attempt 1: slices A–K built and pushed, tip `ef6ca945` (= origin tip); code PR https://github.com/ChrisMiho/TheJudge/pull/322 opened with title READY and the registration marker; criteria 113/114 `true` (node script over all 11 `slice-*.criteria.json`) — `I2` false (Q-11 not applied, see `slice-i.evidence.md`), so the node fails its all-true rule; return side: launch `git status --porcelain` identical to the pre-build capture, no new files under `<root>/.playwright-mcp` or `<root>/.tmp`, every reported path inside `.worktrees/implement-codebase-cleanup-pass/`; `git diff --stat origin/main -- apps/backend/src/eval/fixtures PRD/sections .claude CLAUDE.md scripts/graph-boundary-hook.mjs` empty; worktree porcelain empty; builder had set `STATUS.ship-ready`, driver replaced it with `STATUS.owner-action` | 2026-10-18 |
+| 9 | build | sonnet | ok | `0 → 39` | attempt 2 after owner deferral: tip `524657bf` (= origin tip); criteria 113/113 `true` (`I2` removed with dated reason in `slice-i.md` and `slice-i.evidence.md`; Q-11 row → later; Trade bug = follow-up 28); `git diff --stat 0be4c14b HEAD -- apps scripts .github` empty (no code change); durable record `PRD/ideasForLater/codebase-cleanup-followups/IDEA.md` (193 lines, sections a–f, Trade bug written in full) plus `evidence/` 13 files `cmp`-identical to `intake/`; board row under ship-ready and parked-ideas row added; PR #322 body updated (`gh pr edit`), title and registration marker unchanged; `STATUS.ship-ready` only marker; launch porcelain unchanged; no new files under `<root>/.playwright-mcp` or `<root>/.tmp` | 2026-10-18 |
 
 ## Gate verdicts
 
@@ -232,6 +233,29 @@ Do these, in order:
 Mechanics: change files with the Write and Edit tools; the `cp` and `cmp` calls for the evidence copy are the exception. No heredocs, no `python3` or `sed -i` edits, no long chained Bash. Run git as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`, never `--force`, never `git stash`. Never retry a denied call verbatim; report it. Budget: stay under 150 tool calls. Spawn no subagents; if you dispatch any subagent at all, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`; criteria true/total across all eleven files; the follow-up folder's file list and `IDEA.md`'s section headings; the number of evidence files and `cmp` results; the PR body update result; the final commit sha and `git ls-remote --heads origin thejudge-auto/codebase-cleanup-pass-work`; `git status --porcelain` of the working directory (must be empty); and every file path you wrote, as absolute paths.
+
+### review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass
+
+You are node 7 (`review`) of graph run `graph-20261018-175940`, attempt 1: a fresh-context, no-write reviewer. You have no Write, Edit or NotebookEdit tools, and you must not change any file by any other means either (no redirection, no `git commit`, no `git checkout --` of tracked files). You may read files, search, and run read-only commands and the test and check scripts below. Work ONLY in the working directory above, on branch `thejudge-auto/codebase-cleanup-pass-work`; code PR https://github.com/ChrisMiho/TheJudge/pull/322. The base is `origin/main` at `4fa69419` (the merge base).
+
+The package is `PRD/work/codebase-cleanup-pass/`: a behavior-preserving cleanup in eleven slices, A to K. Players must see no change, except that In-Depth combo matching gets faster (slice E). Read `GAMEPLAN.md` (especially `## Rules every slice follows`), each `slice-<letter>.md` and its `## Acceptance criteria`, each `slice-<letter>.evidence.md`, and the diff (`git diff 4fa69419...HEAD`, slice by slice; `git log --oneline 4fa69419..HEAD` maps commits to slices). Do not read `GRAPH-RUN.md`'s dispatch prompts or anything about how the build went beyond the evidence logs.
+
+Rubric: each slice's own acceptance criteria and the gameplan's rules, nothing else. Check in particular:
+1. Behavior preservation is proven where the slice says it must be: prompt goldens under `apps/backend/src/eval/fixtures` byte-identical to the base (`git diff --stat 4fa69419 -- apps/backend/src/eval/fixtures` must be empty); slice G's rule-order snapshot committed before any scoring edit and unchanged after; slice E's prefilter equivalence test; the slice J and K computed-style evidence; and no test count dropping except removals each slice's evidence log records with a reason.
+2. Test edits outside a slice's stated file list (slices H and K, and `mockAskAi.test.ts`, are recorded in the evidence logs). Judge each one: does it only follow a removed prop, return or class the slice itself removed, or does it weaken what a test proves?
+3. Slice I: criterion `I2` was removed on 2026-10-18 by owner decision (Q-11 deferred). Confirm the removal is recorded with its reason, that no other criterion changed, and that nothing in slice I half-applies Q-11.
+4. No protected path changed (`scripts/graph-boundary-hook.mjs`, `.claude/**`, `CLAUDE.md`, `thejudge-*` or `codehealth` skills), no `PRD/sections/` change, no new dependency in the lockfile beyond what slice C declares.
+5. Run `npm run quality:check` once from the working directory and report its result. If a needed gitignored cache is missing, report it rather than copying anything.
+
+Severity: Critical or Important only for a gap that breaks correctness, changes what a player sees, or fails a slice's stated acceptance criterion. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important and never sends the run back to build; list those as Minor. Do not manufacture findings: an empty Critical/Important list is a valid result.
+
+Budget: this node has a 120 tool-call cap. Spawn no subagents, do no sleeping or polling. Read diffs per slice rather than file by file where you can.
+
+Return: `verdict: approve | changes-requested`; then Critical, Important and Minor findings, each with file:line, the criterion or rule it breaks, and the evidence (command and output, or the lines); the `npm run quality:check` result; and `git status --porcelain` of the working directory at the end (must be empty).
 
 ## Instruction ledger
 
