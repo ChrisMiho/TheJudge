@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -10,6 +10,7 @@ import {
   resolveRulingsForPrompt
 } from "./cardRulings.js";
 import type { PromptContext } from "./types/index.js";
+import { makeTempDir } from "./test-utils/tempDir.js";
 
 const context: PromptContext = {
   finalQuestion: "What happens?",
@@ -88,7 +89,7 @@ function brotliBlock(buffer: Buffer): Buffer {
 describe("Backend - Ask AI", () => {
   describe("card rulings", () => {
     it("loads a rulings index from a committed artifact shape", () => {
-      const tempDir = mkdtempSync(join(tmpdir(), "thejudge-rulings-"));
+      const tempDir = makeTempDir("thejudge-rulings-");
       const filePath = join(tempDir, "cardRulingsByOracleId.json.br");
       writeFileSync(
         filePath,

@@ -18,7 +18,7 @@ Built strictly in order; each ships alone.
 
 | Slice | Doc | Depends on | Status |
 | --- | --- | --- | --- |
-| A | [slice-a.md](slice-a.md) — backend tests faster, no leaked temp folders | none | planned |
+| A | [slice-a.md](slice-a.md) — backend tests faster, no leaked temp folders | none | done |
 | B | [slice-b.md](slice-b.md) — frontend tests: lighter setup, shared helpers | none | planned |
 | C | [slice-c.md](slice-c.md) — passing checks switched on | none | planned |
 | D | [slice-d.md](slice-d.md) — ship only what runs; shared script helpers | A | planned |

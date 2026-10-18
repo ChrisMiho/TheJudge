@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import test from "node:test"
-import { mkdtemp, readFile as readFileAsync, writeFile as writeFileAsync } from "node:fs/promises"
+import { readFile as readFileAsync, writeFile as writeFileAsync } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -49,6 +49,7 @@ import {
   selectCases,
   selectionReason
 } from "./lib/answer-quality-run.mjs"
+import { makeTempDir } from "./lib/temp-dir.mjs"
 
 // The real loader reads the developer's `.secrets/openai-dev.env`; every test
 // injects this stand-in so the suite never sees a real key, and the tests that
@@ -1074,7 +1075,7 @@ test("parseArgs refuses an experiment flag without --run-id, a missing manifest,
 })
 
 async function experimentFixture({ manifestCases, cases }) {
-  const root = await mkdtemp(join(tmpdir(), "aq-experiment-"))
+  const root = makeTempDir("aq-experiment-")
   const manifestPath = join(root, "manifest.json")
   await writeFileAsync(manifestPath, JSON.stringify({ formatVersion: 1, cases: manifestCases }))
   return { root, manifestPath, loadCases: async () => cases }
@@ -1651,7 +1652,7 @@ const SUITE_CASES = [
 ]
 
 async function suiteRun(extra, { cases = SUITE_CASES } = {}) {
-  const suiteDir = await mkdtemp(join(tmpdir(), "aq-suite-"))
+  const suiteDir = makeTempDir("aq-suite-")
   const client = fakeAccessClient(["gpt-6-luna", "gpt-6.1-sol"])
   const logs = []
   const options = {

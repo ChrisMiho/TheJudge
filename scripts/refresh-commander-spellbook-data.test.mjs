@@ -1,6 +1,5 @@
 import assert from "node:assert/strict"
 import fs from "node:fs"
-import os from "node:os"
 import path from "node:path"
 import zlib from "node:zlib"
 import test from "node:test"
@@ -23,6 +22,7 @@ import {
   SCRYFALL_REQUEST_DELAY_MS
 } from "./refresh-commander-spellbook-data.mjs"
 import { combosNeedRefresh, hashTemplateSet, writeComboSourceMarker, readComboSourceMarker } from "./lib/combo-source-marker.mjs"
+import { makeTempDir } from "./lib/temp-dir.mjs"
 
 /** Minimal stand-in for the parts of `Response` the retry loop touches. */
 function response(status, { body = {}, headers = {} } = {}) {
@@ -233,7 +233,7 @@ test("extractEnvelopeMetadata returns nulls when the fields are missing or malfo
 })
 
 test("a template Scryfall rejects outright (a 404, a query it no longer accepts) is left unresolved, not fatal to the whole refresh", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-refresh-"))
+  const dir = makeTempDir("combo-refresh-")
   const templates = [
     { templateId: 1, name: "Bad query", scryfallApi: "https://api.scryfall.com/bad" },
     { templateId: 2, name: "Good query", scryfallApi: "https://api.scryfall.com/good" }
@@ -299,7 +299,7 @@ const GATE_EXPORT = Buffer.from(
 const GATE_TEMPLATE_HASH = hashTemplateSet([{ templateId: 5, scryfallApi: "https://api.scryfall.com/q1" }])
 
 test("performCommanderSpellbookRefresh: matching hashes skip the expansion and leave raw inputs untouched", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-gate-"))
+  const dir = makeTempDir("combo-gate-")
   const rawDir = path.join(dir, "raw")
   const stageDir = path.join(dir, "stage")
   let expandCalls = 0
@@ -324,7 +324,7 @@ test("performCommanderSpellbookRefresh: matching hashes skip the expansion and l
 })
 
 test("performCommanderSpellbookRefresh: a changed hash runs the full expansion and yields marker-closing hashes", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-gate-"))
+  const dir = makeTempDir("combo-gate-")
   const rawDir = path.join(dir, "raw")
   const stageDir = path.join(dir, "stage")
   let expandCalls = 0

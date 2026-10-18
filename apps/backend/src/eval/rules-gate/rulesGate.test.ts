@@ -70,6 +70,14 @@ function runGate(overrides: Partial<Parameters<typeof evaluateRulesGate>[0]> = {
   return evaluateRulesGate({ cases, resources, vectors, baseline, buildRequest: buildCaseRequest, ...overrides });
 }
 
+let corpusOutcome: ReturnType<typeof runGate> | undefined;
+
+/** The committed-corpus gate run, computed once and shared by the tests that assert against it. */
+function runCorpusGate() {
+  corpusOutcome ??= runGate();
+  return corpusOutcome;
+}
+
 /** A second-case fixture sharing a real case's attached cards and a stack of two items with a controller note. */
 function fixtureGameCase(overrides: Partial<GoldCase> = {}): GoldCase {
   const template = cases[0];
@@ -111,7 +119,7 @@ function preparedPrompt(caseEntry: GoldCase): string {
 describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
   describe("the committed corpus", () => {
     it("passes the gate against the committed baseline, with the 16 of 18 first-ship cases hitting", () => {
-      const outcome = runGate();
+      const outcome = runCorpusGate();
       expect(outcome.report).toContain("Rules gate:");
       expect(outcome.results.filter((result) => result.failures.length > 0)).toEqual([]);
       expect(outcome.results.filter((result) => result.regressions.length > 0)).toEqual([]);
@@ -149,7 +157,7 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
     });
 
     it("ranks every case semantically from a committed vector without calling the embedder or the network", () => {
-      const outcome = runGate();
+      const outcome = runCorpusGate();
       expect(outcome.results.length).toBe(cases.filter((caseEntry) => caseEntry.review.status !== "rejected").length);
       expect(embedSpy).not.toHaveBeenCalled();
       expect(fetchSpy.mock.calls).toHaveLength(0);

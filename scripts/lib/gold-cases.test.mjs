@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
@@ -18,6 +17,7 @@ import {
   sha256,
   validateGoldCase
 } from "./gold-cases.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 const ZERO_HASH = "0".repeat(64);
 
@@ -345,7 +345,7 @@ test("the corpus holds at least the six named worked-solution cases, each tier 1
 });
 
 test("loadGoldCases throws naming every problem for an invalid case, and rejects duplicates, without silently scoring a miss", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "gold-cases-"));
+  const dir = makeTempDir("gold-cases-");
   test.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 
   fs.writeFileSync(path.join(dir, "good.case.json"), JSON.stringify(validTier1Case({ id: "good" })), "utf8");
@@ -551,7 +551,7 @@ test("default mode still requires a real outcome", () => {
 });
 
 test("loadGoldCases: default mode fails on a stray suite case; external mode loads it and ignores excluded duplicates", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "gold-cases-ext-"));
+  const dir = makeTempDir("gold-cases-ext-");
   test.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const write = (name, entry) => fs.writeFileSync(path.join(dir, name), JSON.stringify(entry), "utf8");
 

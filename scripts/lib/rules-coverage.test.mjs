@@ -1,6 +1,5 @@
 import assert from "node:assert/strict"
 import fs from "node:fs"
-import os from "node:os"
 import path from "node:path"
 import test from "node:test"
 import { fileURLToPath } from "node:url"
@@ -15,6 +14,7 @@ import {
   validateExcludedList
 } from "./rules-coverage.mjs"
 import { loadExcludedMechanics, rewriteCoverage } from "../rules-coverage.mjs"
+import { makeTempDir } from "./temp-dir.mjs"
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 
@@ -245,7 +245,7 @@ test("the coverage file is counts and rule numbers only: no prose", () => {
 })
 
 test("rewriteCoverage writes the file and the committed coverage file carries counts and ids only, including counts per outcome", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rules-coverage-"))
+  const dir = makeTempDir("rules-coverage-")
   test.after(() => fs.rmSync(dir, { recursive: true, force: true }))
   const out = path.join(dir, "coverage.json")
   const cases = [fixtureCase("t", ["702.19a"])]

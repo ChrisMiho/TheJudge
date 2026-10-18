@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
@@ -11,6 +10,7 @@ import { parseCompareArgs, runCompare } from "../eval-answer-compare.mjs";
 import { compareRunSides, formatComparison, parseRepeatSelector, readRunFolder, resolveGroup, selectSide, selfComparisonReasons, DIAGNOSTIC_HEADING } from "./answer-compare.mjs";
 import { executeExperiment, manifestEntryFor } from "./experiment-run.mjs";
 import { resolveFollowUp } from "./pushback-follow-up.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 const execFileAsync = promisify(execFile);
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
@@ -130,7 +130,7 @@ async function compareFolders(folderA, folderB, selectors = {}) {
 // F1 ------------------------------------------------------------------------
 
 test("the report refuses on a judge model, rubric revision or reference-hash mismatch and prints each reason", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const base = await makeRun({ runId: "base", right: new Set(["r2r"]), runsRoot });
   const otherJudge = await makeRun({ runId: "other-judge", right: new Set(["r2r"]), judgeModel: "gpt-5-other", runsRoot });
   const otherRubric = await makeRun({ runId: "other-rubric", right: new Set(["r2r"]), rubricRevision: "rubric-2", runsRoot });
@@ -160,7 +160,7 @@ test("the report refuses on a judge model, rubric revision or reference-hash mis
 // F2, F3, F5 ----------------------------------------------------------------
 
 async function pairedRuns() {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const before = await makeRun({ runId: "before", right: new Set(["r2r", "r2w", "tier3-r2w", "tier3-r2r"]), runsRoot });
   // After: w2r now right, r2w and tier3-r2w now wrong; r2r and tier3-r2r still right; w2w still wrong.
   // Prompts differ for every case (the refresh changed the prompt), except we rebuild one run with the same prompt below.
@@ -233,7 +233,7 @@ test("cases with an identical prompt hash on both sides form the unchanged-input
 // F4 ------------------------------------------------------------------------
 
 test("repeats resolve by majority and disagreeing repeats are listed unstable", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const three = [fixtureCase("steady-right"), fixtureCase("steady-wrong"), fixtureCase("mostly-right"), fixtureCase("mostly-wrong")];
   // repeat index is the case's own grading count: 0, 1, 2.
   const pattern = {
@@ -265,7 +265,7 @@ test("repeats resolve by majority and disagreeing repeats are listed unstable", 
 });
 
 test("an answer error or timeout is counted missing, not as a wrong answer", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const a = await makeRun({ runId: "err-a", right: new Set(["r2r"]), runsRoot });
   const b = await makeRun({ runId: "err-b", right: new Set(["r2r"]), failCaseIds: new Set(["r2r"]), runsRoot });
   const result = await compareFolders(a, b);
@@ -278,7 +278,7 @@ test("an answer error or timeout is counted missing, not as a wrong answer", asy
 // F6 ------------------------------------------------------------------------
 
 test("per side: latency mean, p50 and p95, answers slower than the revision's timeout, errors, tokens with reasoning, and answer and judge cost apart", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const cases = [fixtureCase("c1"), fixtureCase("c2"), fixtureCase("c3"), fixtureCase("c4")];
   const a = await makeRun({ runId: "lat-a", cases, latencies: [100, 200, 300, 400], runsRoot, timeoutMs: 15000 });
   const b = await makeRun({ runId: "lat-b", cases, latencies: [1000, 2000, 16000, 20000], right: new Set(["c1"]), failCaseIds: new Set(["c4"]), runsRoot, timeoutMs: 15000 });
@@ -312,7 +312,7 @@ test("per side: latency mean, p50 and p95, answers slower than the revision's ti
 // F7 ------------------------------------------------------------------------
 
 test("diagnostic-arm results print under the diagnostic-control heading, and no output names a winner", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const arms = [
     { id: "A", revision: "A.1" },
     { id: "C", revision: "C.1" }
@@ -338,7 +338,7 @@ test("diagnostic-arm results print under the diagnostic-control heading, and no 
 });
 
 test("a run that answered with several models needs a model selector", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const folder = await makeRun({ runId: "single", runsRoot });
   const loaded = await readRunFolder(folder);
   loaded.summary.records.push({ ...loaded.summary.records[0], model: "gpt-5-mini", key: "x" });
@@ -361,7 +361,7 @@ test("eval:answer-quality:compare exists in package.json and runs offline on two
   };
   const logs = [];
   try {
-    const outputRoot = await mkdtemp(join(tmpdir(), "compare-out-"));
+    const outputRoot = makeTempDir("compare-out-");
     const result = await runCompare({ argv: ["before", "after"], log: (line) => logs.push(line), runsRoot, outputRoot, cwd: "/" });
     assert.equal(result.refused, false);
     const byPath = await runCompare({ argv: [before, after], log: () => {}, runsRoot: "/nowhere", outputRoot, cwd: "/" });
@@ -383,14 +383,14 @@ test("eval:answer-quality:compare exists in package.json and runs offline on two
 });
 
 test("a refusal exits non-zero and names the reasons", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const a = await makeRun({ runId: "ra", runsRoot });
   const b = await makeRun({ runId: "rb", judgeModel: "gpt-5-other", runsRoot });
   await assert.rejects(execFileAsync(process.execPath, ["scripts/eval-answer-compare.mjs", a, b], { cwd: repoRoot }), (error) => error.code === 1 && /judge models differ/.test(error.stdout));
 });
 
 test("a cap selector picks one excerpt cap, and the unstable list shows each repeat's Correctness", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const cases = [fixtureCase("mixed")];
   const a = await makeRun({ runId: "cap-a", cases, repeats: 3, rightByRepeat: (id, i) => [true, false, true][i], runsRoot });
   const b = await makeRun({ runId: "cap-b", cases, repeats: 3, rightByRepeat: () => true, runsRoot });
@@ -403,7 +403,7 @@ test("a cap selector picks one excerpt cap, and the unstable list shows each rep
 
 test("the command writes a numbers-and-ids-only compare JSON and the report as Markdown under the output folder", async () => {
   const { before, after } = await pairedRuns();
-  const outputRoot = await mkdtemp(join(tmpdir(), "compare-out-"));
+  const outputRoot = makeTempDir("compare-out-");
   const result = await runCompare({ argv: [before, after, "--cap", "10"], log: () => {}, outputRoot, cwd: "/" });
   const json = JSON.parse(await readFile(join(outputRoot, "compare-before-after.json"), "utf8"));
   assert.deepEqual(json.overall, result.overall);
@@ -411,8 +411,8 @@ test("the command writes a numbers-and-ids-only compare JSON and the report as M
   const markdown = await readFile(join(outputRoot, "compare-before-after.md"), "utf8");
   assert.match(markdown, /Paired comparison of two experiment runs/);
   // A refusal writes nothing.
-  const refusedOut = await mkdtemp(join(tmpdir(), "compare-out-"));
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const refusedOut = makeTempDir("compare-out-");
+  const runsRoot = makeTempDir("compare-test-");
   const other = await makeRun({ runId: "other-judge", judgeModel: "gpt-5-other", runsRoot });
   process.exitCode = 0;
   const refused = await runCompare({ argv: [before, other], log: () => {}, outputRoot: refusedOut, cwd: "/" });
@@ -422,7 +422,7 @@ test("the command writes a numbers-and-ids-only compare JSON and the report as M
 });
 
 test("two answer models on the same prompts are not called sampling noise", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const folder = await makeRun({ runId: "two-models", right: new Set(["r2r"]), runsRoot });
   const loaded = await readRunFolder(folder);
   const luna = { ...loaded, summary: { ...loaded.summary, records: loaded.summary.records.map((record) => ({ ...record, model: "gpt-6-luna" })) } };
@@ -435,7 +435,7 @@ test("two answer models on the same prompts are not called sampling noise", asyn
 // Repeat selectors, the self-comparison refusal and answer-level counts (REQ-228, resolution-recipe-eval) ---
 
 test("--repeats-a 1-3 --repeats-b 4-6 on one run and one arm compares the two halves, labelled a noise-floor comparison", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const cases = [fixtureCase("steady"), fixtureCase("fades"), fixtureCase("rises")];
   const pattern = {
     steady: [true, true, true, true, true, true],
@@ -461,7 +461,7 @@ test("--repeats-a 1-3 --repeats-b 4-6 on one run and one arm compares the two ha
   assert.match(text, /second-half: run six .* repeats 4-6/);
 
   // Through the command: --repeats-a / --repeats-b on one run, and --repeats on both sides.
-  const outputRoot = await mkdtemp(join(tmpdir(), "compare-out-"));
+  const outputRoot = makeTempDir("compare-out-");
   const viaCommand = await runCompare({ argv: [folder, folder, "--arm", "A", "--repeats-a", "1-3", "--repeats-b", "4-6"], log: () => {}, outputRoot, cwd: "/" });
   assert.equal(viaCommand.noiseFloor, true);
   assert.deepEqual(viaCommand.overall, result.overall);
@@ -476,9 +476,9 @@ test("--repeats-a 1-3 --repeats-b 4-6 on one run and one arm compares the two ha
 });
 
 test("a side compared with itself is refused with a message naming the problem, and writes nothing", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const folder = await makeRun({ runId: "self", repeats: 2, runsRoot });
-  const outputRoot = await mkdtemp(join(tmpdir(), "compare-out-"));
+  const outputRoot = makeTempDir("compare-out-");
   const logs = [];
   for (const argv of [
     [folder, folder],
@@ -507,7 +507,7 @@ test("a side compared with itself is refused with a message naming the problem, 
 });
 
 test("right answers out of answers (every repeat) and right-but-over-budget are reported per side, per tier group and per request kind", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const runsRoot = makeTempDir("compare-test-");
   const lookup = fixtureCase("lookup-fast");
   const game = { ...fixtureCase("game-slow"), gameState: { zones: {} } };
   const cases = [lookup, game];
@@ -538,7 +538,7 @@ test("the compare report reads two suite run folders and splits them by suite le
     { ...fixtureCase("s1"), tier: "external", suite: { level: 0, complexity: "simple" } },
     { ...fixtureCase("s2"), tier: "external", suite: { level: "corner", complexity: "complicated" } }
   ];
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-suite-"));
+  const runsRoot = makeTempDir("compare-suite-");
   const before = await makeRun({ runId: "suite-before", cases: suiteCases, right: new Set(["s1"]), runsRoot });
   const after = await makeRun({ runId: "suite-after", cases: suiteCases, right: new Set(["s1", "s2"]), runsRoot });
   const result = await compareFolders(before, after);
@@ -565,7 +565,7 @@ test("parseCompareArgs reads --turn, --turn-a and --turn-b", () => {
 });
 
 test("--turn selects one turn of a follow-up run, defaults to turn 1, and refuses a turn that is not 1 or 2", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-turn-"));
+  const runsRoot = makeTempDir("compare-turn-");
   // Every first answer is right; the pushback answer is right for r2r and w2r only.
   const folder = await makeRun({
     runId: "pushback-run",
@@ -589,7 +589,7 @@ test("--turn selects one turn of a follow-up run, defaults to turn 1, and refuse
 });
 
 test("the two turns of one follow-up run compare as two sides, and the same turn on both sides is refused as a self-comparison", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-turn-"));
+  const runsRoot = makeTempDir("compare-turn-");
   const folder = await makeRun({
     runId: "pushback-run",
     runsRoot,
@@ -610,7 +610,7 @@ test("the two turns of one follow-up run compare as two sides, and the same turn
 });
 
 test("a run without follow-up records works unchanged: turn 1 is implicit, its report names no turn, and --turn 2 finds nothing", async () => {
-  const runsRoot = await mkdtemp(join(tmpdir(), "compare-turn-"));
+  const runsRoot = makeTempDir("compare-turn-");
   const folder = await makeRun({ runId: "plain", runsRoot, right: new Set(["r2r"]) });
   const run = await readRunFolder(folder);
   const side = selectSide(run, {});

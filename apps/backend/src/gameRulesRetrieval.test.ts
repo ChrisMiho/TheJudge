@@ -1,5 +1,4 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -26,13 +25,14 @@ import {
 } from "./gameRulesRetrieval.js";
 import type { GameRulesTopic } from "./gameRules.js";
 import type { PromptContext } from "./types/index.js";
+import { makeTempDir } from "./test-utils/tempDir.js";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function writeTempIndex(content: unknown): string {
-  const dir = mkdtempSync(join(tmpdir(), "game-rules-index-test-"));
+  const dir = makeTempDir("game-rules-index-test-");
   const filePath = join(dir, "gameRulesRuleIndex.json");
   writeFileSync(filePath, JSON.stringify(content), "utf8");
   return filePath;
@@ -114,7 +114,7 @@ describe("Backend - Game Rules", () => {
     });
 
     it("returns [] and warns when file is malformed JSON", () => {
-      const dir = mkdtempSync(join(tmpdir(), "game-rules-index-test-"));
+      const dir = makeTempDir("game-rules-index-test-");
       const filePath = join(dir, "bad.json");
       writeFileSync(filePath, "{ not valid json", "utf8");
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -747,7 +747,7 @@ describe("Backend - Game Rules", () => {
 
   describe("loadGameRulesTokenStats", () => {
     it("parses N and per-token df into a map", () => {
-      const dir = mkdtempSync(join(tmpdir(), "game-rules-stats-test-"));
+      const dir = makeTempDir("game-rules-stats-test-");
       const filePath = join(dir, "stats.json");
       writeFileSync(filePath, JSON.stringify({ N: 3432, tokens: { cascade: { df: 4 }, damage: { df: 179 } } }), "utf8");
       const stats = loadGameRulesTokenStats(filePath);
@@ -767,7 +767,7 @@ describe("Backend - Game Rules", () => {
 
   describe("loadGameRulesKeywordVocabulary", () => {
     it("parses a { tokens: [...] } shape and lowercases entries", () => {
-      const dir = mkdtempSync(join(tmpdir(), "game-rules-vocab-test-"));
+      const dir = makeTempDir("game-rules-vocab-test-");
       const filePath = join(dir, "vocab.json");
       writeFileSync(filePath, JSON.stringify({ tokens: ["Cascade", "DEATHTOUCH"] }), "utf8");
       const vocab = loadGameRulesKeywordVocabulary(filePath);
@@ -776,7 +776,7 @@ describe("Backend - Game Rules", () => {
     });
 
     it("parses a bare array shape", () => {
-      const dir = mkdtempSync(join(tmpdir(), "game-rules-vocab-test-"));
+      const dir = makeTempDir("game-rules-vocab-test-");
       const filePath = join(dir, "vocab-array.json");
       writeFileSync(filePath, JSON.stringify(["trample", "lifelink"]), "utf8");
       const vocab = loadGameRulesKeywordVocabulary(filePath);
@@ -819,7 +819,7 @@ describe("Backend - Game Rules", () => {
     }
 
     it("decodes a base64 float32-base64 artifact back into per-rule vectors", () => {
-      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const dir = makeTempDir("rule-embeddings-test-");
       const filePath = writeEmbeddingsArtifact(dir, ["100.1", "100.2"], 3, [
         [1, 2, 3],
         [4, 5, 6]
@@ -831,7 +831,7 @@ describe("Backend - Game Rules", () => {
     });
 
     it("decodes a base64 int8-base64 artifact back into per-rule vectors, scaled by 127 (REQ-183)", () => {
-      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const dir = makeTempDir("rule-embeddings-test-");
       // 127 -> 1.0, -127 -> ~-1.0, 0 -> 0 — the same scale build-rule-embeddings.mjs uses.
       const filePath = writeEmbeddingsArtifact(
         dir,
@@ -859,7 +859,7 @@ describe("Backend - Game Rules", () => {
     });
 
     it("returns null and warns when the byte length does not match ruleIds x dims for the declared encoding", () => {
-      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const dir = makeTempDir("rule-embeddings-test-");
       const filePath = join(dir, "bad.json");
       writeFileSync(
         filePath,
@@ -879,7 +879,7 @@ describe("Backend - Game Rules", () => {
     });
 
     it("returns null and warns on an unrecognised encoding (REQ-183: detected, not misread)", () => {
-      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const dir = makeTempDir("rule-embeddings-test-");
       const filePath = join(dir, "bad.json");
       writeFileSync(
         filePath,
@@ -899,7 +899,7 @@ describe("Backend - Game Rules", () => {
     });
 
     it("returns null and warns when an int8-base64 artifact has no positive int8Scale", () => {
-      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const dir = makeTempDir("rule-embeddings-test-");
       const filePath = join(dir, "bad.json");
       writeFileSync(
         filePath,
@@ -919,7 +919,7 @@ describe("Backend - Game Rules", () => {
     });
 
     it("returns null and warns when the encoding field is missing (an older or malformed artifact)", () => {
-      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const dir = makeTempDir("rule-embeddings-test-");
       const filePath = join(dir, "bad.json");
       writeFileSync(
         filePath,
@@ -938,7 +938,7 @@ describe("Backend - Game Rules", () => {
     });
 
     it("returns null and warns on malformed JSON", () => {
-      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const dir = makeTempDir("rule-embeddings-test-");
       const filePath = join(dir, "bad.json");
       writeFileSync(filePath, "{ not valid json", "utf8");
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});

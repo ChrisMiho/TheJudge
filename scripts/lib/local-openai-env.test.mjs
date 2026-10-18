@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
@@ -11,10 +10,11 @@ import {
   parseEnvFile,
   resolveMainCheckoutRoot
 } from "./local-openai-env.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 // Every root here is a temp dir; the real `.secrets/` is never touched.
 function makeRoot() {
-  return mkdtempSync(join(tmpdir(), "local-openai-env-"));
+  return makeTempDir("local-openai-env-");
 }
 
 function writeUnder(root, relative, text) {

@@ -1,7 +1,7 @@
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
+import { makeTempDir } from "../../../test/tempDir";
 import {
   applySkiplistOutcome,
   backoffDelayMs,
@@ -21,24 +21,13 @@ import {
   writeFileAtomic
 } from "../hashLibBuild";
 
-const tmpDirs: string[] = [];
-
 function makeTmpDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), "hashlibbuild-test-"));
-  tmpDirs.push(dir);
-  return dir;
+  return makeTempDir("hashlibbuild-test-");
 }
 
 function hash(byte: number): Uint8Array {
   return new Uint8Array(96).fill(byte);
 }
-
-afterEach(() => {
-  while (tmpDirs.length > 0) {
-    const dir = tmpDirs.pop();
-    if (dir) rmSync(dir, { recursive: true, force: true });
-  }
-});
 
 describe("Frontend - Card Scan", () => {
 describe("planTargetEntryIds", () => {

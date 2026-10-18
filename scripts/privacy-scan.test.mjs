@@ -1,16 +1,16 @@
 // Tests the privacy scan on a synthetic fixture (never on practice-suite text).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { buildSuiteIndex, collectSuiteTexts, countMatchesInText, scanFiles } from "./privacy-scan.mjs";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 const SYNTHETIC_QUESTION = "Does the purple wizard of imaginary valley untap during the upkeep of the fictional player?";
 const SYNTHETIC_ANSWER = "No, the imaginary wizard stays tapped because the fictional stasis effect says so.";
 
 function makeSuite() {
-  const dir = mkdtempSync(join(tmpdir(), "privacy-scan-"));
+  const dir = makeTempDir("privacy-scan-");
   mkdirSync(join(dir, "cases"));
   writeFileSync(
     join(dir, "cases", "fixture-1.case.json"),

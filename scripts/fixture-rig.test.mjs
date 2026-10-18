@@ -1,7 +1,6 @@
 import assert from "node:assert/strict"
 import { execFileSync } from "node:child_process"
 import fs from "node:fs"
-import os from "node:os"
 import path from "node:path"
 import test from "node:test"
 
@@ -16,11 +15,12 @@ import {
   repUsesOwnOrigin,
   snapshotRepo
 } from "./fixture-rig.mjs"
+import { makeTempDir } from "./lib/temp-dir.mjs"
 
 const git = (args, cwd) => execFileSync("git", args, { cwd, encoding: "utf8" })
 
 function sandbox(body) {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "fixture-rig-"))
+  const root = makeTempDir("fixture-rig-")
   try {
     return body(root)
   } finally {

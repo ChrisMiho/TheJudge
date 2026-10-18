@@ -17,17 +17,17 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, mkdirSync, chmodSync, readFileSync, cpSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync, mkdirSync, chmodSync, readFileSync, cpSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const realScriptPath = join(currentDir, "package-lambda.sh");
 
 function buildScratchRepo() {
-  const repoRoot = mkdtempSync(join(tmpdir(), "package-lambda-test-"));
+  const repoRoot = makeTempDir("package-lambda-test-");
   mkdirSync(join(repoRoot, "scripts"), { recursive: true });
   mkdirSync(join(repoRoot, "apps", "backend", "data"), { recursive: true });
 

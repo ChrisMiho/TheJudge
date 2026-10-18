@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, readdir, stat, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 
@@ -23,6 +22,7 @@ import {
 } from "./experiment-run.mjs";
 import { sha256 } from "./gold-cases.mjs";
 import { PUSHBACK_TEXT, resolveFollowUp } from "./pushback-follow-up.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 // Everything here is offline: fake clients, fake prompt builders, a temp folder.
 
@@ -48,7 +48,7 @@ function manifestFor(cases) {
 }
 
 async function tempRoot() {
-  return mkdtemp(join(tmpdir(), "experiment-run-test-"));
+  return makeTempDir("experiment-run-test-");
 }
 
 function fakeClient() {

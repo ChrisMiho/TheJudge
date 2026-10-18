@@ -1,6 +1,6 @@
 # Slice A — Backend tests run faster and clean up after themselves
 
-## Status: planned
+## Status: done
 
 Depends on: none. Findings: T-01, T-02.
 
@@ -45,7 +45,7 @@ git diff --stat origin/main -- apps/backend/src/eval/fixtures
 
 ## Reverted findings
 
-None yet. Record here any finding reverted because its proof failed.
+None. Evidence: `slice-a.evidence.md`.
 
 ## Files touched
 

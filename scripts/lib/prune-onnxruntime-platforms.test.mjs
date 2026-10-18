@@ -1,16 +1,16 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
 import { BINDING_FILE, NAPI_DIR, planPrune, pruneOnnxruntimePlatforms } from "./prune-onnxruntime-platforms.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 const scriptPath = new URL("./prune-onnxruntime-platforms.mjs", import.meta.url).pathname;
 
 function fakeNodeModules(platforms) {
-  const nodeModulesDir = mkdtempSync(join(tmpdir(), "prune-onnx-"));
+  const nodeModulesDir = makeTempDir("prune-onnx-");
   for (const [os, arches] of Object.entries(platforms)) {
     for (const arch of arches) {
       const dir = join(nodeModulesDir, NAPI_DIR, os, arch);

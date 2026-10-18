@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, symlinkSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, symlinkSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
@@ -14,6 +13,7 @@ import {
   resolveInsideSuite,
   selectSuiteCases
 } from "./practice-suite.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 // The folder-guard test: the only test allowed to name the suite folder path.
 test("the real repo ignores a path inside the suite folder and tracks nothing there", () => {
@@ -34,7 +34,7 @@ test("the ignore guard refuses when git reports the folder not ignored, naming t
 });
 
 test("the path check accepts the suite folder and paths inside it, and refuses everything else", () => {
-  const base = mkdtempSync(join(tmpdir(), "suite-path-"));
+  const base = makeTempDir("suite-path-");
   const suiteDir = join(base, "suite");
   const outside = join(base, "outside");
   mkdirSync(join(suiteDir, "raw"), { recursive: true });

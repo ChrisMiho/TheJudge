@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
 import { classifyResponse, importQuestions, buildSettings } from "./practice-suite-import.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 // Invented questions in the API's field shape. Nothing here is real suite content.
 function invented(id, extra = {}) {
@@ -24,7 +24,7 @@ function invented(id, extra = {}) {
 }
 
 function tempSuite() {
-  const dir = mkdtempSync(join(tmpdir(), "import-suite-"));
+  const dir = makeTempDir("import-suite-");
   test.after(() => rmSync(dir, { recursive: true, force: true }));
   return dir;
 }

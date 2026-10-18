@@ -2,7 +2,6 @@ import { test } from "node:test"
 import assert from "node:assert/strict"
 import { execFileSync } from "node:child_process"
 import fs from "node:fs"
-import os from "node:os"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 
@@ -40,6 +39,7 @@ import {
 } from "./graph-preflight.mjs"
 import * as preflight from "./graph-preflight.mjs"
 import { GRAPH_CANARY_COMMAND, classifyToolCall, isRunActive } from "./lib/boundary-rules.mjs"
+import { makeTempDir } from "./lib/temp-dir.mjs"
 
 // --- REQ-191: a fresh run never mutates the launch checkout. From a root
 // checkout it works in a kickoff worktree; from a linked worktree it works in
@@ -313,7 +313,7 @@ test("graph-preflight - gitignore - a node_modules symlink is ignored, not swept
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
   const gitignore = fs.readFileSync(path.join(repoRoot, ".gitignore"), "utf8")
 
-  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "graph-preflight-gitignore-"))
+  const sandbox = makeTempDir("graph-preflight-gitignore-")
   try {
     const git = (args) => execFileSync("git", args, { cwd: sandbox, encoding: "utf8" })
     git(["init", "-q", "."])
@@ -550,7 +550,7 @@ test("graph-preflight - lock - release is stated by reference, not re-enumerated
 })
 
 test("graph-preflight - lock - taking then releasing leaves no lock, for each terminal state", () => {
-  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), "graph-lock-"))
+  const sandbox = makeTempDir("graph-lock-")
   try {
     const lockPath = path.join(sandbox, LOCK_PATH)
     fs.mkdirSync(path.dirname(lockPath), { recursive: true })

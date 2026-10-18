@@ -1,6 +1,5 @@
 import assert from "node:assert/strict"
 import fs from "node:fs"
-import os from "node:os"
 import path from "node:path"
 import test from "node:test"
 import zlib from "node:zlib"
@@ -14,6 +13,7 @@ import {
   parseArgs,
   runComparison
 } from "./compare-combo-answer-quality.mjs"
+import { makeTempDir as makeRegisteredTempDir } from "./lib/temp-dir.mjs"
 
 const LIVE_ENV = { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test", OPENAI_MODEL: "gpt-test" }
 
@@ -42,9 +42,7 @@ function stubLegs({ enrichedSection = true } = {}) {
 }
 
 function makeTempDir() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-ab-"))
-  test.after(() => fs.rmSync(dir, { recursive: true, force: true }))
-  return dir
+  return makeRegisteredTempDir("combo-ab-")
 }
 
 test("parseArgs requires the explicit confirmation flag", () => {

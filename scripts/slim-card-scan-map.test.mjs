@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
 import { slimScanMap, slimScanMapFile } from "./slim-card-scan-map.mjs";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 const FULL = {
   "bbb-2": { oracleId: "o2", name: "Second", imageUrl: "https://x/b.jpg?1" },
@@ -19,7 +19,7 @@ test("slimScanMap drops only imageUrl and keeps key order", () => {
 });
 
 test("slimScanMapFile writes compact JSON and is idempotent", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "slim-scan-map-"));
+  const dir = makeTempDir("slim-scan-map-");
   const file = path.join(dir, "cardScanMap.json");
   try {
     fs.writeFileSync(file, JSON.stringify(FULL));

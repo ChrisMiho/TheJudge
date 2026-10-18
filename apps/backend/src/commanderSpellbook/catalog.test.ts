@@ -1,9 +1,9 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import { describe, expect, it, vi } from "vitest";
 import { loadComboCatalog, type ComboVariant } from "./catalog.js";
+import { makeTempDir } from "../test-utils/tempDir.js";
 
 const COMBO_BLOCK_SIZE = 128;
 
@@ -47,7 +47,7 @@ let uniqueSuffix = 0;
  * warning under assertion.
  */
 function tempDir(): string {
-  return mkdtempSync(join(tmpdir(), `combo-catalog-${uniqueSuffix++}-`));
+  return makeTempDir(`combo-catalog-${uniqueSuffix++}-`);
 }
 
 function brotliBlock(buffer: Buffer): Buffer {
