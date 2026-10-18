@@ -13,7 +13,7 @@ A behavior-preserving health pass over the code: clearer structure, faster and c
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/codebase-cleanup-pass
+- Autonomous base: origin/main
 
 ## Preparation gate
 

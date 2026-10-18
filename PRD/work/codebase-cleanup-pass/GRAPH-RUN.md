@@ -1,10 +1,10 @@
 # Graph run — codebase-cleanup-pass
 
-- Run ID: `graph-20261018-162925`
+- Run ID: `graph-20261018-175940` (build half; spec-forming half `graph-20261018-162925`)
 - Profile: `loaded (env sentinel)` at node 1
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent: [graph-boundary] rm -rf is denied in every session; graph canary nohup true: nohup is denied while a graph run holds the lock)`
-- Autonomous base: `origin/thejudge-auto/codebase-cleanup-pass`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-codebase-cleanup-pass`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-162925/` (13 files, copied verbatim to `PRD/work/codebase-cleanup-pass/intake/`; the staging folder's removal was denied to node 2 as `rm -rf` and is left for the owner)
 - Current node: `gate-qc` (stopped at PASS — parked at `owner-action`)
 - Next action: `/graph-implement PRD/work/codebase-cleanup-pass/` after the owner merges the docs PR
