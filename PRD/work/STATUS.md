@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| scanner-recovers-and-runs-lighter | Brief written; five proposed requirement changes await owner verdicts in GATE-QUESTIONS.md (✕ placement, failure wording, slimmer scan map) |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| scanner-recovers-and-runs-lighter | Scanner recovers after a failed download, builds data once, shares one panel across tools |
 
 ## owner-action
 
