@@ -21,7 +21,7 @@ Built strictly in order; each ships alone.
 | A | [slice-a.md](slice-a.md) — backend tests faster, no leaked temp folders | none | done |
 | B | [slice-b.md](slice-b.md) — frontend tests: lighter setup, shared helpers | none | done |
 | C | [slice-c.md](slice-c.md) — passing checks switched on | none | done |
-| D | [slice-d.md](slice-d.md) — ship only what runs; shared script helpers | A | planned |
+| D | [slice-d.md](slice-d.md) — ship only what runs; shared script helpers | A | done |
 | E | [slice-e.md](slice-e.md) — combo matching skips incomplete combos | none | planned |
 | F | [slice-f.md](slice-f.md) — prompt pipeline written once | none | planned |
 | G | [slice-g.md](slice-g.md) — rule search scoring behind an order snapshot | E, F | planned |

@@ -200,3 +200,8 @@ export function formatHeadline({ model, excerptCap, headline }) {
       : `tier 3: ${tier3.fullyCorrect}/${tier3.graded} fully correct (${tier3.ungraded} ungraded)`;
   return `${model} at cap ${excerptCap} -- ${officialText}; ${tier3Text}`;
 }
+
+/** The sum of `field` over `records`, counting a missing value as 0. */
+export function sumOf(records, field) {
+  return records.reduce((sum, record) => sum + (record[field] ?? 0), 0);
+}

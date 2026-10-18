@@ -4,6 +4,7 @@ import zlib from "node:zlib"
 import { pathToFileURL } from "node:url"
 
 import { streamJsonArrayObjects } from "./lib/stream-json-array.mjs"
+import { ensureParentDirectory, formatBytes } from "./lib/fs-helpers.mjs"
 
 const defaultRawInputDir = path.resolve("apps/backend/data/commander-spellbook")
 const defaultDetailPath = path.resolve("apps/backend/data/commanderSpellbookComboBlocks.br")
@@ -97,16 +98,6 @@ function sortedObject(entries) {
 function sortZones(zones) {
   const permitted = new Set(zones)
   return ZONE_IDS.filter((zone) => permitted.has(zone))
-}
-
-function ensureParentDirectory(filePath) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true })
-}
-
-function formatBytes(bytes) {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 function readJsonFile(filePath) {

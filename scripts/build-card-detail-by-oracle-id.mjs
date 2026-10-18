@@ -13,6 +13,7 @@ import {
   parseTypeLine,
   shouldIncludeCard
 } from "./build-card-metadata.mjs";
+import { ensureParentDirectory } from "./lib/fs-helpers.mjs";
 
 // Same committed Scryfall bulk build-card-metadata.mjs trims (REQ-175) — the
 // only bulk file carrying oracle text, type line, mana cost/value, and colors.
@@ -35,10 +36,6 @@ const outputPath = path.resolve("apps/backend/data/cardDetailByOracleId.json.br"
 // decompresses it once at startup (REQ-175), the same way
 // `apps/backend/src/commanderSpellbook/catalog.ts` already does for its blocks.
 const pricesOutputPath = path.resolve("apps/backend/data/cardPrintingPricesByOracleId.json.br");
-
-function ensureParentDirectory(filePath) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-}
 
 /**
  * Brotli-compress with the fixed, named params this repository uses

@@ -40,7 +40,7 @@ const ignored = spawnSync("git", ["check-ignore", "-q", join(OUT, "probe.json")]
 if (ignored.status !== 0) throw new Error(`${OUT} is not git-ignored; refusing to write training data there.`);
 
 const imp = (rel) => import(pathToFileURL(join(REPO, rel)).href);
-const evalMod = await imp("scripts/eval-answer-quality.mjs");
+const { resolveRunEnv } = await imp("scripts/lib/run-env.mjs");
 const fid = await imp("scripts/lib/prompt-fidelity.mjs");
 const sg = await imp("scripts/lib/practice-suite.mjs");
 const { loadGoldCases } = await imp("scripts/lib/gold-cases.mjs");
@@ -52,7 +52,7 @@ const R = await imp("apps/backend/src/gameRulesRetrieval.ts");
 // search-only concept-map entries, so a retrain cannot learn to ignore those entries' words.
 (await imp("apps/backend/src/gameRulesConceptMap.ts")).turnOffSearchOnlyEntriesForTraining();
 
-const env = evalMod.resolveRunEnv({ processEnv: process.env, confirmed: true });
+const env = resolveRunEnv({ processEnv: process.env, confirmed: true });
 if (fid.resolveEmbeddingProviderMode(env) !== "local") throw new Error("EMBEDDING_PROVIDER is not local");
 const embedder = await fid.buildEmbedder(env);
 if (embedder.mode !== "local") throw new Error(`embedder mode ${embedder.mode}`);

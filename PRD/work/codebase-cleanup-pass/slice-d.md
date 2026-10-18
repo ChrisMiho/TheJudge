@@ -1,6 +1,6 @@
 # Slice D — Ship only what runs; scripts share helpers
 
-## Status: planned
+## Status: done
 
 Depends on: A (A edits `scripts/lib/fake-embedding-model.mjs` first). Findings: K-08/T-10, T-11, T-12 (preserving part), T-13 (the move only), T-15, T-17.
 
@@ -49,7 +49,7 @@ grep -rn "exampleoutput\|purple-gold-handoff" . --include="*" --exclude-dir=node
 
 ## Reverted findings
 
-None yet.
+None. Evidence: `slice-d.evidence.md`.
 
 ## Files touched
 

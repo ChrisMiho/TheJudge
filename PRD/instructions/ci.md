@@ -3,7 +3,7 @@
 ## Purpose
 
 The CI gate lives at `.github/workflows/quality-check.yml`. It runs on every
-push to `main`/`master` and every pull request, mirrors the local
+push to `main` and every pull request, mirrors the local
 `npm run quality:check` command, and blocks `Deploy AWS` until it passes. This
 file records how the gate is shaped and why — read it before changing the
 workflow or the scripts it runs.

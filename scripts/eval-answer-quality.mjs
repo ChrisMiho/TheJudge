@@ -67,7 +67,8 @@ import {
   mergeCaseLegScores,
   promptKey,
   referenceAnswerHash,
-  selectCases
+  selectCases,
+  sumOf
 } from "./lib/answer-quality-run.mjs";
 import {
   DEFAULT_ARM,
@@ -105,6 +106,7 @@ import {
 import { attachedRuleIdsOf, buildJudgeInputs } from "./lib/judge-inputs.mjs";
 import { describeDecidingRules } from "./lib/rule-availability.mjs";
 import { loadLocalOpenAiEnv } from "./lib/local-openai-env.mjs";
+import { NO_LOCAL_ENV_VARIABLE, resolveRunEnv } from "./lib/run-env.mjs";
 import { resolveFollowUp } from "./lib/pushback-follow-up.mjs";
 import {
   DEFAULT_EMBEDDING_PROVIDER,
@@ -122,6 +124,9 @@ import {
 // (scripts/lib/prompt-fidelity.mjs); re-exported so this command's tests
 // exercise them through the command that spends money on them.
 export { DEFAULT_EMBEDDING_PROVIDER, assertQueryEmbedded, buildCaseRequest, describeRetrieval };
+// The run-environment resolver lives in scripts/lib/run-env.mjs (shared with the rule-search tools);
+// re-exported so this command's tests keep exercising it through the command.
+export { NO_LOCAL_ENV_VARIABLE, resolveRunEnv };
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -460,43 +465,6 @@ export function assertLiveProviderConfigured(env) {
 }
 
 /**
- * The environment a run sees: the process environment, filled in from the
- * local env files the way `npm run openai:verify-credentials` already does
- * (`scripts/lib/local-openai-env.mjs`; the process environment always wins),
- * so the owner runs the command with nothing exported by hand.
- *
- * `--confirm-live-calls` is the explicit consent to a live provider, so when
- * that flag is present, a key is available, and `ASK_AI_PROVIDER` is unset,
- * the run selects `openai`. It never overrides a value that is set: an
- * explicit `ASK_AI_PROVIDER=mock` still refuses, through the same guard, and
- * the mock-first default for everything that is not this command is untouched
- * (an unconfirmed run leaves `ASK_AI_PROVIDER` exactly as it found it).
- */
-export const NO_LOCAL_ENV_VARIABLE = "ANSWER_QUALITY_NO_LOCAL_ENV";
-
-/**
- * Setting `ANSWER_QUALITY_NO_LOCAL_ENV=1` skips the local env files entirely,
- * so a run sees only the process environment: no key can be filled in from a
- * file, and an offline dry run can promise it builds no client. Anything that
- * must stay free of a provider -- a verification, a build session -- sets it.
- */
-export function resolveRunEnv({ processEnv, confirmed, loadLocalEnv = loadLocalOpenAiEnv }) {
-  const skipLocalFiles = ["1", "true", "yes"].includes(String(processEnv?.[NO_LOCAL_ENV_VARIABLE] ?? "").trim().toLowerCase());
-  const { env, sources } = skipLocalFiles ? { env: { ...processEnv }, sources: [] } : loadLocalEnv({ repoRoot, env: processEnv });
-  const hasKey = Boolean(env.OPENAI_API_KEY?.trim());
-  const providerUnset = !env.ASK_AI_PROVIDER || env.ASK_AI_PROVIDER.trim() === "";
-  const resolved = { ...env };
-  if (confirmed && hasKey && providerUnset) resolved.ASK_AI_PROVIDER = "openai";
-  // The deployed app embeds every question with the bundled local model
-  // (REQ-184), so that is this run's default too: the instrument measures
-  // the retrieval players get, unless the owner explicitly asks otherwise.
-  if (!resolved.EMBEDDING_PROVIDER || resolved.EMBEDDING_PROVIDER.trim() === "")
-    resolved.EMBEDDING_PROVIDER = DEFAULT_EMBEDDING_PROVIDER;
-  Object.defineProperty(resolved, "__localEnvSources", { value: sources, enumerable: false });
-  return resolved;
-}
-
-/**
  * The committed scorecard must pass `npm run format:check` (prettier over
  * `**\/*.json`, repo config), which collapses short arrays onto one line
  * where `JSON.stringify` expands them. Formatting here, with the repo's own
@@ -679,10 +647,6 @@ export function buildRateTable() {
       { inputUsdPerMillion: price.input, outputUsdPerMillion: price.output, checkedOn: MODEL_RATE_CHECKED_ON[model] ?? null }
     ])
   );
-}
-
-function sumOf(records, field) {
-  return records.reduce((sum, record) => sum + (record[field] ?? 0), 0);
 }
 
 /**

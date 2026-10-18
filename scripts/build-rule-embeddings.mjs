@@ -32,6 +32,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { pathToFileURL } from "node:url";
 import { format as prettierFormat } from "prettier";
+import { ensureParentDirectory } from "./lib/fs-helpers.mjs";
 
 /** Matches production's committed-embedding text shape exactly (no shaping — see note above). */
 export function buildEmbeddingText(entry) {
@@ -71,10 +72,6 @@ export function computeInt8Scale(values) {
 export function quantizeToInt8(value, scale) {
   const scaled = Math.round(value * scale);
   return Math.max(-128, Math.min(127, scaled));
-}
-
-function ensureParentDirectory(filePath) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
 }
 
 /**

@@ -9,6 +9,7 @@ import {
   SUITE_IGNORE_LINE,
   assertSuiteIgnored,
   gitCheckIgnore,
+  mainCheckoutSuiteDir,
   normalizeSuiteFilters,
   resolveInsideSuite,
   selectSuiteCases
@@ -85,6 +86,22 @@ test("selection counts excluded, unsupported, filtered-out and stale cases", () 
   });
   assert.deepEqual(selected.map((c) => c.id), ["c1", "c6", "c7"]);
   assert.deepEqual(counts, { total: 7, excluded: 1, unsupported: 1, filteredOut: 1, stale: 1, selected: 3 });
+});
+
+test("the main-checkout suite folder is the same from the main checkout and from a linked worktree", () => {
+  const mainRoot = "/fake/main";
+  const worktreeRoot = "/fake/main/.worktrees/implement-x";
+  // The main checkout has a `.git` directory; a linked worktree has a `.git` file pointing into it.
+  const stat = (path) => ({ isDirectory: () => path === "/fake/main/.git" });
+  const read = (path) => {
+    if (path === `${worktreeRoot}/.git`) return "gitdir: /fake/main/.git/worktrees/implement-x\n";
+    throw new Error(`unexpected read of ${path}`);
+  };
+  const fromMain = mainCheckoutSuiteDir(mainRoot, { read, stat });
+  const fromWorktree = mainCheckoutSuiteDir(worktreeRoot, { read, stat });
+  assert.equal(fromWorktree, fromMain);
+  assert.ok(fromMain.startsWith(`${mainRoot}/`), "the folder sits inside the main checkout");
+  assert.ok(!fromWorktree.includes(".worktrees"), "never inside the worktree");
 });
 
 test("a seeded sample is repeatable and differs with the seed", () => {

@@ -20,8 +20,9 @@
 // whose highest id is not above the cursor -- the API wraps to id 1 past the
 // last question).
 
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { writeWhole } from "./fs-helpers.mjs";
 
 // The question API address is not in the repository: the entry point reads it
 // from the PRACTICE_SUITE_API_URL environment variable and passes it as `baseUrl`.
@@ -89,12 +90,6 @@ async function readState(suiteDir) {
     if (error?.code === "ENOENT") return emptyState();
     throw error;
   }
-}
-
-async function writeWhole(path, text) {
-  const temp = `${path}.tmp-${process.pid}`;
-  await writeFile(temp, text, "utf8");
-  await rename(temp, path);
 }
 
 async function exists(path) {

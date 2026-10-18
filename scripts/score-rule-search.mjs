@@ -29,11 +29,12 @@ import { join, dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
+import { mainCheckoutSuiteDir } from "./lib/practice-suite.mjs";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
 const arg = (k, d) => (args.includes(k) ? args[args.indexOf(k) + 1] : d);
-const SUITE = arg("--suite", process.env.PRACTICE_SUITE_DIR ?? "/Users/chrismiho/Coding/Projects/TheJudge/output/practice-suite");
+const SUITE = arg("--suite", process.env.PRACTICE_SUITE_DIR ?? mainCheckoutSuiteDir());
 const OUT = join(REPO, "output/rule-search-eval");
 const MODELS = join(REPO, "output/rule-search-model");
 const HARD25 = arg("--hard25", join(OUT, "hard25.json"));
@@ -52,7 +53,7 @@ const ignored = spawnSync("git", ["check-ignore", "-q", join(OUT, "probe.json")]
 if (ignored.status !== 0) throw new Error("output/rule-search-eval/ is not git-ignored; refusing to write per-question results.");
 
 const imp = (rel) => import(pathToFileURL(`${REPO}/${rel}`).href);
-const evalMod = await imp("scripts/eval-answer-quality.mjs");
+const { resolveRunEnv } = await imp("scripts/lib/run-env.mjs");
 const fid = await imp("scripts/lib/prompt-fidelity.mjs");
 const sg = await imp("scripts/lib/practice-suite.mjs");
 const { loadGoldCases } = await imp("scripts/lib/gold-cases.mjs");
@@ -63,7 +64,7 @@ const { askAiRequestSchema } = await imp("apps/backend/src/validation/askAiReque
 const R = await imp("apps/backend/src/gameRulesRetrieval.ts");
 const B = await imp("apps/backend/src/eval/ragRetrievalBenchmark.ts");
 
-const env = evalMod.resolveRunEnv({ processEnv: process.env, confirmed: true });
+const env = resolveRunEnv({ processEnv: process.env, confirmed: true });
 if (fid.resolveEmbeddingProviderMode(env) !== "local") throw new Error("EMBEDDING_PROVIDER is not local");
 const embedder = await fid.buildEmbedder(env);
 if (embedder.mode !== "local") throw new Error(`embedder mode ${embedder.mode}`);
