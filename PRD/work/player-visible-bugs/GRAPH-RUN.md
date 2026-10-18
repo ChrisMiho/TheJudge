@@ -25,7 +25,7 @@
 - Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 2).
 - Question: answer `PRD/work/player-visible-bugs/GATE-QUESTIONS.md` — two verdict slots (REQ-214 amended: the In-Depth scanner says in one line under the camera why it will not add a card already on the Stack; REQ-085 amended: reopening a saved question or its draft from Question History while on Life Tracker keeps that question's players instead of copying the tracker's), each accept / edit / reject with a reason for edit or reject; no blocker questions. The brief ships bug 1 as slice A inside one code PR; say at the gate if you want it as its own PR first.
 - Evidence: `QUALITY-CHECK.md` (PASS, commit `81e16553`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
-- Docs PR: (recorded below once opened)
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/328 (`thejudge-auto/player-visible-bugs` → `main`, opened by the driver, not merged).
 - Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/player-visible-bugs/`) picks it up.
 
 ## Dispatch prompts
