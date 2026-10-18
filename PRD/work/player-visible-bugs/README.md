@@ -6,3 +6,7 @@ Fix the seven player-visible bugs from section a of the codebase-cleanup follow-
 
 - Idea: `IDEA.md`
 - Intake (evidence only): `intake/IDEA.md`
+
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/player-visible-bugs
