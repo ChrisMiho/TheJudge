@@ -20,11 +20,28 @@
 
 ## Open gate
 
+- RESOLVED 2026-10-18: 5 verdicts applied (5 accept, 0 edit, 0 reject); see `## Gate verdicts`.
 - Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 1).
 - Question: answer `PRD/work/scanner-recovers-and-runs-lighter/GATE-QUESTIONS.md` — five verdict slots (REQ-214 amended: one ✕ spot on all three scanners; REQ-056 amended: In-Depth exit off the camera; REQ-249 new: recover from a failed download with plain wording; REQ-048 amended: scan map drops image addresses; REQ-066 amended: scope the Trade rule's scan-map line), each accept / edit / reject with a reason for edit or reject; no blocker questions.
 - Evidence: `QUALITY-CHECK.md` (PASS, commit `c82d38c2`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/318 (`thejudge-auto/scanner-recovers-and-runs-lighter` → `main`, opened by the driver, not merged).
 - Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/scanner-recovers-and-runs-lighter/`) picks it up.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-214` | accept | — |
+| `REQ-056` | accept | — |
+| `REQ-249` | accept | — |
+| `REQ-048` | accept | — |
+| `REQ-066` | accept | — |
+
+`## Blocker questions`: none.
+
+### Brief reconciliation
+
+none (every verdict was accept; `DESIGN-BRIEF.md`, the README intake pointer and `GATE-QUESTIONS.md` diffs are untouched)
 
 ## Dispatch prompts
 
@@ -133,8 +150,30 @@ Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed
 
 Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter`), and `git status --porcelain` of the working directory (must be empty).
 
+### gate-review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter
+
+You are the gate-resolution step of graph run `graph-20261018-063434` (build half of package `scanner-recovers-and-runs-lighter`; the spec-forming half was `graph-20261018-055113`). Run the `graph-gate-review` skill: read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter/.claude/skills/graph-gate-review/SKILL.md and follow it exactly, on the package `PRD/work/scanner-recovers-and-runs-lighter/`. Also read `PRD/instructions/graph-workflow-contract.md` as the skill asks. Work ONLY inside the working directory above — never in /Users/chrismiho/Coding/Projects/TheJudge itself. The worktree is on the shared branch `thejudge-auto/scanner-recovers-and-runs-lighter-work`, already pushed; the owner answered `GATE-QUESTIONS.md` and merged it to `main` (PR #319).
+
+Every verdict comes from the answered `GATE-QUESTIONS.md` alone. Parse all five blocks (REQ-214, REQ-056, REQ-249, REQ-048, REQ-066) and the `## Blocker questions` section; refuse and name any blank or malformed slot.
+
+Required:
+1. Apply each verdict inside `GATE-QUESTIONS.md` only. Never edit `PRD/sections/`, code, or anything under `intake/`.
+2. Reconcile `DESIGN-BRIEF.md` and the README intake pointer to every `edit` or `reject`, per the skill, with a quoted grep. If every verdict is `accept`, the brief is untouched and the reconciliation list reads `none`.
+3. Write `## Gate verdicts` in `PRD/work/scanner-recovers-and-runs-lighter/GRAPH-RUN.md` (one row per stable ID, then `### Brief reconciliation`), placed directly after `## Open gate`; mark `## Open gate` resolved with today's date (2026-10-18) and the verdict count. Do not touch `## Node ledger`, `## Dispatch prompts`, `## Instruction ledger`, or the header lines — the driver owns them.
+4. Restore the status: exactly one marker `STATUS.refined` (remove `STATUS.owner-action` with `git rm`), the README `status:` field to `refined`, and move the `PRD/work/STATUS.md` board row fully from its current section to the refined section (remove from old, add to new) with a short next-step note saying it is being built.
+5. Commit with explicit paths only, as short separate calls run from the working directory: `git add <each path>` (or `git rm <path>`), then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Run git as short separate calls. Never retry a denied call verbatim; report it. Spawn no subagents; if you did, you would copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|refused|failed`, the verdict counts, the `### Brief reconciliation` list verbatim, the restored marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), and `git status --porcelain` of the working directory (must be empty).
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | Scanner recovers from a failed download, builds its data once, and shares one panel across tools | answered-once | shape | — |
+| owner build signal: verdicts merged (PR #319, accept all five), then invoked `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` | answered-once | gate-review | — |
