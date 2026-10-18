@@ -21,12 +21,23 @@ the browser). The spec already says a refused scan "surfaces its message
 immediately" (REQ-214: the scanner checks each zone's own add rule the moment
 it recognises a card), but not where. The station's usual message line is
 hidden while the camera is open, so this places the message inside the
-scanner, under the camera, where its loading and error lines already sit. It
+scanner, under the camera, beside its "scan data failed to load" line. It
 uses the same words a manual add already shows — "Duplicate cards are not
 supported in MVP1.", or "MVP stack limit reached (10 cards)." when the Stack
 is full — and stays until the next card is recognised or the scanner closes.
 Ask a Question has the same gap but is left out (not the reported bug); to
 include it, answer **edit** and say so.
+
+This does not clash with the rule that the scanner shows only the helper lines
+its approved mockup shows (REQ-070's redesigned-screens exception: on the
+redesigned screens, *guidance and helper text* — lines that explain how to use
+the screen — follows the mockup page, and where the mockup shows no such line,
+none renders). The refusal is not guidance: it reports what just happened to
+the card you scanned, like the scanner's "Loading scan data..." line and its
+scan-data failure line, which also are not on the mockup and already render.
+The rule itself keeps such state messages as a separate group (it names the
+scanner's `locking` / `camera-error` messages apart from helper text). So no
+REQ-070 change and no mockup change; the diff below says this in one clause.
 
 **What happens if you say no:** the refusal stays silent; the scanner keeps
 re-trying the card with no explanation.
@@ -36,9 +47,13 @@ re-trying the card with no explanation.
 +++ b/PRD/sections/functional-requirements.md
 @@ ### REQ-214 — Acceptance Criteria @@
    - the same duplicate/cap rule each destination already applies on a manual add (the Stack's duplicate block; Ask a Question's already-attached block and 10-card cap, REQ-167) is checked the instant a card is recognised, against both the destination's current cards and anything already held but not yet committed - not deferred to the close commit, so a blocked re-scan still surfaces its message immediately; Trade Balancer passes no such rule, so a duplicate scan is always held and committed (REQ-065's existing duplicates-allowed behaviour)
-+  - on In-Depth's Cards station, a blocked re-scan's message — the zone's own manual-add wording, "Duplicate cards are not supported in MVP1." for a card already on the Stack or already held, "MVP stack limit reached (10 cards)." at the Stack's cap — shows as one line inside the shared scanner panel, under the camera frame where the loading and scan-data failure lines sit, never over the camera picture; it stays until the next card is held or the scanner closes, and the holding list does not grow
++  - on In-Depth's Cards station, a blocked re-scan's message — the zone's own manual-add wording, "Duplicate cards are not supported in MVP1." for a card already on the Stack or already held, "MVP stack limit reached (10 cards)." at the Stack's cap — shows as one line inside the shared scanner panel, under the camera frame beside the scan-data failure line (REQ-249), never over the camera picture; it stays until the next card is held or the scanner closes, and the holding list does not grow; like the "Loading scan data..." and scan-data failure lines it is state copy reporting a scan's outcome, not guidance or helper text, so REQ-070's redesigned-screens exception (helper text follows the mockup page) does not govern it and the mockup page needs no matching line
+   - the "Exit scan" control is a 44px square box with rounded corners carrying an X (the mockup's `.scan-exit` box), at the right end of a slim row directly above the camera frame, its right edge aligned with the camera frame's right edge — identical on every host, never inside or over the camera frame, and never overlapping the caution control or the count pill; the row carries the host's scanner title at its left where the host has one (Ask a Question "Scan a card", Trade Balancer "Scanning onto <side>") and only the box on In-Depth's Cards station (REQ-056); the accessible name "Exit scan" is unchanged; the manual Capture control keeps the accessible name "Capture"
 -  - all three hosts render the scanner through one shared panel component: the row above the camera, the "Loading scan data..." line, the scan-data failure line (REQ-249) and the holding-list entries passed to the count pill are built once; each host passes only its title (if any), its destination label and its handlers
 +  - all three hosts render the scanner through one shared panel component: the row above the camera, the "Loading scan data..." line, the scan-data failure line (REQ-249), the blocked-scan notice line and the holding-list entries passed to the count pill are built once; each host passes only its title (if any), its destination label, its handlers and, where it has a hold rule, its blocked-scan notice
+   - a caution control — a yellow triangle in the scanner's top-right — is visible from the moment the scanner opens, before any card is held, independent of the holding list and whether the count pill is shown; it opens a one-line note that card scanning is experimental only when tapped, dismissed with "Got it"
+   - a one-line static hint under the viewfinder, in the wording and position the mockup's scanner page (`docs/design/ui-reimagining/direction-1/card-scan.html`) shows (today: "Auto-scan is on: a confident match adds the card and keeps scanning. The shutter reads one frame by hand."); it is text, not a control, and is an allowed exception to REQ-070's no-net-new-guidance rule; if the mockup page carries no such line, none renders
+   - detection, lock, the ding, and the opt-in Debug overlay's metrics are unchanged; the Debug panel takes a themed accent border
 -  - tests cover the holding-list accumulate/commit-on-close/Remove behaviour, the hold-time duplicate/cap check, the hint line on every host, that on every host the "Exit scan" box renders outside the camera overlay in the row above it and does not overlap the caution control, and that detection/lock/capture are unchanged
 +  - tests cover the holding-list accumulate/commit-on-close/Remove behaviour, the hold-time duplicate/cap check, the blocked-scan notice line on In-Depth's Cards station, the hint line on every host, that on every host the "Exit scan" box renders outside the camera overlay in the row above it and does not overlap the caution control, and that detection/lock/capture are unchanged
 --- a/PRD/sections/scan/README.md
@@ -52,7 +67,9 @@ re-trying the card with no explanation.
 +  station the refusal shows as one line inside the scanner panel, under the
 +  camera, in the zone's own manual-add wording ("Duplicate cards are not
 +  supported in MVP1." / "MVP stack limit reached (10 cards)."), until the next
-+  card is held or the scanner closes. (REQ-214)
++  card is held or the scanner closes. Like the loading and scan-data failure
++  lines, it is state copy, not mockup-governed helper text (REQ-070's
++  redesigned-screens exception does not apply). (REQ-214)
 ```
 
 - Verdict:
@@ -105,4 +122,8 @@ changes for this bug.
 ## Blocker questions
 
 None. Every open choice either resolves from an existing spec line or is one
-of the two reversible proposals above, each with a stated default.
+of the two reversible proposals above, each with a stated default. Whether
+the scanner's refusal line is barred by the mockup rule (REQ-070) resolves
+from that rule's own wording — it governs helper text, and keeps state
+messages as a separate group — so it is not a blocker (see the REQ-214 block
+and `DESIGN-BRIEF.md`, bug 2).

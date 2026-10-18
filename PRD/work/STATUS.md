@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first. Re-refined after quality-check FAIL 1: scanner notice is state copy outside REQ-070's mockup rule; Life Tracker `.seg` stays 42 px, asserted. Gate: REQ-214, REQ-085 |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first. Quality check FAIL: scanner notice vs REQ-070 mockup rule; `.seg` is also in Life Tracker |
 
 ## ideation
 

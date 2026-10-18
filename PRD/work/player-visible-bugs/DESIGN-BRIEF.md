@@ -72,6 +72,30 @@ code. Overlap this package actually creates with card-search's named files:
   the Retry handler, not the card-list effect.
 - `QuickLookupApp.tsx` — untouched (see the bug 2 extra below).
 
+The intake names two more pending briefs in the same folder, also not work
+packages (cited by path only; not opened):
+`PRD/ideasForLater/codebase-cleanup-followups/evidence/GRAPH-BRIEF-card-rings.md`
+(card tiles, printing-picker styling, and the `index.css` duplicate-selector
+clean-up of `body`, `html`, `*`) and
+`PRD/ideasForLater/codebase-cleanup-followups/evidence/GRAPH-BRIEF-popups.md`
+(sheets, the feature menu, the adaptive dialog, the history drawer). Same
+handling: **this package lands first**, and each brief plans against the
+fixed code. Overlap this package creates with them:
+
+- `apps/frontend/src/index.css` (card-rings; pop-ups' sheet styles live in the
+  same file) — slice E changes two values only, `min-height` at `:1386`
+  (`.zone-tabs button`) and `:2176` (`.seg button`), from 40 px to 44 px. It
+  does not touch `body`, `html`, `*`, the card-tile or printing-picker rules,
+  the sheet rules, or `.lt-scope .seg button` (`:4587-4602`). A card-rings
+  de-duplication that later folds `.lt-scope .seg button` into `.seg button`
+  must keep Life Tracker at 42 px (or take the 44 px to the owner as a visible
+  change); the slice E test asserting Life Tracker's 42 px will catch it.
+  Bug 2's notice line reuses an existing line style, so no new `index.css`
+  rule is added.
+- `apps/frontend/src/components/portal/FeaturePortalMenu.tsx` (pop-ups: the
+  feature menu) — slice D changes which switch the two resume handlers call
+  (`:103-106`, `:134-138`); no layout or sheet change.
+
 ## Bug 1 — Trade scan prices a different printing (fix first)
 
 **What the player sees.** Scan a card onto a Trade side and close the
@@ -150,13 +174,52 @@ placement is a visible choice the spec does not make, so it is proposed in
   (`ZoneCollectionStep.tsx:492`).
 
 **Fix (proposed, needs your verdict).** `ScanPanel` gets an optional notice
-line under the camera, in the same place its loading and error lines sit.
+line under the camera, beside its scan-data failure line
+(`ScanPanel.tsx:82-86`), rendered with the existing `tb-note` line style (the
+style of its "Loading scan data..." line, `:58`) and `role="status"` so a
+screen reader announces it; no new stylesheet rule.
 `ZoneCollectionStep` passes `scanCapture.blockedNotice` through
 `ZoneCardPicker`'s scan props. Wording is the destination's own manual-add
 message, unchanged: "Duplicate cards are not supported in MVP1." (or "MVP
 stack limit reached (10 cards)." at the cap) — `lib/stackLimits.ts:2-3`. The
 line clears when the next card is held or the scanner closes (the hook
 already resets it then, `useScanCapture.ts:257-265`).
+
+**The mockup rule does not bar this line (REQ-070, checked).** REQ-070's
+redesigned-screens exception (`functional-requirements.md:1690`) says that on
+the card scanner's chrome "guidance and helper text — its wording, its
+placement, and whether a line appears at all — follows that screen's approved
+mockup page", and "where the mockup page shows no such line, none renders".
+The mockup (`docs/design/ui-reimagining/direction-1/card-scan.html`, page
+markup and script read, `:171-327`) shows the state indicator, the add toast,
+the camera-unavailable panel, the credit line and the hint line (`:197-217`);
+it has no refusal line, and no loading or scan-data failure line either. Its
+own foot note says "the states are the scanner's own (DEC-057)" (`:232`). The refusal notice is outside that clause, for three reasons from the
+rule's own text and the shipped scanner:
+
+- *What the clause governs.* REQ-070 is about "on-screen helper statements
+  that under-explain how to use a screen" (`:1685`); its net-new ban lists
+  "intro/orientation lines, tooltips, popovers, coachmarks, modals, or
+  onboarding flow" (`:1691`). A refusal reports the outcome of the player's
+  scan; it explains nothing about how to use the screen.
+- *The rule keeps state copy as its own group.* The same sentence of `:1690`
+  preserves "the scanner's `locking` / `camera-error` state copy" separately
+  from the helper text the mockup governs. The refusal is state copy of the
+  same kind: it reports the scanner's current outcome.
+- *Shipped precedent (ladder rung 2).* The shared panel already renders two
+  state lines the mockup does not show — "Loading scan data..."
+  (`ScanPanel.tsx:58`, REQ-214 `:5620`) and the scan-data failure sentence
+  (`ScanPanel.tsx:82-86`, REQ-249 `:6616`) — with no REQ-070 carve-out. By
+  contrast the hint line, which *is* guidance, needed one (REQ-214 `:5622`:
+  "an allowed exception to REQ-070's no-net-new-guidance rule").
+
+Resolution: ladder rung 1 (REQ-070's wording) with rung 2 (shipped panel). No
+REQ-070 amendment. The REQ-214 diff states the classification in one clause so
+a later reader does not re-raise it. **The mockup page needs no matching
+line** — it shows no state lines (loading, failure) either. The notice sits
+under the camera frame beside the failure line, so it does not overlap the
+hint line, the count pill or the camera (the scanner layout row,
+`screen-layout.md:213`, is unchanged — it lists no state lines today).
 
 **Extra, offered separately (not in this fix).** Ask a Question has the same
 gap: its "already attached" message only renders outside the scanner
@@ -286,9 +349,22 @@ follows the handler pair's own pattern (ladder rung 3).
 staged game, fail a follow-up, wait out the cooldown, tap Retry — the
 follow-up request is sent again.
 
-**Files.** `apps/frontend/src/components/portal/MtgAssistantApp.tsx`,
-possibly `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts` (expose
-whether a failed request is saved), test.
+**Where the saved-request flag comes from.** The saved request lives only in
+`useAskAiSubmitOrchestration.ts` as private state (`pendingRetry`, `:89`);
+the hook's return (`:362-376`) exposes `canRetry` (`:91`, countdown and
+in-flight only) but not whether anything is saved, and `submitAttempt`
+(`:265`) needs a freshly built payload that `MtgAssistantApp` can only build
+from a game context (`submitCurrentQuestion`, `MtgAssistantApp.tsx:715-728`).
+So the hook must change: it exposes `hasPendingRetry` (true while
+`pendingRetry` is set) and a `retryPending()` that runs its existing saved
+resend branch (`:274-301`) with no payload argument. `handleRetry` calls
+`retryPending()` when `hasPendingRetry` is true, before any staging check.
+
+**Files.** `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts` (exposes
+`hasPendingRetry` and `retryPending`; result type
+`UseAskAiSubmitOrchestrationResult` at `:60`),
+`apps/frontend/src/components/portal/MtgAssistantApp.tsx` (`handleRetry`,
+`:744-752`), the retry test.
 
 ## Bug 6 — blank Stack card names (no change)
 
@@ -321,18 +397,57 @@ against the spec.
 | Two monospace stacks (`index.css:217`, `:727`) | Tiny font difference on two debug/code surfaces | none | No change; clean-up, not a bug. |
 | Grouped `.act-zones` / `.place-zones` rule (`index.css:2062`) | Nothing | none | No change; clean-up, not a bug. |
 
+**Who uses these two styles (corrected).** `.zone-tabs` renders only in
+In-Depth (the Cards station's zone tabs). `.seg` does **not**: In-Depth uses it
+for Reorder (`components/ZoneCardMenu.tsx:153`) and Copies
+(`components/EnrichmentStep.tsx:584`), and Life Tracker uses it for the
+Commander damage / Counters tabs (`components/portal/life-tracker/CounterPanel.tsx:330`)
+and Game Setup's Layout and Card style choices
+(`components/portal/life-tracker/GameSetupPanel.tsx:271`, `:291`).
+
+**What happens to Life Tracker's segmented buttons: nothing.** Life Tracker
+renders inside `.lt-scope`, and `index.css:4587-4602` (`.lt-scope .seg button`)
+sets its own `min-height: 42px`. That selector (two classes and an element)
+outranks the base `.seg button` (one class and an element) at `:2170`, and it
+re-declares every property the base rule sets (display, alignment, gap, flex,
+min-height, padding, border, background, colour, font size and weight,
+cursor). So raising the base rule from 40 to 44 px changes only the In-Depth
+Reorder and Copies buttons; Life Tracker's stay at 42 px.
+
+**Life Tracker's 42 px stays as it is.** It is under 44 px, but REQ-205's tap
+floor names "Life Tracker is out of scope (REQ-202)"
+(`functional-requirements.md:5326`), so 42 px there breaks no spec line, and
+it is not the reported symptom. Out of scope; not offered as part of this fix.
+
 **REQ-202 screenshot pair.** The tap-floor fix edits `index.css`, the shared
 stylesheet. REQ-202 requires every slice that touches the shared stylesheet to
 attach a Life Tracker before/after screenshot pair at 390x844 and 1440x900 to
-its PR. The pair should show no Life Tracker change (`.zone-tabs` and `.seg`
-render only in In-Depth). Also attach the In-Depth Cards station at 390x844
-before/after, showing the tabs at 44 px.
+its PR. The pair is the evidence that Life Tracker does not change: it shows
+the Counters sheet (Commander damage / Counters tabs) and Game Setup (Layout
+and Card style) before and after, with the segmented buttons at the same
+42 px. Also attach the In-Depth Cards station at 390x844 before/after, showing
+the zone tabs at 44 px.
 
-**Proof.** A test asserting the two rules' `min-height` is at least 44 px (the
-repo's existing touch-floor tests are the pattern), plus a live measurement at
-390x844 recorded in the slice evidence.
+**Proof.** A stylesheet test copying the pattern of
+`apps/frontend/src/components/ComposerPill.test.tsx:415` (the existing 44 px
+floor test, REQ-205: it reads `appCss` from `test/appTestHelpers` and matches
+each rule's text, `:430-432`). It asserts:
 
-**Files.** `apps/frontend/src/index.css`, a touch-floor test.
+- `.zone-tabs button` declares `min-height: 44px`;
+- the base `.seg button` rule declares `min-height: 44px` — the match is
+  anchored to a rule that starts the line, so it cannot hit
+  `.lt-scope .seg button`;
+- `.lt-scope .seg button` still declares `min-height: 42px` (Life Tracker
+  unchanged).
+
+Plus a live measurement at 390x844 recorded in the slice evidence: In-Depth
+zone tabs and the Reorder buttons at 44 px, Life Tracker's Counters tabs at
+42 px (unchanged), alongside the REQ-202 pair.
+
+**Files.** `apps/frontend/src/index.css` (`:1386`, `:2176` only), and the
+stylesheet test as a new case in
+`apps/frontend/src/components/ZoneCollectionStep.test.tsx` (the step that
+renders the zone tabs).
 
 ## Product-truth amendment sets (grep dispositions)
 
@@ -344,11 +459,24 @@ repo's existing touch-floor tests are the pattern), plus a live measurement at
 | `scan/README.md:141-143` | Amend — same block (feature spec mirror) |
 | `scan/README.md:259` | No edit: says the check runs at recognition "so a blocked re-scan surfaces immediately" — still true |
 
+**REQ-070 mockup rule, as it bears on the REQ-214 line (bug 2).**
+`grep -rn -i 'whether a line appears at all\|none renders\|no net-new guidance\|no-net-new-guidance\|net-new guidance' PRD/sections`
+
+| Hit | Disposition |
+| --- | --- |
+| `functional-requirements.md:1690` (REQ-070 redesigned-screens exception) | No edit: governs guidance and helper text and keeps scanner state copy as its own group; the refusal is state copy (see bug 2). The REQ-214 diff states this in its new line |
+| `functional-requirements.md:1691` (REQ-070 no net-new guidance) | No edit: the refusal is not guidance (not an intro/orientation line, tooltip, popover, coachmark, modal or onboarding) |
+| `functional-requirements.md:1685` (REQ-070 description, "helper statements … how to use a screen") | No edit: defines the helper-text scope the refusal sits outside |
+| `functional-requirements.md:5622` (REQ-214 hint line, "allowed exception to REQ-070's no-net-new-guidance rule") | No edit: the hint is guidance and keeps its carve-out; shown as context in the REQ-214 hunk |
+| `system-map.md:543` (Ask a Question summary: "today none renders") | No edit: Ask a Question pre-submit guidance; unrelated to the scanner |
+| `decisions.md:133` (DEC-092, retired) | No edit: retired index row |
+| `screen-layout.md:213` (scanner Chrome row; found by reading the scanner layout, not by this grep) | No edit: lists the chrome and the hint line, no state lines (loading, failure); the notice is a state line like them |
+
 **REQ-085 (bug 4).** `grep -rn -i 'roster-seed\|roster seed\|seeds the game-setup roster\|is seeded one-way\|REQ-085' PRD/sections`
 
 | Hit | Disposition |
 | --- | --- |
-| `functional-requirements.md:2021-2024` (REQ-085) | Amend — gate `## REQ-085` (new acceptance line) |
+| `functional-requirements.md:2021-2027` (REQ-085: heading `:2021`, description `:2024`, the acceptance lines the diff anchors on `:2026-2027`) | Amend — gate `## REQ-085` (new acceptance line between `:2026` and `:2027`) |
 | `life-tracker/README.md:134-137` | Amend — same block (feature spec mirror) |
 | `functional-requirements.md:3438` (REQ-140: seed "on menu selection only") | No edit: consistent once REQ-085 says a reopen is not a seed trigger |
 | `functional-requirements.md:5361` (REQ-206 carry gesture seeds) | No edit: the carry seed is unchanged |
@@ -371,7 +499,13 @@ truth. Bug 6 changes nothing.
 
 1. Bug 1's expected behavior: rung 1, Trade spec + REQ-065.
 2. Bug 2's wording: rung 3, the Stack's own manual-add messages. Placement:
-   not resolved by rungs 1–3 → gate.
+   not resolved by rungs 1–3 → gate. Whether REQ-070's mockup rule bars the
+   line: rung 1 (REQ-070 `:1685`, `:1690`, `:1691` govern guidance and
+   helper text and keep scanner state copy as its own group) and rung 2 (the
+   shipped panel's loading and scan-data failure lines, absent from the
+   mockup, render with no carve-out) → not barred; no REQ-070 amendment, no
+   mockup change. Not a blocker: the rule's own wording answers it (blocker
+   test condition 2 fails).
 3. Bug 3: rung 1, REQ-088 "current screen".
 4. Bug 4: rungs 1–3 split (REQ-085 "selecting from the portal" vs REQ-140
    "menu selection only") → gate, recommendation "no seed".
@@ -379,5 +513,8 @@ truth. Bug 6 changes nothing.
    Decrypt's message (rung 3).
 6. Bug 6: rung 5, no symptom → no change.
 7. Bug 7: rung 1, REQ-205 (tap floor) and REQ-200 (ground); the rest rung 5.
+   Life Tracker's 42 px segmented buttons: rung 1 (REQ-205 puts Life Tracker
+   out of scope) and rung 5 (keep what players see) → unchanged, asserted by
+   test and shown by the REQ-202 pair.
 8. No genuine decision blocker: each open choice either resolves on the
    ladder or is a reversible gate proposal with a stated default.
