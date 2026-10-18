@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [codebase-cleanup-pass](codebase-cleanup-pass/) | Behavior-preserving code health pass; players see no change |
 
 ## owner-action
 
