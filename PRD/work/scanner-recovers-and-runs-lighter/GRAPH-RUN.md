@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/scanner-recovers-and-runs-lighter` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-recovers-and-runs-lighter` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-055113/` (one file, `GRAPH-BRIEF-scanner.md`, copied verbatim to `PRD/work/scanner-recovers-and-runs-lighter/intake/`)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/scanner-recovers-and-runs-lighter/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/scanner-recovers-and-runs-lighter` pushed (`git ls-remote` → `041eab94` = `origin/main`) from `.worktrees/kickoff-scanner-recovers-and-runs-lighter`; launch checkout still on `main`, porcelain only the pre-existing untracked `PRD/work/probe-codebase-health-pass/`; lock `.worktrees/.graph-run.lock` runId `graph-20261018-055113` pid 6563; universal canary and graph canary `nohup true` both denied | 2026-10-18 |
 | 2 | shape | sonnet | ok | `0 → 17` | `PRD/work/scanner-recovers-and-runs-lighter/` (IDEA.md with 34 `## Prior run` lines, README.md, STATUS.ideation, `intake/GRAPH-BRIEF-scanner.md` byte-identical to staging) and board row committed `e030224f`, `8ecaff8e`, pushed (= origin tip); worktree porcelain empty | 2026-10-18 |
+| 3 | define | opus | ok | `0 → 89` | commit `3b548f5c` (= origin tip): `DESIGN-BRIEF.md` (five changes, slice order recovery → shared identifier + per-frame → panel → scan map, ladder per open decision, disposition rows), `GATE-QUESTIONS.md` (REQ-214, REQ-056, REQ-048, REQ-066 amended; REQ-249 new — REQ-248 held by open PR #317; `## Blocker questions` none; 5 blank verdict slots), `evidence/measurements.md` (live, dev server port 5181, canvas fake camera, 390×844 and 1280×800: In-Depth ✕ covers the caution triangle at both widths, Quick Question and Trade do not; failed download stays stuck after the 503 lifts; port released, `browser_close`); `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; REQ-249 unused in `PRD/sections/`; porcelain empty both checkouts (launch: pre-existing probe folder only) | 2026-10-18 |
 
 ## Open gate
 
@@ -99,6 +100,33 @@ Budget: this node has a 150 tool-call cap that counts every call, including any 
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, files written, the proposed stable IDs (one line each, in plain words), any blocker questions, whether the ✕ overlaps the caution triangle live, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), `git status --porcelain` of the working directory (must be empty), and the dev-server port released.
+
+### gate-qc
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-recovers-and-runs-lighter
+
+You are node 4 (`gate-qc`) of graph run `graph-20261018-055113`, attempt 1. Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-recovers-and-runs-lighter/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/scanner-recovers-and-runs-lighter/DESIGN-BRIEF.md`, together with `GATE-QUESTIONS.md` and `evidence/measurements.md` in the same folder. `intake/GRAPH-BRIEF-scanner.md` is evidence, not authority; never open the documents it cites. Work ONLY inside the working directory above — never in /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Check in particular:
+- Every proposed diff in `GATE-QUESTIONS.md` (REQ-214, REQ-056, REQ-249 new, REQ-048, REQ-066) matches current `PRD/sections/` text exactly once and applies cleanly; every proposed new or amended stable ID has its own block; REQ-249 is unused in `PRD/sections/`.
+- Every block opens with the three plain-language lines from `PRD/instructions/plain-language-standard.md`, with the substance of any cited `REQ` inlined; verdict and reason slots are blank; `## Blocker questions` is present.
+- Where the brief departs from the intake, the departure is grounded in the code or current product truth: the ✕ as a 44 px square (against REQ-214, REQ-096 and REQ-068), and keeping `name` in the scan map because `scripts/lib/practice-suite-card-names.mjs` reads it. Confirm each against the files themselves.
+- The scan-map change names the existing build script that regenerates `cardScanMap.json` and every runtime reader of `imageUrl`; no committed data artifact is to be hand-edited and `npm run data:refresh` is never run.
+- The per-frame change keeps scan results identical, with the `reference/identify.py` parity tests named as the check.
+- The disposition table covers every hit of the brief's own greps over `PRD/sections/`.
+- The slice order is the recovery fix first, then shared identifier and per-frame work, then the panel, then the scan map; acceptance conditions are measurable and agent-ready.
+
+Write `QUALITY-CHECK.md` in the package folder per the skill, with PASS or FAIL and the complete findings. Set the status marker as the skill directs (exactly one marker; on FAIL, `STATUS.refining`, and move the `PRD/work/STATUS.md` board row fully). Do NOT write the README `## Preparation gate` section — the driver owns it. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Budget: this node has a 60 tool-call cap that counts every call, including any subagent's. Verify directly; spawn no subagents or forks; no sleeping or polling loops; stay well under the cap.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
