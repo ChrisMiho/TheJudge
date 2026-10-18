@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/player-visible-bugs` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs` (in-place shape: the session is rooted in a linked worktree, so preflight created the branch here and no kickoff worktree exists; rewritten to `<root>/.worktrees/implement-player-visible-bugs` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/.graph-intake/graph-20261018-231413/` (one file, `IDEA.md`, copied verbatim to `PRD/work/player-visible-bugs/intake/IDEA.md`, `cmp` identical; node 2 removed the staged copy after committing it)
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/player-visible-bugs/`
+- Current node: `owner-action`
+- Next action: answer `PRD/work/player-visible-bugs/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/player-visible-bugs/` picks it up
 
 ## Node ledger
 
@@ -18,10 +18,15 @@
 | 3 | define | opus | ok | `0 → 131` | commits `bb969b49`, `61152941`, `c2d2ac60` (= origin tip): `DESIGN-BRIEF.md` (seven bugs; 1, 3, 5, 7 fixed to existing spec lines; 6 unreachable, no change), `GATE-QUESTIONS.md` (REQ-214 and REQ-085 amended; `## Blocker questions` none), `evidence/measurements.md` (Vite on port 5391, bugs 1–5 and part of 7 reproduced live; port released, `browser_close` called); `STATUS.refined` only marker, board row moved to refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty; node left an empty ignored `apps/frontend/node_modules/` folder (`rm -rf` denied) | 2026-10-18 |
 | 4 | gate-qc | sonnet | failed | `0 → 26` | FAIL — 2 blocking (bug 2's scanner refusal line vs REQ-070's mockup rule at `functional-requirements.md:1690`; bug 7's `.seg` also used by Life Tracker, `.lt-scope .seg button` at `index.css:4587` 42px — both confirmed by the driver), 5 advisory; `QUALITY-CHECK.md` commit `c485b158` (= origin tip); `STATUS.refining`, board row moved; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 1 of 3) | 2026-10-18 |
 | 3 | define (attempt 2) | opus | ok | `0 → 74` | commit `a4128f1c` (= origin tip): blocker 1 resolved as state copy outside REQ-070's helper-text clause (no REQ-070 amendment; REQ-070 grep disposition table, 7 rows); blocker 2 resolved — `.lt-scope .seg button` stays 42px, proof test asserts it, REQ-202 pair named; 5 advisories resolved; `GATE-QUESTIONS.md` REQ-214, REQ-085, blockers none; `STATUS.refined` only marker, board row moved; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty (`origin/main` moved by #323–#327, `scripts/` and one frontend test only, no `PRD/sections/` or `PRD/work/STATUS.md` change); porcelain empty | 2026-10-18 |
+| 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 16` | PASS, 0 blocking, 3 advisory (anchor the base `.seg button` assertion; optional test location; one long sentence); all seven attempt-1 findings resolved; every gate diff line matches `PRD/sections/` once (scripted); `QUALITY-CHECK.md` commit `81e16553` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 
 ## Open gate
 
-- None
+- Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 2).
+- Question: answer `PRD/work/player-visible-bugs/GATE-QUESTIONS.md` — two verdict slots (REQ-214 amended: the In-Depth scanner says in one line under the camera why it will not add a card already on the Stack; REQ-085 amended: reopening a saved question or its draft from Question History while on Life Tracker keeps that question's players instead of copying the tracker's), each accept / edit / reject with a reason for edit or reject; no blocker questions. The brief ships bug 1 as slice A inside one code PR; say at the gate if you want it as its own PR first.
+- Evidence: `QUALITY-CHECK.md` (PASS, commit `81e16553`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
+- Docs PR: (recorded below once opened)
+- Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/player-visible-bugs/`) picks it up.
 
 ## Dispatch prompts
 
