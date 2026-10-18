@@ -23,7 +23,7 @@
 - Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 1).
 - Question: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md` — three verdict slots (NFR-020 new, carrying companion edits to `integrations-and-data.md` and `system-map.md`; REQ-166 amended; NFR-012 amended), each accept / edit / reject with a reason for edit or reject; no blocker questions.
 - Evidence: `QUALITY-CHECK.md` (PASS, commit `9d426a91`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
-- Docs PR: pending (recorded in the next commit).
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/326 (`thejudge-auto/ci-built-server-smoke` → `main`, opened by the driver, not merged).
 - Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/ci-built-server-smoke/`) picks it up.
 
 ## Dispatch prompts
