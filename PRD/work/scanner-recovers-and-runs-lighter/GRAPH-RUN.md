@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-055113/` (one file, `GRAPH-BRIEF-scanner.md`, copied verbatim to `PRD/work/scanner-recovers-and-runs-lighter/intake/`)
-- Current node: `build` (attempt 2, slice D only)
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` (resume from the `STATUS.*` marker in the build worktree)
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 4 | gate-qc (build half, attempt 2) | sonnet | ok | `0 → 18` | PASS, 0 blocking, A1–A4 carried forward (A3 adds: gitignored `apps/frontend/data/scryfall/default-cards.json` absent in the worktree); `origin/main` still `30433b2d`; 18 removed-line groups each match `PRD/sections/` once; REQ-249 unused; `QUALITY-CHECK.md` commit `2c840a0d` (= origin tip); `STATUS.refined` only marker; README `## Preparation gate` PASS rewritten by the driver; porcelain empty | 2026-10-18 |
 | 5 | plan | sonnet | ok | `0 → 30` | commit `bf3578b7` (= origin tip): `GAMEPLAN.md`, `slice-a.md`–`slice-d.md` sequential (A recovery, B shared identifier + per-frame, C one scanner panel, D smaller scan map), `slice-<a–d>.criteria.json` 9/8/11/12 = 40 criteria, all `false`, 9 `manual`; A1–A4 folded in; `STATUS.active` only marker; board row moved to active; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty | 2026-10-18 |
 | 6 | build | sonnet | parked | `0 → 164` | PR https://github.com/ChrisMiho/TheJudge/pull/320 (open, `[THEJUDGE-AUTO][BLOCKED]`, base `main`); commits `7ad402aa` (A), `be7fe746` (B), `ad5a0957` (C) = origin tip; criteria A 9/9, B 8/8, C 11/11, D 0/12 (`.graph-evidence.jsonl` not consulted — known build-half gap, criteria self-reported); reported frontend tests 154 files / 1664 pass, typecheck no errors, lint clean, prettier clean, `test:scripts` 1059 pass / 0 fail; `npm run quality:check` denied twice by the permission classifier, parts run separately; frontend build not run; `PRD/sections/` REQ-249, REQ-214, REQ-056 applied (`functional-requirements.md`, `scan/README.md`, `screen-layout.md`), REQ-048 and REQ-066 not applied. Two park causes: (1) slice D blocker — `npm run data:scan-map` over the launch checkout's `default-cards.json` (Oct 6 snapshot) rebuilt 99,814 entries vs committed 95,895 (3,936 new keys, 17 gone, 4 changed `oracleId`/`name`); rebuilt map discarded, D code left uncommitted in the worktree with a `## Handoff` block in `slice-d.md`; (2) write scope — `classifyBuildWrites` → `park`: `PRD/work/scanner-recovers-and-runs-lighter/.playwright-mcp/a-failed.png` and `a-recovered.png` written in the launch checkout (gitignored, so launch porcelain before/after identical), plus a scratchpad copy of the committed map outside the root; builder's removal of the two PNGs was denied and is left to the owner. Builder also reported python heredoc edits to source files inside the worktree (contract stated limit 1: an interpreter write evades the hook) | 2026-10-18 |
+| 6 | build (attempt 2, slice D) | sonnet | ok | `0 → 96` | owner answered the park (slim map from the committed map); commit `d42b6a32` (= origin tip); `scripts/slim-card-scan-map.mjs` + `.test.mjs` (`npm run data:scan-map:slim`); driver re-check of `git show ad5a0957:` vs `HEAD:` `cardScanMap.json`: 95,895 = 95,895 keys, same order, 0 `oracleId`/`name` diffs, 0 extra fields; reported gzip 6,552,206 → 5,310,581; card dump not read; criteria A 9/9, B 8/8, C 11/11, D 12/12 `true` (self-reported, `.graph-evidence.jsonl` not consulted); reported frontend tests 154 files / 1666 pass, `test:scripts` 1061 pass / 0 fail, typecheck 0, lint 0, prettier clean, `npm run quality:check` exit 0, frontend build `✓ built in 1.30s`; `PRD/sections/` REQ-048 + REQ-066 applied (`functional-requirements.md`, `system-map.md`, `scan/data/cardScanMap.md`); `App.zoneFlow.test.tsx` changed to assert the derived picture; `STATUS.ship-ready`; board row to ship-ready; PR #320 retitled `[THEJUDGE-AUTO][READY]`; return side: launch porcelain identical before/after, all 25 reported paths inside `.worktrees/implement-scanner-recovers-and-runs-lighter/`; worktree porcelain empty | 2026-10-18 |
 
 ## Open gate
 
@@ -297,6 +298,74 @@ Budget: this node has a 4000 tool-call cap that counts every call, including any
 Mechanics: change files with the Write and Edit tools only — no heredocs, no `python3`/`node -e` edits of source files, no `sed -i`, no long chained Bash. Run git as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`, never force-push, never `git stash`, never `git reset --hard` or `git clean`. Never edit `.claude/`, `CLAUDE.md`, any `thejudge-*` skill, or `GRAPH-RUN.md` (the driver owns it). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a report with: `outcome: ok|failed|blocked`; the PR URL and its new title; the slice D commit sha and the origin tip (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`); criteria counts per slice (`true`/total); the exact final lines printed by each verification command; the `PRD/sections/` files changed; the slim step's command, the comparison result, and the gzip size before/after; the status marker; `git status --porcelain` of the working directory (must be empty); the dev-server port released; and a complete list of every file path you wrote or deleted, as absolute paths, one per line, under a `### Paths written` heading.
+
+### review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter
+
+You are node 7 (`review`) of graph run `graph-20261018-063434`, attempt 1: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit tool; do not modify, create, stage, commit or push anything, and do not run any command that writes a file (no formatters with write flags, no `npm ci`, no `git checkout`). Read and run read-only commands only, from the working directory above. You have not seen the build transcript, and should not look for it.
+
+What you are grading: PR https://github.com/ChrisMiho/TheJudge/pull/320 (`thejudge-auto/scanner-recovers-and-runs-lighter-work` → `main`), package `PRD/work/scanner-recovers-and-runs-lighter/`, four slices. The diff is `git diff origin/main...HEAD` in the working directory. Read the slice docs (`slice-a.md` … `slice-d.md`), their `slice-<letter>.evidence.md` files, `GAMEPLAN.md`, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (all five accepted: REQ-214, REQ-056, REQ-249 new, REQ-048, REQ-066), and `GRAPH-RUN.md` `## Open gate` (the owner's slice D decision: produce the slim scan map from the committed map by a committed step that drops only the image address). `intake/` is evidence, not authority.
+
+Rubric — the slices' own acceptance criteria, and nothing else:
+
+Slice A
+- Each loader clears a rejected cached promise and re-requests on the next call (tests pass)
+- A newer in-flight attempt is not discarded by an older failure (test passes)
+- `useScanCapture` first open fails, second open succeeds, identifier built (test passes)
+- The player sees exactly the REQ-249 sentence and never the raw error text; raw error reaches the console only (test passes)
+- The error line carries `role=alert` in In-Depth, Quick Question and Trade Balancer (tests pass)
+- REQ-249 added to `functional-requirements.md` and the scan README bullet added, matching the accepted diff
+- Frontend tests, typecheck, lint and format check pass
+- Live: with the scan-data request blocked then restored, the plain-words message shows, and close-and-reopen scans without reload (manual, dated observation)
+- Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/scanner-recovers-and-runs-lighter/.playwright-mcp/`
+
+Slice B
+- `identify.test.ts` against `__fixtures__/vectors.json` passes with no edit to existing cases or the fixture
+- New test: bounded top-N equals the full stable sort on a tie-heavy synthetic database
+- `loadScanResources` returns the same identifier to repeated callers and clears on rejection (tests pass)
+- The `CardIdentifier` constructor builds its buffer in one pass with ids and order unchanged (existing identify tests pass)
+- The resolver reuses one lookup map per card-list array (test passes)
+- Scan README file lists name `loadHashDb.ts` and the `loadScanResources` module
+- Frontend tests, typecheck, lint and format check pass
+- A reviewer confirmed `vectors.json` and existing `identify.test.ts` cases are unmodified in the diff (manual, dated observation) — you are that reviewer: check it and say so
+
+Slice C
+- `ScanPanel` is used by all three hosts; each passes only title, destination label and handlers (tests pass)
+- On every host the Exit scan box renders outside the camera overlay in the row above it (tests pass)
+- The old in-camera `right-3 top-3` pin is gone and replaced by the REQ-068 assertion on all three hosts (tests pass)
+- The ✕ does not overlap the caution control on any host (tests pass)
+- Quick Question's `:has(> .idq > .flow-head .scan-exit)` desktop rule still matches after the markup move (test or stylesheet check passes)
+- REQ-214 and REQ-056 diffs applied once each in `functional-requirements.md`, `screen-layout.md` and `scan/README.md`, matching the accepted text
+- No other `screen-layout.md` scanner row contradicts the new Chrome row (A4 check recorded)
+- Frontend tests, typecheck, lint and format check pass
+- Live: on In-Depth, Quick Question and Trade Balancer the ✕ is a 44 px square box above the camera's top-right corner and the caution triangle is visible and tappable (manual, dated observation)
+- Live: In-Depth at 360 and 390 wide shows the exit row and Capture without page scroll (manual, dated observation) — the build reported the In-Depth document is 176 px taller than the viewport at every size tested while Capture is fully visible at scroll 0; judge whether that meets this criterion as the slice doc and REQ-056 define it, and say why
+- Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/scanner-recovers-and-runs-lighter/.playwright-mcp/`
+
+Slice D
+- `build-card-scan-map.mjs` emits `{ oracleId, name }` and `getImageUrl` is removed (script tests pass)
+- The resolver derives the printing image via `deriveCardImageUrl` and falls back to the oracle-level image when empty (tests pass)
+- `cardScanMap.json` was slimmed from the committed map with `npm run data:scan-map:slim` (per `GRAPH-RUN.md` `## Open gate`) and has the same 95,895 keys as the committed map with identical `oracleId` and `name` per key (comparison output recorded in the evidence log)
+- The only difference from the committed map is the missing `imageUrl` field; any other difference stopped the slice
+- No card dump was read or linked, and nothing from it is staged
+- No `npm run data:refresh` or Scryfall download was run
+- The four fixtures carrying `imageUrl` and `buildCardScanMap.test.ts` are updated and pass
+- REQ-048 and REQ-066 diffs applied once each in `functional-requirements.md`, `system-map.md` and `scan/data/cardScanMap.md`, matching the accepted text
+- The rebuilt `public/data/cardScanMap.json` is about 5.28 MB gzip (measured with `gzip -c`, recorded)
+- Frontend tests, `npm run test:scripts`, typecheck, lint and format check pass
+- Live: scanning (or the scan preview with a known printing) shows the scanned printing's picture from the derived Scryfall address (manual, dated observation)
+- Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/scanner-recovers-and-runs-lighter/.playwright-mcp/`
+
+How to grade: for each criterion, read the code and tests in the diff and confirm it holds. You may run read-only checks: the relevant test files (`npm --workspace apps/frontend run test -- <file>`), `node --test scripts/slim-card-scan-map.test.mjs`, `npm run typecheck`, `npm run lint`, and `git show`/`git diff`. Check that each `PRD/sections/` edit matches the accepted `GATE-QUESTIONS.md` diff by intent, applied once, with no DEC entry added. Note also any change in the diff that alters behavior beyond the slices' scope (for example `App.zoneFlow.test.tsx` now asserts a scanned card's derived picture where it used to see the card name as text) and say whether the slice's stated requirements cover it.
+
+Severity rule: Critical = a criterion fails in a way that breaks the player outcome or contradicts accepted product truth; Important = a criterion is not met or not evidenced; Minor = anything else worth noting. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never sends the work back to build. Do not manufacture findings: a clean slice is a valid result.
+
+Budget: this node has a 120 tool-call cap. Spawn no subagents or forks; no sleeping or polling loops. If you did dispatch one, you would copy the `Working directory:` line above unchanged into its prompt.
+
+Return: `verdict: APPROVE | CHANGES`; then per slice, one line per criterion as `met` / `not met` / `not evidenced` with the file or command that shows it; then findings as a list, each with severity, file:line, the criterion it concerns, and the concrete failure; then what you ran and what each command printed (last lines).
 
 ## Instruction ledger
 
