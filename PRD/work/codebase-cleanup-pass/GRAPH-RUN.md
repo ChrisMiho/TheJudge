@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-162925/` (13 files, copied verbatim to `PRD/work/codebase-cleanup-pass/intake/`; the staging folder's removal was denied to node 2 as `rm -rf` and is left for the owner)
-- Current node: `build` (attempt 1 failed at 113/114 — parked at `owner-action`)
-- Next action: owner answers `## Open gate`, then `/graph-implement PRD/work/codebase-cleanup-pass/`
+- Current node: `build` (attempt 2 — owner deferred Q-11 and the follow-ups)
+- Next action: `/graph-implement PRD/work/codebase-cleanup-pass/`
 
 ## Node ledger
 
@@ -28,7 +28,8 @@
 
 ## Open gate
 
-- Terminal state: PARKED at `owner-action` after `build` attempt 1 (2026-10-18). Code PR https://github.com/ChrisMiho/TheJudge/pull/322 is open and stays open.
+- Resolved 2026-10-18 by the owner, in session (see `## Instruction ledger`): defer Q-11, the Trade scanned-printing bug, and every other identified fix to a follow-up pass, and document them all for that pass. Resumed at `build` attempt 2 (lock re-taken, graph canary `nohup true` denied), which drops `I2` with the reason and writes the durable follow-up record under `PRD/ideasForLater/codebase-cleanup-followups/`, which survives `close`.
+- History — build park: PARKED at `owner-action` after `build` attempt 1 (2026-10-18). Code PR https://github.com/ChrisMiho/TheJudge/pull/322 is open and stays open.
 - Question: slice I's finding Q-11 (let the scanner hook hand Trade the scanned printing, so Trade stops loading the scan map itself) cannot be built inside slice I. Its proof needs `TradeBalancer.scan.test.tsx` rewritten, and that test belongs to the pending card-search brief, which slice I must stay out of. Defer Q-11 to the card-search package, or widen slice I to rewrite that test?
 - Recommendation: defer. The brief's own collision rule already says a finding that needs a pending brief's file waits for that brief. Planning missed that Q-11 was such a finding, so the open criterion `I2` is a planning miss rather than a missing piece of work. On resume, the driver re-dispatches `build` attempt 2 to move Q-11 to the deferred list (slice I doc, `slice-i.criteria.json` drops `I2` with the reason, brief disposition row and follow-up) and re-check, then runs `review`.
 - Separate bug, found by the builder and confirmed by the driver in source: in Trade Balancer, a scanned card never defaults to the printing you scanned, so its price can come from a different printing than the one in your hand. The scanner hook stores card-level ids on the held entry (`votingCandidates`, `apps/frontend/src/hooks/useScanCapture.ts:410` and `:482`), but `scannedPrintingIdForOracle` in `apps/frontend/src/components/trade/useTradeScan.ts` looks them up in the scan map, which is keyed by printing id, so it finds nothing. This breaks `PRD/sections/trade-balancer/README.md:77` (the scanned printing becomes the entry's default). It dates from `be04fb1b` (ui-reimagining build). The Trade scan test misses it because its fake hook passes printing ids. Fixing it changes what players see, so it is not in this cleanup. Recommendation: fix it as its own small bug PR. The fix stores the identify step's printing candidates (`result.candidates`) on the held entry and adds a test that drives the real hook.
@@ -202,3 +203,5 @@ Return a short report: `outcome: ok|failed|blocked`; one line per slice (letter,
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "this is a cleanup exercise, we do not want to affect functionality" | answered-once | shape | — |
+| "i down to defer this fix and the other identified fixes in a followup pass" | answered-once | build | — |
+| "i just wanna make sure all of these are well documented for the next pass" | answered-once | build | — |

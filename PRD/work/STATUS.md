@@ -13,6 +13,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [codebase-cleanup-pass](codebase-cleanup-pass/) | Build attempt 2: owner deferred Q-11 and every follow-up to a later pass; writing the follow-up record. Code PR #322 open |
 
 ## refined
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [codebase-cleanup-pass](codebase-cleanup-pass/) | Build parked at 113/114: slice I's Q-11 needs a Trade test the card-search brief owns. Decide: defer Q-11 (recommended) or widen slice I. Code PR #322 open. See `GRAPH-RUN.md` `## Open gate` |
 
 ## deferred
 
