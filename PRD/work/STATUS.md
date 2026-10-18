@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [codebase-cleanup-pass](codebase-cleanup-pass/) | Behavior-preserving code health pass in ten slices; players see no change; no product-truth change |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [codebase-cleanup-pass](codebase-cleanup-pass/) | Quality-check PASS; review the docs PR, then merge to build (no questions file — no product-truth change) |
 
 ## deferred
 

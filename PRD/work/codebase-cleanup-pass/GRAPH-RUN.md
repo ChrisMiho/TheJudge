@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/codebase-cleanup-pass`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-codebase-cleanup-pass`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-162925/` (13 files, copied verbatim to `PRD/work/codebase-cleanup-pass/intake/`; the staging folder's removal was denied to node 2 as `rm -rf` and is left for the owner)
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (resume at `gate-qc`)
+- Current node: `gate-qc` (stopped at PASS — parked at `owner-action`)
+- Next action: `/graph-implement PRD/work/codebase-cleanup-pass/` after the owner merges the docs PR
 
 ## Node ledger
 
@@ -16,10 +16,15 @@
 | 1 | preflight | haiku | ok | `0 → 10` | branch `thejudge-auto/codebase-cleanup-pass` pushed (`git ls-remote` → `1c1f3dcf` = `origin/main`) from `.worktrees/kickoff-codebase-cleanup-pass`; launch checkout still on `main`, porcelain only the pre-existing untracked `PRD/work/probe-codebase-health-pass/`; lock `.worktrees/.graph-run.lock` runId `graph-20261018-162925` pid 37951; universal canary and graph canary `nohup true` both denied | 2026-10-18 |
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/codebase-cleanup-pass/` (IDEA.md with 8 `## Prior run` lines, README.md, STATUS.ideation, 13 `intake/` files each `cmp`-identical to staging) and board row committed `f8d615c8`, pushed (= origin tip); worktree porcelain empty; staging folder removal denied (`rm -rf`), not retried | 2026-10-18 |
 | 3 | define | opus | ok | `0 → 46` | commit `9179a7df` (= origin tip): `DESIGN-BRIEF.md` (712 lines; slices A–J — test speed and temp cleanup, frontend test setup and helpers, passing type/lint checks on, Lambda package and CI and script helpers, combo prefilter K-01, prompt pipeline once, rule-search scoring with order snapshot, In-Depth dead wiring, scanner hook dead returns, dead CSS plus parse check; 68 ids dispositioned: 47 built in whole or part, 14 later package, 3 folded into pending briefs, 1 `codehealth`, 3 owner-only; 26 follow-ups incl. In-Depth duplicate-Stack scan with no message); no `GATE-QUESTIONS.md` (no product truth, no blocker) → no gate; `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree, launch checkout only the pre-existing untracked probe folder | 2026-10-18 |
+| 4 | gate-qc | sonnet | ok | `0 → 36` | PASS, 0 blocking, 5 advisory (A1 `master` trigger vs `PRD/instructions/ci.md:6`; A2 disposition count split 36 + 11; A3 timing wording vs slice E; A4 builder re-reads probe line numbers; A5 slice J PR states Life Tracker table styles are in the dump); ~35 cited source lines matched; collision claims vs `intake/GRAPH-BRIEF-*.md` hold; `QUALITY-CHECK.md` commit `36cbd8ae` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 
 ## Open gate
 
-- None
+- Terminal state: PARKED at `owner-action` after `gate-qc` PASS attempt 1 (2026-10-18).
+- Question: review the docs PR, then merge to build. There is no `GATE-QUESTIONS.md`: refinement proposed no product-truth change and found no blocker.
+- Evidence: `DESIGN-BRIEF.md`, `QUALITY-CHECK.md`, `## Node ledger` rows 1–4.
+- Resume: merging the docs PR is the build signal; then `/graph-implement PRD/work/codebase-cleanup-pass/`.
+- Also for the owner: the staging folder `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-162925/` is still on disk (node 2's `rm -rf` was denied); remove it by hand when convenient.
 
 ## Dispatch prompts
 
