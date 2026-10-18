@@ -491,8 +491,9 @@ export async function checkModelAccess({ client, modelIds }) {
 /**
  * What the evaluation's answer client is built with: the key and nothing else.
  * No timeout and no retry count, so the SDK defaults apply (REQ-188); runtime
- * suitability against production's 15 s per attempt is read from the recorded
- * latency, not forced by the client. Exported so a test can pin it.
+ * suitability against production's 30 s overall answer budget (REQ-231) is read
+ * from the recorded latency, not forced by the client. Exported so a test can
+ * pin it.
  */
 export function openAiClientOptions(env) {
   return { apiKey: env.OPENAI_API_KEY };
