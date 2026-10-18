@@ -8,3 +8,7 @@ A behavior-preserving health pass over the code: clearer structure, faster and c
 - Intake (evidence only, 13 files from the 2026-10-18 and 2026-10-17 probes): `intake/`
 - Start with `intake/HEALTH-REPORT-2026-10-18.md` and `intake/HEALTH-REPORT.md`.
 - Next step: `/thejudge-refinement PRD/work/codebase-cleanup-pass/`
+
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/codebase-cleanup-pass
