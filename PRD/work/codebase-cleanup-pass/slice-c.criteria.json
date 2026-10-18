@@ -2,16 +2,16 @@
   "slug": "codebase-cleanup-pass",
   "slice": "C",
   "criteria": [
-    { "id": "C1", "statement": "build-card-metadata.d.ts is deleted and typecheck exits 0", "value": false, "evidence": { "paths": ["apps/frontend/src/types/build-card-metadata.d.ts"] } },
-    { "id": "C2", "statement": "Every zero-hit T-07 flag is in tsconfig.base.json; any flag left off is listed with its hit count", "value": false, "evidence": { "paths": ["tsconfig.base.json"] } },
-    { "id": "C3", "statement": "lint runs with --max-warnings 0, every zero-hit T-08 rule is enabled, left-off rules listed, no-op JSON ignore removed", "value": false, "evidence": { "paths": ["eslint.config.mjs"] } },
-    { "id": "C4", "statement": ".prettierrc.json has no semi key", "value": false, "evidence": { "paths": [".prettierrc.json"] } },
-    { "id": "C5", "statement": "Frontend declares pngjs, @types/pngjs and @types/node as devDependencies at the lockfile-resolved versions", "value": false, "evidence": { "command": "npm ls pngjs" } },
-    { "id": "C6", "statement": "npm run typecheck exits 0", "value": false, "evidence": { "command": "npm run typecheck" } },
-    { "id": "C7", "statement": "npm run lint exits 0", "value": false, "evidence": { "command": "npm run lint" } },
-    { "id": "C8", "statement": "npm run format:check exits 0", "value": false, "evidence": { "command": "npm run format:check" } },
-    { "id": "C9", "statement": "Frontend production bundle is byte-identical before and after (diff recorded)", "value": false, "evidence": { "manual": true } },
-    { "id": "C10", "statement": "ci-workflow-parity test is green", "value": false, "evidence": { "command": "ci-workflow-parity" } },
-    { "id": "C11", "statement": "No TypeScript product file changed", "value": false, "evidence": { "command": "git diff --stat origin/main" } }
+    { "id": "C1", "statement": "build-card-metadata.d.ts is deleted and typecheck exits 0", "value": true, "evidence": { "paths": ["apps/frontend/src/types/build-card-metadata.d.ts"] } },
+    { "id": "C2", "statement": "Every zero-hit T-07 flag is in tsconfig.base.json; any flag left off is listed with its hit count", "value": true, "evidence": { "paths": ["tsconfig.base.json"] } },
+    { "id": "C3", "statement": "lint runs with --max-warnings 0, every zero-hit T-08 rule is enabled, left-off rules listed, no-op JSON ignore removed", "value": true, "evidence": { "paths": ["eslint.config.mjs"] } },
+    { "id": "C4", "statement": ".prettierrc.json has no semi key", "value": true, "evidence": { "paths": [".prettierrc.json"] } },
+    { "id": "C5", "statement": "Frontend declares pngjs, @types/pngjs and @types/node as devDependencies at the lockfile-resolved versions", "value": true, "evidence": { "command": "npm ls pngjs" } },
+    { "id": "C6", "statement": "npm run typecheck exits 0", "value": true, "evidence": { "command": "npm run typecheck" } },
+    { "id": "C7", "statement": "npm run lint exits 0", "value": true, "evidence": { "command": "npm run lint" } },
+    { "id": "C8", "statement": "npm run format:check exits 0", "value": true, "evidence": { "command": "npm run format:check" } },
+    { "id": "C9", "statement": "Frontend production bundle is byte-identical before and after (diff recorded)", "value": true, "evidence": { "manual": true } },
+    { "id": "C10", "statement": "ci-workflow-parity test is green", "value": true, "evidence": { "command": "ci-workflow-parity" } },
+    { "id": "C11", "statement": "No TypeScript product file changed", "value": true, "evidence": { "command": "git diff --stat origin/main" } }
   ]
 }

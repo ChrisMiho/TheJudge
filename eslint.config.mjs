@@ -22,17 +22,29 @@ export default tseslint.config(
       // Static design mockups (plain browser scripts, no build): kept design
       // art the owner clicks through, never product code. Prettier ignores
       // them too (.prettierignore).
-      "docs/design/**",
-      "apps/frontend/data/scryfall/default-cards.json"
+      "docs/design/**"
     ]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // Core rules that had zero hits repo-wide when switched on, so the clean state stays clean.
+    rules: {
+      eqeqeq: ["error", "always", { null: "ignore" }],
+      "no-else-return": "error",
+      "object-shorthand": "error",
+      "no-implicit-coercion": "error",
+      "no-useless-return": "error",
+      "no-unneeded-ternary": "error",
+      "no-lonely-if": "error"
+    }
+  },
+  {
     files: ["**/*.{ts,tsx,mts,cts}"],
     rules: {
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-import-type-side-effects": "error",
       "preserve-caught-error": "off"
     }
   },
@@ -48,6 +60,17 @@ export default tseslint.config(
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
+      // React Compiler rules (react-hooks v7) that had zero hits on apps/frontend/src.
+      "react-hooks/static-components": "error",
+      "react-hooks/use-memo": "error",
+      "react-hooks/void-use-memo": "error",
+      "react-hooks/preserve-manual-memoization": "error",
+      "react-hooks/incompatible-library": "error",
+      "react-hooks/globals": "error",
+      "react-hooks/error-boundaries": "error",
+      "react-hooks/purity": "error",
+      "react-hooks/set-state-in-render": "error",
+      "react-hooks/unsupported-syntax": "error",
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }]
     }
   },

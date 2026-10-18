@@ -1,6 +1,6 @@
 # Slice C — Checks that already pass are switched on
 
-## Status: planned
+## Status: done
 
 Depends on: none. Findings: T-06, T-07, T-08, T-09, T-16.
 
@@ -46,7 +46,7 @@ git diff --stat origin/main
 
 ## Reverted findings
 
-None yet. Flags and rules left off for a hit go here.
+None. Every flag and rule had zero hits, so none was left off (`slice-c.evidence.md`).
 
 ## Files touched
 
