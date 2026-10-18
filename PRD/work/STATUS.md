@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| scanner-recovers-and-runs-lighter | All four slices done in PR #320; awaiting review and owner merge |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| scanner-recovers-and-runs-lighter | Slices A–C done in PR #320; slice D (smaller scan map, made from the committed map) building |
 
 ## refined
 

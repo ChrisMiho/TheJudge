@@ -1,6 +1,8 @@
 # Slice D — Smaller scan map
 
-## Status: planned
+## Status: done
+
+Attempt 1 parked on a snapshot mismatch; the owner chose to slim the committed map itself (`GRAPH-RUN.md` `## Open gate`). Evidence: `slice-d.evidence.md`.
 
 ## Goal
 
@@ -17,16 +19,18 @@ from its printing id.
    oracle-level fallback (from `CardMetadataItem.imageId`) for an empty derived
    address (printing id under 2 characters). `CardScanMapEntry` loses
    `imageUrl`.
-3. Regenerate `apps/frontend/public/data/cardScanMap.json` only with
-   `npm run data:scan-map`. Never hand-edit it. Never run
-   `npm run data:refresh` or any Scryfall download.
-4. The build input `apps/frontend/data/scryfall/default-cards.json` is
-   gitignored and absent in this worktree. Create a symbolic link at that path
-   to `/Users/chrismiho/Coding/Projects/TheJudge/apps/frontend/data/scryfall/default-cards.json`
-   (`mkdir -p` the folder first; `ln -s`). Read-only use: never copy the file,
-   never `git add` the link or the folder, confirm `git status` shows nothing
-   for it. Remove the link when the slice ends.
-5. Compare the rebuilt map with the committed one (read the committed map from
+3. Owner decision (`GRAPH-RUN.md` `## Open gate`, 2026-10-18): produce the slim
+   map from the committed map itself. `scripts/slim-card-scan-map.mjs`
+   (`npm run data:scan-map:slim`, tested by `scripts/slim-card-scan-map.test.mjs`)
+   reads the committed `apps/frontend/public/data/cardScanMap.json`, removes only
+   `imageUrl` from every entry and writes it back with the same keys, key order
+   and compact JSON formatting; a second run changes nothing. Never hand-edit the
+   map. Never run `npm run data:refresh` or any Scryfall download.
+4. The local card dump (`default-cards.json`) is a newer snapshot than the one the
+   committed map and `cardhashes.bin` came from, so it is not read this attempt:
+   no symbolic link, no `npm run data:scan-map` over it. A full rebuild from a
+   matching snapshot (requirement 1) also emits the slim shape later.
+5. Compare the slimmed map with the committed one (read the committed map from
    `git show HEAD:apps/frontend/public/data/cardScanMap.json`): same entry
    count (95,895), same keys, identical `oracleId` and `name` per key, the only
    difference being the missing `imageUrl` field. Any other difference stops
@@ -58,9 +62,9 @@ from its printing id.
 
 - [ ] `build-card-scan-map.mjs` emits `{ oracleId, name }` and `getImageUrl` is removed (script tests pass)
 - [ ] The resolver derives the printing image via `deriveCardImageUrl` and falls back to the oracle-level image when empty (tests pass)
-- [ ] `cardScanMap.json` was regenerated with `npm run data:scan-map` and has the same 95,895 keys as the committed map with identical `oracleId` and `name` per key (comparison script output recorded in the evidence log)
+- [ ] `cardScanMap.json` was slimmed from the committed map with `npm run data:scan-map:slim` (per `GRAPH-RUN.md` `## Open gate`) and has the same 95,895 keys as the committed map with identical `oracleId` and `name` per key (comparison output recorded in the evidence log)
 - [ ] The only difference from the committed map is the missing `imageUrl` field; any other difference stopped the slice
-- [ ] `default-cards.json` was reached through a symbolic link, not a copy, and neither it nor the link is staged or committed
+- [ ] No card dump was read or linked, and nothing from it is staged
 - [ ] No `npm run data:refresh` or Scryfall download was run
 - [ ] The four fixtures carrying `imageUrl` and `buildCardScanMap.test.ts` are updated and pass
 - [ ] REQ-048 and REQ-066 diffs applied once each in `functional-requirements.md`, `system-map.md` and `scan/data/cardScanMap.md`, matching the accepted text
@@ -72,9 +76,7 @@ from its printing id.
 ## Verification
 
 ```bash
-mkdir -p apps/frontend/data/scryfall
-ln -s /Users/chrismiho/Coding/Projects/TheJudge/apps/frontend/data/scryfall/default-cards.json apps/frontend/data/scryfall/default-cards.json
-npm run data:scan-map
+npm run data:scan-map:slim
 gzip -c apps/frontend/public/data/cardScanMap.json | wc -c
 npm --workspace apps/frontend run test -- resolveScanCandidates loadScanMap useScanCapture TradeBalancer.scan buildCardScanMap
 npm run test:scripts
@@ -84,6 +86,7 @@ npm run typecheck && npm run lint && npm run format:check
 ## Files touched
 
 - `scripts/build-card-scan-map.mjs`
+- `scripts/slim-card-scan-map.mjs`, `scripts/slim-card-scan-map.test.mjs`, `package.json` (`data:scan-map:slim`)
 - `apps/frontend/public/data/cardScanMap.json` (script output only)
 - `apps/frontend/src/lib/scan/resolveScanCandidates.ts`
 - `apps/frontend/src/lib/scan/types.ts` (or wherever `CardScanMapEntry` lives)

@@ -60,8 +60,8 @@ function makeCard(cardId: string, name: string): CardMetadataItem {
 const image: RgbImage = makeGoodImage();
 const db: HashDb = { ids: [], hashes: new Uint8Array(), count: 0 };
 const scanMap: CardScanMap = {
-  "printing-opt": { oracleId: "opt", name: "Opt", imageUrl: "https://img/opt-print.jpg" },
-  "printing-bolt": { oracleId: "lightning-bolt", name: "Lightning Bolt", imageUrl: "https://img/bolt-print.jpg" }
+  "printing-opt": { oracleId: "opt", name: "Opt" },
+  "printing-bolt": { oracleId: "lightning-bolt", name: "Lightning Bolt" }
 };
 const cardMetadata = [makeCard("opt", "Opt"), makeCard("lightning-bolt", "Lightning Bolt")];
 
@@ -228,7 +228,7 @@ describe("Frontend - Card Scan", () => {
       expect(result.current.heldEntries).toHaveLength(1);
       expect(result.current.heldEntries[0]).toMatchObject({
         card: cardMetadata[0],
-        scanImageUrl: "https://img/opt-print.jpg"
+        scanImageUrl: "https://cards.scryfall.io/normal/front/p/r/printing-opt.jpg"
       });
       expect(result.current.scanPhase).toBe("searching");
       expect(result.current.lockedCandidate).toBeNull();
@@ -267,7 +267,7 @@ describe("Frontend - Card Scan", () => {
       });
 
       expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
-      expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0], "https://img/opt-print.jpg", [
+      expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0], "https://cards.scryfall.io/normal/front/p/r/printing-opt.jpg", [
         { card_id: "opt", distance: 7 }
       ]);
       expect(result.current.heldEntries).toHaveLength(0);

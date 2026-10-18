@@ -21,7 +21,7 @@ describe("loadScanMap", () => {
 
   it("fetches once across repeated calls and returns the parsed scan map", async () => {
     const payload = {
-      "printing-opt": { oracleId: "opt", name: "Opt", imageUrl: "https://img/opt.jpg" }
+      "printing-opt": { oracleId: "opt", name: "Opt" }
     };
     const fetchMock = vi.fn(async () => new Response(JSON.stringify(payload)));
     vi.stubGlobal("fetch", fetchMock);
@@ -47,7 +47,7 @@ describe("loadScanMap", () => {
   });
 
   it("re-requests after a failed download and then reuses the arrived map (REQ-249)", async () => {
-    const payload = { "printing-opt": { oracleId: "opt", name: "Opt", imageUrl: "" } };
+    const payload = { "printing-opt": { oracleId: "opt", name: "Opt" } };
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(new Response("down", { status: 503, statusText: "Service Unavailable" }))
@@ -66,7 +66,7 @@ describe("loadScanMap", () => {
 
   it("a newer in-flight attempt survives an older failure (REQ-249)", async () => {
     let rejectOld: (error: Error) => void = () => undefined;
-    const payload = { "printing-opt": { oracleId: "opt", name: "Opt", imageUrl: "" } };
+    const payload = { "printing-opt": { oracleId: "opt", name: "Opt" } };
     const fetchMock = vi
       .fn()
       .mockImplementationOnce(() => new Promise((_resolve, reject) => (rejectOld = reject)))

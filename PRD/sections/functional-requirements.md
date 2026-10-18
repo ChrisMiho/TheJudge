@@ -1027,17 +1027,18 @@
 - Priority: medium
 - Description: A scanned card must display the specific printing's artwork that was scanned — in the scan preview and persisted on the added card's thumbnail — so the on-screen art matches the physical card. The printing image is carried as presentation only; card identity, prompt context, and rulings stay oracle-level and unchanged (DEC-070, refining DEC-053/REQ-036).
 - Acceptance Criteria:
-  - the build-time bridge artifact `cardScanMap.json` carries a per-printing image so each printing id resolves to its own art; the entry shape becomes `{ oracleId, name, imageUrl }`, produced by `build-card-scan-map.mjs` from the same Scryfall printing object it already reads
-  - the scan candidate resolver (`resolveScanCandidatesRanked`, REQ-036) threads the best-distance printing's image through to the locked candidate alongside the resolved oracle-level `CardMetadataItem`
+  - each printing id resolves to its own art: the build-time bridge artifact `cardScanMap.json` keeps the entry shape `{ oracleId, name }`, produced by `build-card-scan-map.mjs` from the same Scryfall printing object it already reads, and the printing's image url is derived from the printing id through the app's single Scryfall image template (`deriveCardImageUrl`, REQ-174) — the same `normal`-size front-face address Scryfall serves, without Scryfall's `?<timestamp>` cache-buster suffix
+  - the scan candidate resolver (`resolveScanCandidatesRanked`, REQ-036) threads the best-distance printing's derived image through to the locked candidate alongside the resolved oracle-level `CardMetadataItem`
   - the scan preview shows the scanned printing's art (not the oracle-level representative image)
   - on auto-add (DEC-056), the scanned printing image is written to `ZoneCardItem.imageUrl` for that card so the stack/zone thumbnail (REQ-008/DEC-018) matches the scanned printing
-  - graceful fallback: when a printing image is missing/empty in the bridge, the card still previews and adds using the oracle-level `CardMetadataItem.imageUrl`; the DEC-053 collapse-by-best-distance and drop-unresolvable behavior is otherwise unchanged
+  - graceful fallback: when the derived printing image is empty, the card still previews and adds using the oracle-level image derived from `CardMetadataItem.imageId`; the DEC-053 collapse-by-best-distance and drop-unresolvable behavior is otherwise unchanged
   - oracle-level identity is unchanged: `cardId`, the duplicate-stack key, prompt context (`buildPromptContext`/`buildPromptText`), and rulings lookup remain keyed on the oracle id; no printing-level data other than the display image is pushed into `ZoneCardItem`, prompt, or rulings
   - existing scan/zone-collection/resolver tests are extended, not replaced; the resolver image carry-through is unit-tested including the missing-image fallback
 - Constraints:
   - frontend-only at scan time with zero network calls; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or any product-facing endpoint
   - presentation only and not a scan-robustness lever: no change to the shared resize+DCT+hash recipe (`recipe.ts`), `cardhashes.bin`, the matching/orientation/distance logic (`identify.ts`), the stabilizer/lock gate, or the byte-exact parity gates (REQ-034/DEC-051) (distinct from DEC-062/DEC-069)
-  - the bridge file grows by one URL per printing but stays lazy-loaded on first scan (NFR-010); app startup is unaffected for users who never scan
+  - the bridge file carries no image url and stays lazy-loaded on first scan (NFR-010); app startup is unaffected for users who never scan
+  - the committed `cardScanMap.json` is produced by `build-card-scan-map.mjs` (or, to slim the existing file without a card-data refresh, `npm run data:scan-map:slim`), never hand-edited; the slimmed file keeps exactly the same printing ids with the same `oracleId` and `name` values (no card-data refresh rides along)
 - Dependencies:
   - DEC-070
   - DEC-053
@@ -1572,7 +1573,7 @@
 - Constraints:
   - static committed snapshot: no live/real-time price sync and no scheduled refresh; the on-demand backend read serves the committed snapshot in memory and makes no external call (DEC-012 posture)
   - raw downloaded bulk data remains gitignored and is not committed; only the trimmed price artifact is committed
-  - no change to `cardScanMap.json`, `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, or the provider boundary; `cardMetadata.json` is slimmed and reused as the shared identity index per REQ-174; the backend gains the read-only price route per REQ-175
+  - this requirement makes no change to `cardScanMap.json` (its entry shape is owned by REQ-048), `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, or the provider boundary; `cardMetadata.json` is slimmed and reused as the shared identity index per REQ-174; the backend gains the read-only price route per REQ-175
 - Dependencies:
   - DEC-012
   - REQ-065

@@ -5,7 +5,7 @@
     {
       "id": "D1",
       "statement": "build-card-scan-map.mjs emits { oracleId, name } and getImageUrl is removed (script tests pass)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(run test:scripts|run test.*buildCardScanMap)",
         "paths": ["scripts/build-card-scan-map.mjs"]
@@ -14,37 +14,37 @@
     {
       "id": "D2",
       "statement": "The resolver derives the printing image via deriveCardImageUrl and falls back to the oracle-level image when empty (tests pass)",
-      "value": false,
+      "value": true,
       "evidence": { "command": "run test.*resolveScanCandidates" }
     },
     {
       "id": "D3",
-      "statement": "cardScanMap.json was regenerated with npm run data:scan-map and has the same 95,895 keys as the committed map with identical oracleId and name per key (comparison output recorded in the evidence log)",
-      "value": false,
-      "evidence": { "command": "run data:scan-map" }
+      "statement": "cardScanMap.json was slimmed from the committed map with npm run data:scan-map:slim (GRAPH-RUN.md Open gate decision) and has the same 95,895 keys as the committed map with identical oracleId and name per key (comparison output recorded in the evidence log)",
+      "value": true,
+      "evidence": { "command": "run data:scan-map:slim" }
     },
     {
       "id": "D4",
       "statement": "The only difference from the committed map is the missing imageUrl field; any other difference stopped the slice",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/public/data/cardScanMap.json"] }
     },
     {
       "id": "D5",
-      "statement": "default-cards.json was reached through a symbolic link, not a copy, and neither it nor the link is staged or committed",
-      "value": false,
-      "evidence": { "command": "ln -s .*default-cards\\.json" }
+      "statement": "No card dump was read or linked, and nothing from it is staged (GRAPH-RUN.md Open gate decision)",
+      "value": true,
+      "evidence": { "manual": true }
     },
     {
       "id": "D6",
       "statement": "No npm run data:refresh or Scryfall download was run",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "D7",
       "statement": "The four fixtures carrying imageUrl and buildCardScanMap.test.ts are updated and pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "run test.*(TradeBalancer|useScanCapture|loadScanMap|resolveScanCandidates|buildCardScanMap)"
       }
@@ -52,7 +52,7 @@
     {
       "id": "D8",
       "statement": "REQ-048 and REQ-066 diffs applied once each in functional-requirements.md, system-map.md and scan/data/cardScanMap.md, matching the accepted text",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",
@@ -64,13 +64,13 @@
     {
       "id": "D9",
       "statement": "The rebuilt cardScanMap.json is about 5.28 MB gzip (measured with gzip -c, recorded)",
-      "value": false,
+      "value": true,
       "evidence": { "command": "gzip -c .*cardScanMap\\.json" }
     },
     {
       "id": "D10",
       "statement": "Frontend tests, npm run test:scripts, typecheck, lint and format check pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(run test:scripts|run typecheck|run lint|run format:check)"
       }
@@ -78,13 +78,13 @@
     {
       "id": "D11",
       "statement": "Live: a scan or scan preview of a known printing shows that printing's picture from the derived Scryfall address",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "D12",
       "statement": "Browser closed, owned server(s) stopped, ports released; captures written to PRD/work/scanner-recovers-and-runs-lighter/.playwright-mcp/",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     }
   ]

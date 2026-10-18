@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # scanner-recovers-and-runs-lighter
 
@@ -11,7 +11,7 @@ Card scanning recovers from a failed download, builds its data once, and the thr
 - Live measurements: `evidence/measurements.md`
 - Quality check: `QUALITY-CHECK.md` (PASS)
 - Plan: `GAMEPLAN.md`
-- Next: build slice A first (`/thejudge-implement PRD/work/scanner-recovers-and-runs-lighter/ slice a`), or the graph build half drives all four
+- Next: all four slices done in PR #320; review, then the owner merges
 
 ## Slices
 

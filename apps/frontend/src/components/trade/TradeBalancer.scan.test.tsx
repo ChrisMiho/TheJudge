@@ -138,10 +138,10 @@ const pricesByOracle: Record<string, { snapshotDate: string; printings: CardPrin
 
 /** `bolt-promo` is a scannable printing id absent from the price fixture (fallback path). */
 const scanMap: CardScanMap = {
-  "bolt-2ed": { oracleId: "oracle-bolt", name: "Lightning Bolt", imageUrl: "s/bolt-2ed.jpg" },
-  "bolt-m10": { oracleId: "oracle-bolt", name: "Lightning Bolt", imageUrl: "s/bolt-m10.jpg" },
-  "bolt-promo": { oracleId: "oracle-bolt", name: "Lightning Bolt", imageUrl: "s/bolt-promo.jpg" },
-  "lotus-lea": { oracleId: "oracle-lotus", name: "Black Lotus", imageUrl: "s/lotus-lea.jpg" }
+  "bolt-2ed": { oracleId: "oracle-bolt", name: "Lightning Bolt" },
+  "bolt-m10": { oracleId: "oracle-bolt", name: "Lightning Bolt" },
+  "bolt-promo": { oracleId: "oracle-bolt", name: "Lightning Bolt" },
+  "lotus-lea": { oracleId: "oracle-lotus", name: "Black Lotus" }
 };
 
 function jsonResponse(payload: unknown, status = 200): Response {
