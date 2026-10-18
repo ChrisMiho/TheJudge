@@ -1,133 +1,114 @@
 # Quality check — player-visible-bugs
 
-**Verdict: FAIL.** Two blocking issues go back to refinement. Everything else
-checked out.
+**Verdict: PASS.** Both blocking findings from the first check are resolved.
+No new blocking issue. Three small advisories remain.
 
-**Ask: Nothing (FYI).** The graph returns this to refinement.
+**Ask: Nothing (FYI).** The graph records this and moves to the gate.
 
-**In plain terms:** the brief is thorough and almost all of it is right. Two
-things are wrong. The new "you already have this card" line inside the
-scanner may be barred by an existing rule that says the scanner shows only
-what its approved mockup shows. And the brief says the segmented-button style
-appears only in In-Depth, but Life Tracker uses it too.
+**In plain terms:** the brief now explains why the scanner's "you already have
+this card" line is allowed: the mockup rule governs helper text that teaches
+how to use a screen, and this line reports what happened to a scan, like the
+"Loading scan data..." line that already ships. The brief also now says that
+Life Tracker's segmented buttons stay at 42 px, and a test will prove it.
 
 Run mode: graph-controlled (`graph is controlling`), run `graph-20261018-231413`,
-node 4, attempt 1. Code re-read at the cited lines on 2026-10-18.
+node 4, attempt 2. Code and spec re-read at the cited lines on 2026-10-18.
+`origin/main...HEAD` changes no `apps/` file on this branch's side; main's
+newer commits (#323-#327) touch only `scripts/` and one frontend test, so no
+cited line moved.
 
-## Blocking
+## Prior findings
 
-1. **Bug 2 / REQ-214 gate: the new scanner notice line is not reconciled with
-   REQ-070's redesigned-screens rule.** `functional-requirements.md:1690`
-   (REQ-070 exception, named for the card scanner's chrome, REQ-214) says
-   guidance and helper text on the scanner follows the approved mockup page
-   (`docs/design/ui-reimagining/direction-1/card-scan.html`): its wording, its
-   placement "and whether a line appears at all"; "where the mockup page shows
-   no such line, none renders". The mockup has the indicator, the confirm
-   toast and the hint line, and no refusal or duplicate line (grepped:
-   no `duplicate`, `already`, `notice`). A new line under the camera is a line
-   the mockup does not show. Neither `DESIGN-BRIEF.md` nor the REQ-214 block
-   mentions this rule, and the REQ-214 diff does not amend or carve out
-   REQ-070. Fix in refinement: either add an amendment to that REQ-070 clause
-   to the REQ-214 block (naming the blocked-scan notice as an allowed extra
-   line, and add `functional-requirements.md:1690` to the brief's grep
-   disposition set, with a grep for the mockup-rule wording), or show the
-   notice is state copy outside that clause. Also say whether the mockup page
-   `card-scan.html` needs a matching line.
+1. **Blocking, Bug 2 / REQ-070: resolved.** The argument holds against REQ-070's
+   own text (`functional-requirements.md:1685`, `:1690`, `:1691`):
+   - `:1690` governs "guidance and helper text" and lists the scanner's
+     `locking` / `camera-error` state copy as a separate group. A refusal that
+     reports a scan's outcome is state copy, not guidance.
+   - `:1691` bans "intro/orientation lines, tooltips, popovers, coachmarks,
+     modals, onboarding". A refusal is none of these.
+   - Shipped precedent checks out: `ScanPanel.tsx:58` ("Loading scan data...")
+     and `:82-86` (failure line, REQ-249 `:6616`) are state lines absent from
+     the mockup, with no REQ-070 carve-out; the hint line, which is guidance,
+     did need one (REQ-214 `:5622`).
+   - The mockup `card-scan.html` has no duplicate, refusal or loading line and
+     its foot note says "the states are the scanner's own (DEC-057)" (`:232`),
+     so no mockup change is needed. `screen-layout.md:213` lists no state lines,
+     so no layout edit.
+   - One honest soft spot: the "byte-for-byte preserve" in `:1690` protects
+     existing state copy, it does not explicitly license new state copy. The
+     brief rests on the ban's scope (guidance only) plus the shipped precedent,
+     which is enough; it is not a rule-text loophole.
+   - Plain words are in the REQ-214 gate block (paragraph "This does not clash
+     with ...") and the diff adds one clause so a later reader does not
+     re-raise it. The grep set for the mockup rule is in the brief with a
+     disposition for each hit.
+2. **Blocking, Bug 7 `.seg` claim: resolved.** The brief now lists the Life
+   Tracker users (`CounterPanel.tsx:330`, `GameSetupPanel.tsx:271`, `:291`,
+   verified: `className="seg full"` inside `lt-scope`, `CounterPanel.tsx:327`,
+   `GameSetupPanel.tsx:95`). `index.css:4587-4602` `.lt-scope .seg button` does
+   set `min-height: 42px` and re-declares the base properties. The proof test
+   asserts it stays 42 px, and the REQ-202 screenshot pair is specified.
+3. **Advisory, REQ-085 cite: resolved** (`:2021-2027`, description `:2024`,
+   acceptance lines `:2026-2027`; verified).
+4. **Advisory, REQ-214 hunk adjacency: resolved.** The hunk now carries the
+   "Exit scan" bullet (`:5619`) as context between the duplicate rule and "all
+   three hosts"; the hint line and caution bullet also appear as context.
+5. **Advisory, Bug 7 test pattern: resolved.** Names
+   `ComposerPill.test.tsx:415` and its rule-text regexes (`:430-432`; verified).
+6. **Advisory, Bug 5 touched files: resolved.** The brief names
+   `useAskAiSubmitOrchestration.ts` as the file that must change (exposes
+   `hasPendingRetry` and `retryPending`; `pendingRetry` private at `:89`, result
+   type `:60`, `canRetry` `:91`, return `:362-376`).
+7. **Advisory, index.css collisions: resolved.** The collision section now
+   covers the card-rings and pop-ups briefs and the `FeaturePortalMenu.tsx`
+   overlap with slice D.
 
-2. **Bug 7: the claim that `.seg` renders only in In-Depth is false.** The
-   brief says "`.zone-tabs` and `.seg` render only in In-Depth" (REQ-202
-   paragraph). `className="seg"` is also used by Life Tracker:
-   `components/portal/life-tracker/CounterPanel.tsx:330` (the Commander
-   damage / Counters tabs) and `GameSetupPanel.tsx:271`, `:291` (Layout and
-   Card style). `index.css:4579-4604` has a `.lt-scope .seg button` rule with
-   `min-height: 42px` that outranks the base rule, so raising `index.css:2176`
-   to 44 px should leave Life Tracker's height unchanged, but that is the
-   thing the REQ-202 screenshot pair exists to prove, not something to assert
-   as "renders only in In-Depth". Fix: correct the sentence, state the
-   `.lt-scope .seg button` override as the reason Life Tracker is expected not
-   to change, and have the proof test assert it (Life Tracker's computed
-   `min-height` unchanged). The In-Depth `.seg` users are `ZoneCardMenu.tsx`
-   (Reorder) and `EnrichmentStep.tsx` (Copies). Also note `index.css` is a
-   region the pending card-rings / pop-ups briefs touch; the collision
-   section covers card-search only.
+## Full re-run of attempt 1 checks
 
-## Advisory (fix with the blocking items; not blocking alone)
+- **All seven bugs covered**, Trade scanned-printing bug first (slice A), each
+  with a summary row, section, proof test and files list.
+- **Causes match code.** Re-read: `useScanCapture.ts:409-413` and `:482`
+  (`candidates: votingCandidates`), `useTradeScan.ts:82-84`;
+  `ZoneCollectionStep.tsx:130-141`, `:148`, `:492`; `ScanPanel.tsx:58`, `:82-86`;
+  `stackLimits.ts:2-3`; `MtgAssistantApp.tsx:440-449`, `:736-738`, `:744-752`;
+  `feedbackSeam.ts:30-44` (registers for the component's mounted life, so a
+  hidden tool keeps its contributor); `FeaturePortalMenu.tsx:103-106`,
+  `:134-138`; `App.tsx:62-73`; `index.css:1384-1386`, `:2170-2176`.
+  Bug 6 (unreachable) holds as in attempt 1; the backend files were not changed.
+- **Each fix stays on its symptom.** Extras (Ask a Question notice, bug 6
+  filter, bug 7 non-defects, Life Tracker 42 px) are offered separately or left.
+- **Every gate diff applies cleanly.** Scripted: each context and removed line
+  of every hunk (REQ-214 and REQ-085 in `functional-requirements.md`,
+  `scan/README.md`, `life-tracker/README.md`) matches the current text exactly
+  once.
+- **Stable-ID blocks.** REQ-214 and REQ-085 each have their own `##` block
+  opening with *What this decides · In plain terms · What happens if you say
+  no*, substance of REQ-214, REQ-070, REQ-085, REQ-140, REQ-213 inlined,
+  `Verdict:` and `Reason:` blank. No other ID is amended.
+- **Grep dispositions** cover the REQ-214, REQ-070 mockup-rule and REQ-085 sets,
+  one row per hit.
+- **Collisions.** `PRD/work/STATUS.md` has no other package; the card-search,
+  card-rings and pop-ups briefs are handled by "this package lands first" with
+  named overlaps.
 
-- REQ-085 line cite: the brief's grep table cites `functional-requirements.md:2021-2024`
-  for REQ-085. The acceptance lines the diff anchors on are at `:2026-2027`
-  (heading `:2021`, description `:2024`). Cite `:2021-2027`.
-- REQ-214 diff hunk shows the "same duplicate/cap rule" line (`:5618`)
-  directly above "all three hosts" (`:5620`), but `:5619` (the "Exit scan"
-  bullet) sits between them. The diff still applies by text (every context and
-  removed line matches exactly once), but the hunk is misleading about
-  adjacency. Add the `:5619` line as context or a `...` marker.
-- Bug 7 proof: the `.zone-tabs` / `.seg` test should name the file pattern it
-  copies (`ComposerPill.test.tsx:415` is the existing 44 px floor test).
-- Bug 5 fix touches `useAskAiSubmitOrchestration.ts` only "possibly"; say which
-  file exposes the saved-request flag so the touched-files list is final.
+## Advisory (do not block)
 
-## Checked and correct
-
-- **All seven bugs covered** with a summary row, section, proof and files each;
-  **bug 1 first** as slice A, with the one-PR-or-two question put to the owner.
-- **Causes match code (re-read).** Bug 1: `useScanCapture.ts:409-413`
-  (`votingCandidates`, oracle ids), `:482` (stored as `candidates`), `:301`
-  (handed to host), `useTradeScan.ts:39-51`, `:82-84` all exactly as stated.
-  Bug 2: `ZoneCollectionStep.tsx:130-141`, `:451-465` (no notice passed),
-  `:492`; `useScanCapture.ts:476-477`, `:549`; `blockedNotice` read nowhere in
-  a component; `ScanPanel` props `:7-23` have no notice slot; messages in
-  `lib/stackLimits.ts:2-3`. Bug 3: `DestinationOutlet.tsx:41-63`,
-  `MtgAssistantApp.tsx:440-449`, `feedbackSeam.ts:30-44`,
-  `destinationRegistry.tsx:150`; `MtgAssistantApp` takes `isActive`. Bug 4:
-  `FeaturePortalMenu.tsx:103-106`, `:134-138`; `App.tsx` seeds in
-  `handleDestinationSelect` on Life Tracker to mtg-assistant, and its own
-  comment confirms history resume reaches it; seed applied at
-  `MtgAssistantApp.tsx:197-228`. Bug 5: `handleRetry` returns on
-  `!gameContext` (`:744-752`), Decrypt's message at `:736-738`,
-  `pendingRetry` resend at `useAskAiSubmitOrchestration.ts:274-301`.
-  Bug 7: `index.css:1384-1386` and `:2170-2176` are 40 px, `:2534-2549` body.
-- **Bug 6 (unreachable, no change) holds.** `askAiRequest.ts:17-22`
-  `boundedText` is `trim().min(1)`; `name` uses it (`:94`); the Stack card
-  schema extends `zoneCardItemSchema`, which spreads that shape (`:111-112`,
-  `:125-130`); `routes/askAi.ts:69` parses every request with
-  `askAiRequestSchema.safeParse`. A blank-named Stack card is rejected before
-  `prompt/context.ts:307`. The zone branch drop at `:203-204` is therefore
-  never reached by a blank either.
-- **Each fix stays on its symptom;** extras (Ask a Question notice, bug 6
-  consistency filter, three of the bug 7 items) are offered separately or
-  sent to `codehealth`.
-- **Spec lines cited say what the brief says.** Trade README `:75-81` and
-  REQ-065 (`:1536`): scanned printing is the default printing. REQ-088
-  (`:2095`): "current screen/step". REQ-014 (`:213-222`): controlled retry,
-  retry button, 13 s cooldown. REQ-205 (`:5301`, `:5308-5312`): In-Depth step
-  controls at least 44 px. REQ-200 ground: no change claimed, consistent with
-  `index.css` using `var(--surface-ground)`.
-- **Gate diffs apply cleanly.** Scripted check: every context and removed
-  line of all four diff hunks (REQ-214 and REQ-085, in
-  `functional-requirements.md`, `scan/README.md`, `life-tracker/README.md`)
-  matches the current text exactly once. Each amended stable ID (REQ-214,
-  REQ-085) has its own `##` block; no other ID is amended. REQ-140 (`:3438`)
-  and REQ-206 (`:5361`) are correctly left alone.
-- **Grep dispositions complete for the sets named.** Re-ran both greps: the
-  REQ-214 set (`5618`, `scan/README.md:141-142`, `:259`) and the REQ-085 set
-  (`user-flows.md:301`, `system-map.md:552`, `life-tracker/README.md:10`,
-  `functional-requirements.md:1970`, `:2021`, `:2024`, `:3438`, `:5361`) each
-  have a row. (Blocking item 1 is a hit no grep in the brief would find.)
-- **Plain-language standard met.** Both blocks open with *What this decides ·
-  In plain terms · What happens if you say no*; REQ-214, REQ-085 (including
-  REQ-140's menu-only limit) and REQ-213's meaning are inlined; `Verdict:` and
-  `Reason:` are blank; the file opens with an ask line; the brief opens with
-  an ask and a plain summary.
-- **Collisions.** `PRD/work/STATUS.md` had no other package; card-search is a
-  pending brief under `PRD/ideasForLater/`, handled by "this package lands
-  first" and a named list of the overlapping files. Bug 7 names the REQ-202
-  Life Tracker before/after pair at 390x844 and 1440x900 for the shared
-  stylesheet.
-- **Agent-ready.** Each bug has a proof test and a files list, except the
-  advisory notes above. No open question hides a decision.
+- **Bug 7 test anchor.** The brief says the base `.seg button` assertion is
+  "anchored to a rule that starts the line". `ComposerPill.test.tsx`'s style
+  (`/\.send-pair button \{/`) is unanchored, and an unanchored
+  `/\.seg button \{/` would also match `.lt-scope .seg button {`, passing even
+  if the base rule regressed. The build must use a line-start (`^` with the
+  multiline flag) match, as the brief says.
+- **`ZoneCollectionStep.test.tsx` for a stylesheet test.** A CSS-text test in a
+  component test file works (the pattern does it) but the file is large; the
+  builder may place it beside the existing 44 px floor tests instead. Not
+  required.
+- **Brief line length.** The bug 2 foot-note sentence in `DESIGN-BRIEF.md`
+  runs onto a line past the wrap used elsewhere. Cosmetic only.
 
 ## Status
 
-`STATUS.refining` set (replaces `STATUS.refined`); README front matter
-`status: refining`; `PRD/work/STATUS.md` row moved from `## refined` to
-`## refining`. The README `## Preparation gate` section is left to the driver.
+Package stays at `refined`: `STATUS.refined` present (the only marker), README
+front matter `status: refined`, `PRD/work/STATUS.md` row under `## refined`
+(already there; nothing to move). The README `## Preparation gate` section is
+left to the driver.
