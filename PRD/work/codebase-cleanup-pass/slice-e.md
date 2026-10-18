@@ -1,6 +1,6 @@
 # Slice E — Combo matching skips combos that cannot be complete
 
-## Status: planned
+## Status: done
 
 Depends on: none (must land before G; both edit `commanderSpellbook/matcher.ts`). Finding: K-01.
 
@@ -39,7 +39,7 @@ git diff --stat origin/main -- apps/backend/src/eval/fixtures apps/backend/src/c
 
 ## Reverted findings
 
-None yet.
+None. Evidence: `slice-e.evidence.md`.
 
 ## Files touched
 

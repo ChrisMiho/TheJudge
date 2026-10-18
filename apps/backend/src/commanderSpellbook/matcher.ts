@@ -320,6 +320,51 @@ function collectCandidateVariantIds(catalog: ComboCatalog, cardIds: readonly str
   return [...variantIds];
 }
 
+/**
+ * Each variant's number of distinct card-ingredient oracle ids, read once per
+ * loaded catalog from `byOracleId` (which lists a variant under every distinct
+ * card ingredient it has). Keyed by the catalog object, so a reloaded catalog
+ * gets its own counts.
+ */
+const cardIngredientCountsByCatalog = new WeakMap<ComboCatalog, Map<string, number>>();
+
+function cardIngredientCounts(catalog: ComboCatalog): Map<string, number> {
+  const cached = cardIngredientCountsByCatalog.get(catalog);
+  if (cached) return cached;
+
+  const counts = new Map<string, number>();
+  for (const variantIds of catalog.byOracleId.values()) {
+    for (const variantId of new Set(variantIds)) counts.set(variantId, (counts.get(variantId) ?? 0) + 1);
+  }
+  cardIngredientCountsByCatalog.set(catalog, counts);
+  return counts;
+}
+
+/**
+ * Drop variants that can never be fully assigned, before any of them is
+ * fetched. A card ingredient is satisfied only by a submitted instance with its
+ * own oracle id (`cardIngredientSpec` names exactly one candidate id, and its
+ * quantity is a positive integer), so a variant can be fully assigned only when
+ * every one of its distinct card-ingredient ids was submitted. Template
+ * ingredients add further requirements but never remove this one. Without
+ * explicit combo intent only fully assigned candidates are eligible, so
+ * dropping the rest cannot change the result.
+ */
+function dropVariantsMissingCardIngredients(
+  catalog: ComboCatalog,
+  searchCardIds: readonly string[],
+  variantIds: readonly string[]
+): string[] {
+  const counts = cardIngredientCounts(catalog);
+  const submittedHits = new Map<string, number>();
+  for (const cardId of searchCardIds) {
+    for (const variantId of new Set(catalog.byOracleId.get(cardId) ?? [])) {
+      submittedHits.set(variantId, (submittedHits.get(variantId) ?? 0) + 1);
+    }
+  }
+  return variantIds.filter((variantId) => (submittedHits.get(variantId) ?? 0) === (counts.get(variantId) ?? 0));
+}
+
 function compareCandidates(a: ComboCandidate, b: ComboCandidate): number {
   if (a.fullyAssigned !== b.fullyAssigned) return a.fullyAssigned ? -1 : 1;
   if (a.anchorCoverage !== b.anchorCoverage) return b.anchorCoverage - a.anchorCoverage;
@@ -352,7 +397,11 @@ function compareLookupCandidates(a: ComboCandidate, b: ComboCandidate): number {
  * template satisfaction, or ranking, and nothing here validates legality, board
  * legality, or executability (DEC-013).
  */
-export function selectComboCandidates(catalog: ComboCatalog, request: ComboMatchRequest): ComboCandidate[] {
+export function selectComboCandidates(
+  catalog: ComboCatalog,
+  request: ComboMatchRequest,
+  options: { prefilter?: boolean } = {}
+): ComboCandidate[] {
   if (catalog.variantCount === 0) return [];
 
   if (request.mode === "lookup") {
@@ -370,7 +419,16 @@ export function selectComboCandidates(catalog: ComboCatalog, request: ComboMatch
 
   const anchorCardIds = resolveAnchorCardIds(request.instances, request.questionText);
 
-  const candidates = collectCandidateVariantIds(catalog, searchCardIds)
+  // Without explicit intent only fully assigned candidates survive below, so skip fetching the
+  // variants that cannot be fully assigned. `options.prefilter === false` runs the unfiltered scan;
+  // the equivalence test uses it as the reference.
+  const candidateVariantIds = collectCandidateVariantIds(catalog, searchCardIds);
+  const scannedVariantIds =
+    request.hasExplicitIntent || options.prefilter === false
+      ? candidateVariantIds
+      : dropVariantsMissingCardIngredients(catalog, searchCardIds, candidateVariantIds);
+
+  const candidates = scannedVariantIds
     .map((variantId) => catalog.getVariant(variantId))
     .filter((variant): variant is ComboVariant => variant !== undefined)
     .map((variant) => buildCandidate(variant, request, anchorCardIds));

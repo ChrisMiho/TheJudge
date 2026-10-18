@@ -2,13 +2,13 @@
   "slug": "codebase-cleanup-pass",
   "slice": "E",
   "criteria": [
-    { "id": "E1", "statement": "The prefilter precondition is confirmed in the evidence log, or the slice is stopped and recorded", "value": false, "evidence": { "manual": true } },
-    { "id": "E2", "statement": "matcher.ts filters variants by a per-catalog WeakMap of card-ingredient counts before getVariant when there is no explicit combo intent; catalog.ts is unchanged", "value": false, "evidence": { "paths": ["apps/backend/src/commanderSpellbook/matcher.ts"] } },
-    { "id": "E3", "statement": "The equivalence test covers the 50 most-comboed cards, a seeded pair sample, both wordings and both modes, and passes in about 10 s or less", "value": false, "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" } },
-    { "id": "E4", "statement": "The integrity test decodes every committed variant and passes", "value": false, "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" } },
-    { "id": "E5", "statement": "Existing matcher.test.ts passes unchanged", "value": false, "evidence": { "paths": ["apps/backend/src/commanderSpellbook/matcher.test.ts"] } },
-    { "id": "E6", "statement": "Backend suite is green and eval goldens are byte-identical to origin/main", "value": false, "evidence": { "command": "git diff --stat origin/main -- apps/backend/src/eval/fixtures" } },
-    { "id": "E7", "statement": "Backend typecheck exits 0", "value": false, "evidence": { "command": "npm --workspace apps/backend run typecheck" } },
-    { "id": "E8", "statement": "Before/after timings for Ashnod's Altar, Phyrexian Altar and Sensei's Divining Top are recorded", "value": false, "evidence": { "manual": true } }
+    { "id": "E1", "statement": "The prefilter precondition is confirmed in the evidence log, or the slice is stopped and recorded", "value": true, "evidence": { "manual": true } },
+    { "id": "E2", "statement": "matcher.ts filters variants by a per-catalog WeakMap of card-ingredient counts before getVariant when there is no explicit combo intent; catalog.ts is unchanged", "value": true, "evidence": { "paths": ["apps/backend/src/commanderSpellbook/matcher.ts"] } },
+    { "id": "E3", "statement": "The equivalence test covers the 50 most-comboed cards, a seeded pair sample, both wordings and both modes, and passes in about 10 s or less", "value": true, "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" } },
+    { "id": "E4", "statement": "The integrity test decodes every committed variant and passes", "value": true, "evidence": { "command": "npm --workspace apps/backend run test -- commanderSpellbook" } },
+    { "id": "E5", "statement": "Existing matcher.test.ts passes unchanged", "value": true, "evidence": { "paths": ["apps/backend/src/commanderSpellbook/matcher.test.ts"] } },
+    { "id": "E6", "statement": "Backend suite is green and eval goldens are byte-identical to origin/main", "value": true, "evidence": { "command": "git diff --stat origin/main -- apps/backend/src/eval/fixtures" } },
+    { "id": "E7", "statement": "Backend typecheck exits 0", "value": true, "evidence": { "command": "npm --workspace apps/backend run typecheck" } },
+    { "id": "E8", "statement": "Before/after timings for Ashnod's Altar, Phyrexian Altar and Sensei's Divining Top are recorded", "value": true, "evidence": { "manual": true } }
   ]
 }
