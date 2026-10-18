@@ -2,6 +2,23 @@
 import fs from "node:fs";
 import { rename, writeFile } from "node:fs/promises";
 import path from "node:path";
+import zlib from "node:zlib";
+
+/**
+ * Brotli-compress with the fixed, named params this repository uses
+ * everywhere: quality 11, a size hint set to the raw input length, no
+ * `dictionary` option (Node 22 in CI silently ignores a brotli dictionary
+ * while Node 24 on Lambda honours it, which would make CI and Lambda
+ * disagree).
+ */
+export function brotliCompress(buffer) {
+  return zlib.brotliCompressSync(buffer, {
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
+      [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+    }
+  });
+}
 
 /** Creates the folder that will hold `filePath` (and any missing parents). */
 export function ensureParentDirectory(filePath) {

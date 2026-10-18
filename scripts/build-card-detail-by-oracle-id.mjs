@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import zlib from "node:zlib";
 import {
   choosePreferredCard,
   getColors,
@@ -13,7 +12,7 @@ import {
   parseTypeLine,
   shouldIncludeCard
 } from "./build-card-metadata.mjs";
-import { ensureParentDirectory } from "./lib/fs-helpers.mjs";
+import { brotliCompress, ensureParentDirectory } from "./lib/fs-helpers.mjs";
 
 // Same committed Scryfall bulk build-card-metadata.mjs trims (REQ-175) — the
 // only bulk file carrying oracle text, type line, mana cost/value, and colors.
@@ -36,22 +35,6 @@ const outputPath = path.resolve("apps/backend/data/cardDetailByOracleId.json.br"
 // decompresses it once at startup (REQ-175), the same way
 // `apps/backend/src/commanderSpellbook/catalog.ts` already does for its blocks.
 const pricesOutputPath = path.resolve("apps/backend/data/cardPrintingPricesByOracleId.json.br");
-
-/**
- * Brotli-compress with the fixed, named params this repository uses
- * everywhere: quality 11, a size hint set to the raw input length, no
- * `dictionary` option (Node 22 in CI silently ignores a brotli dictionary
- * while Node 24 on Lambda honours it, which would make CI and Lambda
- * disagree).
- */
-function brotliCompress(buffer) {
-  return zlib.brotliCompressSync(buffer, {
-    params: {
-      [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
-      [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length
-    }
-  });
-}
 
 /**
  * REQ-245: a card's power, toughness or loyalty as Scryfall prints it ("2", "*", "3"), or undefined

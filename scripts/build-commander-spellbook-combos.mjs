@@ -4,7 +4,7 @@ import zlib from "node:zlib"
 import { pathToFileURL } from "node:url"
 
 import { streamJsonArrayObjects } from "./lib/stream-json-array.mjs"
-import { ensureParentDirectory, formatBytes } from "./lib/fs-helpers.mjs"
+import { brotliCompress, ensureParentDirectory, formatBytes } from "./lib/fs-helpers.mjs"
 
 const defaultRawInputDir = path.resolve("apps/backend/data/commander-spellbook")
 const defaultDetailPath = path.resolve("apps/backend/data/commanderSpellbookComboBlocks.br")
@@ -311,22 +311,6 @@ export function partitionVariantsByStatus(rawVariants) {
   }
 
   return { accepted, rejected }
-}
-
-/**
- * Brotli-compress one buffer with the fixed, named parameters this package
- * uses everywhere: quality 11 (max) and a size hint set to the raw input
- * length, no `dictionary` option. Node 22 (CI) silently ignores a brotli
- * dictionary while Node 24 (Lambda) honours it, which would make CI and
- * Lambda disagree — so this build never sets one.
- */
-export function brotliCompress(buffer) {
-  return zlib.brotliCompressSync(buffer, {
-    params: {
-      [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
-      [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length
-    }
-  })
 }
 
 /**
