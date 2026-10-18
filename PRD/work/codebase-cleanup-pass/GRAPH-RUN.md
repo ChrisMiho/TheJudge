@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-162925/` (13 files, copied verbatim to `PRD/work/codebase-cleanup-pass/intake/`; the staging folder's removal was denied to node 2 as `rm -rf` and is left for the owner)
-- Current node: `gate-qc` (attempt 2, build half — re-grade of the owner-edited brief)
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/codebase-cleanup-pass/`
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 46` | commit `9179a7df` (= origin tip): `DESIGN-BRIEF.md` (712 lines; slices A–J — test speed and temp cleanup, frontend test setup and helpers, passing type/lint checks on, Lambda package and CI and script helpers, combo prefilter K-01, prompt pipeline once, rule-search scoring with order snapshot, In-Depth dead wiring, scanner hook dead returns, dead CSS plus parse check; 68 ids dispositioned: 47 built in whole or part, 14 later package, 3 folded into pending briefs, 1 `codehealth`, 3 owner-only; 26 follow-ups incl. In-Depth duplicate-Stack scan with no message); no `GATE-QUESTIONS.md` (no product truth, no blocker) → no gate; `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree, launch checkout only the pre-existing untracked probe folder | 2026-10-18 |
 | 4 | gate-qc | sonnet | ok | `0 → 36` | PASS, 0 blocking, 5 advisory (A1 `master` trigger vs `PRD/instructions/ci.md:6`; A2 disposition count split 36 + 11; A3 timing wording vs slice E; A4 builder re-reads probe line numbers; A5 slice J PR states Life Tracker table styles are in the dump); ~35 cited source lines matched; collision claims vs `intake/GRAPH-BRIEF-*.md` hold; `QUALITY-CHECK.md` commit `36cbd8ae` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 | 5 | gate-review | driver | ok | `degraded (no run state)` | build half run `graph-20261018-175940`: docs PR #321 merged (`origin/main` `4fa69419`); kickoff worktree removed clean (`git worktree remove`); claim commit `60c00b58` on `thejudge-auto/codebase-cleanup-pass-work` cut from `origin/main` `4fa69419`, pushed; lock taken from the launch root (`node scripts/graph-preflight.mjs --take-lock`); graph canary `nohup true` denied; no `GATE-QUESTIONS.md` → nothing to apply, driver restored `STATUS.refined` (only marker), README status, board row under refined | 2026-10-18 |
+| 6 | gate-qc | sonnet | ok | `0 → 14` | attempt 2 PASS, 0 blocking, 2 advisory (A1 slice K must also fix the moved `useLifeTracker.ts`'s own relative imports — `../../types`, `./counters`, `./persistence`, `./state`, `./types`; A2 some cited lines are still the probes' and marked so); counts re-checked 37 + 12 built of 68; `## Owner decisions` consistent with slices, dispositions, follow-ups 25 and 27; `QUALITY-CHECK.md` commit `2742a2be` (= origin tip); `STATUS.refined` only marker; worktree porcelain empty; launch porcelain unchanged (only the pre-existing untracked probe folder) | 2026-10-18 |
 
 ## Gate verdicts
 
@@ -144,6 +145,30 @@ Outputs: rewrite `QUALITY-CHECK.md` with the attempt-2 verdict (PASS or FAIL) an
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Commit with explicit paths as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`. Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: PASS|FAIL`, blocking findings (each one line), advisory findings (each one line), commit sha, push result (`git ls-remote --heads origin thejudge-auto/codebase-cleanup-pass-work`), and `git status --porcelain` (must be empty).
+
+### plan
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass
+
+You are node 5 (`plan`) of graph run `graph-20261018-175940`, attempt 1. Run the `thejudge-map-out` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass/.claude/skills/thejudge-map-out/SKILL.md and its `reference.md`, and follow them in graph-controlled mode) on the package `PRD/work/codebase-cleanup-pass/`. Work ONLY inside the working directory above, on branch `thejudge-auto/codebase-cleanup-pass-work` — never in /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Inputs: `DESIGN-BRIEF.md` (eleven behavior-preserving slices A–K in a fixed order, with `## Owner decisions`, `## Rules every slice follows`, per-slice detail, and `## Verification commands`), `QUALITY-CHECK.md` (attempt 2 PASS), and the README's `## Preparation gate` (PASS — verify it before writing anything; you cannot self-certify one). There is no `GATE-QUESTIONS.md`: no `PRD/sections/` change is proposed, so no slice writes product truth. The brief already did the research; turn its slice detail into slice docs rather than re-investigating, and re-read source only where a slice doc needs an exact file or line.
+
+Fold in the attempt-2 advisory: slice K's doc must say that moving `useLifeTracker.ts` into `hooks/` also updates that file's own relative imports (`../../types`, `./counters`, `./persistence`, `./state`, `./types`), not only the test's.
+
+Placement: `thejudge-cleanup` deletes `PRD/work/codebase-cleanup-pass/` on this same branch before the owner merges. So anything the code PR must still carry after that — the REQ-202 Life Tracker screenshot pairs for slices J and K, and the slice J computed-style dumps if the brief means them to be kept — must live outside `PRD/work/`, for example under `docs/design/codebase-cleanup-pass/`. Throwaway captures used only during verification may sit in `PRD/work/codebase-cleanup-pass/.playwright-mcp/`. State the chosen location in GAMEPLAN.md and in each affected slice doc.
+
+Criteria files: emit one `slice-<letter>.criteria.json` per slice, every criterion `false`, each with an evidence block per the map-out reference. Evidence must be something the build node does inside this worktree before the code PR is opened: no post-merge or post-deploy checks, and no check that needs the owner. A command criterion should name the exact command the slice doc tells the builder to run.
+
+Outputs: `GAMEPLAN.md`, `slice-a.md` … `slice-k.md`, the eleven criteria files, `STATUS.active` as the only marker, and the board row moved to active in `PRD/work/STATUS.md`. Do not edit `GRAPH-RUN.md`, the README's `## Preparation gate` or `## Autonomous metadata`, `PRD/sections/`, or any code.
+
+Budget: this node has a 120 tool-call cap. Verify directly: spawn no subagents or forks, do no sleeping or polling. Write each file in one Write call where you can.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Commit with explicit paths as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`. Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, files written, one line per slice (letter, title, criteria count), the deliverable location you chose, commit sha, push result (`git ls-remote --heads origin thejudge-auto/codebase-cleanup-pass-work`), and `git status --porcelain` (must be empty).
 
 ## Instruction ledger
 
