@@ -91,6 +91,11 @@ Each item was recorded and never built. "Decision" says what the owner or the ne
 - **Combo prefilter log.** After slice E, a corrupt combo that can never be complete is no longer fetched, so it no longer logs its integrity warning. Slice E's test decodes every committed combo and asserts none is corrupt, so this cannot happen with committed data. Add a runtime sweep only if wanted.
 - **Speed up combo matching when the question has combo wording.** Slice E only helps questions without combo wording. Needs its own measurement first.
 
+**Tests**
+
+- **Restore a test that pins the exact restored text.** Slice H dropped the `hiddenInitialQuestion` assertion from the restore test in `useAskAiSubmitOrchestration.test.ts`, so nothing now proves a resumed In-Depth question comes back with its exact text. Add `hiddenInitialQuestion: 'Resumed question'` to that test's `onConversationUpdated` matcher. Found in review; no decision needed.
+- **Consider moving slice E's `{ prefilter: false }` reference switch into a test helper.** The combo-prefilter equivalence test needs a way to run the old unfiltered scan, and slice E put that switch in `apps/backend/src/commanderSpellbook/matcher.ts` (production code) rather than a test helper. Moving it keeps a test-only path out of the matcher. Not built because it is a preference, not a defect. Decision: whether a test-only option in the matcher is acceptable.
+
 **Tooling and scripts**
 
 - **React Compiler lint hits (26 + 19 + 2) and the larger TypeScript flags** (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noPropertyAccessFromIndexSignature`). Each reports real hits today, so each needs product-code edits across many files. Slice C turned on only checks with zero hits. Counts and files: `evidence/FINDINGS-scripts-tooling-tests.md` T-07, T-08 and `FINDINGS-frontend-code-quality.md`.

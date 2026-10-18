@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [codebase-cleanup-pass](codebase-cleanup-pass/) | All eleven slices done (113 of 113 criteria); Q-11 and the other follow-ups deferred by the owner to `PRD/ideasForLater/codebase-cleanup-followups/`. Code PR #322 open |
 
 ## active
 
