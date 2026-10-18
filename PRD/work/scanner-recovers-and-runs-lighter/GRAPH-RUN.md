@@ -1,13 +1,13 @@
 # Graph run — scanner-recovers-and-runs-lighter
 
-- Run ID: `graph-20261018-055113`
-- Profile: `loaded (env sentinel)`
-- Canary: `denied — hook live (rm -rf canary: [graph-boundary] rm -rf is denied in every session; graph canary nohup: denied while a graph run holds the lock)`
-- Autonomous base: `origin/thejudge-auto/scanner-recovers-and-runs-lighter` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-recovers-and-runs-lighter` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter` by the build half's claim)
+- Run ID: `graph-20261018-055113` (spec-forming half); `graph-20261018-063434` (build half)
+- Profile: `loaded (env sentinel)` at node 1; build half `unverified`
+- Canary: `denied — hook live (rm -rf canary: [graph-boundary] rm -rf is denied in every session; graph canary nohup: denied while a graph run holds the lock)`; build half: graph canary `nohup true` denied (`nohup` is denied while a graph run holds the lock)
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-055113/` (one file, `GRAPH-BRIEF-scanner.md`, copied verbatim to `PRD/work/scanner-recovers-and-runs-lighter/intake/`)
-- Current node: `owner-action`
-- Next action: answer `PRD/work/scanner-recovers-and-runs-lighter/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` picks it up
+- Current node: `gate-review`
+- Next action: `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` (build half claimed on `thejudge-auto/scanner-recovers-and-runs-lighter-work`; resume from the `STATUS.*` marker in the build worktree)
 
 ## Node ledger
 

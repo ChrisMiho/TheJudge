@@ -14,7 +14,7 @@ Card scanning recovers from a failed download, builds its data once, and the thr
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/scanner-recovers-and-runs-lighter
+- Autonomous base: origin/main
 
 ## Preparation gate
 
