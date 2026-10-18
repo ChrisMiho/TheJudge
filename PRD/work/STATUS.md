@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first |
 
 ## owner-action
 
