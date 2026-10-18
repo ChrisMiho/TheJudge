@@ -1,17 +1,19 @@
 # Quality check — codebase-cleanup-pass
 
-Result: **PASS**
+Result: **PASS** (attempt 2)
 
 Checked artifact: `PRD/work/codebase-cleanup-pass/DESIGN-BRIEF.md`
-Mode: graph-controlled, run `graph-20261018-162925`, node `gate-qc`, attempt 1.
-Package status stays `STATUS.refined`. The Preparation gate section is the driver's.
+Mode: graph-controlled, run `graph-20261018-175940`, node `gate-qc`, attempt 2.
+Attempt 1 (run `graph-20261018-162925`) passed; this is a full re-grade after the
+owner's four answers edited the brief. Package status stays `STATUS.refined`.
+The Preparation gate section is the driver's.
 
 ## Verdict in plain words
 
-Players see no change in any of the ten slices, and each slice names the test
-that proves it. No slice edits a protected path. No slice contradicts a
-`PRD/sections/` page. No blocking issue. Five advisory items follow; none needs
-a refinement round.
+Players see no change in any of the eleven slices, and each slice names the test
+that proves it. The owner's four decisions are consistent across the top section,
+the slice text, the disposition table and the follow-ups. Attempt 1's advisories
+A1, A2, A3 and A5 are fixed. No blocking issue. Two small advisories follow.
 
 ## Blocking findings
 
@@ -19,95 +21,65 @@ None.
 
 ## Advisory findings
 
-1. **T-11 contradicts one line of `PRD/instructions/ci.md`.** Slice D drops the
-   `master` push trigger from `.github/workflows/quality-check.yml:7`. `ci.md:6`
-   says the gate runs "on every push to `main`/`master`". It is an instructions
-   file, not a `PRD/sections/` page, so it is not a product-truth change. But the
-   brief's "Product truth: none" check only grepped `sections/`. Fix at
-   map-out: add "update `ci.md:6` to say `main`" to slice D, or keep the trigger.
-2. **The brief's counts disagree with its own table.** "Built 47 (27 fully, 20 in
-   part)": the disposition table has 47 rows that start with "built", of which
-   36 are plain "built" and 11 are "built in part". The 47 and the 68 total hold
-   (47 + 14 later + 3 brief + 1 codehealth + 3 owner = 68). Only the 27/20 split
-   is wrong. Fix the split or drop it.
-3. **"Same timing" vs slice E's speed gain.** The top section says timing does not
-   change, then says slice E saves up to about 170 ms of server work. The gain is
-   real and harmless, but the sentence should say "same timing, except
-   In-Depth combo matching gets faster".
-4. **Several cited lines are the probe's, not this worktree's.** Marked as such in
-   the brief, and the builder is told to re-read them first. Examples that
-   checked out in this tree but need a re-read: file paths given as bare names
-   (`MtgAssistantApp.tsx`, `EnrichmentStep.tsx`) and the `index.css` line list in
-   C-02.
-5. **Life Tracker CSS in slice J.** REQ-202 says Life Tracker's table is
-   untouched. Slice J folds `.lt-scope .tile` rules and deletes
-   `.lt-scope .tile.pulse .n` and `.life-custom .err`. These are sheet/tile
-   rules guarded by the computed-style dump and the screenshot pair, and
-   `lib/lifeTracker/` is untouched, so this is consistent. The slice's PR should
-   state that the table's computed styles are in the dump.
+1. **Slice K names the test's imports but not the hook's own.** The brief says to
+   update "the test's own relative imports". `useLifeTracker.ts` also has relative
+   imports (`../../types`, `./counters`, `./persistence`, `./state`, `./types`,
+   and the block at `:5`) that break when it moves to `hooks/`. The builder will
+   hit this at typecheck; one added clause ("and the hook's own") makes it exact.
+2. **Cited lines are still partly the probes'.** Marked as such, and the builder
+   re-reads them first. Nothing sampled this time was off.
 
-## Specific checks requested
+## Edited parts, checked
 
-- **Every slice states how players see no change.** Yes: A through J each have a
-  Proof line (same test names and counts; byte-identical goldens; order snapshot;
-  identical bundle; identical `dist` file list apart from test files; deep-equal
-  combo pipeline; computed-style dump and CSS diff for J).
-- **Protected paths and REQ-frozen files.** None edited. `.claude/**`,
-  `CLAUDE.md`, `scripts/graph-boundary-hook.mjs` and the `thejudge-*` and
-  `codehealth` skills appear only as exclusions. T-14 (`boundary-rules.mjs`) is
-  left to the owner. REQ-202 (Life Tracker, `lib/lifeTracker/`) is honored: the
-  Q-10 `useLifeTracker` move and the barrel are owner calls, and the screenshot
-  pair is bound to slice J.
-- **No silent change to a `PRD/sections/` statement.** Grepped the sections and
-  instructions for the names slices change or remove: `Answer` plate,
-  `hiddenInitialQuestion`, `blockedNotice`, the dead CSS classes and keyframes,
-  glow tokens, `screens.xs`, `accent.contrast`, `@tailwind`, `nproc`,
-  `build-card-metadata.d.ts`, `SURFACE_DISTANCE`, `LOW_CONFIDENCE_ESCALATION_COUNT`,
-  `ScanCameraStatus`, `randomId`, `resolveRunEnv`, `turnStepSearchName`,
-  `tsconfig.build`. No section states any of them. Hits that look relevant are
-  harmless: `build-card-metadata.mjs` (the script, not the `.d.ts`);
-  `getPromptDiagnostics` (the history-budget statement survives; only the unused
-  bare-rulings overload goes); `enrichmentDebug.ts` (kept, mock-only sidecar,
-  bytes unchanged); `useTradeScan` and `useScanCapture` (named by path only).
-  The one hit is advisory 1 (`ci.md`, not a section).
-- **No product decision hidden in the brief.** The brief routes every behavior
-  change to Follow-ups and builds none. No genuine blocker.
-- **File-collision claims against `intake/GRAPH-BRIEF-*.md` hold.** Backend-health
-  names `gameRulesRetrieval.ts:359-372` (loaders), `catalog.ts`, `createApp.ts`,
-  `askAi.ts`, `ruleLayout.ts`, `askAiRequest.ts`; slice E keeps its count in
-  `matcher.ts`, slice G stays below `:372`. Card-search names
-  `QuickLookupApp`, `ZoneCardPicker`, `ZoneCollectionStep`, `MtgAssistantApp`
-  card-list effect (`:289-307`); slice H edits the submit handlers only. Card-rings
-  names `glows.css:31/72`, `flow.css`, `index.css` ring and theme blocks; slice J
-  leaves them. No pending brief names `matcher.ts`, `preparation.ts`,
-  `promptFormatting.ts`, `EnrichmentStep`, `useScanCapture`, `tuning.ts`,
-  `test/setup.ts`, tsconfig, eslint or the CI file. `PRD/work/` holds only this
-  package, as the brief says. Textual overlap in `index.css` (card-rings and
-  pop-ups dedupe blocks there) is handled by the brief's "second to merge
-  rebases" rule.
-- **Sampled source lines match this worktree** (about 35 spot checks, all
-  consistent): `matcher.ts:355-390` (`selectComboCandidates`); `buildCandidate`
-  and `fullyAssigned = missingCount === 0` (the slice E precondition is
-  plausible: a missing exact ingredient adds to `missingCount`); `preparation.ts:109,124`
-  casts; `promptFormatting.ts:98-104` reduce and `:359` unused `_selectedZones`;
-  `gameRulesRetrieval.ts` `computeIdBoost`, the boost at `:1083`, `boostOf`
-  at `:1302-1309`; `promptDiagnostics.ts:40` overload; `enrichmentDebug.ts`
-  imports Zod and never `.parse()`s; `test/setup.ts:4-7`; `index.css:1086, 3510`
-  stray `};` and `:1` `@tailwind components`; `flow.css:446`
-  `[hidden]`; `glows.css:9,15-18`; `tailwind.config.ts` `xs` and `contrast`;
-  `useScanCapture.ts:581-598` returns; `EnrichmentStep.tsx:643` fake event;
-  `.prettierrc.json` `semi: false`; `build-card-metadata.d.ts` wildcard;
-  `privacy-scan.mjs:14` and `score-rule-search.mjs:36` hard-coded path;
-  `tuning.ts:31,34` unreferenced constants; `LOW_CONFIDENCE_ESCALATION_COUNT`
-  used only by its test; `rulesGate.test.ts:114`, `matcher.test.ts:729`,
-  `ragRetrievalBenchmark.test.ts:47-48`; `quality-check.yml:7,48,255`;
-  `aws-deploy.sh:121` rebuilds the frontend; `package-lambda.sh` copies only
-  `apps/backend/dist` and uses nothing from the frontend build; no non-test
-  backend module imports `src/eval/`. Q-04's premise holds: `answer` is set with
-  a non-empty conversation (`useAskAiSubmitOrchestration.ts:162,178`) and both
-  reset paths clear it with the conversation.
+- **Counts.** Counted the disposition table by kind: built in full 37, built in
+  part 12 (49 built), later 14, pending brief 3, `codehealth` 1, owner 1. Total
+  68; the "other 19" is 14 + 3 + 1 + 1. The brief's "37 fully, 12 in part" and
+  "49 of 68" both match. (Attempt 1's 27/20 error is fixed.)
+- **`## Owner decisions` vs the rest.** Decision 1 (drop `master`, edit `ci.md`)
+  is slice D's T-11 and the table row. Decision 2 (remove the two personal
+  files) is T-17 in slice D, the table, and the protected/owner-only list.
+  Decision 3 (Life Tracker cleanups) is slice K, the table rows for C-09, Q-10,
+  Q-12, rule 9, the verification list and follow-up 27. Decision 4 (Prettier
+  later) is Q-18 and follow-up 25. No contradiction found.
+- **Slice K facts.** `PlayerLifeTrackerApp.tsx:39-40` holds the Game setup
+  header `<p>` (five classes) and `<h2>` (three classes): eight. The
+  `[data-testid="life-tracker-game-setup"] .sheet-legacy-head p/h2` rules at
+  `index.css:5312-5329` set font size, weight, case, spacing, colour and line
+  height, and win by specificity, so removing the classes keeps the pixels. The
+  `SheetShell` wraps the head in `.sheet-legacy-head` (`SheetShell.tsx:186`).
+  `lib/lifeTracker/index.ts` is imported by nothing (bare `lib/lifeTracker` and
+  `index` greps are empty). The only `useLifeTracker` importer is
+  `PlayerLifeTrackerApp.tsx:7`; the jsdom entry is at `vite.config.ts:62`; no
+  other config names the old path. The pop-ups brief's `SheetShell` at `:31`
+  overlap is named and handled ("second to land rebases").
+- **REQ-202 honored.** `screen-layout.md:223` says the table is pixel-untouched
+  and every touching slice attaches the 390x844 and 1440x900 pair. Slice K only
+  touches the Game setup sheet header and moves code files; it binds the pair
+  (rule 9, slice K proof, verification list). No other REQ freezes these files.
+- **Slice D new items.** `ci.md:6` reads "every push to `main`/`master`" and the
+  workflow lists `master` at `:7`, so both edits are real and consistent.
+  `exampleoutput.txt` and `purple-gold-handoff/` (three files) are tracked;
+  nothing outside the work package, its intake and run log names either. `ci.md`
+  is an instructions file, not a `PRD/sections/` page, so no proposal is needed.
+- **Disjointness.** Slice K shares no file with another slice; the "two
+  exceptions" sentence still holds.
+
+## Attempt-1 checks kept
+
+- **Every slice states how players see no change.** A through K each have a Proof
+  block.
+- **Protected paths and REQ-frozen files.** None edited. They appear only as
+  exclusions; T-14 stays with the owner.
+- **No silent `PRD/sections/` change.** Nothing the owner's edits add (Life
+  Tracker files, the two personal files, `ci.md`) is stated by a section beyond
+  REQ-202's screenshot-pair rule, which the brief follows.
+- **No genuine product decision hidden.** Every behavior change is a follow-up.
+- **Collisions with `intake/GRAPH-BRIEF-*.md` hold.** Re-read the four briefs; the
+  only new overlap is pop-ups' `PlayerLifeTrackerApp.tsx:31`, handled above.
+- **Spot checks in this worktree** (all matched): `quality-check.yml:7,48,255`;
+  `index.css:1086, 3510` stray `};`; `rulesGate.test.ts:114`;
+  `privacy-scan.mjs:14` hard-coded path; `EnrichmentStep.tsx:643` fake form
+  event. Attempt 1 sampled about 35 more lines in the same tree.
 - **Agent-readiness.** Each slice lists findings, changes, confinement, proof and
-  the stop rule (revert and record). Verification commands are listed per slice
-  and overall. Stack order, one endpoint and "no rules engine" are not touched.
-  Assumptions are recorded. No screen is added or redesigned, so no
-  `screen-layout.md` row is needed.
+  the stop rule. No screen is added or redesigned, so no `screen-layout.md` row
+  is needed.
