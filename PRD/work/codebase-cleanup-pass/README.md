@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # codebase-cleanup-pass
 
@@ -10,6 +10,25 @@ A behavior-preserving health pass over the code: clearer structure, faster and c
 - Design brief: `DESIGN-BRIEF.md` — eleven behavior-preserving slices (A–K; K added by owner decision on 2026-10-18), a disposition for every Q-, C-, K-, T- finding, follow-ups. No product-truth change, so no `GATE-QUESTIONS.md`.
 - Quality check: `QUALITY-CHECK.md` — PASS, five advisory findings.
 - Next step: the owner reviews the docs PR and merges it; `graph-implement` builds it.
+- Gameplan: `GAMEPLAN.md`. REQ-202 screenshot pairs for J and K are kept in `docs/design/codebase-cleanup-pass/` (outside `PRD/work/`).
+
+## Slices
+
+Built strictly in order; each ships alone.
+
+| Slice | Doc | Depends on | Status |
+| --- | --- | --- | --- |
+| A | [slice-a.md](slice-a.md) — backend tests faster, no leaked temp folders | none | planned |
+| B | [slice-b.md](slice-b.md) — frontend tests: lighter setup, shared helpers | none | planned |
+| C | [slice-c.md](slice-c.md) — passing checks switched on | none | planned |
+| D | [slice-d.md](slice-d.md) — ship only what runs; shared script helpers | A | planned |
+| E | [slice-e.md](slice-e.md) — combo matching skips incomplete combos | none | planned |
+| F | [slice-f.md](slice-f.md) — prompt pipeline written once | none | planned |
+| G | [slice-g.md](slice-g.md) — rule search scoring behind an order snapshot | E, F | planned |
+| H | [slice-h.md](slice-h.md) — In-Depth question flow loses dead wiring | none | planned |
+| I | [slice-i.md](slice-i.md) — scanner hook keeps only what screens use | none | planned |
+| J | [slice-j.md](slice-j.md) — dead and duplicated CSS goes; parse errors fail the build | B | planned |
+| K | [slice-k.md](slice-k.md) — Life Tracker cleanups | J | planned |
 
 ## Autonomous metadata
 

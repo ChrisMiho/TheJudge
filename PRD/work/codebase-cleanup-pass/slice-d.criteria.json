@@ -1,0 +1,17 @@
+{
+  "slug": "codebase-cleanup-pass",
+  "slice": "D",
+  "criteria": [
+    { "id": "D1", "statement": "tsconfig.build.json exists, extends tsconfig.json, excludes tests, test-utils and eval (unless an importer was found); build script uses it", "value": false, "evidence": { "paths": ["apps/backend/tsconfig.build.json"] } },
+    { "id": "D2", "statement": "Backend dist file list differs from the base only by test, test-utils and eval files disappearing", "value": false, "evidence": { "command": "find apps/backend/dist" } },
+    { "id": "D3", "statement": "quality-check.yml deploy job builds backend only with no nproc step and no master trigger; ci.md says every push to main", "value": false, "evidence": { "paths": [".github/workflows/quality-check.yml", "PRD/instructions/ci.md"] } },
+    { "id": "D4", "statement": "exampleoutput.txt and purple-gold-handoff/ are removed after a reference grep recorded in the evidence log", "value": false, "evidence": { "command": "git rm" } },
+    { "id": "D5", "statement": "fs-helpers.mjs exists with its test and no script keeps a private ensureParentDirectory", "value": false, "evidence": { "paths": ["scripts/lib/fs-helpers.mjs"] } },
+    { "id": "D6", "statement": "practice-suite.mjs exists, both scripts use it, and the resolved path matches before and after from main and from a worktree", "value": false, "evidence": { "manual": true } },
+    { "id": "D7", "statement": "resolveRunEnv and sumOf live in scripts/lib with a re-export from eval-answer-quality.mjs", "value": false, "evidence": { "paths": ["scripts/eval-answer-quality.mjs"] } },
+    { "id": "D8", "statement": "Script tests are green including lambda-package-budget and ci-workflow-parity", "value": false, "evidence": { "command": "npm run test:scripts" } },
+    { "id": "D9", "statement": "deploymentPipeline frontend test is green", "value": false, "evidence": { "command": "deploymentPipeline" } },
+    { "id": "D10", "statement": "Backend tests are green and backend typecheck exits 0", "value": false, "evidence": { "command": "npm --workspace apps/backend run typecheck" } },
+    { "id": "D11", "statement": "Lint and format:check exit 0", "value": false, "evidence": { "command": "npm run format:check" } }
+  ]
+}

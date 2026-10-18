@@ -1,0 +1,17 @@
+{
+  "slug": "codebase-cleanup-pass",
+  "slice": "A",
+  "criteria": [
+    { "id": "A1", "statement": "rulesGate.test.ts calls runGate() once and both tests assert against that result", "value": false, "evidence": { "paths": ["apps/backend/src/eval/rules-gate/rulesGate.test.ts"] } },
+    { "id": "A2", "statement": "matcher.test.ts writes the at-scale catalog files once in beforeAll and loads a fresh catalog per test", "value": false, "evidence": { "paths": ["apps/backend/src/commanderSpellbook/matcher.test.ts"] } },
+    { "id": "A3", "statement": "ragRetrievalBenchmark.test.ts baseline test reuses first; the determinism test still scores twice", "value": false, "evidence": { "paths": ["apps/backend/src/eval/ragRetrievalBenchmark.test.ts"] } },
+    { "id": "A4", "statement": "Vitest and node:test makeTempDir helpers exist and register removal; no test file calls mkdtemp directly", "value": false, "evidence": { "command": "grep.*mkdtemp" } },
+    { "id": "A5", "statement": "scripts/lib/fake-embedding-model.mjs removes the temp folders it creates", "value": false, "evidence": { "paths": ["scripts/lib/fake-embedding-model.mjs"] } },
+    { "id": "A6", "statement": "Backend test suite is green with the same pass count as the base", "value": false, "evidence": { "command": "npm --workspace apps/backend run test" } },
+    { "id": "A7", "statement": "Script test suite is green with the same pass count as the base", "value": false, "evidence": { "command": "npm run test:scripts" } },
+    { "id": "A8", "statement": "Backend typecheck exits 0", "value": false, "evidence": { "command": "npm --workspace apps/backend run typecheck" } },
+    { "id": "A9", "statement": "TMPDIR entry count after a full backend and scripts test run has not grown versus before (both numbers recorded)", "value": false, "evidence": { "manual": true } },
+    { "id": "A10", "statement": "Backend wall time before and after is recorded and after is lower", "value": false, "evidence": { "manual": true } },
+    { "id": "A11", "statement": "Eval goldens are byte-identical to origin/main", "value": false, "evidence": { "command": "git diff --stat origin/main -- apps/backend/src/eval/fixtures" } }
+  ]
+}

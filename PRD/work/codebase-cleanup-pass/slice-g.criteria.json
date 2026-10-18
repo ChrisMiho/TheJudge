@@ -1,0 +1,17 @@
+{
+  "slug": "codebase-cleanup-pass",
+  "slice": "G",
+  "criteria": [
+    { "id": "G1", "statement": "The rule search order snapshot test exists, covers every rules-gate case on both paths, and was committed before any scoring edit", "value": false, "evidence": { "command": "git log --oneline" } },
+    { "id": "G2", "statement": "accumulateWordOverlap is the only word-overlap loop and the boost is added in scoreEntry's order", "value": false, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.ts"] } },
+    { "id": "G3", "statement": "selectSupplemental no longer recomputes the boost; vector lengths, cited-rule ids and glossary patterns are cached", "value": false, "evidence": { "paths": ["apps/backend/src/gameRulesRetrieval.ts"] } },
+    { "id": "G4", "statement": "turnStepSearchName derives from phaseGuidance tables with an exhaustive phase x combat-step test and no new import cycle", "value": false, "evidence": { "paths": ["apps/backend/src/prompt/phaseGuidance.ts"] } },
+    { "id": "G5", "statement": "One escapeRegExp and one foldApostrophes serve all six listed sites", "value": false, "evidence": { "paths": ["apps/backend/src/gameRulesStemmer.ts", "apps/backend/src/gameRulesConceptMap.ts", "apps/backend/src/commanderSpellbook/intent.ts"] } },
+    { "id": "G6", "statement": "In-file-only exports in the eight listed files are no longer exported and nothing broke", "value": false, "evidence": { "paths": ["apps/backend/src/gameRulesTopicSelection.ts", "apps/backend/src/commanderSpellbook/formatting.ts", "apps/backend/src/prompt/promptDiagnostics.ts"] } },
+    { "id": "G7", "statement": "The order snapshot test passes unchanged after the final step", "value": false, "evidence": { "command": "npm --workspace apps/backend run test -- ruleSearchOrder" } },
+    { "id": "G8", "statement": "Retrieval, search-fixes, rules-gate, report-parity, stemmer, concept-map, phase-guidance and intent tests pass", "value": false, "evidence": { "command": "npm --workspace apps/backend run test" } },
+    { "id": "G9", "statement": "Eval goldens are byte-identical to origin/main", "value": false, "evidence": { "command": "git diff --stat origin/main -- apps/backend/src/eval/fixtures" } },
+    { "id": "G10", "statement": "Backend typecheck exits 0", "value": false, "evidence": { "command": "npm --workspace apps/backend run typecheck" } },
+    { "id": "G11", "statement": "gameRulesRetrieval.ts has no hunk in the loader block and no changed public signature", "value": false, "evidence": { "command": "git diff origin/main -- apps/backend/src/gameRulesRetrieval.ts" } }
+  ]
+}

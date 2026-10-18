@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [codebase-cleanup-pass](codebase-cleanup-pass/) | Docs PR #321 merged; build half on `thejudge-auto/codebase-cleanup-pass-work`; mapped into slices A-K |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| [codebase-cleanup-pass](codebase-cleanup-pass/) | Docs PR #321 merged; build half claimed (`thejudge-auto/codebase-cleanup-pass-work`); re-running quality-check on the owner-edited brief |
 
 ## refining
 

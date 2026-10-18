@@ -1,0 +1,16 @@
+{
+  "slug": "codebase-cleanup-pass",
+  "slice": "J",
+  "criteria": [
+    { "id": "J1", "statement": "Built CSS before and after differ only by deleted rules; surviving rules keep values and relative order", "value": false, "evidence": { "manual": true } },
+    { "id": "J2", "statement": "Computed style of every element on each tool in two colour profiles is identical before and after, Life Tracker table included", "value": false, "evidence": { "paths": ["docs/design/codebase-cleanup-pass/slice-j/computed-style-summary.md"] } },
+    { "id": "J3", "statement": "Frontend build prints zero CSS warnings", "value": false, "evidence": { "command": "npm --workspace apps/frontend run build" } },
+    { "id": "J4", "statement": "The Frontend - Stylesheets postcss test exists, fails on any parse warning, and passes", "value": false, "evidence": { "command": "npm --workspace apps/frontend run test" } },
+    { "id": "J5", "statement": "Full frontend suite is green and no stylesheet-reading guard test was edited", "value": false, "evidence": { "command": "git diff --name-only origin/main" } },
+    { "id": "J6", "statement": "Four REQ-202 Life Tracker screenshots are committed under docs/design/codebase-cleanup-pass/slice-j/ and show no visible difference", "value": false, "evidence": { "paths": ["docs/design/codebase-cleanup-pass/slice-j/before-390x844.png", "docs/design/codebase-cleanup-pass/slice-j/after-390x844.png", "docs/design/codebase-cleanup-pass/slice-j/before-1440x900.png", "docs/design/codebase-cleanup-pass/slice-j/after-1440x900.png"] } },
+    { "id": "J7", "statement": "slice-j README holds PR-ready text naming the screenshot pair and the computed-style dump including the Life Tracker table", "value": false, "evidence": { "paths": ["docs/design/codebase-cleanup-pass/slice-j/README.md"] } },
+    { "id": "J8", "statement": "Card-rings-owned and pop-ups-owned CSS, body/html/*, StepEyebrow and the ring blocklist are untouched", "value": false, "evidence": { "manual": true } },
+    { "id": "J9", "statement": "Frontend typecheck and repo lint exit 0", "value": false, "evidence": { "command": "npm --workspace apps/frontend run typecheck" } },
+    { "id": "J10", "statement": "Browser closed, owned server stopped, port released, captures written to PRD/work/codebase-cleanup-pass/.playwright-mcp/ and paths recorded", "value": false, "evidence": { "manual": true } }
+  ]
+}

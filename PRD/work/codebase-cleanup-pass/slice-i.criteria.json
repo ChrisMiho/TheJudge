@@ -1,0 +1,16 @@
+{
+  "slug": "codebase-cleanup-pass",
+  "slice": "I",
+  "criteria": [
+    { "id": "I1", "statement": "useScanCapture returns none of the seven removed values and still returns blockedNotice", "value": false, "evidence": { "paths": ["apps/frontend/src/hooks/useScanCapture.ts"] } },
+    { "id": "I2", "statement": "useTradeScan has no scan-map side channel and the scan hook has no per-hook scan-map promise; module loaders unchanged", "value": false, "evidence": { "paths": ["apps/frontend/src/hooks/useScanCapture.ts"] } },
+    { "id": "I3", "statement": "ScanCameraStatus lives in lib/scan/types.ts and the type cycle is gone", "value": false, "evidence": { "paths": ["apps/frontend/src/lib/scan/types.ts"] } },
+    { "id": "I4", "statement": "SURFACE_DISTANCE and MAX_SURFACED_CANDIDATES are deleted with zero references", "value": false, "evidence": { "paths": ["apps/frontend/src/lib/scan/tuning.ts"] } },
+    { "id": "I5", "statement": "LOW_CONFIDENCE_ESCALATION_COUNT is no longer an export used only by a test", "value": false, "evidence": { "paths": ["apps/frontend/src/hooks/useScanCapture.ts"] } },
+    { "id": "I6", "statement": "Scan hook, Trade scan, loader and host scan tests pass and the same printing resolves for every Trade scan", "value": false, "evidence": { "command": "npm --workspace apps/frontend run test -- scan" } },
+    { "id": "I7", "statement": "Full frontend suite is green and any test count change is explained", "value": false, "evidence": { "command": "npm --workspace apps/frontend run test" } },
+    { "id": "I8", "statement": "Frontend typecheck exits 0", "value": false, "evidence": { "command": "npm --workspace apps/frontend run typecheck" } },
+    { "id": "I9", "statement": "Lint exits 0", "value": false, "evidence": { "command": "npm run lint" } },
+    { "id": "I10", "statement": "Of the card-search-owned files only the ZoneCollectionStep test mock changed", "value": false, "evidence": { "command": "git diff --name-only origin/main" } }
+  ]
+}
