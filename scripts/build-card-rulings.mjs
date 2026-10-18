@@ -2,27 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import zlib from "node:zlib";
-import { ensureParentDirectory, formatBytes } from "./lib/fs-helpers.mjs";
+import { brotliCompress, ensureParentDirectory, formatBytes } from "./lib/fs-helpers.mjs";
 
 const inputPath = path.resolve("apps/backend/data/scryfall/rulings.json");
 const metadataPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
 const outputPath = path.resolve("apps/backend/data/cardRulingsByOracleId.json.br");
-
-/**
- * Brotli-compress with the fixed, named params this repository uses
- * everywhere: quality 11, a size hint set to the raw input length, no
- * `dictionary` option (Node 22 in CI silently ignores a brotli dictionary
- * while Node 24 on Lambda honours it, which would make CI and Lambda
- * disagree).
- */
-function brotliCompress(buffer) {
-  return zlib.brotliCompressSync(buffer, {
-    params: {
-      [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
-      [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length
-    }
-  });
-}
 
 function normalizeInlineWhitespace(value) {
   return value.replace(/\s+/g, " ").trim();
