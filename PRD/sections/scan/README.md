@@ -384,7 +384,8 @@ product truth, and are recorded here as the current shipped configuration.
 The engine and control layer live under `apps/frontend/src/lib/scan/`
 (`recipe.ts`, `identify.ts`, `dbformat.ts`, `detector.ts`, `stabilizer.ts`,
 `tuning.ts`, `frameQuality.ts`, `frameSelection.ts`, `resolveScanCandidates.ts`,
-`loadScanMap.ts`, `audioPrefs.ts`, with golden and detector fixtures under
+`loadHashDb.ts`, `loadScanMap.ts`, `loadScanResources.ts` (the one shared
+identifier), `audioPrefs.ts`, with golden and detector fixtures under
 `__fixtures__/`); the camera and overlay UI in
 `apps/frontend/src/components/` (`ScanCameraSurface.tsx`, `ScanCardOutline.tsx`,
 `ScanDebugOverlay.tsx`, `ScanReviewBubble.tsx`, `ZoneCardPicker.tsx`,

@@ -1,6 +1,6 @@
 # Slice B — Shared identifier and per-frame work
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -206,23 +206,45 @@ export function regionDistance(q: Uint8Array, db: Uint8Array, dbOff: number): nu
   return (r + g + b) / 3;
 }
 
+/**
+ * Indices of the `count` smallest values in `dists[0..n)`, ascending by value
+ * and, among equal values, by lower index first — the same prefix a stable
+ * full sort of the index range would give, without sorting all `n`.
+ */
+export function selectSmallest(dists: ArrayLike<number>, n: number, count: number): number[] {
+  const top: number[] = [];
+  if (count <= 0) return top;
+  for (let i = 0; i < n; i++) {
+    const d = dists[i];
+    if (top.length >= count && d >= dists[top[top.length - 1]]) continue;
+    // Insert after every entry with a value <= d, so earlier indices win ties.
+    let pos = top.length;
+    while (pos > 0 && dists[top[pos - 1]] > d) pos--;
+    top.splice(pos, 0, i);
+    if (top.length > count) top.pop();
+  }
+  return top;
+}
+
 export class CardIdentifier {
   readonly ids: string[] = [];
   private readonly db: Uint8Array; // N*96
 
   constructor(database: HashDb) {
-    const keepHashes: Uint8Array[] = [];
+    // One pass: count the searchable entries, preallocate one buffer, copy each
+    // fingerprint once. `_card_back` is excluded from the searchable set.
+    let keep = 0;
     for (let i = 0; i < database.count; i++) {
-      const slice = database.hashes.subarray(i * 96, i * 96 + 96);
-      if (database.ids[i] === CARD_BACK_ID) {
-        // _card_back is excluded from the searchable set.
-      } else {
-        this.ids.push(database.ids[i]);
-        keepHashes.push(Uint8Array.from(slice));
-      }
+      if (database.ids[i] !== CARD_BACK_ID) keep++;
     }
-    this.db = new Uint8Array(keepHashes.length * 96);
-    keepHashes.forEach((h, i) => this.db.set(h, i * 96));
+    this.db = new Uint8Array(keep * 96);
+    let w = 0;
+    for (let i = 0; i < database.count; i++) {
+      if (database.ids[i] === CARD_BACK_ID) continue;
+      this.ids.push(database.ids[i]);
+      this.db.set(database.hashes.subarray(i * 96, i * 96 + 96), w * 96);
+      w++;
+    }
   }
 
   /** Identify a canonical 745x1040 RGB card image. Mirrors reference/identify.py. */
@@ -248,8 +270,10 @@ export class CardIdentifier {
     const dists = minUp <= minRot ? dUp : dRot;
     const was_rotated = !(minUp <= minRot);
 
-    const order = Array.from({ length: n }, (_, i) => i).sort((a, b) => dists[a] - dists[b]);
-    const candidates: Candidate[] = order.slice(0, topN).map((i) => ({
+    // Bounded top-N selection: keeps the N smallest distances, ties in
+    // lower-index-first order, exactly the stable full sort's first N.
+    const order = selectSmallest(dists, n, topN);
+    const candidates: Candidate[] = order.map((i) => ({
       card_id: canonicalize(this.ids[i]),
       distance: dists[i]
     }));

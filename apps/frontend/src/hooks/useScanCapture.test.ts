@@ -103,6 +103,32 @@ describe("Frontend - Card Scan", () => {
       expect(createIdentifier).toHaveBeenCalledTimes(1);
     });
 
+    it("two scanners using the shared loader get the same resources object", async () => {
+      const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });
+      const shared = Promise.resolve({ identifier, scanMap });
+      const loadResources = vi.fn(() => shared);
+      const mount = () =>
+        renderHook(() =>
+          useScanCapture({
+            cardMetadata,
+            onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+            dependencies: { loadResources }
+          })
+        );
+      const a = mount();
+      const b = mount();
+
+      await act(async () => {
+        await a.result.current.openScan();
+        await b.result.current.openScan();
+        await a.result.current.identify(image);
+        await b.result.current.identify(image);
+      });
+
+      expect(loadResources).toHaveBeenCalledTimes(2);
+      expect(identifier.identify).toHaveBeenCalledTimes(2);
+    });
+
     it("REQ-249: a failed first open shows the plain sentence, and the next open retries and builds the identifier", async () => {
       const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
       const identifier = makeIdentifier({ matched: false, was_rotated: false, candidates: [] });

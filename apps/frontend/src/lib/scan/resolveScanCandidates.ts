@@ -24,6 +24,19 @@ export interface ResolvedScanCandidate {
   scanImageUrl: string;
 }
 
+// The card-id lookup is built once per card-list array, not once per camera frame.
+const metadataLookups = new WeakMap<CardMetadataItem[], Map<string, CardMetadataItem>>();
+
+/** @internal exported for tests: the cached card-id lookup for a card list. */
+export function metadataLookupFor(cardMetadata: CardMetadataItem[]): Map<string, CardMetadataItem> {
+  let lookup = metadataLookups.get(cardMetadata);
+  if (!lookup) {
+    lookup = new Map(cardMetadata.map((item) => [item.cardId, item]));
+    metadataLookups.set(cardMetadata, lookup);
+  }
+  return lookup;
+}
+
 /**
  * Resolve ranked engine candidates (Scryfall printing ids) to existing
  * CardMetadataItem records, collapsing repeated oracle ids to the single best
@@ -37,7 +50,7 @@ export function resolveScanCandidatesRanked(
   scanMap: CardScanMap,
   cardMetadata: CardMetadataItem[]
 ): ResolvedScanCandidate[] {
-  const metadataByCardId = new Map(cardMetadata.map((item) => [item.cardId, item]));
+  const metadataByCardId = metadataLookupFor(cardMetadata);
   const ordered = [...candidates].sort((a, b) => a.distance - b.distance);
 
   const resolved: ResolvedScanCandidate[] = [];

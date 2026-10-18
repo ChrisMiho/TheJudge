@@ -2,8 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import type { ConditionReason } from "../lib/scan/frameQuality";
 import { FrameSelector } from "../lib/scan/frameSelection";
 import { CardIdentifier } from "../lib/scan/identify";
-import { loadHashDb } from "../lib/scan/loadHashDb";
-import { loadScanMap } from "../lib/scan/loadScanMap";
+import { loadScanResources, type ScanResources } from "../lib/scan/loadScanResources";
 import {
   resolveScanCandidatesRanked,
   type CardScanMap
@@ -108,16 +107,18 @@ const INITIAL_CONVERGENCE: ScanConvergence = {
 
 type ScanIdentifier = Pick<CardIdentifier, "identify">;
 
-type ScanResources = {
-  identifier: ScanIdentifier;
-  scanMap: CardScanMap;
-};
-
-export type UseScanCaptureDependencies = {
-  loadHashDb: () => Promise<HashDb>;
-  loadScanMap: () => Promise<CardScanMap>;
-  createIdentifier: (db: HashDb) => ScanIdentifier;
-};
+/**
+ * Production uses the page-wide shared `loadScanResources` (one identifier for
+ * all three scanners). Tests may inject the loaders and identifier factory
+ * separately instead.
+ */
+export type UseScanCaptureDependencies =
+  | { loadResources: () => Promise<ScanResources> }
+  | {
+      loadHashDb: () => Promise<HashDb>;
+      loadScanMap: () => Promise<CardScanMap>;
+      createIdentifier: (db: HashDb) => ScanIdentifier;
+    };
 
 export type ScanHoldCheck = { ok: true } | { ok: false; message: string };
 
@@ -146,11 +147,7 @@ type UseScanCaptureOptions = {
   dependencies?: UseScanCaptureDependencies;
 };
 
-const defaultDependencies: UseScanCaptureDependencies = {
-  loadHashDb,
-  loadScanMap,
-  createIdentifier: (db) => new CardIdentifier(db)
-};
+const defaultDependencies: UseScanCaptureDependencies = { loadResources: loadScanResources };
 
 const EMPTY_IDENTIFY_RESULT: IdentifyResult = {
   matched: false,
@@ -246,15 +243,15 @@ export function useScanCapture({
 
     if (!resourcesPromiseRef.current) {
       // Lazy static scan assets only; real-device NFR-010 size/latency/memory metrics stay at the manual validation gate.
-      const attempt: Promise<ScanResources> = Promise.all([
-        dependencies.loadHashDb(),
-        dependencies.loadScanMap()
-      ]).then(
-        ([db, scanMap]) => {
-          const resources = {
-            identifier: dependencies.createIdentifier(db),
-            scanMap
-          };
+      const loading: Promise<ScanResources> =
+        "loadResources" in dependencies
+          ? dependencies.loadResources()
+          : Promise.all([dependencies.loadHashDb(), dependencies.loadScanMap()]).then(([db, scanMap]) => ({
+              identifier: dependencies.createIdentifier(db),
+              scanMap
+            }));
+      const attempt: Promise<ScanResources> = loading.then(
+        (resources) => {
           resourcesRef.current = resources;
           return resources;
         },

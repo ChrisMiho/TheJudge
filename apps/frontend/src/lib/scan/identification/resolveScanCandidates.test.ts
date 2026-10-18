@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import type { CardMetadataItem } from "../../../types";
 import { deriveCardImageUrl } from "../../cardImage";
 import type { Candidate } from "../types";
-import { resolveScanCandidates, resolveScanCandidatesRanked, type CardScanMap } from "../resolveScanCandidates";
+import {
+  metadataLookupFor,
+  resolveScanCandidates,
+  resolveScanCandidatesRanked,
+  type CardScanMap
+} from "../resolveScanCandidates";
 
 function makeMetadata(cardId: string, name: string, imageId = ""): CardMetadataItem {
   return {
@@ -122,4 +127,11 @@ describe("resolveScanCandidatesRanked — scanImageUrl", () => {
     expect(ranked[0].scanImageUrl).toBe(deriveCardImageUrl("lightning-bolt-oracle-id"));
   });
 });
+
+  it("reuses one card-id lookup per card-list array and builds a new one for a new array", () => {
+    const first = metadataLookupFor(cardMetadata);
+    resolveScanCandidatesRanked([{ card_id: "printing-lightning-bolt", distance: 1 }], scanMap, cardMetadata);
+    expect(metadataLookupFor(cardMetadata)).toBe(first);
+    expect(metadataLookupFor([...cardMetadata])).not.toBe(first);
+  });
 });
