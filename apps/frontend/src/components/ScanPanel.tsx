@@ -1,8 +1,8 @@
-import { ScanCameraSurface, type ScanCameraStatus } from "./ScanCameraSurface";
+import { ScanCameraSurface } from "./ScanCameraSurface";
 import { ScanReviewBubble } from "./ScanReviewBubble";
 import type { HeldScanEntry, ScanAddConfirmation, ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture";
 import type { AcquisitionFrameDiagnostic } from "../lib/scan/acquisitionDiagnostics";
-import type { IdentifyResult, RgbImage } from "../lib/scan/types";
+import type { IdentifyResult, RgbImage, ScanCameraStatus } from "../lib/scan/types";
 
 type ScanPanelProps = {
   /** The host's scanner title, shown at the left of the row above the camera; none on In-Depth (REQ-056). */

@@ -1,3 +1,4 @@
+import { foldApostrophes } from "../gameRulesStemmer.js";
 import type { CombatStep, TurnPhase } from "../types/index.js";
 
 /**
@@ -137,7 +138,7 @@ export const TURN_STEP_ORDER: readonly TurnStepKey[] = [
 ];
 
 /** REQ-238: at most this many step summaries reach a Quick Lookup prompt. */
-export const MAX_NAMED_STEP_SUMMARIES = 3;
+const MAX_NAMED_STEP_SUMMARIES = 3;
 
 /**
  * REQ-238: the one fixed table of the rule book's step and phase names. A Quick Lookup question (or an
@@ -145,7 +146,7 @@ export const MAX_NAMED_STEP_SUMMARIES = 3;
  * is the end step (never "end of turn", which is a duration), "combat damage" is the combat damage step
  * (not the noun), and "draw" is the draw step (not drawing a card).
  */
-export const TURN_STEP_NAME_TABLE: ReadonlyArray<{ key: TurnStepKey; pattern: RegExp }> = [
+const TURN_STEP_NAME_TABLE: ReadonlyArray<{ key: TurnStepKey; pattern: RegExp }> = [
   { key: "untap", pattern: /\buntap step\b/ },
   { key: "upkeep", pattern: /\bupkeep\b/ },
   { key: "draw", pattern: /\bdraw step\b/ },
@@ -161,7 +162,7 @@ export const TURN_STEP_NAME_TABLE: ReadonlyArray<{ key: TurnStepKey; pattern: Re
 
 /** REQ-238: the steps the texts name, de-duplicated, in turn order, at most three. */
 export function namedTurnSteps(texts: readonly string[]): TurnStepKey[] {
-  const haystack = texts.join("\n").toLowerCase().replace(/[‘’]/g, "'");
+  const haystack = foldApostrophes(texts.join("\n").toLowerCase());
   const named = TURN_STEP_NAME_TABLE.filter(({ pattern }) => pattern.test(haystack)).map(({ key }) => key);
   return TURN_STEP_ORDER.filter((key) => named.includes(key)).slice(0, MAX_NAMED_STEP_SUMMARIES);
 }
@@ -207,6 +208,20 @@ function inStepText(key: TurnStepKey): string {
   const { name, body } = STEP_SUMMARIES[key];
   const article = key === "main" ? "a" : "the";
   return `You are in ${article} ${name}. ${body}`;
+}
+
+/**
+ * The turn step a phase (and, in combat, a combat step) is, or undefined for a phase outside the schema
+ * or a combat with no (or an unknown) step. Takes plain strings so a caller holding loose values can ask.
+ */
+export function turnStepKeyFor(phase: string, combatStep?: string): TurnStepKey | undefined {
+  const hasOwn = (table: object, key: string) => Object.prototype.hasOwnProperty.call(table, key);
+  if (phase === "combat") {
+    return combatStep !== undefined && hasOwn(COMBAT_STEP_KEY, combatStep)
+      ? COMBAT_STEP_KEY[combatStep as CombatStep]
+      : undefined;
+  }
+  return hasOwn(PHASE_STEP_KEY, phase) ? PHASE_STEP_KEY[phase as Exclude<TurnPhase, "combat">] : undefined;
 }
 
 export function getPhaseGuidance(phase: TurnPhase, combatStep?: CombatStep): string {

@@ -1,10 +1,10 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { loadComboCatalog, type ComboCardIngredient, type ComboCatalog, type ComboTemplateIngredient, type ComboVariant } from "./catalog.js";
 import { selectComboCandidates, type ComboMatchInstance, type ComboMatchRequest } from "./matcher.js";
+import { makeTempDir } from "../test-utils/tempDir.js";
 
 function cardIngredient(overrides: Partial<ComboCardIngredient> & { cardId: string }): ComboCardIngredient {
   return {
@@ -691,8 +691,8 @@ describe("Backend - Ask AI", () => {
       });
     }
 
-    function loadAtScaleCatalog(variants: ComboVariant[]): ComboCatalog {
-      const dir = mkdtempSync(join(tmpdir(), "combo-at-scale-"));
+    function writeAtScaleCatalogFiles(variants: ComboVariant[]): { detailPath: string; indexPath: string } {
+      const dir = makeTempDir("combo-at-scale-");
       const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
       const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
 
@@ -722,11 +722,22 @@ describe("Backend - Ask AI", () => {
         brotliBlock(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, blocks, variantIds }), "utf8"))
       );
 
-      return loadComboCatalog(detailPath, indexPath);
+      return { detailPath, indexPath };
+    }
+
+    // The files are written once; each test loads its own fresh catalog from them.
+    let atScaleFiles: { detailPath: string; indexPath: string };
+
+    beforeAll(() => {
+      atScaleFiles = writeAtScaleCatalogFiles(generateAtScaleVariants());
+    });
+
+    function loadAtScaleCatalog(): ComboCatalog {
+      return loadComboCatalog(atScaleFiles.detailPath, atScaleFiles.indexPath);
     }
 
     it("resolves candidates via index membership and lazy fetch, never an in-memory array of every variant", () => {
-      const catalog = loadAtScaleCatalog(generateAtScaleVariants());
+      const catalog = loadAtScaleCatalog();
       expect(catalog.variantCount).toBe(VARIANT_COUNT);
       // No `.variants` map exists on the real lazy catalog at all — the type
       // itself no longer offers one; this is the compile-time half of I1.
@@ -734,7 +745,7 @@ describe("Backend - Ask AI", () => {
     });
 
     it("stable top-five ranking holds when the pre-ranking candidate pool is large", () => {
-      const catalog = loadAtScaleCatalog(generateAtScaleVariants());
+      const catalog = loadAtScaleCatalog();
       const instances = [
         instance(POPULAR_CARD_ID, "battlefield"),
         ...WINNING_VARIANTS.map((entry, index) => instance(entry.companion, "battlefield", index))
@@ -759,7 +770,7 @@ describe("Backend - Ask AI", () => {
     });
 
     it("quantity-aware assignment still holds per candidate when the shared oracle id's pool is large", () => {
-      const catalog = loadAtScaleCatalog(generateAtScaleVariants());
+      const catalog = loadAtScaleCatalog();
       // Only one instance of the popular card is submitted; every one of the
       // 2000 variants needs it, but none can borrow another candidate's
       // instance — instance pools are per-candidate, not shared across the

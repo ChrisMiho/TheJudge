@@ -1,10 +1,9 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { RUBRIC_REVISION } from "./rubric.js";
 import {
   compareRecords,
@@ -17,6 +16,7 @@ import {
   type AnswerQualityResults,
   type RunMetadata
 } from "./artifact.js";
+import { makeTempDir as makeRegisteredTempDir } from "../../test-utils/tempDir.js";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
@@ -59,15 +59,8 @@ function sampleResults(overrides: Partial<AnswerQualityResults> = {}): AnswerQua
 }
 
 describe("Backend - Eval - Answer quality - artifact (REQ-189)", () => {
-  const tempDirs: string[] = [];
-  afterEach(() => {
-    for (const dir of tempDirs.splice(0)) rmSync(dir, { recursive: true, force: true });
-  });
-
   function makeTempDir(): string {
-    const dir = mkdtempSync(path.join(tmpdir(), "answer-quality-artifact-"));
-    tempDirs.push(dir);
-    return dir;
+    return makeRegisteredTempDir("answer-quality-artifact-");
   }
 
   describe("writeResultsFile / readResultsFile", () => {

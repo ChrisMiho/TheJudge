@@ -1,9 +1,9 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
 import { loadCardPrintingPricesIndex } from "./cardPrices.js";
+import { makeTempDir } from "./test-utils/tempDir.js";
 
 function brotliBlock(buffer: Buffer): Buffer {
   return brotliCompressSync(buffer, {
@@ -30,7 +30,7 @@ describe("loadCardPrintingPricesIndex", () => {
   });
 
   it("returns an empty map, without throwing, when the committed file is not valid brotli/JSON", () => {
-    dir = mkdtempSync(join(tmpdir(), "card-prices-test-"));
+    dir = makeTempDir("card-prices-test-");
     const filePath = join(dir, "cardPrintingPricesByOracleId.json.br");
     writeFileSync(filePath, "not brotli at all");
 
@@ -39,7 +39,7 @@ describe("loadCardPrintingPricesIndex", () => {
   });
 
   it("loads a well-formed committed artifact into a Map keyed by oracle id, copying snapshotDate onto each entry", () => {
-    dir = mkdtempSync(join(tmpdir(), "card-prices-test-"));
+    dir = makeTempDir("card-prices-test-");
     const filePath = join(dir, "cardPrintingPricesByOracleId.json.br");
     const artifact = {
       snapshotDate: "2026-09-08T00:00:00.000Z",
@@ -68,7 +68,7 @@ describe("loadCardPrintingPricesIndex", () => {
   });
 
   it("keeps a printing's null usd/usdFoil as null, never coerced to 0 or dropped", () => {
-    dir = mkdtempSync(join(tmpdir(), "card-prices-test-"));
+    dir = makeTempDir("card-prices-test-");
     const filePath = join(dir, "cardPrintingPricesByOracleId.json.br");
     const artifact = {
       snapshotDate: "2026-09-08T00:00:00.000Z",

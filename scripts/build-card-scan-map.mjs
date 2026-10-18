@@ -3,13 +3,10 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { shouldIncludeScanPrinting } from "../apps/frontend/src/lib/scan/hashLibBuild.ts";
+import { ensureParentDirectory } from "./lib/fs-helpers.mjs";
 
 const DEFAULT_INPUT = path.resolve("apps/frontend/data/scryfall/default-cards.json");
 const DEFAULT_OUTPUT = path.resolve("apps/frontend/public/data/cardScanMap.json");
-
-function ensureParentDirectory(filePath) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-}
 
 async function* readScryfallCards(inputPath) {
   let startedArray = false;

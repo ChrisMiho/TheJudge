@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentProps } from "react";
@@ -7,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { PALETTES } from "../../lib/theme/palettes";
 import { ThemeSection } from "./ThemeSection";
+import { shellCss } from "../../test/appTestHelpers";
 
 function renderThemeSection(overrides: Partial<ComponentProps<typeof ThemeSection>> = {}) {
   return render(
@@ -21,7 +20,6 @@ function renderThemeSection(overrides: Partial<ComponentProps<typeof ThemeSectio
   );
 }
 
-const shellCss = readFileSync(resolve(process.cwd(), "src/styles/shell.css"), "utf8");
 
 describe("Frontend - Theme", () => {
   describe("ThemeSection", () => {

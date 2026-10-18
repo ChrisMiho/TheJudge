@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
 import { computeSnapshot, loadGoldCases } from "./gold-cases.mjs";
 import { buildCardNameIndex } from "./practice-suite-card-names.mjs";
 import { convertSuite, firstSentence, readRawQuestion } from "./practice-suite-convert.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 // Invented cards, rules and questions only.
 const cardNames = buildCardNameIndex({
@@ -53,7 +53,7 @@ function raw(id, overrides = {}) {
 }
 
 function suiteWith(questions) {
-  const dir = mkdtempSync(join(tmpdir(), "convert-suite-"));
+  const dir = makeTempDir("convert-suite-");
   test.after(() => rmSync(dir, { recursive: true, force: true }));
   mkdirSync(join(dir, "raw"));
   for (const question of questions) writeFileSync(join(dir, "raw", `${question.id}.json`), JSON.stringify(question));

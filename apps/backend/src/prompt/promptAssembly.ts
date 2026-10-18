@@ -38,6 +38,8 @@ export type BuildPromptTextOptions = {
   namedSteps?: readonly TurnStepKey[];
   conversationHistory?: ConversationTurn[];
   comboCandidates?: ComboCandidate[];
+  /** The combo section already formatted (`preparePromptInput` formats it once and passes it in); takes precedence over `comboCandidates`. */
+  comboSection?: string;
 };
 
 function ruleSectionsFor(options: BuildPromptTextOptions): PromptRuleSections {
@@ -57,14 +59,14 @@ export function buildPromptText(context: PromptContext, options: BuildPromptText
     ...context.populatedZones.map((z) => z.zoneId as ZoneId)
   ];
 
-  const scopeSentence = buildZoneScopeSentence(context.gameContext.selectedZones, populatedZoneIds);
+  const scopeSentence = buildZoneScopeSentence(populatedZoneIds);
 
   // REQ-241: each card's rulings print under the card's first appearance (stack bottom to top, then the zones).
   const rulingsPlacement = createRulingsPlacement(options.rulings);
   const stackSection = formatStackSection(context, rulingsPlacement);
   const nonStackSections = formatNonStackZoneSections(context, rulingsPlacement);
   const { gameRulesSection, supplementalRulesSection } = ruleSectionsFor(options);
-  const comboSection = formatComboSection(options.comboCandidates ?? []);
+  const comboSection = options.comboSection ?? formatComboSection(options.comboCandidates ?? []);
 
   const conversationHistory = options.conversationHistory ?? [];
   const truncatedHistory = truncateConversationHistory(conversationHistory, MAX_CONVERSATION_HISTORY_CHARS);
@@ -133,15 +135,14 @@ export function buildLookupPromptText(
   const cardBlocks = (context.cards ?? []).map((card) =>
     [
       `name: ${card.name}`,
-      ...formatZoneCardMetadataLines(
-        { ...card, targets: [] },
-        {} as Record<PlayerLabel, string | undefined>
-      ).filter((line) => !line.startsWith("targets:") && !line.startsWith("contextNotes:")),
+      ...formatZoneCardMetadataLines(card, {} as Record<PlayerLabel, string | undefined>, {
+        includeTargetsAndNotes: false
+      }),
       ...rulingsPlacement.take(card.cardId, card.name)
     ].join("\n")
   );
   const cardSection = cardBlocks.length > 0 ? ["CARD (looked up)", cardBlocks.join("\n\n")].join("\n") : "";
-  const comboSection = formatComboSection(options.comboCandidates ?? []);
+  const comboSection = options.comboSection ?? formatComboSection(options.comboCandidates ?? []);
   const conversationHistory = context.conversationHistory ?? [];
   const conversationHistorySection = formatConversationHistorySection(
     truncateConversationHistory(conversationHistory, MAX_CONVERSATION_HISTORY_CHARS)

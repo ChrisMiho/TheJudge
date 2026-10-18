@@ -2,14 +2,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { makeFakeModelDir } from "./lib/fake-embedding-model.mjs";
 import { uploadCommands } from "./lib/embedding-model-upload.mjs";
 import { SHIPPED_FILES, buildManifest, stageUpload } from "./package-embedding-model.mjs";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 const scriptPath = fileURLToPath(new URL("./package-embedding-model.mjs", import.meta.url));
 
@@ -38,14 +38,14 @@ test("the model id is content-addressed: same bytes, same id; one changed byte, 
 test("buildManifest refuses a folder that is missing a shipped file", () => {
   const dir = makeFakeModelDir();
   writeFileSync(join(dir, "tokenizer.json"), "x");
-  const empty = mkdtempSync(join(tmpdir(), "fake-model-empty-"));
+  const empty = makeTempDir("fake-model-empty-");
   assert.throws(() => buildManifest({ modelDir: empty }), /missing config\.json/);
 });
 
 test("stageUpload copies exactly the shipped files and prints the upload commands with profile thejudge-admin", () => {
   const dir = makeFakeModelDir();
   const manifest = buildManifest({ modelDir: dir });
-  const stageRoot = mkdtempSync(join(tmpdir(), "stage-"));
+  const stageRoot = makeTempDir("stage-");
   const stageDir = stageUpload({ modelDir: dir, manifest, stageRoot });
   for (const path of SHIPPED_FILES) assert.ok(existsSync(join(stageDir, path)), path);
   assert.ok(!existsSync(join(stageDir, "onnx", "model.onnx")));
@@ -57,7 +57,7 @@ test("stageUpload copies exactly the shipped files and prints the upload command
 
 test("the command line writes the manifest and prints the upload commands, and runs nothing against AWS", () => {
   const dir = makeFakeModelDir();
-  const out = mkdtempSync(join(tmpdir(), "package-out-"));
+  const out = makeTempDir("package-out-");
   const manifestPath = join(out, "manifest.json");
   // aws is replaced by a shim that fails the test if it is ever called.
   const bin = join(out, "bin");

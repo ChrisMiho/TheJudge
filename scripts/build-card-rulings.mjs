@@ -2,14 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import zlib from "node:zlib";
+import { ensureParentDirectory, formatBytes } from "./lib/fs-helpers.mjs";
 
 const inputPath = path.resolve("apps/backend/data/scryfall/rulings.json");
 const metadataPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
 const outputPath = path.resolve("apps/backend/data/cardRulingsByOracleId.json.br");
-
-function ensureParentDirectory(filePath) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-}
 
 /**
  * Brotli-compress with the fixed, named params this repository uses
@@ -29,12 +26,6 @@ function brotliCompress(buffer) {
 
 function normalizeInlineWhitespace(value) {
   return value.replace(/\s+/g, " ").trim();
-}
-
-function formatBytes(bytes) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function createRulingsTransformState(metadataCardIds) {

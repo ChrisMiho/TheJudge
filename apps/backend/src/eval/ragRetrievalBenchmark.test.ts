@@ -18,6 +18,9 @@ import {
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const step1BaselinePath = resolve(currentDir, "benchmark/step1-baseline.json");
 
+// The determinism test scores twice on purpose; the baseline test reuses its first scoring.
+let firstScoring: ReturnType<typeof scoreBenchmark> | undefined;
+
 type Step1Baseline = { clean: { recall5: number }; polluted: { recall5: number } };
 
 function loadStep1Baseline(): Step1Baseline {
@@ -45,6 +48,7 @@ describe("Backend - Eval - RAG retrieval benchmark (REQ-177)", () => {
     const pollutionText = buildPollutionText(cardDetailIndex);
 
     const first = scoreBenchmark(corpus, ruleIndex, pollutionText);
+    firstScoring = first;
     const second = scoreBenchmark(corpus, ruleIndex, pollutionText);
 
     expect(second).toEqual(first);
@@ -65,7 +69,7 @@ describe("Backend - Eval - RAG retrieval benchmark (REQ-177)", () => {
     const ruleIndex = loadGameRulesRuleIndex(RULE_INDEX_PATH);
     const cardDetailIndex = loadCardDetailIndex(CARD_DETAIL_PATH);
     const pollutionText = buildPollutionText(cardDetailIndex);
-    const result = scoreBenchmark(corpus, ruleIndex, pollutionText);
+    const result = firstScoring ?? scoreBenchmark(corpus, ruleIndex, pollutionText);
     const baseline = loadStep1Baseline();
 
     expect(result.clean.recall5).toBeGreaterThanOrEqual(baseline.clean.recall5);

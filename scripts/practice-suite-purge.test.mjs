@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
 import { purgeSuite } from "./practice-suite-purge.mjs";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 function fixture() {
-  const base = mkdtempSync(join(tmpdir(), "purge-suite-"));
+  const base = makeTempDir("purge-suite-");
   test.after(() => rmSync(base, { recursive: true, force: true }));
   const suiteDir = join(base, "suite");
   mkdirSync(join(suiteDir, "raw"), { recursive: true });

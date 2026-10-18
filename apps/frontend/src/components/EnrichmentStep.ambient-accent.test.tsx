@@ -49,7 +49,6 @@ describe("Ambient accent surfaces", () => {
   it("applies the answered-view inventory to context and the docked composer", async () => {
     const user = renderEnrichment({
       isConversationActive: true,
-      answer: "Initial answer",
       visibleMessages: [{ role: "assistant", content: "Initial answer" }],
       frozenGameContext: singlePlayerGameContext
     });

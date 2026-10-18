@@ -1,21 +1,21 @@
 // REQ-237: the fetch script, tested offline against a local folder standing in for S3.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { buildManifest } from "./package-embedding-model.mjs";
 import { makeFakeModelDir } from "./lib/fake-embedding-model.mjs";
 import { fetchModel, readManifest, verifyModelDirectory, verifyRuleVectorsModel } from "./fetch-embedding-model.mjs";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 const scriptPath = fileURLToPath(new URL("./fetch-embedding-model.mjs", import.meta.url));
 
 function setup() {
   const source = makeFakeModelDir();
   const manifest = buildManifest({ modelDir: source });
-  const work = mkdtempSync(join(tmpdir(), "fetch-test-"));
+  const work = makeTempDir("fetch-test-");
   const manifestPath = join(work, "manifest.json");
   writeFileSync(manifestPath, JSON.stringify(manifest));
   const embeddingsPath = join(work, "embeddings.json");
@@ -57,7 +57,7 @@ test("refuses a changed size", () => {
 test("refuses a missing file", () => {
   const { source, manifest, dest } = setup();
   writeFileSync(join(source, "tokenizer.json"), "x");
-  const emptySource = mkdtempSync(join(tmpdir(), "empty-source-"));
+  const emptySource = makeTempDir("empty-source-");
   const problems = fetchModel({ manifest, source: emptySource, destRoot: dest });
   assert.ok(problems.length > 0 && problems.every((problem) => /could not fetch/.test(problem)), problems.join("; "));
 });

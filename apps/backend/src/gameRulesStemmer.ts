@@ -9,7 +9,7 @@
 // plain `.mjs` build script without a TypeScript step. No npm dependency.
 
 /** Words too common to carry meaning. Unchanged from the scorer before REQ-233. */
-export const SEARCH_STOP_WORDS: ReadonlySet<string> = new Set([
+const SEARCH_STOP_WORDS: ReadonlySet<string> = new Set([
   "and", "are", "can", "card", "cards", "does", "for", "from",
   "has", "have", "how", "one", "that", "the", "this", "what",
   "when", "will", "with"
@@ -94,7 +94,14 @@ export function porterStem(input: string): string {
 
 // U+2028 / U+2029 (line and paragraph separators) and no-break spaces read as spaces.
 const SPACE_LIKE = new RegExp("[\\u2028\\u2029\\u00a0]", "g");
-const CURLY_APOSTROPHE = new RegExp("[\\u2018\\u2019]", "g");
+
+/**
+ * Folds the curly apostrophes U+2018 and U+2019 to a straight `'`, so "don’t" and "don't" compare equal.
+ * The one apostrophe fold for rule search; it lives here because this module has no imports.
+ */
+export function foldApostrophes(value: string): string {
+  return value.replace(/[\u2018\u2019]/g, "'");
+}
 
 /** A negative contraction ("can't", "doesn't") or "it's": kept whole, never cut at the apostrophe. */
 const WHOLE_CONTRACTION = /^(?:[a-z]+n't|it's)$/;
@@ -109,7 +116,7 @@ const WHOLE_CONTRACTION = /^(?:[a-z]+n't|it's)$/;
  * - Tokens shorter than three characters and stop words (before or after stemming) are dropped.
  */
 export function tokenizeSearchText(value: string): string[] {
-  const text = value.replace(SPACE_LIKE, " ").replace(CURLY_APOSTROPHE, "'").toLowerCase();
+  const text = foldApostrophes(value.replace(SPACE_LIKE, " ")).toLowerCase();
   const tokens: string[] = [];
   for (const match of text.matchAll(/[a-z0-9][a-z0-9.']*/g)) {
     const raw = match[0].replace(/[.']+$/, "");

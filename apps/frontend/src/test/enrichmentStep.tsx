@@ -31,7 +31,6 @@ export function renderEnrichment(
       onBack={vi.fn()}
       canDecrypt
       isSubmitting={false}
-      answer={null}
       error={null}
       canRetry
       retryCountdown={0}

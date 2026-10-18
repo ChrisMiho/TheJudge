@@ -17,24 +17,7 @@ import {
   toggleDayNightPhase
 } from "./state";
 import type { TrackerState } from "./types";
-
-function createMemoryStorage(): Storage {
-  const map = new Map<string, string>();
-  return {
-    get length() {
-      return map.size;
-    },
-    clear: () => map.clear(),
-    getItem: (key: string) => (map.has(key) ? (map.get(key) as string) : null),
-    setItem: (key: string, value: string) => {
-      map.set(key, String(value));
-    },
-    removeItem: (key: string) => {
-      map.delete(key);
-    },
-    key: (index: number) => Array.from(map.keys())[index] ?? null
-  };
-}
+import { createMemoryStorage } from "../../test/memoryStorage";
 
 function buildFullState(): TrackerState {
   let state = createInitialState(3, 30);

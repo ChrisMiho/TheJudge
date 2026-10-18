@@ -26,7 +26,7 @@ const PORTAL_TRIGGER_SELECTOR = 'button[aria-label="Switch feature"]';
 /**
  * REQ-067/REQ-206: the Menu lists one question door. `mtg-assistant` (today's
  * In-Depth Question page) stays registered and routable in `PORTAL_DESTINATIONS`
- * (routing, `DestinationOutlet`) but gets no row of its own here — slice C's
+ * (routing, `DestinationOutlet`) but gets no row of its own here — the
  * "Add in-depth details" carry hand-off is how a player reaches it. `quick-lookup`
  * is relabeled "Ask a Question" for the Menu only; its own page copy and route
  * are untouched by this relabel.
@@ -55,9 +55,10 @@ function PortalShell(): JSX.Element {
   // Narrowly tied to an explicit "switch to Assistant via the Menu, right now"
   // gesture — never a deep link or browser Back arriving at `mtg-assistant`
   // (both are asserted *not* to seed; see App.player-life-tracker-seed.test.tsx).
-  // `mtg-assistant` has no Menu row of its own any more (REQ-067/REQ-206), so this
-  // branch is kept for shape/back-compat but is not reachable from the Menu today;
-  // `handleCarryToInDepth` below is the live gesture that reaches it.
+  // `mtg-assistant` has no Menu row of its own any more (REQ-067/REQ-206), so a Menu pick never
+  // has it as the target; resuming an In-depth entry from Question History does reach this
+  // branch (`FeaturePortalMenu` routes it through `onSelect`, REQ-213). `handleCarryToInDepth`
+  // below is the other live way in.
   function handleDestinationSelect(nextDestinationId: DestinationId): void {
     if (activeDestinationId === "player-life-tracker" && nextDestinationId === "mtg-assistant") {
       const trackerState = loadTrackerState();

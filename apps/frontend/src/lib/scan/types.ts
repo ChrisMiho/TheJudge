@@ -22,6 +22,9 @@ export interface HashDb {
   count: number; // N
 }
 
+/** What the camera surface reports about the scan loop: the status the hook and the hosts react to. */
+export type ScanCameraStatus = "idle" | "camera-error" | "scanning" | "no-card" | "captured" | "no-match";
+
 /** One ranked identification candidate. */
 export interface Candidate {
   card_id: string; // canonical front-face id (__back stripped)

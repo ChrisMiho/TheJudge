@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
@@ -11,6 +10,7 @@ import {
   readComboSourceMarker,
   writeComboSourceMarker
 } from "./lib/combo-source-marker.mjs";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 // ---- card-identity hash (D1) ----
 
@@ -62,7 +62,7 @@ test("combosNeedRefresh treats a missing marker or an uncomputable hash as chang
 });
 
 test("readComboSourceMarker returns null for a missing or malformed file", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-marker-"));
+  const dir = makeTempDir("combo-marker-");
   const missing = path.join(dir, "nope.json");
   assert.equal(readComboSourceMarker(missing), null);
   const bad = path.join(dir, "bad.json");
@@ -72,7 +72,7 @@ test("readComboSourceMarker returns null for a missing or malformed file", () =>
 });
 
 test("writeComboSourceMarker round-trips both hashes and is read back by the gate", () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-marker-"));
+  const dir = makeTempDir("combo-marker-");
   const markerPath = path.join(dir, "marker.json");
   writeComboSourceMarker(markerPath, { cardIdentityHash: "CARD", templateSetHash: "TMPL", exportVersion: "6.4.0", exportTimestamp: "t" });
   const marker = readComboSourceMarker(markerPath);

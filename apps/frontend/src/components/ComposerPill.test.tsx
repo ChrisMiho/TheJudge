@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -9,11 +7,10 @@ import {
   installStubSpeechRecognition,
   makeDictationResultsEvent
 } from "../test/stubSpeechRecognition";
+import { appCss, flowCss } from "../test/appTestHelpers";
 
 afterEach(cleanup);
 
-const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
-const flowCss = readFileSync(resolve(process.cwd(), "src/styles/flow.css"), "utf8");
 
 describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
   it("has no separate Send Request label — the send control's visible content is the mockup's ➤ glyph only", () => {

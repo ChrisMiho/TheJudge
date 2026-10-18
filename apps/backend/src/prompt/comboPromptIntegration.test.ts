@@ -1,5 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
@@ -11,6 +10,7 @@ import { buildMockAnswer } from "../mockAskAi.js";
 import { createGameContext, createZoneCardItem } from "../test-utils/requestBuilders.js";
 import type { GameAskAiRequest, LookupAskAiRequest } from "../types/index.js";
 import { preparePromptInput } from "./preparation.js";
+import { makeTempDir } from "../test-utils/tempDir.js";
 
 function brotliBlock(buffer: Buffer): Buffer {
   return brotliCompressSync(buffer, {
@@ -365,7 +365,7 @@ describe("Backend - Ask AI", () => {
         }));
         const variants = [...filler, twoPieceCombo];
 
-        const dir = mkdtempSync(join(tmpdir(), "combo-prompt-at-scale-"));
+        const dir = makeTempDir("combo-prompt-at-scale-");
         const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
         const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
         const blockSize = 128;
@@ -460,7 +460,7 @@ describe("Backend - Ask AI", () => {
           templateIngredients: []
         };
 
-        const dir = mkdtempSync(join(tmpdir(), "combo-scenario-real-"));
+        const dir = makeTempDir("combo-scenario-real-");
         const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
         const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
         const compressed = brotliBlock(Buffer.from(JSON.stringify(avatarOfGrowthVariant), "utf8"));

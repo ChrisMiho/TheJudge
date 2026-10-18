@@ -1,6 +1,5 @@
 // REQ-237 / REQ-181: which embedding model runs, and the loud refusal when a vector file was built by another.
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { dirname, resolve } from "node:path";
 import { readFileSync } from "node:fs";
@@ -18,12 +17,13 @@ import { loadFrozenVectors } from "./eval/rules-gate/frozenVectors.js";
 import { scoreBenchmarkSemantic } from "./eval/ragRetrievalBenchmark.js";
 import { retrieveRulesForQueryWithDebug, type GameRulesRuleIndexEntry, type ScoringResources } from "./gameRulesRetrieval.js";
 import { LOCAL_MODEL_ID } from "./providers/localEmbeddingProvider.js";
+import { makeTempDir } from "./test-utils/tempDir.js";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const dataDir = resolve(currentDir, "../data");
 
 function tempFile(name: string, content: unknown): string {
-  const dir = mkdtempSync(join(tmpdir(), "embedding-model-test-"));
+  const dir = makeTempDir("embedding-model-test-");
   const path = join(dir, name);
   writeFileSync(path, JSON.stringify(content), "utf8");
   return path;

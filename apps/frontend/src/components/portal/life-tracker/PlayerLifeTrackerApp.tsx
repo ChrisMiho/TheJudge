@@ -4,7 +4,7 @@ import { PageShell } from "../../PageShell";
 import { SheetShell } from "../../SheetShell";
 import type { PlayerLabel } from "../../../types";
 import { listSeatArrangement, seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
-import { useLifeTracker, type UseLifeTrackerResult } from "../../../lib/lifeTracker/useLifeTracker";
+import { useLifeTracker, type UseLifeTrackerResult } from "../../../hooks/useLifeTracker";
 import { PortalSlot } from "../PortalSlot";
 import { CounterPanel } from "./CounterPanel";
 import { GameSetupPanel } from "./GameSetupPanel";
@@ -36,10 +36,8 @@ function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element 
       testId="life-tracker-game-setup"
       head={
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Life Tracker</p>
-          <h2 id={titleId} className="text-xl font-black text-zinc-100">
-            Game Setup
-          </h2>
+          <p>Life Tracker</p>
+          <h2 id={titleId}>Game Setup</h2>
         </div>
       }
     >

@@ -3,21 +3,18 @@ import {
   chmodSync,
   existsSync,
   mkdirSync,
-  mkdtempSync,
   readFileSync,
-  rmSync,
   writeFileSync
 } from "node:fs";
-import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
+import { makeTempDir } from "../test/tempDir";
 
 const repoRoot = resolve(process.cwd(), "../..");
 const deployScript = resolve(repoRoot, "scripts/aws-deploy.sh");
 // The deploy job now lives in the gate workflow so it can `needs:` the gate
 // instead of duplicating it.
 const workflowPath = resolve(repoRoot, ".github/workflows/quality-check.yml");
-const tempDirs: string[] = [];
 
 function writeExecutable(path: string, body: string): void {
   writeFileSync(path, body);
@@ -30,8 +27,7 @@ function writeExecutable(path: string, body: string): void {
  * were called, which is what the assertions inspect.
  */
 function createDeployHarness(): { binDir: string; awsLog: string; npmLog: string } {
-  const root = mkdtempSync(join(tmpdir(), "thejudge-deploy-test-"));
-  tempDirs.push(root);
+  const root = makeTempDir("thejudge-deploy-test-");
   const binDir = join(root, "bin");
   const awsLog = join(root, "aws.log");
   const npmLog = join(root, "npm.log");
@@ -83,12 +79,6 @@ function runDeploy(feedbackId?: string) {
     result: spawnSync("/bin/bash", [deployScript], { cwd: repoRoot, env, encoding: "utf8" })
   };
 }
-
-afterEach(() => {
-  for (const path of tempDirs.splice(0)) {
-    rmSync(path, { recursive: true, force: true });
-  }
-});
 
 describe("Frontend - Shared", () => {
   describe("AWS deployment configuration", () => {

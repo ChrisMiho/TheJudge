@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
@@ -10,6 +9,7 @@ import { compareSnapshot, computeSnapshot, deriveTags, sha256 } from "./gold-cas
 import { isGradable, selectCases } from "./answer-quality-run.mjs";
 import { applyVerdicts, parseBatch, pendingCases, renderBatches, sortForReview } from "./rules-review.mjs";
 import { applyCommand, renderCommand } from "../rules-review.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const ZERO = "0".repeat(64);
@@ -63,7 +63,7 @@ function loaded(raw) {
 }
 
 function makeCasesDir(cases) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "rules-review-"));
+  const dir = makeTempDir("rules-review-");
   test.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   for (const raw of cases) fs.writeFileSync(path.join(dir, `${raw.id}.case.json`), `${JSON.stringify(raw, null, 2)}\n`, "utf8");
   return dir;

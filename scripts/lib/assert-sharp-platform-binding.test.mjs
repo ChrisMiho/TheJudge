@@ -1,17 +1,17 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 
 import { assertSharpPlatformBinding, planSharpCheck, sharpPlatformFiles } from "./assert-sharp-platform-binding.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 const scriptPath = new URL("./assert-sharp-platform-binding.mjs", import.meta.url).pathname;
 
 /** A fake `node_modules` holding sharp builds for the given `<os>-<arch>` platforms. */
 function fakeNodeModules(platforms, { withoutLibvips = [] } = {}) {
-  const nodeModulesDir = mkdtempSync(join(tmpdir(), "sharp-platform-"));
+  const nodeModulesDir = makeTempDir("sharp-platform-");
   for (const platform of platforms) {
     const [os, arch] = platform.split("-");
     const files = sharpPlatformFiles({ os, arch });

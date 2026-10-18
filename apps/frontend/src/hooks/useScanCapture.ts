@@ -20,15 +20,11 @@ import type {
   IdentityDiagnostic,
   StabilizerDiagnostic
 } from "../lib/scan/acquisitionDiagnostics";
-import type { Candidate, HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
-import type { ScanCameraStatus } from "../components/ScanCameraSurface";
+import type { Candidate, HashDb, IdentifyResult, RgbImage, ScanCameraStatus } from "../lib/scan/types";
 import { deriveCardImageUrl } from "../lib/cardImage";
 import type { CardMetadataItem } from "../types";
 
-export const LOW_CONFIDENCE_ESCALATION_COUNT = 3;
 export const DETECTOR_FAILURE_NUDGE_COUNT = 3;
-
-export type ScanPhase = "searching" | "locked";
 
 export type ScanAddOutcome = { added: true; instanceId?: string } | { added: false; message: string };
 export type ScanDetectorNudge = "card-outline";
@@ -169,14 +165,8 @@ export function useScanCapture({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cameraStatus, setCameraStatusState] = useState<ScanCameraStatus>("idle");
-  const [resolvedCandidates, setResolvedCandidates] = useState<CardMetadataItem[]>([]);
-  const [lockedCandidate, setLockedCandidate] = useState<CardMetadataItem | null>(null);
-  const [scanPhase, setScanPhase] = useState<ScanPhase>("searching");
   const [convergence, setConvergence] = useState<ScanConvergence>(INITIAL_CONVERGENCE);
   const [scanDebug, setScanDebug] = useState<ScanDebugMetrics | null>(null);
-  const [scanAcquisitionDiagnostic, setScanAcquisitionDiagnostic] =
-    useState<AcquisitionFrameDiagnostic | null>(null);
   const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
   const [addConfirmation, setAddConfirmation] = useState<ScanAddConfirmation | null>(null);
   // REQ-214: the scanner-local holding list. Populated on recognition, cleared on
@@ -201,12 +191,9 @@ export function useScanCapture({
 
   const updateAcquisitionDiagnostic = useCallback((diagnostic: AcquisitionFrameDiagnostic | null): void => {
     acquisitionDiagnosticRef.current = diagnostic;
-    setScanAcquisitionDiagnostic(diagnostic);
   }, []);
 
   const setCameraStatus = useCallback((next: ScanCameraStatus): void => {
-    setCameraStatusState(next);
-
     if (next === "no-card") {
       noCardStatusCountRef.current += 1;
       if (noCardStatusCountRef.current >= DETECTOR_FAILURE_NUDGE_COUNT) {
@@ -271,9 +258,6 @@ export function useScanCapture({
     stabilizerRef.current.reset();
     frameSelectorRef.current.reset();
     noCardStatusCountRef.current = 0;
-    setResolvedCandidates([]);
-    setLockedCandidate(null);
-    setScanPhase("searching");
     setConvergence(INITIAL_CONVERGENCE);
     setScanDebug(null);
     updateAcquisitionDiagnostic(null);
@@ -325,11 +309,6 @@ export function useScanCapture({
     setHeldEntries((entries) => entries.filter((entry) => entry.id !== id));
   }, []);
 
-  /** Discard the current lock-in and resume the auto-scan loop. */
-  const rescan = useCallback((): void => {
-    resetScanState();
-  }, [resetScanState]);
-
   const identify = useCallback(
     async (image: RgbImage): Promise<IdentifyResult> => {
       // REQ-249: after a failed download, frames do not re-request; closing and reopening retries.
@@ -346,7 +325,7 @@ export function useScanCapture({
         return EMPTY_IDENTIFY_RESULT;
       }
 
-      // Already locked in: ignore further frames until accept / rescan / close.
+      // Already locked in: ignore further frames until the lock is cleared.
       if (stabilizerRef.current.isLocked()) {
         return EMPTY_IDENTIFY_RESULT;
       }
@@ -364,7 +343,6 @@ export function useScanCapture({
 
       if (selection.abstain) {
         const state = stabilizerRef.current.push([]);
-        setResolvedCandidates([]);
         if (state.phase === "searching") {
           const phase: ScanConvergence["phase"] = state.votes > 0 ? "locking" : "searching";
           const frameSelectionDiagnostic: FrameSelectionDiagnostic = {
@@ -512,7 +490,6 @@ export function useScanCapture({
         return result;
       }
 
-      setResolvedCandidates([]);
       const nameOf = (cardId: string | null): string | null =>
         cardId ? (ranked.find((entry) => entry.card.cardId === cardId)?.card.name ?? null) : null;
       const leaderName = nameOf(state.topCardId);
@@ -555,18 +532,6 @@ export function useScanCapture({
     [cardMetadata, ensureResources, resetScanState, updateAcquisitionDiagnostic]
   );
 
-  const acceptCandidate = useCallback(
-    (card: CardMetadataItem): void => {
-      heldIdRef.current += 1;
-      setHeldEntries((entries) => [
-        ...entries,
-        { id: heldIdRef.current, card, scanImageUrl: deriveCardImageUrl(card.imageId), candidates: [] }
-      ]);
-      resetScanState();
-    },
-    [resetScanState]
-  );
-
   const recordAcquisitionDiagnostic = useCallback(
     (diagnostic: AcquisitionFrameDiagnostic): void => {
       updateAcquisitionDiagnostic(diagnostic);
@@ -578,23 +543,16 @@ export function useScanCapture({
     isOpen,
     isLoading,
     error,
-    cameraStatus,
     setCameraStatus,
-    resolvedCandidates,
-    lockedCandidate,
-    scanPhase,
     convergence,
     scanDebug,
-    scanAcquisitionDiagnostic,
     blockedNotice,
     addConfirmation,
     heldEntries,
     removeHeld,
     openScan,
     closeScan,
-    rescan,
     identify,
-    recordAcquisitionDiagnostic,
-    acceptCandidate
+    recordAcquisitionDiagnostic
   };
 }

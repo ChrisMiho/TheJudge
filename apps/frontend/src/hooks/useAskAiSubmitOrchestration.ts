@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createCorrelationId, logFrontendDebug } from "../lib/debugLogger";
 import { buildLookupAskAiRequest } from "../lib/contextFlow";
+import { randomId } from "../lib/randomId";
 import type { LookupAskAiPayload, LookupWireCard, ZoneAskAiPayload } from "../lib/contextFlow";
 import type {
   AskAiError,
@@ -50,14 +51,6 @@ export type RestoredConversationEntry = {
   visibleMessages: ConversationMessage[];
 };
 
-function generateConversationId(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-
-  return `conv-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
-}
-
 type UseAskAiSubmitOrchestrationOptions = {
   apiBaseUrl: string;
   retryCooldownSeconds: number;
@@ -65,7 +58,6 @@ type UseAskAiSubmitOrchestrationOptions = {
 };
 
 type UseAskAiSubmitOrchestrationResult = {
-  answer: string | null;
   error: string | null;
   isSubmitting: boolean;
   isFollowUpSubmitting: boolean;
@@ -74,7 +66,6 @@ type UseAskAiSubmitOrchestrationResult = {
   visibleMessages: ConversationMessage[];
   frozenContext: FrozenAskAiContext | null;
   frozenGameContext: GameContext | null;
-  hiddenInitialQuestion: string | null;
   isConversationActive: boolean;
   submitAttempt: (options: SubmitAttemptOptions) => Promise<void>;
   submitFollowUp: (text: string) => Promise<void>;
@@ -87,7 +78,6 @@ export function useAskAiSubmitOrchestration({
   retryCooldownSeconds,
   onConversationUpdated
 }: UseAskAiSubmitOrchestrationOptions): UseAskAiSubmitOrchestrationResult {
-  const [answer, setAnswer] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFollowUpSubmitting, setIsFollowUpSubmitting] = useState(false);
@@ -159,7 +149,6 @@ export function useAskAiSubmitOrchestration({
         responseCorrelationId,
         httpStatus: response.status
       });
-      setAnswer(body.answer);
       setError(null);
       setPendingRetry(null);
       const nextFrozenContext: FrozenAskAiContext = isLookupAskAiPayload(payload)
@@ -172,7 +161,7 @@ export function useAskAiSubmitOrchestration({
         { role: "user", content: payload.question },
         { role: "assistant", content: body.answer }
       ];
-      const nextConversationId = generateConversationId();
+      const nextConversationId = randomId("conv");
       setFrozenContext(nextFrozenContext);
       setHiddenInitialQuestion(payload.question);
       setVisibleMessages(nextVisibleMessages);
@@ -357,7 +346,6 @@ export function useAskAiSubmitOrchestration({
     setHiddenInitialQuestion(null);
     setConversationId(null);
     setPendingRetry(null);
-    setAnswer(null);
     setError(null);
   }
 
@@ -369,11 +357,9 @@ export function useAskAiSubmitOrchestration({
     setPendingRetry(null);
     setError(null);
     setRetryCountdown(0);
-    setAnswer(null);
   }
 
   return {
-    answer,
     error,
     isSubmitting,
     isFollowUpSubmitting,
@@ -382,7 +368,6 @@ export function useAskAiSubmitOrchestration({
     visibleMessages,
     frozenContext,
     frozenGameContext,
-    hiddenInitialQuestion,
     isConversationActive,
     submitAttempt,
     submitFollowUp,

@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { LookupAskAiPayload, ZoneAskAiPayload } from "../lib/contextFlow";
 import { useAskAiSubmitOrchestration } from "./useAskAiSubmitOrchestration";
+import { jsonResponse } from "../test/appTestHelpers";
 
 const { createCorrelationIdMock, logFrontendDebugMock } = vi.hoisted(() => ({
   createCorrelationIdMock: vi.fn(),
@@ -12,13 +13,6 @@ vi.mock("../lib/debugLogger", () => ({
   createCorrelationId: createCorrelationIdMock,
   logFrontendDebug: logFrontendDebugMock
 }));
-
-function jsonResponse(payload: unknown, status = 200, headers: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(payload), {
-    status,
-    headers: { "Content-Type": "application/json", ...headers }
-  });
-}
 
 const payloadFixture: ZoneAskAiPayload = {
   question: "How does this resolve?",
@@ -104,7 +98,10 @@ describe("useAskAiSubmitOrchestration", () => {
       },
       body: JSON.stringify(payloadFixture)
     });
-    expect(result.current.answer).toBe("Resolved answer");
+    expect(result.current.visibleMessages).toEqual([
+      { role: "user", content: payloadFixture.question },
+      { role: "assistant", content: "Resolved answer" }
+    ]);
     expect(result.current.error).toBeNull();
     expect(logFrontendDebugMock).toHaveBeenCalledWith("ask_ai.submit_attempted", {
       source: "decrypt",
@@ -251,7 +248,10 @@ describe("useAskAiSubmitOrchestration", () => {
       responseCorrelationId: "srv-corr-ok",
       httpStatus: 200
     });
-    expect(result.current.answer).toBe("Recovered");
+    expect(result.current.visibleMessages).toEqual([
+      { role: "user", content: payloadFixture.question },
+      { role: "assistant", content: "Recovered" }
+    ]);
     expect(result.current.error).toBeNull();
   });
 
@@ -612,7 +612,6 @@ describe("useAskAiSubmitOrchestration", () => {
       expect(result.current.visibleMessages).toEqual([]);
       expect(result.current.frozenGameContext).toBeNull();
       expect(result.current.isConversationActive).toBe(false);
-      expect(result.current.answer).toBeNull();
       expect(result.current.error).toBeNull();
     });
 
@@ -685,29 +684,6 @@ describe("useAskAiSubmitOrchestration", () => {
   });
 
   describe("conversation history persistence hooks", () => {
-    it("returns hiddenInitialQuestion after a successful decrypt", async () => {
-      createCorrelationIdMock.mockReturnValue("corr-1");
-      vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ answer: "First answer" }, 200)));
-
-      const { result } = renderHook(() =>
-        useAskAiSubmitOrchestration({ apiBaseUrl: "https://api.test", retryCooldownSeconds: 13 })
-      );
-
-      expect(result.current.hiddenInitialQuestion).toBeNull();
-
-      await act(async () => {
-        await result.current.submitAttempt({
-          source: "decrypt",
-          payload: payloadFixture,
-          stackSize: 1,
-          finalQuestion: payloadFixture.question,
-          usedFallbackQuestion: false
-        });
-      });
-
-      expect(result.current.hiddenInitialQuestion).toBe(payloadFixture.question);
-    });
-
     it("fires onConversationUpdated once with a stable conversationId per successful decrypt and follow-up", async () => {
       createCorrelationIdMock.mockReturnValue("corr-1");
       vi.stubGlobal(
@@ -804,7 +780,7 @@ describe("useAskAiSubmitOrchestration", () => {
       expect(secondConversationId).not.toBe(firstConversationId);
     });
 
-    it("restoreConversation replaces frozenContext, hiddenInitialQuestion, and visibleMessages, and clears retry/error state", async () => {
+    it("restoreConversation replaces frozenContext and visibleMessages, and clears retry/error state", async () => {
       vi.useFakeTimers();
       createCorrelationIdMock.mockReturnValue("corr-1");
       vi.stubGlobal(
@@ -847,7 +823,6 @@ describe("useAskAiSubmitOrchestration", () => {
       });
 
       expect(result.current.frozenContext).toEqual({ kind: "lookup", cards: [] });
-      expect(result.current.hiddenInitialQuestion).toBe("Resumed question");
       expect(result.current.visibleMessages).toEqual(restoredMessages);
       expect(result.current.error).toBeNull();
       expect(result.current.retryCountdown).toBe(0);

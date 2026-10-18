@@ -5,27 +5,10 @@ import { BrowserRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useActiveDestination } from "./useActiveDestination";
+import { createMemoryStorage } from "../test/memoryStorage";
 
 const storageKey = "thejudge.portal.activeDestinationId";
 const validIds = ["quick-lookup", "mtg-assistant", "player-life-tracker", "trade-balancer"] as const;
-
-function createMemoryStorage(): Storage {
-  const map = new Map<string, string>();
-  return {
-    get length() {
-      return map.size;
-    },
-    clear: () => map.clear(),
-    getItem: (key: string) => (map.has(key) ? (map.get(key) as string) : null),
-    setItem: (key: string, value: string) => {
-      map.set(key, String(value));
-    },
-    removeItem: (key: string) => {
-      map.delete(key);
-    },
-    key: (index: number) => Array.from(map.keys())[index] ?? null
-  };
-}
 
 function RouterWrapper({ children }: { children: ReactNode }): ReactElement {
   return createElement(BrowserRouter, null, children);

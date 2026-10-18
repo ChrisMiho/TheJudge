@@ -22,7 +22,7 @@ import { appendFile, mkdir, readFile, readdir, stat, writeFile } from "node:fs/p
 import { join } from "node:path";
 
 import { mechanicPrefixes, ruleSections, sha256 } from "./gold-cases.mjs";
-import { hashPrompt, referenceAnswerHash } from "./answer-quality-run.mjs";
+import { hashPrompt, referenceAnswerHash, sumOf } from "./answer-quality-run.mjs";
 import { attachedRuleIdsOf, buildJudgeInputs, extractExcerptRuleIds } from "./judge-inputs.mjs";
 import { describeDecidingRules } from "./rule-availability.mjs";
 import { buildFollowUpRequest, buildFollowUpSummary, findDisownedRules, extractCitedRuleIds, formatFollowUpReport } from "./pushback-follow-up.mjs";
@@ -302,10 +302,6 @@ export function strataOf(caseEntry) {
     // A local practice-suite case also splits by the source's level and complexity (REQ-232).
     ...(caseEntry.suite ? { level: String(caseEntry.suite.level), complexity: String(caseEntry.suite.complexity) } : {})
   };
-}
-
-function sumOf(records, field) {
-  return records.reduce((sum, record) => sum + (record[field] ?? 0), 0);
 }
 
 /**

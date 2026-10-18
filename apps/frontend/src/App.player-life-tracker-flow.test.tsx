@@ -15,26 +15,13 @@ import {
   expandSecondaryPlayerDetails,
   getUrlFromRequest,
   jsonResponse,
-  navigateToPath,
-  selectZoneTab
+  selectZoneTab,
+  selectDestination
 } from "./test/appTestHelpers";
 
 // REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
 // "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
 // Question" is reached by direct navigation instead of a menu click.
-async function selectDestination(
-  user: ReturnType<typeof userEvent.setup>,
-  destinationName: string
-): Promise<void> {
-  if (destinationName === "In-Depth Question") {
-    await navigateToPath("/in-depth");
-    return;
-  }
-  const menuLabel = destinationName === "Quick Question" ? "Ask a Question" : destinationName;
-  await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
-}
-
 // REQ-206 (slice C, 2026-10-01): the Life Tracker -> Assistant roster-seed hand-off's
 // only live trigger now is Ask a Question's "Add in-depth details" carry (see
 // App.player-life-tracker-seed.test.tsx for the full positive/negative coverage of this

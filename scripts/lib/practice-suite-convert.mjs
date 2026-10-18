@@ -13,11 +13,12 @@
 // `citedRules` (a map of rule id to text). A missing field throws, naming the
 // file, so an API shape change breaks convert and never the frozen data.
 
-import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 import { computeSnapshot } from "./gold-cases.mjs";
 import { mapCitedRules, ruleIdsOf } from "./practice-suite-rules.mjs";
+import { writeWhole } from "./fs-helpers.mjs";
 
 export const SUITE_NAME = "practice";
 export const SUITE_PUBLISHER = "practice suite";
@@ -152,12 +153,6 @@ export function buildCase(question, { cardNames, indexIds, snapshotSources, dupl
   };
   caseEntry.snapshot = computeSnapshot(caseEntry, snapshotSources);
   return caseEntry;
-}
-
-async function writeWhole(path, text) {
-  const temp = `${path}.tmp-${process.pid}`;
-  await writeFile(temp, text, "utf8");
-  await rename(temp, path);
 }
 
 /**

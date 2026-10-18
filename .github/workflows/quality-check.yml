@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - master
   pull_request:
   workflow_dispatch:
 
@@ -43,9 +42,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Record runner cores
-        run: nproc
 
       - name: Typecheck
         run: npm run typecheck
@@ -252,8 +248,9 @@ jobs:
       - name: Install packaging tools
         run: sudo apt-get update && sudo apt-get install -y zip
 
+      # Backend only: aws-deploy.sh runs its own frontend build below.
       - name: Build project
-        run: npm run build
+        run: npm --workspace apps/backend run build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6

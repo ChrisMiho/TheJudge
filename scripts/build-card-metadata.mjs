@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { gzipSync } from "node:zlib";
+import { ensureParentDirectory } from "./lib/fs-helpers.mjs";
 
 const inputPath = path.resolve("apps/frontend/data/scryfall/default-cards.json");
 const outputPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
@@ -200,11 +201,6 @@ export function shouldIncludeCard(card) {
   if (card?.digital === true) return false;
   if (typeof card?.name !== "string" || card.name.trim().length === 0) return false;
   return true;
-}
-
-function ensureParentDirectory(filePath) {
-  const parent = path.dirname(filePath);
-  fs.mkdirSync(parent, { recursive: true });
 }
 
 const SPECIAL_FRAME_EFFECTS = new Set([

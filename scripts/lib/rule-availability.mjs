@@ -1,3 +1,4 @@
+import { escapeRegExp } from "./fs-helpers.mjs"
 // Where a deciding rule's text can reach the prompt (REQ-229, REQ-189).
 //
 // A deciding rule is "available to answer" when its text is anywhere in the
@@ -9,10 +10,6 @@
 // Pure over plain data (no TypeScript, no file, no network): runs under
 // `node --test`. Callers hand it what the production prompt builder exposes --
 // the enrichment debug block, the attached cards' rulings, the rule index.
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 function collapse(value) {
   return String(value).replace(/\s+/g, " ").trim();

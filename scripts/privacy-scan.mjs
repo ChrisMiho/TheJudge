@@ -10,8 +10,8 @@ import { readdirSync, readFileSync, existsSync, realpathSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { mainCheckoutSuiteDir } from "./lib/practice-suite.mjs";
 
-const DEFAULT_SUITE = "/Users/chrismiho/Coding/Projects/TheJudge/output/practice-suite";
 /** A suite text shorter than this is a label, not a question or an answer; it would match by chance. */
 export const MIN_TEXT_LENGTH = 30;
 const GRAM = 6;
@@ -106,7 +106,7 @@ export function trackedFiles(cwd) {
 
 async function main() {
   const args = process.argv.slice(2);
-  const suiteDir = args.includes("--suite") ? args[args.indexOf("--suite") + 1] : DEFAULT_SUITE;
+  const suiteDir = args.includes("--suite") ? args[args.indexOf("--suite") + 1] : mainCheckoutSuiteDir();
   const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
   let texts;
   try {

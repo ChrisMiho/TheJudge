@@ -1,8 +1,8 @@
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { formatGameRulesSection, loadGameRulesTopics, type GameRulesTopic } from "./gameRules.js";
+import { makeTempDir } from "./test-utils/tempDir.js";
 
 const sampleTopics: GameRulesTopic[] = [
   {
@@ -20,7 +20,7 @@ const sampleTopics: GameRulesTopic[] = [
 ];
 
 function writeTempArtifact(content: unknown): string {
-  const dir = mkdtempSync(join(tmpdir(), "game-rules-test-"));
+  const dir = makeTempDir("game-rules-test-");
   const filePath = join(dir, "gameRulesByTopic.json");
   writeFileSync(filePath, JSON.stringify(content), "utf8");
   return filePath;
@@ -45,7 +45,7 @@ describe("Backend - Game Rules", () => {
     });
 
     it("returns empty array and warns when artifact is malformed JSON", () => {
-      const dir = mkdtempSync(join(tmpdir(), "game-rules-test-"));
+      const dir = makeTempDir("game-rules-test-");
       const filePath = join(dir, "bad.json");
       writeFileSync(filePath, "{ not valid json", "utf8");
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});

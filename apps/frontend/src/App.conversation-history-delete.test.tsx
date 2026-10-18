@@ -10,7 +10,8 @@ import {
   jsonResponse,
   startOnInDepthQuestion,
   uninstallMemoryLocalStorage,
-  uninstallMemorySessionStorage
+  uninstallMemorySessionStorage,
+  openHistory
 } from "./test/appTestHelpers";
 
 const HISTORY_STORAGE_KEY = "thejudge.conversationHistory.entries";
@@ -24,11 +25,6 @@ async function switchToDestination(user: ReturnType<typeof userEvent.setup>, lab
 
 // REQ-114/115/213: the dedicated "Conversation history" rail icon retires — History
 // opens from the Menu's "Question History" row instead, now the combined-list sheet.
-async function openHistory(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: "Question History" }));
-}
-
 // REQ-213: jsdom's default innerWidth (1024) is the sheet family's "wide" side of its
 // 600px boundary, so a row tap only selects it into the reading pane here — "Open
 // conversation" is the explicit resume, same live hand-off a narrow tap gives directly.

@@ -16,6 +16,8 @@
 // retrain cannot learn to ignore its words. Measured: about +18 deciding rules on three models trained without
 // the six; no gain on three trained with them (probe-rule-search-noise-and-misses, 2026-10-13).
 
+import { foldApostrophes } from "./gameRulesStemmer.js";
+
 export type ConceptEntry = readonly [pattern: RegExp, terms: string, options?: { readonly searchOnly: true }];
 const SEARCH_ONLY = { searchOnly: true } as const;
 
@@ -137,7 +139,7 @@ export function turnOffSearchOnlyEntriesForTraining(): void {
 
 /** The de-duplicated concept terms for one card (REQ-234). */
 export function conceptTermsForCard(card: ConceptCard): string[] {
-  let text = (card.oracleText ?? "").toLowerCase().replace(/[\u2018\u2019]/g, "'");
+  let text = foldApostrophes((card.oracleText ?? "").toLowerCase());
   if (card.name) {
     for (const part of card.name.toLowerCase().split(" // ")) {
       if (part) text = text.split(part).join("~");

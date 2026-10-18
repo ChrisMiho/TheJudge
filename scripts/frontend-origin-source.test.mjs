@@ -3,6 +3,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import test from "node:test"
+import { codeOnly } from "./lib/shell-source.mjs"
 
 /**
  * The backend allows exactly one browser origin (`FRONTEND_ORIGIN` → CORS in
@@ -29,18 +30,13 @@ import test from "node:test"
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 
-/** Drop whole-line shell comments so prose can neither satisfy nor trip an
- *  assertion — only real commands count. */
-function codeOnly(file) {
-  return fs
-    .readFileSync(path.join(here, file), "utf8")
-    .split("\n")
-    .filter((line) => !/^\s*#/.test(line))
-    .join("\n")
+/** A script in this folder with its comment lines dropped (see `codeOnly`). */
+function readCodeOnly(file) {
+  return codeOnly(fs.readFileSync(path.join(here, file), "utf8"))
 }
 
 test("aws-deploy.sh derives FRONTEND_ORIGIN from the distribution's alias, with the CloudFront hostname as fallback", () => {
-  const source = codeOnly("aws-deploy.sh")
+  const source = readCodeOnly("aws-deploy.sh")
 
   assert.match(
     source,
@@ -61,7 +57,7 @@ test("aws-deploy.sh derives FRONTEND_ORIGIN from the distribution's alias, with 
 })
 
 test("aws-bootstrap.sh attaches the custom domain end to end", () => {
-  const source = codeOnly("aws-bootstrap.sh")
+  const source = readCodeOnly("aws-bootstrap.sh")
 
   assert.match(
     source,
@@ -99,7 +95,7 @@ test("aws-bootstrap.sh attaches the custom domain end to end", () => {
 
 test("both scripts still set every non-secret Lambda env key", () => {
   for (const file of ["aws-deploy.sh", "aws-bootstrap.sh"]) {
-    const source = codeOnly(file)
+    const source = readCodeOnly(file)
     for (const key of [
       "NODE_ENV",
       "ASK_AI_PROVIDER",

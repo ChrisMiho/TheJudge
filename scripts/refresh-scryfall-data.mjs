@@ -9,6 +9,7 @@ import { pathToFileURL } from "node:url"
 
 import { COMBO_SOURCE_MARKER_PATH, performCommanderSpellbookRefresh } from "./refresh-commander-spellbook-data.mjs"
 import { hashCardIdentityFile, writeComboSourceMarker } from "./lib/combo-source-marker.mjs"
+import { ensureParentDirectory } from "./lib/fs-helpers.mjs"
 
 const bulkDataEndpoint = "https://api.scryfall.com/bulk-data"
 const sourceOutputPath = path.resolve("apps/frontend/data/scryfall/default-cards.json")
@@ -54,10 +55,6 @@ export function createComprehensiveRulesDownloadTarget(downloadUrl) {
 
 export function shouldRunDataBuildAfterRefresh(successfulDownloads) {
   return successfulDownloads > 0
-}
-
-function ensureParentDirectory(filePath) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true })
 }
 
 function formatBytes(bytes) {

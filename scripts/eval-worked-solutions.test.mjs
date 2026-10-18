@@ -7,7 +7,7 @@ import test from "node:test";
 import { evaluateCaseRecall, formatReport, loadCases, parseArgs } from "./eval-worked-solutions.mjs";
 
 function makeTempCasesDir(cases) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "worked-solutions-"));
+  const dir = makeTempDir("worked-solutions-");
   test.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   for (const [index, caseEntry] of cases.entries()) {
     fs.writeFileSync(path.join(dir, `case-${index}.case.json`), JSON.stringify(caseEntry), "utf8");
@@ -149,6 +149,7 @@ import {
 } from "./eval-worked-solutions.mjs";
 import { computeSnapshot } from "./lib/gold-cases.mjs";
 import { normalizeSuiteFilters } from "./lib/practice-suite.mjs";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 function sourcesWith(oracleSuffix = "") {
   const ruleText = (ruleId) => `rule ${ruleId}${oracleSuffix}`;
@@ -234,7 +235,7 @@ test("level, complexity and section splits are right, and misses list case ids o
 });
 
 test("the retrieval path applies the shared filters and drops excluded, unsupported and stale cases, counted", async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "suite-retrieval-"));
+  const dir = makeTempDir("suite-retrieval-");
   test.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   fs.mkdirSync(path.join(dir, "cases"));
   const write = (c) => fs.writeFileSync(path.join(dir, "cases", `${c.id}.case.json`), JSON.stringify(c));
@@ -274,7 +275,7 @@ test("parseArgs reads repeatable suite filters, and refuses suite flags without 
 });
 
 test("an --output outside the suite folder is refused; a path inside a temporary suite folder is accepted", () => {
-  const suiteDir = fs.mkdtempSync(path.join(os.tmpdir(), "suite-report-"));
+  const suiteDir = makeTempDir("suite-report-");
   test.after(() => fs.rmSync(suiteDir, { recursive: true, force: true }));
   const inside = resolveSuiteReportPath({ outputPath: path.join(suiteDir, "reports", "mine.txt"), suiteDir });
   assert.ok(inside.endsWith(path.join("reports", "mine.txt")));

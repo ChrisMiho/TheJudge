@@ -3,7 +3,7 @@ import type { ResolvedRulings } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
 
-export function estimatePromptChars(prompt: string): number {
+function estimatePromptChars(prompt: string): number {
   return prompt.length;
 }
 
@@ -37,34 +37,22 @@ export type GetPromptDiagnosticsOptions = {
   conversationHistoryChars?: number;
 };
 
-export function getPromptDiagnostics(prompt: string, resolvedRulingsOrOptions?: ResolvedRulings | GetPromptDiagnosticsOptions): PromptDiagnostics {
+export function getPromptDiagnostics(prompt: string, options: GetPromptDiagnosticsOptions = {}): PromptDiagnostics {
   const promptChars = estimatePromptChars(prompt);
   const promptBudgetChars = MAX_PROMPT_CHAR_BUDGET;
   const remainingChars = promptBudgetChars - promptChars;
   const utilizationPercent = Math.round((promptChars / promptBudgetChars) * 1000) / 10;
 
-  let resolvedRulings: ResolvedRulings | undefined;
-  let gameRulesTopics: GameRulesTopic[] | undefined;
-  let gameRulesSectionChars: number | undefined;
-  let supplementalRules: RetrievedGameRule[] | undefined;
-  let supplementalRulesSectionChars: number | undefined;
-  let comboSectionChars: number | undefined;
-  let comboCandidateCount: number | undefined;
-  let conversationHistoryChars = 0;
-
-  if (resolvedRulingsOrOptions && "cards" in resolvedRulingsOrOptions) {
-    resolvedRulings = resolvedRulingsOrOptions;
-  } else if (resolvedRulingsOrOptions) {
-    const opts = resolvedRulingsOrOptions as GetPromptDiagnosticsOptions;
-    resolvedRulings = opts.resolvedRulings;
-    gameRulesTopics = opts.gameRulesTopics;
-    gameRulesSectionChars = opts.gameRulesSectionChars;
-    supplementalRules = opts.supplementalRules;
-    supplementalRulesSectionChars = opts.supplementalRulesSectionChars;
-    comboSectionChars = opts.comboSectionChars;
-    comboCandidateCount = opts.comboCandidateCount;
-    conversationHistoryChars = opts.conversationHistoryChars ?? 0;
-  }
+  const {
+    resolvedRulings,
+    gameRulesTopics,
+    gameRulesSectionChars,
+    supplementalRules,
+    supplementalRulesSectionChars,
+    comboSectionChars,
+    comboCandidateCount,
+    conversationHistoryChars = 0
+  } = options;
 
   return {
     promptChars,

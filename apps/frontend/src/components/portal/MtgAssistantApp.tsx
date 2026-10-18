@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { EnrichmentStep } from "../EnrichmentStep";
 import { StagedStepHeader } from "../StagedStepHeader";
@@ -314,7 +314,6 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     lifeTotal: lifeTotalsByPlayer[player]
   }));
   const {
-    answer,
     error,
     isSubmitting,
     isFollowUpSubmitting,
@@ -712,9 +711,23 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     }
   }
 
-  async function handleDecryptStack(event: FormEvent): Promise<void> {
-    event.preventDefault();
+  /** The payload build and send both Decrypt and Retry end with; each caller checks its own guards first. */
+  async function submitCurrentQuestion(source: "decrypt" | "retry", currentContext: GameContext): Promise<void> {
+    const updatedContext: GameContext = { ...currentContext, zones: zoneCardsByZone };
+    const payload = buildAskAiRequest(question, updatedContext);
+    const stackSize = zoneCardsByZone.stack?.length ?? 0;
+    const finalQuestion = payload.question;
 
+    await submitAttempt({
+      source,
+      payload,
+      stackSize,
+      finalQuestion,
+      usedFallbackQuestion: question.trim().length === 0
+    });
+  }
+
+  async function handleDecryptStack(): Promise<void> {
     if (!canAdvance("enrichment", { gameContext: { selectedZones, zones: zoneCardsByZone } })) {
       flashStatus("Add at least one card by searching or scanning before decrypting.");
       return;
@@ -725,18 +738,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
       return;
     }
 
-    const updatedContext: GameContext = { ...gameContext, zones: zoneCardsByZone };
-    const payload = buildAskAiRequest(question, updatedContext);
-    const stackSize = zoneCardsByZone.stack?.length ?? 0;
-    const finalQuestion = payload.question;
-
-    await submitAttempt({
-      source: "decrypt",
-      payload,
-      stackSize,
-      finalQuestion,
-      usedFallbackQuestion: question.trim().length === 0
-    });
+    await submitCurrentQuestion("decrypt", gameContext);
   }
 
   async function handleRetry(): Promise<void> {
@@ -746,22 +748,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
       return;
     }
 
-    const updatedContext: GameContext = { ...gameContext, zones: zoneCardsByZone };
-    const payload = buildAskAiRequest(question, updatedContext);
-    const stackSize = zoneCardsByZone.stack?.length ?? 0;
-    const finalQuestion = payload.question;
-
-    await submitAttempt({
-      source: "retry",
-      payload,
-      stackSize,
-      finalQuestion,
-      usedFallbackQuestion: question.trim().length === 0
-    });
-  }
-
-  async function handleFollowUp(text: string): Promise<void> {
-    await submitFollowUp(text);
+    await submitCurrentQuestion("retry", gameContext);
   }
 
   // REQ-029 (amended for REQ-206): Start over clears In-depth details' staged state —
@@ -1140,7 +1127,6 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
           gameContext: { selectedZones, zones: zoneCardsByZone }
         })}
         isSubmitting={isSubmitting}
-        answer={answer}
         error={error}
         canRetry={canRetry}
         retryCountdown={retryCountdown}
@@ -1150,7 +1136,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         isFollowUpSubmitting={isFollowUpSubmitting}
         visibleMessages={visibleMessages}
         frozenGameContext={frozenGameContext}
-        onFollowUp={handleFollowUp}
+        onFollowUp={submitFollowUp}
         onStartOver={handleStartOver}
         onEditRequest={handleEditContext}
       />

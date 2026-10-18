@@ -138,11 +138,6 @@
 /* ---- Shared token-driven utilities (not chrome-specific; shell.css owns
    the chrome skeleton itself) ---- */
 
-.surface-wash {
-  background: var(--surface-wash);
-  color: var(--text-primary);
-}
-
 .panel {
   background: var(--surface-panel);
   border: 1px solid var(--surface-edge);
@@ -153,16 +148,6 @@
   color: var(--text-muted);
 }
 
-.accent-text {
-  color: var(--accent-soft);
-}
-
-.btn-accent {
-  background: var(--accent);
-  color: var(--text-on-accent);
-  border: 1px solid var(--accent-strong);
-}
-
 :focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
@@ -170,7 +155,3 @@
 
 /* 44px touch floor (REQ-205) — applied to every interactive control that
    opts in with this class, on top of whatever intrinsic size it has. */
-.tap-target {
-  min-width: 44px;
-  min-height: 44px;
-}

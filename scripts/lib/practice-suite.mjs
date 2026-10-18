@@ -16,11 +16,20 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { seededSample } from "./answer-quality-run.mjs";
+import { resolveMainCheckoutRoot } from "./local-openai-env.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 /** The one suite folder (B2). Every suite command resolves its paths from this constant. */
 export const SUITE_DIR = join(repoRoot, "output/practice-suite");
+/**
+ * The suite folder in the main checkout, found through the git common directory, so a linked
+ * worktree (which has no copy of its own) and the main checkout itself name the same folder.
+ * Used as the read-only default by the scripts that read the owner's suite from any worktree.
+ */
+export function mainCheckoutSuiteDir(root = repoRoot, options = {}) {
+  return join(resolveMainCheckoutRoot(root, options) ?? root, "output/practice-suite");
+}
 /** The `.gitignore` line that must exist before any suite command writes. */
 export const SUITE_IGNORE_LINE = "output/practice-suite/";
 

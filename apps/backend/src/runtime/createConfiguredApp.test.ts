@@ -1,10 +1,10 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createAskAiRequest, createZoneCardItem } from "../test-utils/requestBuilders.js";
+import { makeTempDir } from "../test-utils/tempDir.js";
 
 const accessedPaths = vi.hoisted(() => [] as string[]);
 
@@ -63,7 +63,7 @@ function brotliBlock(buffer: Buffer): Buffer {
 
 beforeEach(() => {
   warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-  repoRoot = mkdtempSync(join(tmpdir(), "combo-runtime-"));
+  repoRoot = makeTempDir("combo-runtime-");
   mkdirSync(join(repoRoot, "apps/backend/data"), { recursive: true });
   const paths = comboPaths(repoRoot);
   // Mirrors the build script's block-layout format: variants grouped into
@@ -178,7 +178,7 @@ describe("Backend - Ask AI", () => {
     });
 
     it("fails open and still answers when the artifacts are missing entirely", async () => {
-      const emptyRoot = mkdtempSync(join(tmpdir(), "combo-runtime-empty-"));
+      const emptyRoot = makeTempDir("combo-runtime-empty-");
       const runtime = createConfiguredApp(emptyRoot, {});
 
       expect(runtime.comboVariantCount).toBe(0);

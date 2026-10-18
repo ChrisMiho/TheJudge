@@ -51,7 +51,7 @@ const STEMMED_TRIGGERS: ReadonlyArray<readonly [string, ReadonlySet<string>]> = 
 );
 
 /** REQ-242: the trigger-table topics the question's words and the cards' concept terms select. */
-export function selectTriggeredTopicIds(
+function selectTriggeredTopicIds(
   questionText: string,
   cards: ReadonlyArray<{ name: string; typeLine: string; oracleText: string }>
 ): string[] {

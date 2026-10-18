@@ -13,7 +13,8 @@ import type {
   PromptContext,
   PromptContextStackItem,
   PromptContextStackTarget,
-  PromptContextZoneItem
+  PromptContextZoneItem,
+  ZoneCardItem
 } from "../types/index.js";
 import { normalizeCardText, normalizeCardTextKeepingLines, normalizeQuestion, normalizeWhitespace } from "./normalization.js";
 
@@ -176,15 +177,12 @@ function displayFields(detail: CardDetailEntry): {
   };
 }
 
-function normalizeZoneItem(
-  card: import("../types/index.js").ZoneCardItem,
-  cardDetailIndex: CardDetailIndex
-): PromptContextZoneItem | null {
-  const name = normalizeWhitespace(card.name);
-  if (name.length === 0) return null;
-  const owner = card.owner;
-  const detail = resolveCardDetail(card.cardId, cardDetailIndex);
-  const manaSpent = normalizeOptionalManaSpent(card.manaSpent);
+/**
+ * The fields a stack item and a zone card share, in the order they appear in `context`:
+ * cardId, name, oracleText, imageUrl, manaCost, manaValue, typeLine, colors, supertypes,
+ * subtypes, keywords, then the display fields. Each kind's own fields follow.
+ */
+function sharedCardFields(card: ZoneCardItem, name: string, detail: CardDetailEntry) {
   return {
     cardId: normalizeWhitespace(card.cardId),
     name,
@@ -197,7 +195,18 @@ function normalizeZoneItem(
     supertypes: normalizeOptionalList(detail.supertypes),
     subtypes: normalizeOptionalList(detail.subtypes),
     keywords: normalizeOptionalList(detail.keywords),
-    ...displayFields(detail),
+    ...displayFields(detail)
+  };
+}
+
+function normalizeZoneItem(card: ZoneCardItem, cardDetailIndex: CardDetailIndex): PromptContextZoneItem | null {
+  const name = normalizeWhitespace(card.name);
+  if (name.length === 0) return null;
+  const owner = card.owner;
+  const detail = resolveCardDetail(card.cardId, cardDetailIndex);
+  const manaSpent = normalizeOptionalManaSpent(card.manaSpent);
+  return {
+    ...sharedCardFields(card, name, detail),
     owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
     targets: normalizeTargets(card.targets),
     contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
@@ -274,7 +283,7 @@ export function buildPromptContext(
 
   const stackZoneCards = gameCtx.zones?.stack ?? [];
 
-  const zonesMap = (gameCtx.zones ?? {}) as Record<string, import("../types/index.js").ZoneCardItem[] | undefined>;
+  const zonesMap = (gameCtx.zones ?? {}) as Record<string, ZoneCardItem[] | undefined>;
 
   const populatedZones = NON_STACK_CANONICAL_ZONE_ORDER
     .map((zoneId) => {
@@ -295,18 +304,7 @@ export function buildPromptContext(
     orderedStack: stackZoneCards.map((card, stackIndex, stack) => {
       const detail = resolveCardDetail(card.cardId, cardDetailIndex);
       return {
-        cardId: normalizeWhitespace(card.cardId),
-        name: normalizeWhitespace(card.name),
-        oracleText: normalizeCardText(detail.oracleText),
-        imageUrl: normalizeOptionalText(card.imageUrl),
-        manaCost: normalizeOptionalText(detail.manaCost),
-        manaValue: normalizeOptionalNumber(detail.manaValue),
-        typeLine: normalizeOptionalText(detail.typeLine),
-        colors: normalizeOptionalList(detail.colors),
-        supertypes: normalizeOptionalList(detail.supertypes),
-        subtypes: normalizeOptionalList(detail.subtypes),
-        keywords: normalizeOptionalList(detail.keywords),
-        ...displayFields(detail),
+        ...sharedCardFields(card, normalizeWhitespace(card.name), detail),
         caster: card.caster ?? "Player 1",
         targets: normalizeTargets(card.targets),
         contextNotes: normalizeOptionalText(card.contextNotes) || undefined,

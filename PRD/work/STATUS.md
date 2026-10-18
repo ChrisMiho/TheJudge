@@ -33,7 +33,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [codebase-cleanup-pass](codebase-cleanup-pass/) | Quality-check PASS; review the docs PR, then merge to build (no questions file — no product-truth change) |
 
 ## deferred
 
@@ -52,6 +51,7 @@ matching heading above — the `thejudge-*` skills only look inside `PRD/work/`.
 | --- | --- |
 | [advert](../ideasForLater/advert/) | unregistered (draft announcement posts, no `STATUS.*`) |
 | [card-collection-manager](../ideasForLater/card-collection-manager/) | ideation |
+| [codebase-cleanup-followups](../ideasForLater/codebase-cleanup-followups/) | unregistered (follow-up pass from codebase-cleanup-pass, PR #322) |
 | [combo-over-assertion](../ideasForLater/combo-over-assertion/) | unregistered (`IDEA.md` only) — the residual from the combo-context-validation probe (full report in git history at `16d51806`): the model claimed a combo on 2 of 50 unrelated-card pairs; re-test on Luna |
 | [context-ai-photo-card-id](../ideasForLater/context-ai-photo-card-id/) | refining |
 | [future-infra](../ideasForLater/future-infra/) | unregistered (forward AWS infra sweep, 2026-08-30) |

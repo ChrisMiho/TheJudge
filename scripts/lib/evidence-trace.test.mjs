@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -19,6 +18,7 @@ import {
   traceCase,
   writeTraceFolder
 } from "./evidence-trace.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 // Everything here is offline: a fake prompt builder, fake freeze checks, a temp folder.
 
@@ -220,7 +220,7 @@ function fakeGit(overrides = {}) {
 }
 
 async function traceRunDeps(overrides = {}) {
-  const outputRoot = await mkdtemp(join(tmpdir(), "evidence-trace-test-"));
+  const outputRoot = makeTempDir("evidence-trace-test-");
   const { deps } = baseDeps();
   return {
     outputRoot,
@@ -289,7 +289,7 @@ test("the trace can be narrowed to named cases or a manifest, and refuses a name
 // D4 ------------------------------------------------------------------------
 
 async function writeFixtureTrace(name, commit, cases) {
-  const outputRoot = await mkdtemp(join(tmpdir(), "evidence-trace-compare-"));
+  const outputRoot = makeTempDir("evidence-trace-compare-");
   const { deps } = baseDeps();
   const traced = await buildTrace({ cases, ...deps });
   const { folder } = await writeTraceFolder({ outputRoot, name, commit, productionCap: 10, ruleIndexSize: RULE_INDEX.length, traced, parity: null });
@@ -324,7 +324,7 @@ test("the compare command reports both commits, prompt-hash equality, coverage d
   await writeFile(join(b.folder, "trace.json"), `${JSON.stringify(traceB, null, 2)}\n`);
 
   const logs = [];
-  const compareOut = await mkdtemp(join(tmpdir(), "evidence-trace-compare-out-"));
+  const compareOut = makeTempDir("evidence-trace-compare-out-");
   const result = await runTraceCompare({ argv: [a.folder, b.folder], log: (line) => logs.push(line), cwd: "/", outputRoot: compareOut });
   const written = JSON.parse(await readFile(join(compareOut, "compare-a-b.json"), "utf8"));
   assert.deepEqual(written.commits, result.commits, "the comparison is kept as numbers and ids under the output folder");
@@ -370,7 +370,7 @@ test("eval:evidence-trace and eval:evidence-trace:compare exist in package.json,
   try {
     const { run } = await traceRunDeps();
     const { folder } = await run();
-    await runTraceCompare({ argv: [folder, folder], log: () => {}, cwd: "/", outputRoot: await mkdtemp(join(tmpdir(), "evidence-trace-compare-out-")) });
+    await runTraceCompare({ argv: [folder, folder], log: () => {}, cwd: "/", outputRoot: makeTempDir("evidence-trace-compare-out-") });
   } finally {
     globalThis.fetch = realFetch;
   }

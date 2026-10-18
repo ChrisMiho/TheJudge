@@ -107,10 +107,7 @@ export function createOpenAiAskAiProvider(config: OpenAiProviderConfig): AskAiPr
             ]);
             const text = extractText(response);
             if (!text) {
-              throw createProviderUnavailableError(
-                "Miho is working on it",
-                "OpenAI response did not include text output."
-              );
+              throw createProviderUnavailableError(undefined, "OpenAI response did not include text output.");
             }
 
             return { answer: text };
@@ -126,16 +123,13 @@ export function createOpenAiAskAiProvider(config: OpenAiProviderConfig): AskAiPr
         }
       } catch (error) {
         if (isTimeoutCause(error) || Date.now() >= deadline) {
-          throw createProviderTimeoutError(
-            "Miho is working on it",
-            `OpenAI request exceeded the ${config.timeoutMs}ms answer budget.`
-          );
+          throw createProviderTimeoutError(undefined, `OpenAI request exceeded the ${config.timeoutMs}ms answer budget.`);
         }
 
         if (error instanceof AppError) throw error;
 
         if (error instanceof Error) {
-          throw createProviderUnavailableError("Miho is working on it", `OpenAI request failed: ${error.message}`);
+          throw createProviderUnavailableError(undefined, `OpenAI request failed: ${error.message}`);
         }
 
         throw error;

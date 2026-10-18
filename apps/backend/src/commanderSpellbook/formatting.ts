@@ -11,7 +11,7 @@ export const COMBO_SECTION_HEADING = "COMMANDER SPELLBOOK COMBO CONTEXT — COMM
  * is "complete" would overstate what the corpus can support. The strongest
  * honest phrasing is that every piece is present and its state is unverified.
  */
-export const COMBO_INSTRUCTION_LINES: readonly string[] = Object.freeze([
+const COMBO_INSTRUCTION_LINES: readonly string[] = Object.freeze([
   "- This is community-maintained catalog data from Commander Spellbook. It is not official WotC rules, not legality validation, and not proof that a combo can actually be executed in this game state.",
   "- Official card text, WotC rulings, and the Comprehensive Rules remain authoritative. Where they disagree with this section, they win.",
   "- For a partial candidate, identify the missing or incorrectly zoned pieces explicitly rather than assuming the user has them.",

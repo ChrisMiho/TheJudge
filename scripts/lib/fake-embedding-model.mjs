@@ -1,11 +1,12 @@
 // Test helper (REQ-237): a tiny fake model folder shaped like a trained export -- never real weights.
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { SHIPPED_FILES } from "../package-embedding-model.mjs";
+import { makeTempDir } from "./temp-dir.mjs";
 
 export function makeFakeModelDir(contentByFile = {}) {
-  const dir = mkdtempSync(join(tmpdir(), "fake-model-"));
+  // Removed when the test file that asked for it finishes.
+  const dir = makeTempDir("fake-model-");
   for (const path of SHIPPED_FILES) {
     mkdirSync(dirname(join(dir, path)), { recursive: true });
     writeFileSync(join(dir, path), contentByFile[path] ?? `fake ${path}`);

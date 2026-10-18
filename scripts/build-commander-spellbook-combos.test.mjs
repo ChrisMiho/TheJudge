@@ -1,6 +1,5 @@
 import assert from "node:assert/strict"
 import fs from "node:fs"
-import os from "node:os"
 import path from "node:path"
 import test from "node:test"
 import zlib from "node:zlib"
@@ -20,14 +19,13 @@ import {
   serializeVariantDetail,
   trimCommittedArtifacts
 } from "./build-commander-spellbook-combos.mjs"
+import { makeTempDir as makeRegisteredTempDir } from "./lib/temp-dir.mjs"
 
 const fixturesDir = path.resolve("apps/backend/src/commanderSpellbook/__fixtures__")
 const sampleInputDir = path.join(fixturesDir, "raw-sample")
 
 function makeTempDir() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-build-"))
-  test.after(() => fs.rmSync(dir, { recursive: true, force: true }))
-  return dir
+  return makeRegisteredTempDir("combo-build-")
 }
 
 function outputPaths(dir) {

@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 import { PNG } from "pngjs";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 const script = new URL("./compare-screenshot-pair.mjs", import.meta.url).pathname;
 
@@ -24,7 +24,7 @@ function runScript(args) {
 }
 
 test("identical images differ by nothing and print the one-line JSON shape", () => {
-  const dir = mkdtempSync(join(tmpdir(), "pair-"));
+  const dir = makeTempDir("pair-");
   const a = writePng(dir, "a.png", 10, 10, 40);
   const b = writePng(dir, "b.png", 10, 10, 40);
   const out = execFileSync("node", [script, "--build", a, "--mockup", b], { encoding: "utf8" });
@@ -47,7 +47,7 @@ test("identical images differ by nothing and print the one-line JSON shape", () 
 });
 
 test("counts differing pixels as a fraction of the compared pixels", () => {
-  const dir = mkdtempSync(join(tmpdir(), "pair-"));
+  const dir = makeTempDir("pair-");
   const a = writePng(dir, "a.png", 10, 10, 40);
   const b = writePng(dir, "b.png", 10, 10, 40, [
     [0, 0, 200],
@@ -59,7 +59,7 @@ test("counts differing pixels as a fraction of the compared pixels", () => {
 });
 
 test("tolerance lets small per-channel differences count as matching", () => {
-  const dir = mkdtempSync(join(tmpdir(), "pair-"));
+  const dir = makeTempDir("pair-");
   const a = writePng(dir, "a.png", 4, 4, 40);
   const b = writePng(dir, "b.png", 4, 4, 50);
   const strict = JSON.parse(execFileSync("node", [script, "--build", a, "--mockup", b], { encoding: "utf8" }));
@@ -70,7 +70,7 @@ test("tolerance lets small per-channel differences count as matching", () => {
 });
 
 test("a mask removes its regions and the content box limits what is compared", () => {
-  const dir = mkdtempSync(join(tmpdir(), "pair-"));
+  const dir = makeTempDir("pair-");
   const a = writePng(dir, "a.png", 10, 10, 40);
   const b = writePng(dir, "b.png", 10, 10, 40, [
     [1, 1, 200],
@@ -92,7 +92,7 @@ test("a mask removes its regions and the content box limits what is compared", (
 });
 
 test("a mask region without a name and reason is rejected", () => {
-  const dir = mkdtempSync(join(tmpdir(), "pair-"));
+  const dir = makeTempDir("pair-");
   const a = writePng(dir, "a.png", 4, 4, 40);
   const maskPath = join(dir, "mask.json");
   writeFileSync(maskPath, JSON.stringify({ regions: [{ x: 0, y: 0, width: 1, height: 1 }] }));
@@ -102,7 +102,7 @@ test("a mask region without a name and reason is rejected", () => {
 });
 
 test("different sizes exit non-zero and print both sizes", () => {
-  const dir = mkdtempSync(join(tmpdir(), "pair-"));
+  const dir = makeTempDir("pair-");
   const a = writePng(dir, "a.png", 10, 10, 40);
   const b = writePng(dir, "b.png", 12, 10, 40);
   const result = runScript(["--build", a, "--mockup", b]);

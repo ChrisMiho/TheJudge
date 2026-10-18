@@ -9,24 +9,7 @@ import {
   saveDraft,
   saveHistoryEntry
 } from "./persistence";
-
-function createMemoryStorage(): Storage {
-  const map = new Map<string, string>();
-  return {
-    get length() {
-      return map.size;
-    },
-    clear: () => map.clear(),
-    getItem: (key: string) => (map.has(key) ? (map.get(key) as string) : null),
-    setItem: (key: string, value: string) => {
-      map.set(key, String(value));
-    },
-    removeItem: (key: string) => {
-      map.delete(key);
-    },
-    key: (index: number) => Array.from(map.keys())[index] ?? null
-  };
-}
+import { createMemoryStorage } from "../../test/memoryStorage";
 
 function buildEntry(overrides: Partial<ConversationHistoryEntry> = {}): ConversationHistoryEntry {
   return {

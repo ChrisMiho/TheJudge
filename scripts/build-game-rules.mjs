@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { format as prettierFormat } from "prettier";
+import { ensureParentDirectory, formatBytes, escapeRegExp } from "./lib/fs-helpers.mjs";
 
 const manifestPath = path.resolve("apps/backend/data/gameRulesTopicManifest.json");
 const sourcePath = path.resolve("apps/backend/data/cr/source.txt");
@@ -57,20 +58,6 @@ function buildTokenStats(ruleEntries) {
     tokens[token] = { df: df.get(token) };
   }
   return { N: ruleEntries.length, tokens };
-}
-
-function ensureParentDirectory(filePath) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-}
-
-function formatBytes(bytes) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function normalizeNewlines(value) {

@@ -1,5 +1,3 @@
-@tailwind components;
-
 @tailwind utilities;
 
 /* REQ-207: one typeface, Inter, self-hosted (a single variable latin file, 48 KB) with the
@@ -87,9 +85,6 @@ html {
   padding: 0.6rem 1rem 1rem;
   border-top: 1px solid var(--surface-edge);
 }
-
-/* Question History, below 600px: each row keeps its own Delete (REQ-213/DEC-143), a small
-   text control tucked into the row's lower right so the rows keep the mockup's height. */
 
 /* REQ-205: the feedback type pills paint at least 44px (the mockup's are 40px); the
    negative block margin keeps the sheet's layout exactly the mockup's. */
@@ -470,22 +465,9 @@ html {
   min-height: 0;
 }
 
-@media (min-width: 768px) {.app-header {
+@media (min-width: 768px) {
+  .app-header {
     min-height: 68px;
-  }
-}
-
-@keyframes orb-breathe {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
-      0 0 14px color-mix(in srgb, var(--accent) 65%, transparent);
-  }
-  50% {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--accent-soft) 85%, transparent),
-      0 0 26px color-mix(in srgb, var(--accent) 95%, transparent);
   }
 }
 
@@ -627,7 +609,8 @@ html {
   margin-inline: auto;
 }
 
-@media (min-width: 768px) {.card-shell-column {
+@media (min-width: 768px) {
+  .card-shell-column {
     max-width: 24rem;
   }
 
@@ -663,7 +646,8 @@ html {
   padding-block: 0.5rem;
 }
 
-@media (min-width: 640px) {.conversation-start-over {
+@media (min-width: 640px) {
+  .conversation-start-over {
     padding-block: 0.625rem;
   }
 }
@@ -953,52 +937,6 @@ html {
   padding-top: 0.8rem;
 }
 
-@keyframes mic-listen {
-  0%,
-  100% {
-    box-shadow: inset 0 0 0 0 transparent;
-  }
-  50% {
-    box-shadow: inset 0 0 14px color-mix(in srgb, var(--accent-soft) 80%, transparent);
-  }
-}
-
-/* the message bubbles (`flow.css:355-374`) */
-
-.msg-judge {
-  max-width: 86%;
-  align-self: flex-start;
-  display: grid;
-  grid-template-columns: 30px 1fr;
-  gap: 0.6rem;
-  align-items: start;
-  font-size: 0.94rem;
-  line-height: 1.5;
-}
-
-.msg-judge-seal {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  background: var(--surface-ground);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
-    0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
-  display: grid;
-  place-items: center;
-  color: var(--accent-soft);
-}
-
-.msg-judge-who {
-  display: block;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent-soft);
-  margin-bottom: 0.2rem;
-}
-
 /* In-depth details (ui-look-translation, slice C): a port of `in-depth-question.html`'s own
    stylesheet, selector for selector, with every colour, surface and shadow read from the
    token layer (REQ-216) — the literal shadow values live in `lib/theme/glows.css`. The
@@ -1083,7 +1021,7 @@ html {
   0%, 100% { box-shadow: var(--idq-shadow-3);
   }
     50% { box-shadow: var(--idq-shadow-4);
-  };
+  }
 }
 
 .plate-next {
@@ -1250,23 +1188,13 @@ html {
   font-variant-numeric: tabular-nums;
 }
 
-.roster-more {
-  display: none;
-  justify-content: flex-start;
-  margin-top: 0.4rem;
-}
-
 .player-more {
   display: flex;
   justify-content: flex-start;
   margin-top: 0.4rem;
 }
 
-.roster[data-open="true"] + .roster-more {
-  display: flex;
-}
-
-.roster-more .link, .player-more .link, .extras .link {
+.player-more .link, .extras .link {
   background: transparent;
   border: 0;
   color: var(--accent-soft);
@@ -1299,9 +1227,11 @@ html {
   color: var(--text-muted);
 }
 
+/* REQ-137 / REQ-138: every counter row is a content-sized leading element, one declared gap, then
+   the value control, and the three scalar selects are stacked at every width. */
 .extras .counters {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   gap: 0.4rem;
 }
 
@@ -1321,9 +1251,10 @@ html {
 }
 
 .extras .cmd-row, .extras .named-row {
-  display: grid;
+  display: flex;
+  min-width: 0;
   grid-template-columns: 1fr 5rem;
-  gap: 0.4rem;
+  gap: 0.5rem;
   align-items: center;
   font-size: 0.82rem;
 }
@@ -1486,7 +1417,7 @@ select.field {
   }
 }
 
-.place-zones button .mark, .act-zones button .mark {
+.place-zones button .mark {
   width: 18px;
   height: 18px;
   border-radius: 999px;
@@ -1505,21 +1436,6 @@ select.field {
 .place-zones button[data-extra="true"] {
   border-style: dashed;
   color: var(--text-muted);
-}
-
-.place-more {
-  justify-self: start;
-  background: transparent;
-  border: 0;
-  color: var(--accent-soft);
-  font-size: 0.78rem;
-  cursor: pointer;
-  min-height: 32px;
-  padding: 0 0.2rem;
-}
-
-.place-more[hidden] {
-  display: none;
 }
 
 .shelf-hint {
@@ -1596,32 +1512,6 @@ select.field {
   box-shadow: var(--idq-shadow-9);
   transition: none;
   cursor: grabbing;
-}
-
-.shelf .card.drop-before::before {
-  content: "";
-  position: absolute;
-  left: -0.45rem;
-  top: 8%;
-  bottom: 8%;
-  width: 3px;
-  border-radius: 3px;
-  background: var(--accent-soft);
-  box-shadow: var(--glow-soft-10);
-  z-index: 6;
-}
-
-.shelf .card.drop-after::before {
-  content: "";
-  position: absolute;
-  right: -0.45rem;
-  top: 8%;
-  bottom: 8%;
-  width: 3px;
-  border-radius: 3px;
-  background: var(--accent-soft);
-  box-shadow: var(--glow-soft-10);
-  z-index: 6;
 }
 
 .shelf .card .pos {
@@ -1838,10 +1728,6 @@ select.field {
   color: var(--text-muted);
 }
 
-.ctx-form label[hidden] {
-  display: none;
-}
-
 .ctx-form .t {
   display: flex;
   align-items: baseline;
@@ -1916,10 +1802,6 @@ select.field {
   background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
-.targets input.field[hidden] {
-  display: none;
-}
-
 .ctx-form textarea.field {
   min-height: 42px;
   max-height: 96px;
@@ -1938,10 +1820,6 @@ select.field {
   max-height: 34dvh;
   overflow-y: auto;
   padding-right: 2px;
-}
-
-.review[data-collapsed="true"] {
-  display: none;
 }
 
 .review-head {
@@ -1969,10 +1847,6 @@ select.field {
   font-size: 0.8rem;
   color: var(--text-muted);
   margin: 0;
-}
-
-.review-sum[hidden] {
-  display: none;
 }
 
 .review .row {
@@ -2074,10 +1948,6 @@ select.field {
   color: var(--accent-soft);
 }
 
-.more-row[hidden] {
-  display: none;
-}
-
 .ctx-tail {
   display: flex;
   gap: 0.5rem;
@@ -2114,10 +1984,6 @@ select.field {
   flex-wrap: wrap;
   gap: 0.35rem;
   margin: 0.6rem 0 0;
-}
-
-.review-filters[hidden] {
-  display: none;
 }
 
 .review-filters button {
@@ -2174,10 +2040,6 @@ select.field {
   margin: 0.35rem 0 0;
 }
 
-.review-count-line[hidden] {
-  display: none;
-}
-
 .composer .q-lbl {
   margin: -0.15rem 0 -0.35rem 0.2rem;
   font-size: 0.68rem;
@@ -2211,21 +2073,6 @@ select.field {
   cursor: pointer;
   font-size: 0.88rem;
   transition: all 160ms ease;
-}
-
-.act-zones button[data-current="true"] {
-  border-color: var(--accent-soft);
-  background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
-}
-
-.act-zones button[data-current="true"] .mark {
-  background: var(--accent-soft);
-  border-color: var(--accent-soft);
-  color: var(--surface-ground);
-}
-
-.act-zones button[data-current="true"] .mark::after {
-  content: "✓";
 }
 
 .place-plate .eyebrow .link.danger {
@@ -2312,15 +2159,6 @@ select.field {
   opacity: 0.85;
 }
 
-.act-zones button[data-current="true"] {
-  box-shadow: var(--idq-shadow-act-1);
-}
-
-.act-zones button[data-current="true"] .zg {
-  opacity: 1;
-  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-soft) 85%, transparent));
-}
-
 .seg {
   display: inline-flex;
   border-radius: 999px;
@@ -2361,10 +2199,6 @@ select.field {
 .seg button:disabled {
   opacity: 0.4;
   cursor: default;
-}
-
-.seg button[hidden] {
-  display: none;
 }
 
 .act-menu {
@@ -2501,21 +2335,6 @@ select.field {
   outline-offset: 2px;
 }
 
-/* REQ-137 / REQ-138 win over the mockup's roster grids: every counter row is a content-sized
-   leading element, one declared gap, then the value control, and the three scalar selects are
-   stacked at every width. */
-.extras .counters {
-  grid-template-columns: 1fr;
-}
-
-.extras .cmd-row,
-.extras .named-row {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .extras .named-row .field:not(.amt) {
   flex: 1;
   min-width: 0;
@@ -2610,7 +2429,8 @@ select.field {
 }
 
 
-@media (min-width: 768px) {.scan-video {
+@media (min-width: 768px) {
+  .scan-video {
     aspect-ratio: 3 / 4;
     max-height: none;
   }
@@ -3186,9 +3006,6 @@ body {
 }
 
 @media (max-width: 719px) {
-  .header-side .asof {
-    display: none;
-  }
   .flow-head .asof {
     display: inline;
   }
@@ -3507,7 +3324,7 @@ body {
 @keyframes foil {
   0%, 100% { transform: translateX(-30%);
   } 50% { transform: translateX(30%);
-  };
+  }
 }
 
 .entry .info {
@@ -3673,10 +3490,6 @@ body {
 
 .pp-filter {
   margin: 0 0 0.2rem;
-}
-
-.pp-filter[hidden] {
-  display: none;
 }
 
 .pp-lede {
@@ -4148,10 +3961,6 @@ body {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-primary);
-}
-
-.indicator[hidden] {
-  display: none;
 }
 
 .indicator .votes {
@@ -4903,17 +4712,6 @@ body {
   font-size: 1rem;
 }
 
-.lt-scope .life-custom .err {
-  font-size: 0.74rem;
-  color: var(--status-error);
-}
-
-.lt-scope .life-note {
-  font-size: 0.74rem;
-  color: var(--text-muted);
-  margin: 0;
-}
-
 .lt-scope .seat-map {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -5041,9 +4839,10 @@ body {
   }
 }
 
+/* tile structure: the app's tile is a box holding the tap area and the ⋯ button side by side */
 .lt-scope .tile {
   position: relative;
-  display: grid;
+  display: block;
   grid-template-rows: auto auto auto;
   justify-items: center;
   gap: 0.15rem;
@@ -5053,7 +4852,7 @@ body {
   border: 1px solid var(--surface-edge);
   background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   color: var(--text-primary);
-  cursor: pointer;
+  cursor: default;
   text-align: center;
   transition: all 160ms ease;
 }
@@ -5119,67 +4918,11 @@ body {
   border-color: var(--accent-soft);
 }
 
-.lt-scope .tile.pulse .n {
-  animation: tick 320ms ease;
-}
-
-@keyframes tick {
-  30% { transform: translateY(-4px) scale(1.15); }
-}
-
-.lt-scope .tile-tools {
-  display: none;
-  grid-column: 1 / -1;
-  align-items: center;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  padding: 0.5rem 0.6rem;
-  border-radius: 0.7rem;
-  border: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  font-size: 0.82rem;
-}
-
-.lt-scope .tile-tools[data-show="true"] {
-  display: flex;
-}
-
-.lt-scope .tile-tools b {
-  margin-right: auto;
-}
-
-.lt-scope .tile-tools .stepper button {
-  width: 40px;
-  height: 38px;
-}
-
-.lt-scope .tile-tools .stepper .val {
-  min-width: 2.6rem;
-  font-size: 0.95rem;
-}
-
-.lt-scope .tile-tools .field {
-  width: 4.4rem;
-  min-height: 38px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.lt-scope .tile-tools .btn {
-  min-height: 38px;
-  padding: 0.3rem 0.7rem;
-  font-size: 0.8rem;
-}
-
-.lt-scope .tile-tools .btn.danger:hover {
-  border-color: var(--status-error);
-  color: var(--status-error);
-}
-
 .lt-scope .tiles .tile.custom .rm {
   position: absolute;
   top: 2px;
-  right: 2px;
+  left: 2px;
+  right: auto;
   width: 28px;
   height: 28px;
   border: 0;
@@ -5214,24 +4957,10 @@ body {
   margin: 0;
 }
 
-.lt-scope .add-err[hidden] {
-  display: none;
-}
-
 .lt-scope .hint {
   font-size: 0.76rem;
   color: var(--text-muted);
   margin: 0;
-}
-
-.lt-scope .lt-tab[hidden] {
-  display: none;
-}
-
-/* tile structure: the app's tile is a box holding the tap area and the ⋯ button side by side */
-.lt-scope .tile {
-  display: block;
-  cursor: default;
 }
 
 .lt-scope .tile-main {
@@ -5247,11 +4976,6 @@ body {
   font: inherit;
   text-align: center;
   cursor: pointer;
-}
-
-.lt-scope .tiles .tile.custom .rm {
-  left: 2px;
-  right: auto;
 }
 
 .lt-scope .tile .options {
@@ -5377,7 +5101,8 @@ body {
   vertical-align: middle;
 }
 
-@media (prefers-reduced-motion: reduce) {.motion-enter, .motion-exit, .motion-hover, .motion-press, .motion-focus, .motion-success, .motion-error, .ambient-accent-surface, .conversation-workspace-handoff, .conversation-message-enter, .conversation-new-response, .adaptive-context-overlay, .adaptive-context-surface, .enrichment-card-enter, .card-state-remove, .wait-inscription-line-ink, .wait-inscription-line-lift, .wait-inscription-seal-ring, .wait-inscription-mote, .wait-inscription-bubble::after, .trade-pile-tier-up, .trade-pile-tier-down {
+@media (prefers-reduced-motion: reduce) {
+  .motion-enter, .motion-exit, .motion-hover, .motion-press, .motion-focus, .motion-success, .motion-error, .ambient-accent-surface, .conversation-workspace-handoff, .conversation-message-enter, .conversation-new-response, .adaptive-context-overlay, .adaptive-context-surface, .enrichment-card-enter, .card-state-remove, .wait-inscription-line-ink, .wait-inscription-line-lift, .wait-inscription-seal-ring, .wait-inscription-mote, .wait-inscription-bubble::after, .trade-pile-tier-up, .trade-pile-tier-down {
     animation-delay: 0ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -5389,7 +5114,8 @@ body {
 /* Sheets, the Menu tray and their backdrops hold still under reduced motion: they appear
    in place instead of sliding or fading. */
 
-@media (prefers-reduced-motion: reduce) {.drawer-panel,
+@media (prefers-reduced-motion: reduce) {
+  .drawer-panel,
   .sheet-backdrop,
   .menu-tray,
   .menu-tray-backdrop {

@@ -1,6 +1,5 @@
 import assert from "node:assert/strict"
-import { mkdtempSync, readFileSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { readFileSync } from "node:fs"
 import path from "node:path"
 import { Readable } from "node:stream"
 import test from "node:test"
@@ -23,6 +22,7 @@ import {
   recordCall,
   slugFromLock
 } from "./graph-boundary-hook.mjs"
+import { makeTempDir } from "./lib/temp-dir.mjs"
 
 // The universal tier's whole surface, exercised through real PreToolUse
 // payloads rather than through the pure rules module. A rule that is correct in
@@ -41,7 +41,7 @@ const REPO_ROOT = path.resolve(import.meta.dirname, "..")
 // writer therefore wrote through to the live `.worktrees/`. They now write into
 // a throwaway directory instead, so an un-isolated fixture is inert rather than
 // silently destructive.
-process.env.CLAUDE_PROJECT_DIR = mkdtempSync(path.join(tmpdir(), "graph-boundary-test-"))
+process.env.CLAUDE_PROJECT_DIR = makeTempDir("graph-boundary-test-")
 
 test("a test run cannot resolve the repository as the project root", () => {
   // Regression, 2026-08-25. The fixtures below inject readers but not writers,

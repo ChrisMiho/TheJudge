@@ -3,20 +3,20 @@
 // with a tiny fake model folder: no network, no npm install, no zip.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { chmodSync, cpSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { chmodSync, cpSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { makeFakeModelDir } from "./lib/fake-embedding-model.mjs";
 import { SHIPPED_FILES, buildManifest } from "./package-embedding-model.mjs";
+import { makeTempDir } from "./lib/temp-dir.mjs";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 
 function scratchRepo({ embeddingsModel } = {}) {
   const source = makeFakeModelDir();
   const manifest = buildManifest({ modelDir: source });
-  const repoRoot = mkdtempSync(join(tmpdir(), "package-lambda-model-test-"));
+  const repoRoot = makeTempDir("package-lambda-model-test-");
   mkdirSync(join(repoRoot, "scripts"), { recursive: true });
   mkdirSync(join(repoRoot, "apps", "backend", "data"), { recursive: true });
   cpSync(join(currentDir, "package-lambda.sh"), join(repoRoot, "scripts", "package-lambda.sh"));
