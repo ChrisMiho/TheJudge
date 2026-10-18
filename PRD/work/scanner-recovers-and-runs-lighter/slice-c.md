@@ -1,6 +1,6 @@
 # Slice C — One shared scanner panel
 
-## Status: planned
+## Status: done
 
 ## Goal
 

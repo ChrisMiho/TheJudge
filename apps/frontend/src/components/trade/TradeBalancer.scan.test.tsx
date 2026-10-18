@@ -388,6 +388,23 @@ describe("Frontend - Trade", () => {
       expect(sideTotalText("A")).toBe("$10.00");
     });
 
+    it("shows the Exit scan box in the row above the camera, beside the side title, outside the camera overlay (REQ-214)", async () => {
+      const user = userEvent.setup();
+      await renderBalancer();
+
+      await user.click(within(side("A")).getByLabelText("Scan a card onto Side A"));
+
+      const exitBtn = within(side("A")).getByRole("button", { name: "Exit scan" });
+      const head = exitBtn.parentElement as HTMLElement;
+      expect(head).toHaveClass("scan-head");
+      expect(exitBtn).toHaveClass("scan-exit");
+      expect(within(head).getByText("Scanning onto Side A")).toBeInTheDocument();
+      expect(head.nextElementSibling).not.toContainElement(exitBtn);
+      const caution = within(side("A")).getByRole("button", { name: "Card scanning is experimental" });
+      expect(head).not.toContainElement(caution);
+      expect(head.nextElementSibling).toContainElement(caution);
+    });
+
     it("announces the scan-data failure line with role=alert (REQ-249)", async () => {
       const user = userEvent.setup();
       await renderBalancer();

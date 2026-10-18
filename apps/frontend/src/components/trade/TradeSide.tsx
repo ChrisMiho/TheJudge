@@ -10,8 +10,7 @@ import {
   type TradeSideId
 } from "../../lib/trade/pricing";
 import type { CardMetadataItem } from "../../types";
-import { ScanCameraSurface } from "../ScanCameraSurface";
-import { ScanReviewBubble } from "../ScanReviewBubble";
+import { ScanPanel } from "../ScanPanel";
 import { PrintingPicker } from "./PrintingPicker";
 import { TradeEntryRow, type TradeEntryPricingMeta } from "./TradeEntryRow";
 import type { TradeScan } from "./useTradeScan";
@@ -241,54 +240,21 @@ export function TradeSide({
       )}
 
       {isScanOpen ? (
-        <div className="scan-panel">
-          {/* REQ-214: the way out is a square ✕ box above the camera's top-right corner —
-              it lives in the panel header, not over the viewfinder, so it never sits on top
-              of the frame's own top-right chrome (the always-shown experimental-scan caution
-              triangle and, once cards are held, the count pill). Closing commits the holding
-              list below to this side. */}
-          <div className="scan-head">
-            <p className="scan-title">{`Scanning onto ${sideLabel}`}</p>
-            <button
-              type="button"
-              aria-label="Exit scan"
-              onClick={scan.closeScan}
-              className="icon-round"
-            >
-              <span aria-hidden="true">✕</span>
-            </button>
-          </div>
-          {scan.isLoading ? (
-            <p className="tb-note">Loading scan data...</p>
-          ) : (
-            <div className="relative">
-              <ScanCameraSurface
-                onCapture={() => undefined}
-                identify={scan.identify}
-                onStatusChange={scan.setCameraStatus}
-                onAcquisitionDiagnostic={scan.recordAcquisitionDiagnostic}
-                convergence={scan.convergence}
-                confirmation={scan.addConfirmation}
-                debug={scan.scanDebug}
-                autoScanFps={3}
-              />
-              <ScanReviewBubble
-                entries={scan.heldEntries.map((entry) => ({
-                  id: entry.id,
-                  card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
-                  colors: entry.card.colors
-                }))}
-                onRemove={scan.removeHeld}
-                destinationLabel={sideLabel}
-              />
-            </div>
-          )}
-          {scan.error && (
-            <p role="alert" className="idq-error">
-              {scan.error}
-            </p>
-          )}
-        </div>
+        <ScanPanel
+          title={`Scanning onto ${sideLabel}`}
+          destinationLabel={sideLabel}
+          isLoading={scan.isLoading}
+          error={scan.error}
+          convergence={scan.convergence}
+          addConfirmation={scan.addConfirmation}
+          scanDebug={scan.scanDebug}
+          heldEntries={scan.heldEntries}
+          onRemoveHeld={scan.removeHeld}
+          onExit={scan.closeScan}
+          identify={scan.identify}
+          onCameraStatusChange={scan.setCameraStatus}
+          onAcquisitionDiagnostic={scan.recordAcquisitionDiagnostic}
+        />
       ) : (
         isSearchOpen && (
           <section className="search-pop open" aria-label={`Add a card to ${sideLabel}`}>

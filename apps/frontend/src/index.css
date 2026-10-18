@@ -3853,14 +3853,27 @@ body {
   overflow-y: auto;
 }
 
-.side .scan-head {
+/* REQ-214: the one scanner panel's slim row above the camera — the host's title at
+   the left (none on In-Depth), the 44px .scan-exit box at the right, flush with the
+   camera frame's right edge. Shared by all three hosts. */
+.scan-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
 }
 
-.side .scan-title {
+.scan-head[data-has-title="false"] {
+  justify-content: flex-end;
+}
+
+.idq > .scan-panel {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.scan-title {
   margin: 0;
   font-size: 0.68rem;
   font-weight: 600;
@@ -4383,7 +4396,7 @@ body {
 
 /* the scanner host's column is the camera box's width on desktop, so the ✕ sits right over its corner */
 @media (min-width: 720px) {
-  .page-content-narrow-fit:has(> .idq > .flow-head .scan-exit) {
+  .page-content-narrow-fit:has(> .idq > .scan-panel > .scan-head .scan-exit) {
     width: min(31.5rem, 92vw);
   }
 }

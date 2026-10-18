@@ -210,16 +210,19 @@ becomes the only way to add a card. It sits outside the core product loop
   phones (a bounded dynamic-viewport height below `md:`; a proportion-stable
   `aspect-[3/4]` fallback at `md:` and above), with the guide, lock outline, and
   debug overlay scaling to the rendered frame and `object-cover` preserved. All
-  overlays — debug toggle, mute, Cardomancer attribution, the ✕ exit box, and
-  the count pill — keep non-overlapping bounds and hit areas at supported
-  widths. (DEC-065, DEC-090, REQ-068, NFR-001, REQ-214)
+  overlays — debug toggle, mute, Cardomancer attribution, the caution control,
+  and the count pill — keep non-overlapping bounds and hit areas at supported
+  widths, and the ✕ exit box sits outside the camera frame entirely, in the
+  slim row above it. (DEC-065, DEC-090, REQ-068, NFR-001, REQ-214)
 - Built: while scan is open the destination's own search input, card list, and
   outer staged-flow navigation are hidden; scan-local controls including
-  **Capture** remain, and **Exit scan** — a square box carrying an ✕, above the
-  camera's top-right corner on every host (accessible name unchanged) — is the
-  only path back to manual search or normal navigation; closing it commits the
-  holding list to the destination in one step. (DEC-076, REQ-056, REQ-214,
-  FLOW-006)
+  **Capture** remain, and **Exit scan** — a 44px square box carrying an ✕, at
+  the right end of a slim row directly above the camera's top-right corner,
+  identical on every host because all three share one scanner panel
+  (accessible name unchanged) — is the only path back to manual search or
+  normal navigation; closing it commits the holding list to the destination in
+  one step. The row carries the host's scanner title where it has one; In-Depth
+  shows the box alone. (DEC-076, REQ-056, REQ-068, REQ-214, FLOW-006)
 - Built: the scanner's accent visuals (reticle, lock/progress indicator,
   confirmation popup, review bubble) restyle with the selected app palette
   rather than fixed sky/emerald — an approved presentation-only exception to
@@ -388,7 +391,8 @@ The engine and control layer live under `apps/frontend/src/lib/scan/`
 identifier), `audioPrefs.ts`, with golden and detector fixtures under
 `__fixtures__/`); the camera and overlay UI in
 `apps/frontend/src/components/` (`ScanCameraSurface.tsx`, `ScanCardOutline.tsx`,
-`ScanDebugOverlay.tsx`, `ScanReviewBubble.tsx`, `ZoneCardPicker.tsx`,
+`ScanDebugOverlay.tsx`, `ScanPanel.tsx` (the one shared scanner panel),
+`ScanReviewBubble.tsx`, `ZoneCardPicker.tsx`,
 `ZoneCollectionStep.tsx`) and `apps/frontend/src/hooks/useScanCapture.ts`. The
 three destinations consume it through `ZoneCollectionStep`/`ZoneCardPicker`
 (In-Depth), `components/portal/quick-lookup/QuickLookupApp.tsx` (Quick Question),
