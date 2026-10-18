@@ -72,8 +72,8 @@ re-trying the card with no explanation.
 +  redesigned-screens exception does not apply). (REQ-214)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: reject
+- Reason: the owner, 2026-10-18: "for the scanning, right now, that feature is pretty experimental, so if we start with just scanning the card and if it can pick correctly great, otherwise, lets just have them update it themselves, i want to refine card scanning later". No scanner message now; the player adds the card by hand. Bug 2 waits for the later card-scanning refinement.
 
 ## REQ-085 — reopening a saved question from Life Tracker keeps that question's players
 
@@ -116,7 +116,7 @@ changes for this bug.
 +  own players. (REQ-085, REQ-213)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## Blocker questions
