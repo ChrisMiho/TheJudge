@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # codebase-cleanup-pass
 
@@ -28,7 +28,7 @@ Built strictly in order; each ships alone.
 | H | [slice-h.md](slice-h.md) — In-Depth question flow loses dead wiring | none | done |
 | I | [slice-i.md](slice-i.md) — scanner hook keeps only what screens use | none | done (Q-11 left for the owner, I2 open) |
 | J | [slice-j.md](slice-j.md) — dead and duplicated CSS goes; parse errors fail the build | B | done |
-| K | [slice-k.md](slice-k.md) — Life Tracker cleanups | J | planned |
+| K | [slice-k.md](slice-k.md) — Life Tracker cleanups | J | done |
 
 ## Autonomous metadata
 

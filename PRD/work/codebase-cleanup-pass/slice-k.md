@@ -1,6 +1,6 @@
 # Slice K — Life Tracker cleanups (owner decision 3)
 
-## Status: planned
+## Status: done
 
 Depends on: J (both touch Life Tracker files; J settles `index.css` first). Findings: C-09 (light version), Q-12 (Life Tracker part), Q-10 (Life Tracker part).
 
@@ -56,7 +56,7 @@ ls docs/design/codebase-cleanup-pass/slice-k
 
 ## Reverted findings
 
-None yet.
+None. Evidence: `slice-k.evidence.md`.
 
 ## Files touched
 

@@ -59,7 +59,7 @@ export default defineConfig({
     // names a file or names a directory whose every test file passed under
     // `node`.
     environmentMatchGlobs: [
-      ["src/lib/lifeTracker/useLifeTracker.test.ts", "jsdom"],
+      ["src/hooks/useLifeTracker.test.ts", "jsdom"],
       ["src/lib/feedback/FeedbackContextProvider.test.tsx", "jsdom"],
       ["src/lib/portal/seedContext.test.tsx", "jsdom"],
       // Applies a palette to `document`, so it is DOM-bound despite its siblings.

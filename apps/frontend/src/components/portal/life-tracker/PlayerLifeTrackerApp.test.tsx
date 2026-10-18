@@ -6,6 +6,7 @@ import { DestinationOutlet } from "../DestinationOutlet";
 import type { DestinationId, PortalDestination } from "../../../lib/portal/types";
 import { PlayerLifeTrackerApp } from "./PlayerLifeTrackerApp";
 import { createMemoryStorage } from "../../../test/memoryStorage";
+import { appCss } from "../../../test/appTestHelpers";
 
 function trackerCards(): HTMLElement[] {
   return screen.getAllByTestId(/^life-card-Player /);
@@ -411,7 +412,11 @@ describe("Frontend - Shared", () => {
       render(<PlayerLifeTrackerApp />);
       await openGameSetup(user);
 
-      expect(screen.getByText("Life Tracker")).toHaveClass("text-accent-soft");
+      // The heading takes its colour from the Game Setup head rule, not from a utility class on the element.
+      expect(screen.getByText("Life Tracker")).not.toHaveAttribute("class");
+      expect(appCss).toMatch(
+        /\[data-testid="life-tracker-game-setup"\] \.sheet-legacy-head p \{[^}]*color: var\(--accent-soft\);/
+      );
     });
   });
 });

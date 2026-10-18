@@ -1,9 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TRACKER_STORAGE_KEY } from "./persistence";
-import { adjustPlayerLife, createDefaultGame, createInitialState } from "./state";
+import { TRACKER_STORAGE_KEY } from "../lib/lifeTracker/persistence";
+import { adjustPlayerLife, createDefaultGame, createInitialState } from "../lib/lifeTracker/state";
 import { useLifeTracker } from "./useLifeTracker";
-import { createMemoryStorage } from "../../test/memoryStorage";
+import { createMemoryStorage } from "../test/memoryStorage";
 
 describe("Frontend - Shared", () => {
   describe("useLifeTracker", () => {

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
-import type { PlayerLabel } from "../../types";
-import type { NamedCounterId } from "./counters";
-import { clearTrackerState, loadTrackerState, saveTrackerState } from "./persistence";
+import type { PlayerLabel } from "../types";
+import type { NamedCounterId } from "../lib/lifeTracker/counters";
+import { clearTrackerState, loadTrackerState, saveTrackerState } from "../lib/lifeTracker/persistence";
 import {
   addCustomCounter,
   adjustCommanderDamage,
@@ -22,8 +22,8 @@ import {
   setStartingLife,
   startNewGame,
   toggleDayNightPhase
-} from "./state";
-import type { CardStyle, LayoutMode, TrackerState } from "./types";
+} from "../lib/lifeTracker/state";
+import type { CardStyle, LayoutMode, TrackerState } from "../lib/lifeTracker/types";
 
 export type UseLifeTrackerResult = {
   state: TrackerState;

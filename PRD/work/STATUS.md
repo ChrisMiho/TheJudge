@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [codebase-cleanup-pass](codebase-cleanup-pass/) | All slices A-K done on `thejudge-auto/codebase-cleanup-pass-work`; code PR open; slice I's Q-11 left for the owner (criterion I2 open) |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| [codebase-cleanup-pass](codebase-cleanup-pass/) | Docs PR #321 merged; build half on `thejudge-auto/codebase-cleanup-pass-work`; mapped into slices A-K |
 
 ## refined
 
