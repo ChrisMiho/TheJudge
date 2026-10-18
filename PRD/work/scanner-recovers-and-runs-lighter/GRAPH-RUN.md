@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-055113/` (one file, `GRAPH-BRIEF-scanner.md`, copied verbatim to `PRD/work/scanner-recovers-and-runs-lighter/intake/`)
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` (build half claimed on `thejudge-auto/scanner-recovers-and-runs-lighter-work`; resume from the `STATUS.*` marker in the build worktree)
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 26` | PASS, 0 blocking, 4 advisory (A1 parity check is `identify.test.ts` + `vectors.json`, `reference/identify.py` absent; A2 four test fixtures carry `imageUrl`; A3 name `npm run data:scan-map`, drop unused `getImageUrl`; A4 confirm no other `screen-layout.md` row contradicts); every diff hunk matches `PRD/sections/` once; REQ-249 unused; `QUALITY-CHECK.md` commit `c82d38c2` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 | 5 | gate-review | sonnet | ok | `0 → 18` | build half run `graph-20261018-063434`: docs PR #318 and verdict PR #319 merged (`origin/main` `30433b2d`); kickoff worktree removed clean (`git worktree remove`); claim commit `4a4da393` on `thejudge-auto/scanner-recovers-and-runs-lighter-work` cut from `origin/main` `30433b2d`, pushed; lock taken from the launch root (pid 6563); graph canary `nohup true` denied; `graph-gate-review` commit `24ed40ca` (= origin tip): 5 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree, launch checkout only the pre-existing untracked `PRD/work/probe-codebase-health-pass/` | 2026-10-18 |
 | 4 | gate-qc (build half, attempt 2) | sonnet | ok | `0 → 18` | PASS, 0 blocking, A1–A4 carried forward (A3 adds: gitignored `apps/frontend/data/scryfall/default-cards.json` absent in the worktree); `origin/main` still `30433b2d`; 18 removed-line groups each match `PRD/sections/` once; REQ-249 unused; `QUALITY-CHECK.md` commit `2c840a0d` (= origin tip); `STATUS.refined` only marker; README `## Preparation gate` PASS rewritten by the driver; porcelain empty | 2026-10-18 |
+| 5 | plan | sonnet | ok | `0 → 30` | commit `bf3578b7` (= origin tip): `GAMEPLAN.md`, `slice-a.md`–`slice-d.md` sequential (A recovery, B shared identifier + per-frame, C one scanner panel, D smaller scan map), `slice-<a–d>.criteria.json` 9/8/11/12 = 40 criteria, all `false`, 9 `manual`; A1–A4 folded in; `STATUS.active` only marker; board row moved to active; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty | 2026-10-18 |
 
 ## Open gate
 
@@ -226,6 +227,38 @@ Budget: this node has a 120 tool-call cap that counts every call, including any 
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, the slice list (one line each, in player terms first), criteria count per slice and how many are `manual`, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), and `git status --porcelain` of the working directory (must be empty).
+
+### build
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter
+
+You are node 6 (`build`) of graph run `graph-20261018-063434`, attempt 1. Run the `thejudge-implement-all` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter/.claude/skills/thejudge-implement-all/SKILL.md and everything it tells you to read, and follow it in graph-controlled mode) on the package `PRD/work/scanner-recovers-and-runs-lighter/`, implementing slices A, B, C, D in order. Shared branch: `thejudge-auto/scanner-recovers-and-runs-lighter-work` — already checked out in the working directory above and pushed; work in it in place (no second worktree, no contributor branch). The code PR is `thejudge-auto/scanner-recovers-and-runs-lighter-work` → `main`; open it with `gh pr create --base main` and never merge or close it. End the PR body with these two lines: a line reading 🤖 Generated with [Claude Code](https://claude.com/claude-code) and then a line with https://claude.ai/code/session_01MyoXR52i9TAid8cFQd7vZ3
+
+Work ONLY inside the working directory above. Every file you write — code, tests, `PRD/sections/`, slice status, criteria files, evidence, screenshots — lies under /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter/. Never write to /Users/chrismiho/Coding/Projects/TheJudge outside `.worktrees/implement-scanner-recovers-and-runs-lighter/`; a bare `PRD/work/...` path resolved against the launch checkout is a write outside scope and fails this node.
+
+Setup: this worktree has no `node_modules`. Run `npm ci` from the working directory before the first test.
+
+Product truth: apply the accepted proposal to `PRD/sections/` by intent, together with each slice's code, in the slice that names it — REQ-249 (new) in A; REQ-214 and REQ-056 in C; REQ-048 and REQ-066 in D. Re-derive each edit from the finalized `GATE-QUESTIONS.md` diff and `DESIGN-BRIEF.md` against current `PRD/sections/` text, never a blind replay. Never add a `DEC-###` entry.
+
+Acceptance criteria: each slice's `slice-<letter>.criteria.json` starts all `false`. A criterion flips to `true` only after you have actually run its evidence command or touched its evidence path, and for a `manual` one only after you write a dated observation line naming its id (in a `slice-<letter>.evidence.md` beside the slice doc). The node is `ok` only when every criterion in all four files is `true`. Do not describe a passing criterion as proof the work is correct; report what each command printed.
+
+Constraints from the package:
+- Scan results stay identical: `identify.test.ts` against `__fixtures__/vectors.json` passes unchanged.
+- Scan data stays out of the background preload.
+- Slice D regenerates `apps/frontend/public/data/cardScanMap.json` only with `npm run data:scan-map`, never by hand. Its gitignored input is absent here; create a symbolic link at `apps/frontend/data/scryfall/default-cards.json` in this worktree pointing to /Users/chrismiho/Coding/Projects/TheJudge/apps/frontend/data/scryfall/default-cards.json (read only; never copy it, never stage it). Never run `npm run data:refresh` or any Scryfall download. If the rebuilt map differs from the committed one in anything beyond the dropped image-address field (key count, keys, `oracleId`, `name`), stop and report it as a blocker — do not commit that map.
+- Local Node is 26; CI runs Node 22. If a test touches browser storage, mind that Node 26 has a built-in `localStorage` that can hide storage bugs CI would catch.
+
+Live checks: for the `manual` browser criteria, start the frontend dev server from the working directory on a free port using the Bash tool's `run_in_background` option (never `&` or `nohup`, both denied while the lock is held), use Playwright MCP with screenshots saved under `PRD/work/scanner-recovers-and-runs-lighter/.playwright-mcp/` in this worktree (do not commit them if gitignored), call `browser_close` when done, and stop the server you started (`kill <pid>` of that server; `pkill`/`killall` are denied). Report the port and that it is free.
+
+Budget: this node has a 4000 tool-call cap that counts every call, including any subagent's. Subagent fan-out is off: work as a single agent; spawn no subagents or forks. No sleeping or polling loops.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Run git as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`, never force-push, never `git stash`, never `git reset --hard` or `git clean`. Never edit `.claude/`, `CLAUDE.md`, any `thejudge-*` skill, or `GRAPH-RUN.md` (the driver owns it). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+When all four slices are done, set `STATUS.ship-ready` per the skill (exactly one marker) and move the `PRD/work/STATUS.md` board row fully.
+
+Return a report with: `outcome: ok|failed|blocked`; the PR URL; one commit sha per slice and the origin tip (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`); criteria counts per slice (`true`/total); the exact final lines printed by `npm --workspace apps/frontend run test`, `npm run typecheck`, `npm run quality:check`, and the frontend build; the `PRD/sections/` files changed; the scan-map comparison result and size before/after; the status marker; `git status --porcelain` of the working directory (must be empty); the dev-server port released; and a complete list of every file path you wrote or deleted, as absolute paths, one per line, under a `### Paths written` heading.
 
 ## Instruction ledger
 
