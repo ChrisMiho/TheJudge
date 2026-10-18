@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/scanner-recovers-and-runs-lighter` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-recovers-and-runs-lighter` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-055113/` (one file, `GRAPH-BRIEF-scanner.md`, copied verbatim to `PRD/work/scanner-recovers-and-runs-lighter/intake/`)
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/scanner-recovers-and-runs-lighter/`
+- Current node: `owner-action`
+- Next action: answer `PRD/work/scanner-recovers-and-runs-lighter/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` picks it up
 
 ## Node ledger
 
@@ -16,10 +16,15 @@
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/scanner-recovers-and-runs-lighter` pushed (`git ls-remote` → `041eab94` = `origin/main`) from `.worktrees/kickoff-scanner-recovers-and-runs-lighter`; launch checkout still on `main`, porcelain only the pre-existing untracked `PRD/work/probe-codebase-health-pass/`; lock `.worktrees/.graph-run.lock` runId `graph-20261018-055113` pid 6563; universal canary and graph canary `nohup true` both denied | 2026-10-18 |
 | 2 | shape | sonnet | ok | `0 → 17` | `PRD/work/scanner-recovers-and-runs-lighter/` (IDEA.md with 34 `## Prior run` lines, README.md, STATUS.ideation, `intake/GRAPH-BRIEF-scanner.md` byte-identical to staging) and board row committed `e030224f`, `8ecaff8e`, pushed (= origin tip); worktree porcelain empty | 2026-10-18 |
 | 3 | define | opus | ok | `0 → 89` | commit `3b548f5c` (= origin tip): `DESIGN-BRIEF.md` (five changes, slice order recovery → shared identifier + per-frame → panel → scan map, ladder per open decision, disposition rows), `GATE-QUESTIONS.md` (REQ-214, REQ-056, REQ-048, REQ-066 amended; REQ-249 new — REQ-248 held by open PR #317; `## Blocker questions` none; 5 blank verdict slots), `evidence/measurements.md` (live, dev server port 5181, canvas fake camera, 390×844 and 1280×800: In-Depth ✕ covers the caution triangle at both widths, Quick Question and Trade do not; failed download stays stuck after the 503 lifts; port released, `browser_close`); `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; REQ-249 unused in `PRD/sections/`; porcelain empty both checkouts (launch: pre-existing probe folder only) | 2026-10-18 |
+| 4 | gate-qc | sonnet | ok | `0 → 26` | PASS, 0 blocking, 4 advisory (A1 parity check is `identify.test.ts` + `vectors.json`, `reference/identify.py` absent; A2 four test fixtures carry `imageUrl`; A3 name `npm run data:scan-map`, drop unused `getImageUrl`; A4 confirm no other `screen-layout.md` row contradicts); every diff hunk matches `PRD/sections/` once; REQ-249 unused; `QUALITY-CHECK.md` commit `c82d38c2` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 
 ## Open gate
 
-- None
+- Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 1).
+- Question: answer `PRD/work/scanner-recovers-and-runs-lighter/GATE-QUESTIONS.md` — five verdict slots (REQ-214 amended: one ✕ spot on all three scanners; REQ-056 amended: In-Depth exit off the camera; REQ-249 new: recover from a failed download with plain wording; REQ-048 amended: scan map drops image addresses; REQ-066 amended: scope the Trade rule's scan-map line), each accept / edit / reject with a reason for edit or reject; no blocker questions.
+- Evidence: `QUALITY-CHECK.md` (PASS, commit `c82d38c2`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
+- Docs PR: PENDING
+- Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/scanner-recovers-and-runs-lighter/`) picks it up.
 
 ## Dispatch prompts
 
