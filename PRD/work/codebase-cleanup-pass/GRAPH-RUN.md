@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-162925/` (13 files, copied verbatim to `PRD/work/codebase-cleanup-pass/intake/`; the staging folder's removal was denied to node 2 as `rm -rf` and is left for the owner)
-- Current node: `review`
+- Current node: `close`
 - Next action: `/graph-implement PRD/work/codebase-cleanup-pass/`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | 7 | plan | sonnet | ok | `0 → 40` | commit `6f3c3c1c` (= origin tip): `GAMEPLAN.md`, `slice-a.md`…`slice-k.md`, 11 `slice-*.criteria.json` (114 criteria, all `false`), `STATUS.active` only marker, README slice table, board row under active; Preparation gate PASS verified before writing; attempt-2 advisory folded into slice K step 4 / K4; deliverables kept outside `PRD/work/` at `docs/design/codebase-cleanup-pass/slice-j/` and `slice-k/`; no post-merge criteria; worktree porcelain empty; launch porcelain unchanged | 2026-10-18 |
 | 8 | build | sonnet | parked | `0 → 611` | attempt 1: slices A–K built and pushed, tip `ef6ca945` (= origin tip); code PR https://github.com/ChrisMiho/TheJudge/pull/322 opened with title READY and the registration marker; criteria 113/114 `true` (node script over all 11 `slice-*.criteria.json`) — `I2` false (Q-11 not applied, see `slice-i.evidence.md`), so the node fails its all-true rule; return side: launch `git status --porcelain` identical to the pre-build capture, no new files under `<root>/.playwright-mcp` or `<root>/.tmp`, every reported path inside `.worktrees/implement-codebase-cleanup-pass/`; `git diff --stat origin/main -- apps/backend/src/eval/fixtures PRD/sections .claude CLAUDE.md scripts/graph-boundary-hook.mjs` empty; worktree porcelain empty; builder had set `STATUS.ship-ready`, driver replaced it with `STATUS.owner-action` | 2026-10-18 |
 | 9 | build | sonnet | ok | `0 → 39` | attempt 2 after owner deferral: tip `524657bf` (= origin tip); criteria 113/113 `true` (`I2` removed with dated reason in `slice-i.md` and `slice-i.evidence.md`; Q-11 row → later; Trade bug = follow-up 28); `git diff --stat 0be4c14b HEAD -- apps scripts .github` empty (no code change); durable record `PRD/ideasForLater/codebase-cleanup-followups/IDEA.md` (193 lines, sections a–f, Trade bug written in full) plus `evidence/` 13 files `cmp`-identical to `intake/`; board row under ship-ready and parked-ideas row added; PR #322 body updated (`gh pr edit`), title and registration marker unchanged; `STATUS.ship-ready` only marker; launch porcelain unchanged; no new files under `<root>/.playwright-mcp` or `<root>/.tmp` | 2026-10-18 |
+| 10 | review | opus | ok | `0 → 66` | approve, 0 Critical, 0 Important, 7 Minor (K2 differs only in unread `--tw-text-opacity`; I7 wording vs 5 recorded test removals; slice I doc shows removed I2 ticked and stale text; B4/H10 vs slice I's allowed mock edit; slice H dropped the `hiddenInitialQuestion` restore assertion; slice E reference scan is a `{ prefilter: false }` switch in `matcher.ts` not a test helper; slice J computed-style covers In-Depth's first screen, review-step rules proven by the built-CSS diff); `npm run quality:check` exit 0; backend 902, frontend 1671, scripts 1066 pass; goldens and protected paths unchanged; rule-order snapshot 415/415 compared; worktree porcelain empty; no-write `Plan` subagent | 2026-10-18 |
 
 ## Gate verdicts
 
@@ -256,6 +257,29 @@ Severity: Critical or Important only for a gap that breaks correctness, changes 
 Budget: this node has a 120 tool-call cap. Spawn no subagents, do no sleeping or polling. Read diffs per slice rather than file by file where you can.
 
 Return: `verdict: approve | changes-requested`; then Critical, Important and Minor findings, each with file:line, the criterion or rule it breaks, and the evidence (command and output, or the lines); the `npm run quality:check` result; and `git status --porcelain` of the working directory at the end (must be empty).
+
+### close
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass
+
+You are node 8 (`close`) of graph run `graph-20261018-175940`, attempt 1. Run the `thejudge-cleanup` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-codebase-cleanup-pass/.claude/skills/thejudge-cleanup/SKILL.md and any reference it names, and follow it in graph-controlled mode, on its PR-ready path) for the package `PRD/work/codebase-cleanup-pass/`, which is `STATUS.ship-ready`. Work ONLY in the working directory above, on the shared branch `thejudge-auto/codebase-cleanup-pass-work`; never write to /Users/chrismiho/Coding/Projects/TheJudge itself. This runs before the owner merges: code PR https://github.com/ChrisMiho/TheJudge/pull/322 is open, carries the registration marker in its body, and stays open — never merge or close it.
+
+Context: a behavior-preserving cleanup in eleven slices (A–K), all done, 113 of 113 criteria true; review approved with no Critical or Important findings (see `GRAPH-RUN.md` `## Node ledger` row 10 for its seven Minor notes). No product truth was proposed (no `GATE-QUESTIONS.md`) and build wrote no `PRD/sections/` change, so there is nothing to promote — confirm that and do not write any. The owner deferred finding Q-11, the Trade scanned-printing bug and every other follow-up to a later pass; they are recorded in `PRD/ideasForLater/codebase-cleanup-followups/IDEA.md`, with the intake copied byte-for-byte to its `evidence/` folder. That folder is outside the package and must survive this node untouched except for step 2 below.
+
+Do:
+1. Write the receipt under `PRD/instructions/receipts/` per the skill (`codebase-cleanup-pass-2026-10-18.md`). Fold `GRAPH-RUN.md`'s `## Node ledger` and `## Instruction ledger` into its `## Graph run` section verbatim — copy the rows exactly, do not retype or summarize them — with the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/322`, a `- PR:` line, and both run ids (build half `graph-20261018-175940`, spec-forming half `graph-20261018-162925`, docs PR #321). Its `## Intake` section names the 13 intake files, their origin (the 2026-10-18 and 2026-10-17 code-health probes), and that byte-identical copies live in `PRD/ideasForLater/codebase-cleanup-followups/evidence/`. Link the follow-up record, the REQ-202 screenshot folders `docs/design/codebase-cleanup-pass/slice-j/` and `slice-k/`, and list the review's seven Minor notes.
+2. Add two items to section c of `PRD/ideasForLater/codebase-cleanup-followups/IDEA.md`, in its existing style: restore a test that pins the exact restored text in the `useAskAiSubmitOrchestration.test.ts` restore test (the review suggests adding `hiddenInitialQuestion: 'Resumed question'` to its `onConversationUpdated` matcher); and consider moving slice E's `{ prefilter: false }` reference switch out of `apps/backend/src/commanderSpellbook/matcher.ts` into a test helper.
+3. Update `PRD/work/STATUS.md`: remove the package's board row from `## ship-ready` (keep the parked-ideas row for `codebase-cleanup-followups`).
+4. Delete `PRD/work/codebase-cleanup-pass/` with `git rm -r` (tracked files) — the gitignored `.playwright-mcp/` scratch inside it may be left on disk.
+5. Commit with explicit paths and push.
+
+Do not edit `GRAPH-RUN.md` before folding it, and do not add a `close` row to the receipt's node ledger — the driver appends that after you return.
+
+Mechanics: change files with the Write and Edit tools (no heredocs, no `python3` or `sed -i` edits, no long chained Bash). Run git as short separate calls from the working directory: `git add <each path>`, `git rm -r <path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`, never `--force`, never `git stash`, never `rm -rf`. Never retry a denied call verbatim; report it. This node has a 120 tool-call cap. Spawn no subagents; if you dispatch any subagent at all, copy the `Working directory:` line above unchanged into its prompt.
+
+Return: `outcome: ok|failed`; the receipt path; confirmation the ledger rows were copied verbatim (row count folded); the commit sha and `git ls-remote --heads origin thejudge-auto/codebase-cleanup-pass-work`; `git status --porcelain` (must be empty); and every file path you wrote or removed.
 
 ## Instruction ledger
 
