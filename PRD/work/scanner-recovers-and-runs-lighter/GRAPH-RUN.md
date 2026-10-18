@@ -23,7 +23,7 @@
 - Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 1).
 - Question: answer `PRD/work/scanner-recovers-and-runs-lighter/GATE-QUESTIONS.md` — five verdict slots (REQ-214 amended: one ✕ spot on all three scanners; REQ-056 amended: In-Depth exit off the camera; REQ-249 new: recover from a failed download with plain wording; REQ-048 amended: scan map drops image addresses; REQ-066 amended: scope the Trade rule's scan-map line), each accept / edit / reject with a reason for edit or reject; no blocker questions.
 - Evidence: `QUALITY-CHECK.md` (PASS, commit `c82d38c2`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
-- Docs PR: PENDING
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/318 (`thejudge-auto/scanner-recovers-and-runs-lighter` → `main`, opened by the driver, not merged).
 - Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/scanner-recovers-and-runs-lighter/`) picks it up.
 
 ## Dispatch prompts
