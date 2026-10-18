@@ -77,7 +77,7 @@ to loading, error and held-card plumbing.
 +  shows the box alone. (DEC-076, REQ-056, REQ-068, REQ-214, FLOW-006)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-056 — In-Depth's exit is in the row above the camera, not on the camera
@@ -103,7 +103,7 @@ over the camera.
 +  - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface are not in the document; the `Scan card` heading is removed, so the slim row above the camera carries only the exit box; **Exit scan** is reachable from that row, above the camera's top-right corner and never over the camera frame (REQ-214, REQ-068); the scan-local **Capture** button remains available; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-249 — scanning recovers from a failed download and says so in plain words
@@ -168,7 +168,7 @@ fixes the wording, and the build keeps today's raw error text.
 +  raw error never reaches the player. (REQ-249, NFR-014)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-048 — the scan map stops storing image addresses; the picture comes from the printing id
@@ -266,7 +266,7 @@ and stays 6.51 MB; the scan-map slice is dropped and nothing else changes.
 +  (DEC-070, NFR-010).
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-066 — the Trade price rule's "don't touch the scan map" line is scoped to that change
@@ -292,7 +292,7 @@ nothing is lost.
 +  - this requirement makes no change to `cardScanMap.json` (its entry shape is owned by REQ-048), `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, or the provider boundary; `cardMetadata.json` is slimmed and reused as the shared identity index per REQ-174; the backend gains the read-only price route per REQ-175
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## Blocker questions
