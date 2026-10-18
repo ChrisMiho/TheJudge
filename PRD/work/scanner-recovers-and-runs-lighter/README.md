@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # scanner-recovers-and-runs-lighter
 
@@ -10,7 +10,19 @@ Card scanning recovers from a failed download, builds its data once, and the thr
 - Proposed product truth (owner verdicts): `GATE-QUESTIONS.md` — REQ-214, REQ-056, REQ-249 (new), REQ-048, REQ-066
 - Live measurements: `evidence/measurements.md`
 - Quality check: `QUALITY-CHECK.md` (PASS)
-- Next: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` picks it up
+- Plan: `GAMEPLAN.md`
+- Next: build slice A first (`/thejudge-implement PRD/work/scanner-recovers-and-runs-lighter/ slice a`), or the graph build half drives all four
+
+## Slices
+
+Sequential: all four touch shared scanner files (see `GAMEPLAN.md`).
+
+| Slice | Doc | Player outcome | Depends on | Criteria (manual) |
+| --- | --- | --- | --- | --- |
+| A | `slice-a.md` | Scanning comes back after a failed download, with a plain-words message | none | 9 (2) |
+| B | `slice-b.md` | Phones do less work per frame and hold one shared card identifier; results identical | A | 8 (1) |
+| C | `slice-c.md` | One scanner panel; the exit box is the same 44 px square above the camera on all three tools | A, B | 11 (3) |
+| D | `slice-d.md` | The scan map is 1.23 MB smaller | B | 12 (3) |
 
 ## Autonomous metadata
 

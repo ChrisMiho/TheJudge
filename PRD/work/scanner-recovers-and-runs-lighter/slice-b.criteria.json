@@ -1,0 +1,54 @@
+{
+  "slug": "scanner-recovers-and-runs-lighter",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "identify.test.ts against __fixtures__/vectors.json passes with no edit to existing cases or the fixture",
+      "value": false,
+      "evidence": { "command": "run test.*identify" }
+    },
+    {
+      "id": "B2",
+      "statement": "New test: bounded top-N equals the full stable sort on a tie-heavy synthetic database",
+      "value": false,
+      "evidence": { "command": "run test.*identify" }
+    },
+    {
+      "id": "B3",
+      "statement": "loadScanResources returns the same identifier to repeated callers and clears on rejection (tests pass)",
+      "value": false,
+      "evidence": { "command": "run test.*loadScanResources" }
+    },
+    {
+      "id": "B4",
+      "statement": "The CardIdentifier constructor builds its buffer in one pass with ids and order unchanged (existing identify tests pass)",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/lib/scan/identify.ts"] }
+    },
+    {
+      "id": "B5",
+      "statement": "The resolver reuses one lookup map per card-list array (test passes)",
+      "value": false,
+      "evidence": { "command": "run test.*resolveScanCandidates" }
+    },
+    {
+      "id": "B6",
+      "statement": "Scan README file lists name loadHashDb.ts and the loadScanResources module",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/scan/README.md"] }
+    },
+    {
+      "id": "B7",
+      "statement": "Frontend tests, typecheck, lint and format check pass",
+      "value": false,
+      "evidence": { "command": "(run typecheck|run lint|run format:check)" }
+    },
+    {
+      "id": "B8",
+      "statement": "A reviewer confirmed vectors.json and existing identify.test.ts cases are unmodified in the diff",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

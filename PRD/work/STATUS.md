@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| scanner-recovers-and-runs-lighter | Mapped into four slices (A recovery fix, B shared identifier, C shared panel, D smaller scan map); build in progress |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| scanner-recovers-and-runs-lighter | Owner accepted all five gate verdicts; being built (re-grade, then map-out and implement) |
 
 ## refining
 
