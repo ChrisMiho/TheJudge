@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # ci-built-server-smoke
 
@@ -12,3 +12,9 @@ Add a CI check that starts the built backend and calls `/api/health` plus one ca
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/ci-built-server-smoke
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/ci-built-server-smoke/DESIGN-BRIEF.md`
+- Findings: none blocking. Advisory: (1) add a per-request timeout and a job `timeout-minutes` so a hung request cannot stall the `built-server` job; (2) fix the proposed 30 s ready deadline as a constant in the script and its unit tests; (3) only card data is asserted — a missing rulings, prices or rules file would still pass, within the brief's scope; (4) ruleset 15384308 re-read with `gh`: no required status checks, the brief's claim holds. Full report: `QUALITY-CHECK.md`.

@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/ci-built-server-smoke` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke` (in-place shape: the session is rooted in this linked worktree; rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-built-server-smoke` by the build half's claim)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/ci-built-server-smoke/`
+- Current node: `owner-action`
+- Next action: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/ci-built-server-smoke/` picks it up
 
 ## Node ledger
 
@@ -16,10 +16,15 @@
 | 1 | preflight | haiku | ok | `0 → 8` | in-place shape in `.worktrees/session-ci-smoke` (detached HEAD → `thejudge-auto/ci-built-server-smoke`); branch pushed (`git ls-remote` → `30149327`); porcelain empty; lock `.worktrees/.graph-run.lock` runId `graph-20261018-231424` pid 98719; universal canary and graph canary `nohup true` both denied | 2026-10-18 |
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/ci-built-server-smoke/` (IDEA.md with 5 `## Prior run` lines and related-material citations, README.md, STATUS.ideation) and board row committed `eaad6f32`, pushed (`git ls-remote` → `eaad6f32`); porcelain empty | 2026-10-18 |
 | 3 | define | opus | ok | `0 → 81` | commit `415e40db` (= origin tip): `DESIGN-BRIEF.md` (disposition table, 52 grep hits + 12 deploy-wording rows), `GATE-QUESTIONS.md` (NFR-020 new, REQ-166 and NFR-012 amended; no blocker questions), `evidence/measurements.md` (live: build 1.2 s, listen ~0.5 s, `/api/health` 200, Sol Ring `/api/cards/6ad8011d-…` 200; data folder removed → health 200 but card 404; Lambda handler in-process on Node 22/24/26); `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; porcelain empty; port 3917 released (`lsof` empty); NFR-020 unused in `PRD/sections/` | 2026-10-18 |
+| 4 | gate-qc | sonnet | ok | `0 → 17` | PASS, 0 blocking, 4 advisory (per-request + job timeout; fix 30 s deadline as a constant; only card data asserted; ruleset 15384308 has no required checks, re-read with `gh`); all five proposed diffs match `PRD/sections/` once each; `QUALITY-CHECK.md` commit `9d426a91` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 
 ## Open gate
 
-- None
+- Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 1).
+- Question: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md` — three verdict slots (NFR-020 new, carrying companion edits to `integrations-and-data.md` and `system-map.md`; REQ-166 amended; NFR-012 amended), each accept / edit / reject with a reason for edit or reject; no blocker questions.
+- Evidence: `QUALITY-CHECK.md` (PASS, commit `9d426a91`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
+- Docs PR: pending (recorded in the next commit).
+- Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/ci-built-server-smoke/`) picks it up.
 
 ## Dispatch prompts
 
