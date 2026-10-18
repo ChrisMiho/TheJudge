@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/codebase-cleanup-pass`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-codebase-cleanup-pass`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-162925/` (13 files, copied verbatim to `PRD/work/codebase-cleanup-pass/intake/`; the staging folder's removal was denied to node 2 as `rm -rf` and is left for the owner)
-- Current node: `define`
-- Next action: `/graph-kickoff` (resume at `define`)
+- Current node: `gate-qc`
+- Next action: `/graph-kickoff` (resume at `gate-qc`)
 
 ## Node ledger
 
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 10` | branch `thejudge-auto/codebase-cleanup-pass` pushed (`git ls-remote` → `1c1f3dcf` = `origin/main`) from `.worktrees/kickoff-codebase-cleanup-pass`; launch checkout still on `main`, porcelain only the pre-existing untracked `PRD/work/probe-codebase-health-pass/`; lock `.worktrees/.graph-run.lock` runId `graph-20261018-162925` pid 37951; universal canary and graph canary `nohup true` both denied | 2026-10-18 |
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/codebase-cleanup-pass/` (IDEA.md with 8 `## Prior run` lines, README.md, STATUS.ideation, 13 `intake/` files each `cmp`-identical to staging) and board row committed `f8d615c8`, pushed (= origin tip); worktree porcelain empty; staging folder removal denied (`rm -rf`), not retried | 2026-10-18 |
+| 3 | define | opus | ok | `0 → 46` | commit `9179a7df` (= origin tip): `DESIGN-BRIEF.md` (712 lines; slices A–J — test speed and temp cleanup, frontend test setup and helpers, passing type/lint checks on, Lambda package and CI and script helpers, combo prefilter K-01, prompt pipeline once, rule-search scoring with order snapshot, In-Depth dead wiring, scanner hook dead returns, dead CSS plus parse check; 68 ids dispositioned: 47 built in whole or part, 14 later package, 3 folded into pending briefs, 1 `codehealth`, 3 owner-only; 26 follow-ups incl. In-Depth duplicate-Stack scan with no message); no `GATE-QUESTIONS.md` (no product truth, no blocker) → no gate; `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree, launch checkout only the pre-existing untracked probe folder | 2026-10-18 |
 
 ## Open gate
 
@@ -100,6 +101,22 @@ Outputs: `DESIGN-BRIEF.md` (and `GATE-QUESTIONS.md` only if product truth is pro
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Commit with explicit paths as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`. Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt; subagents in this environment cannot write files, so write every artifact yourself.
 
 Return a short report: `outcome: ok|failed`, files written, the slice list in one line each, counts of dispositions by kind, whether `GATE-QUESTIONS.md` exists and its stable ids, commit sha, push result (`git ls-remote --heads origin thejudge-auto/codebase-cleanup-pass`), and `git status --porcelain` (must be empty).
+
+### gate-qc
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-codebase-cleanup-pass
+
+You are node 4 (`gate-qc`) of graph run `graph-20261018-162925`, attempt 1. Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-codebase-cleanup-pass/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/codebase-cleanup-pass/DESIGN-BRIEF.md`. Work ONLY inside the working directory above — never in /Users/chrismiho/Coding/Projects/TheJudge itself.
+
+Context: the request is a behavior-preserving code cleanup (quoted verbatim in `IDEA.md`); the evidence is in `intake/`. Refinement proposed no product-truth change, so there is no `GATE-QUESTIONS.md`. Grade what the skill grades — PRD alignment and agent-readiness — and also check: every slice states how it proves players see no change; no slice edits a protected path (`scripts/graph-boundary-hook.mjs`, `.claude/**`, `CLAUDE.md`, `thejudge-*` or `codehealth` skills) or a file a REQ freezes; no slice silently changes something a `PRD/sections/` page states (if one does, that is a finding, since it would need a proposal); the brief's file-collision claims against `intake/GRAPH-BRIEF-*.md` hold; and a sample of the cited source lines match the code in this worktree. Do not re-run the probes' measurements. Do not decide product behavior; a genuine product decision is a finding, not something to resolve.
+
+Outputs: `QUALITY-CHECK.md` with PASS or FAIL and the complete findings (blocking vs advisory). On FAIL set `STATUS.refining` per the skill; on PASS leave `STATUS.refined`. Do not write `## Preparation gate` in the README — the driver owns it.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Commit with explicit paths as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`. Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, blocking findings (each one line), advisory findings (each one line), commit sha, push result (`git ls-remote --heads origin thejudge-auto/codebase-cleanup-pass`), and `git status --porcelain` (must be empty).
 
 ## Instruction ledger
 
