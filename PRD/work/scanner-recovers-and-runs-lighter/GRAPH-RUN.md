@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261018-055113/` (one file, `GRAPH-BRIEF-scanner.md`, copied verbatim to `PRD/work/scanner-recovers-and-runs-lighter/intake/`)
-- Current node: `gate-review`
+- Current node: `gate-qc`
 - Next action: `/graph-implement PRD/work/scanner-recovers-and-runs-lighter/` (build half claimed on `thejudge-auto/scanner-recovers-and-runs-lighter-work`; resume from the `STATUS.*` marker in the build worktree)
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 17` | `PRD/work/scanner-recovers-and-runs-lighter/` (IDEA.md with 34 `## Prior run` lines, README.md, STATUS.ideation, `intake/GRAPH-BRIEF-scanner.md` byte-identical to staging) and board row committed `e030224f`, `8ecaff8e`, pushed (= origin tip); worktree porcelain empty | 2026-10-18 |
 | 3 | define | opus | ok | `0 → 89` | commit `3b548f5c` (= origin tip): `DESIGN-BRIEF.md` (five changes, slice order recovery → shared identifier + per-frame → panel → scan map, ladder per open decision, disposition rows), `GATE-QUESTIONS.md` (REQ-214, REQ-056, REQ-048, REQ-066 amended; REQ-249 new — REQ-248 held by open PR #317; `## Blocker questions` none; 5 blank verdict slots), `evidence/measurements.md` (live, dev server port 5181, canvas fake camera, 390×844 and 1280×800: In-Depth ✕ covers the caution triangle at both widths, Quick Question and Trade do not; failed download stays stuck after the 503 lifts; port released, `browser_close`); `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; REQ-249 unused in `PRD/sections/`; porcelain empty both checkouts (launch: pre-existing probe folder only) | 2026-10-18 |
 | 4 | gate-qc | sonnet | ok | `0 → 26` | PASS, 0 blocking, 4 advisory (A1 parity check is `identify.test.ts` + `vectors.json`, `reference/identify.py` absent; A2 four test fixtures carry `imageUrl`; A3 name `npm run data:scan-map`, drop unused `getImageUrl`; A4 confirm no other `screen-layout.md` row contradicts); every diff hunk matches `PRD/sections/` once; REQ-249 unused; `QUALITY-CHECK.md` commit `c82d38c2` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
+| 5 | gate-review | sonnet | ok | `0 → 18` | build half run `graph-20261018-063434`: docs PR #318 and verdict PR #319 merged (`origin/main` `30433b2d`); kickoff worktree removed clean (`git worktree remove`); claim commit `4a4da393` on `thejudge-auto/scanner-recovers-and-runs-lighter-work` cut from `origin/main` `30433b2d`, pushed; lock taken from the launch root (pid 6563); graph canary `nohup true` denied; `graph-gate-review` commit `24ed40ca` (= origin tip): 5 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree, launch checkout only the pre-existing untracked `PRD/work/probe-codebase-health-pass/` | 2026-10-18 |
 
 ## Open gate
 
@@ -170,6 +171,33 @@ Required:
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Run git as short separate calls. Never retry a denied call verbatim; report it. Spawn no subagents; if you did, you would copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|refused|failed`, the verdict counts, the `### Brief reconciliation` list verbatim, the restored marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), and `git status --porcelain` of the working directory (must be empty).
+
+### gate-qc (build half, attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter
+
+You are node 4 (`gate-qc`) of graph run `graph-20261018-063434`, attempt 2 — the re-grade after the owner's verdicts. Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-recovers-and-runs-lighter/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/scanner-recovers-and-runs-lighter/DESIGN-BRIEF.md`, together with the finalized `GATE-QUESTIONS.md` and `evidence/measurements.md` in the same folder. `intake/GRAPH-BRIEF-scanner.md` is evidence, not authority; never open the documents it cites. Work ONLY inside the working directory above — never in /Users/chrismiho/Coding/Projects/TheJudge itself. The worktree is on the shared branch `thejudge-auto/scanner-recovers-and-runs-lighter-work`.
+
+Context: the owner accepted all five proposed requirement changes (REQ-214, REQ-056, REQ-249 new, REQ-048, REQ-066), recorded in `GRAPH-RUN.md` `## Gate verdicts`; the brief needed no reconciliation. The previous grade (attempt 1, `QUALITY-CHECK.md`) was PASS with four advisory notes.
+
+Check in particular:
+- `main` moved since attempt 1 (other PRs merged). Every proposed diff in `GATE-QUESTIONS.md` still matches current `PRD/sections/` text exactly once and applies cleanly; REQ-249 is still unused in `PRD/sections/`.
+- The brief is consistent with the five accepted verdicts.
+- Every file and script the brief names still exists at the path it gives.
+- The slice order stays: the recovery fix first, then the shared identifier and per-frame work, then the panel, then the scan map; acceptance conditions are measurable and agent-ready.
+- Carry the four attempt-1 advisory notes forward if they still apply, so map-out sees them.
+
+Rewrite `QUALITY-CHECK.md` in the package folder per the skill, with PASS or FAIL and the complete findings, noting it is attempt 2. Set the status marker as the skill directs (exactly one marker; on FAIL, `STATUS.refining`, and move the `PRD/work/STATUS.md` board row fully). Do NOT write the README `## Preparation gate` section — the driver owns it. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, or `GRAPH-RUN.md`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Budget: this node has a 60 tool-call cap that counts every call, including any subagent's. Verify directly; spawn no subagents or forks; no sleeping or polling loops; stay well under the cap.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/scanner-recovers-and-runs-lighter-work`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
