@@ -56,9 +56,9 @@ function PortalShell(): JSX.Element {
   // gesture — never a deep link or browser Back arriving at `mtg-assistant`
   // (both are asserted *not* to seed; see App.player-life-tracker-seed.test.tsx).
   // `mtg-assistant` has no Menu row of its own any more (REQ-067/REQ-206), so a Menu pick never
-  // has it as the target; resuming an In-depth entry from Question History does reach this
-  // branch (`FeaturePortalMenu` routes it through `onSelect`, REQ-213). `handleCarryToInDepth`
-  // below is the other live way in.
+  // has it as the target. Resuming an In-depth entry from Question History goes through
+  // `handleResumeDestination` (REQ-213), not this branch, so it never seeds.
+  // `handleCarryToInDepth` below is the live way in.
   function handleDestinationSelect(nextDestinationId: DestinationId): void {
     if (activeDestinationId === "player-life-tracker" && nextDestinationId === "mtg-assistant") {
       const trackerState = loadTrackerState();

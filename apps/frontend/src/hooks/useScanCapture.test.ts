@@ -236,6 +236,39 @@ describe("Frontend - Card Scan", () => {
       expect(result.current.blockedNotice).toBeNull();
     });
 
+    it("REQ-214: a lock the host refuses shows its message and the holding list does not grow", async () => {
+      const identifier = makeIdentifier({
+        matched: true,
+        was_rotated: false,
+        candidates: [{ card_id: "printing-opt", distance: 7 }]
+      });
+      const refusal = "Duplicate cards are not supported in MVP1.";
+      const canHold = vi.fn(() => ({ ok: false, message: refusal }) as const);
+      const { result } = renderHook(() =>
+        useScanCapture({
+          cardMetadata,
+          onScanCandidateSelected: vi.fn(() => ({ added: true } as const)),
+          canHold,
+          dependencies: {
+            loadHashDb: vi.fn(async () => db),
+            loadScanMap: vi.fn(async () => scanMap),
+            createIdentifier: vi.fn(() => identifier)
+          }
+        })
+      );
+
+      await act(async () => {
+        await result.current.openScan();
+        for (let i = 0; i < SCAN_STABILIZER_CONFIG.minVotes; i++) {
+          await result.current.identify(image);
+        }
+      });
+
+      expect(canHold).toHaveBeenCalledTimes(1);
+      expect(result.current.heldEntries).toHaveLength(0);
+      expect(result.current.blockedNotice).toBe(refusal);
+    });
+
     it("REQ-214: closing the scanner commits every held card to the destination, in hold order", async () => {
       const identifier = makeIdentifier({
         matched: true,

@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
@@ -185,6 +185,29 @@ describe("Frontend - Feedback", () => {
       expect(onTrade["Selected zones"]).toBeUndefined();
     });
 
+    it("REQ-088: feedback returns to the In-Depth screen after Trade and browser Back", async () => {
+      const user = userEvent.setup();
+      render(<App />);
+
+      await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+      await openPortalMenu(user);
+      await user.click(screen.getByRole("menuitem", { name: "Trade Balancer" }));
+
+      await openFeedbackModal(user);
+      const onTrade = await readAppStateSummary(user);
+      expect(onTrade["Screen"]).toBeUndefined();
+      await user.click(screen.getByRole("button", { name: "Close feedback" }));
+
+      act(() => window.history.back());
+      await waitFor(() => expect(window.location.pathname).toBe("/in-depth"));
+
+      await openFeedbackModal(user);
+      const back = await readAppStateSummary(user);
+      expect(back["Active view"]).toBe("mtg-assistant");
+      expect(back["Screen"]).toBe("MTG Assistant");
+      expect(back["Flow step"]).toBeDefined();
+    });
+
     it("falls back to the shell-only snapshot on a destination with no contributor", async () => {
       const user = userEvent.setup();
       render(<App />);
@@ -196,9 +219,9 @@ describe("Frontend - Feedback", () => {
       const summary = await readAppStateSummary(user);
 
       expect(summary["Active view"]).toBe("quick-lookup");
-      // The Assistant stays mounted behind the hidden destination, so its
-      // contributor is still the registered one — the snapshot must at minimum
-      // report the shell's active view correctly.
+      // The Assistant stays mounted behind the hidden destination but no longer
+      // registers its contributor while hidden (REQ-088) — the snapshot falls
+      // back to the shell's own fields and must report the active view correctly.
       expect(summary["Captured at"]).not.toBe("unknown");
     });
 
