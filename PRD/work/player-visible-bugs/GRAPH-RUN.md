@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs` (build half, on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`; the spec-forming half ran in place at the session root, so no kickoff worktree existed to remove)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/.graph-intake/graph-20261018-231413/` (one file, `IDEA.md`, copied verbatim to `PRD/work/player-visible-bugs/intake/IDEA.md`, `cmp` identical; node 2 removed the staged copy after committing it)
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/player-visible-bugs/`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | 5 | gate-review | sonnet | ok | `0 → 16` | build half run `graph-20261019-083336`: docs PR #328 merged (`origin/main` `e19dd31e`); in-place spec half, no kickoff worktree to remove; claim commit `aefeadcb` on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`, pushed; lock taken from the launch root (pid 98290); graph canary `nohup true` denied; `graph-gate-review` commit `98073d9c` (= origin tip): 2 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree | 2026-10-19 |
 | 4 | gate-qc (build-half re-grade) | sonnet | ok | `0 → 18` | PASS, 0 blocking, 3 advisory carried; every cited file:line unchanged on `e19dd31e` (only drift since `a4128f1c`: new `apps/frontend/src/lib/sharedContractLists.test.ts`); both gate diffs match `PRD/sections/` once (scripted); no colliding active package; `QUALITY-CHECK.md` commit `043da2eb` (= origin tip); `STATUS.refined` unchanged; README `## Preparation gate` PASS recorded by the driver | 2026-10-19 |
 | 5 | plan | sonnet | ok | `0 → 28` | commit `d0c9a868` (= origin tip): `GAMEPLAN.md`, five slice docs A–E (A Trade scanned printing first; C applies REQ-214, D applies REQ-085; E carries the REQ-202 Life Tracker pair), five `slice-*.criteria.json` all `false` (31 criteria, 3 manual); `STATUS.active` only marker; board row under active; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty; porcelain empty | 2026-10-19 |
+| 6 | build | sonnet | ok | `0 → 215` | PR https://github.com/ChrisMiho/TheJudge/pull/337 (`thejudge-auto/player-visible-bugs-work` → `main`, open); slice commits A `6aefffbe`, B `8928c25e`, C `3d8fac5f` (applies REQ-214), D `1339f111` (applies REQ-085), E `763e28d9` (= origin tip); 31/31 criteria `true`, **self-reported** (hook evidence log reads the launch root, not this worktree; no hook-earned evidence); node reports `npm run quality:check` exit 0 and full frontend suite 158 files / 1679 tests on local Node v26.0.0 (CI is Node 22; CI on `763e28d9` pending at return); `STATUS.ship-ready` only marker; return-side: launch checkout `git status --porcelain` identical before/after (`cmp`), `classifyBuildWrites` over 41 paths (37 branch-changed files + `.playwright-mcp/` + 3 `.tmp/` logs) → ok; Playwright MCP's own logs under `~/.cache/playwright-mcp/` are outside the repository and written by the MCP server, not a node tool write; dev server port 5473 released; one Python heredoc edit denied by the session classifier, not retried | 2026-10-19 |
 
 ## Gate verdicts
 
@@ -284,6 +285,67 @@ Commits: explicit paths only, as short separate calls from the working directory
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. Do not dispatch implementation subagents; if you nevertheless dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt. Budget: 4000 tool calls.
 
 Return a report: `outcome: ok|failed`; per slice its commit sha and one plain-words line; per criterion the command and its pass line (or the dated observation for a manual one); the PR URL; `npm run quality:check` result; the final `git ls-remote --heads origin thejudge-auto/player-visible-bugs-work`; `git status --porcelain` of the working directory (must be empty); the status marker (`STATUS.ship-ready` when every slice is done); every path written; and dev-server ports used and released.
+
+### review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs
+
+You are node 7 (`review`) of graph run `graph-20261019-083336`: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit tool, and you must not change any file by any other means (no Bash redirection, no `git commit`, no `git checkout` of files, no `npm` script that rewrites tracked files). Read and run checks only. Work ONLY inside the working directory above, on branch `thejudge-auto/player-visible-bugs-work` (PR #337 into `main`).
+
+What to review: the diff `git diff origin/main...HEAD` in the working directory (fetch first), the slice docs `PRD/work/player-visible-bugs/slice-a-trade-scanned-printing.md`, `slice-b-feedback-and-retry.md`, `slice-c-scanner-refusal-line.md`, `slice-d-reopen-keeps-players.md`, `slice-e-tap-floor.md`, their `slice-*.criteria.json`, and the package artifacts `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (owner verdicts REQ-214 accept, REQ-085 accept), `GAMEPLAN.md`, `slice-e.evidence.md`. You have not seen the build and must not take its word: every `true` in the criteria files was self-reported (the hook could not observe this worktree), so re-verify each criterion yourself. Run the targeted test files each slice names (`npm --workspace apps/frontend run test -- <names>`; run `npm ci` first only if `node_modules` is missing), `npm run typecheck`, and `npm run lint`. For the two product-truth slices, compare the `PRD/sections/` changes against the finalized diffs in `GATE-QUESTIONS.md`: same intent, each new line once, nothing else changed.
+
+The rubric is each slice's own acceptance criteria, quoted here:
+
+Slice A (Trade scan keeps the scanned printing):
+- `useScanCapture.ts` stores the identify step's candidates on the held card while voting still uses the card-level list
+- The new `useScanCapture.test.ts` case passes and fails against the old line
+- The Trade scan test asserts the entry defaults to the scanned printing and passes
+- The Trade, QuickLookup, ZoneCollectionStep scan tests and the scan hook tests all pass
+- Typecheck and lint pass
+- Slice A commits contain no file outside the Files list
+
+Slice B (feedback context and Retry):
+- After visiting In-Depth then opening Trade, the feedback snapshot has no MTG Assistant screen, flow step or zone cards, and they return on switching back (test)
+- Feedback contributor registration is gated on the active flag and In-Depth passes `isActive`
+- The submit hook exposes `hasPendingRetry` and `retryPending`, and `handleRetry` uses them before staging checks
+- A reopened conversation with a failed follow-up resends it on Retry after the cooldown (test)
+- With nothing saved and no game context, Retry shows the line 'Confirm game context before decrypting.' (test)
+- Existing feedback and submission suites still pass
+- Typecheck and lint pass
+
+Slice C (scanner refusal line, applies REQ-214):
+- `ScanPanel.test.tsx`: the notice renders under the camera with `role=status` when given and not otherwise
+- `ZoneCollectionStep.test.tsx`: with a card already on the Stack, a scan lock of that card shows 'Duplicate cards are not supported in MVP1.' inside the open scanner and the holding list does not grow
+- The Stack-cap message shows in the scanner at the 10-card cap (test)
+- The REQ-214 diff is applied to `functional-requirements.md` and `scan/README.md`, each new line exactly once, and no other line of those files changed
+- No `index.css` change and Ask a Question's scanner call is untouched
+- Typecheck and lint pass
+
+Slice D (reopen keeps players, applies REQ-085):
+- Reopening an In-Depth history entry from Life Tracker leaves the roster untouched (test in `App.player-life-tracker-seed.test.tsx`)
+- Resuming the In-Depth Draft from Life Tracker leaves the roster untouched (test)
+- The existing seed tests pass: Menu pick and the carry gesture seed; deep link and Back do not
+- The REQ-085 diff is applied to `functional-requirements.md` and `life-tracker/README.md`, each new line exactly once, no other line changed
+- `FeaturePortalMenu.tsx` has no layout or style change
+- Typecheck and lint pass
+
+Slice E (tap floor):
+- `index.css` changes only the two `min-height` values, 40 px to 44 px (diff shows two changed lines in the file)
+- The stylesheet test asserts `.zone-tabs button` is 44 px, the line-anchored base `.seg button` is 44 px, and `.lt-scope .seg button` is still 42 px, and passes
+- Measured at 390x844: In-Depth zone tabs and Reorder buttons are 44 px; Life Tracker Counters tabs are 42 px (manual, dated line in evidence)
+- REQ-202 Life Tracker before/after screenshot pair (Counters sheet and Game Setup, 390x844 and 1440x900) plus the In-Depth Cards station pair (390x844) are captured and named in `slice-e.evidence.md` (manual)
+- Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/player-visible-bugs/.playwright-mcp/` (manual)
+- Typecheck and lint pass
+
+For the manual criteria, check that `slice-e.evidence.md` carries the dated lines and names the captures, and that the named PNG files exist under `PRD/work/player-visible-bugs/.playwright-mcp/` (gitignored, so they are on disk only). You need not re-measure in a browser.
+
+Severity rule: Critical or Important only for a gap that breaks correctness or one of the quoted criteria. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important; rate it Minor, and it never sends the run back to `build`. Do not manufacture findings. Also flag as Important any change in the diff that a slice does not account for, and any test that passes without exercising the behavior its criterion names.
+
+Do not dispatch subagents. Budget: 120 tool calls.
+
+Return a report: `verdict: APPROVE|CHANGES`, then per slice each criterion with `met` or `not met` and the command and output line you based it on, then findings, each with severity (Critical / Important / Minor), file:line, and the criterion it affects.
 
 ## Instruction ledger
 
