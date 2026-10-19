@@ -20,8 +20,20 @@
 | 3 | define (attempt 2) | opus | ok | `0 → 74` | commit `a4128f1c` (= origin tip): blocker 1 resolved as state copy outside REQ-070's helper-text clause (no REQ-070 amendment; REQ-070 grep disposition table, 7 rows); blocker 2 resolved — `.lt-scope .seg button` stays 42px, proof test asserts it, REQ-202 pair named; 5 advisories resolved; `GATE-QUESTIONS.md` REQ-214, REQ-085, blockers none; `STATUS.refined` only marker, board row moved; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty (`origin/main` moved by #323–#327, `scripts/` and one frontend test only, no `PRD/sections/` or `PRD/work/STATUS.md` change); porcelain empty | 2026-10-18 |
 | 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 16` | PASS, 0 blocking, 3 advisory (anchor the base `.seg button` assertion; optional test location; one long sentence); all seven attempt-1 findings resolved; every gate diff line matches `PRD/sections/` once (scripted); `QUALITY-CHECK.md` commit `81e16553` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-214` | accept | — |
+| `REQ-085` | accept | — |
+
+### Brief reconciliation
+
+none
+
 ## Open gate
 
+- RESOLVED 2026-10-19: 2 verdicts read from `GATE-QUESTIONS.md` (2 accept, 0 edit, 0 reject); docs PR #328 merged.
 - Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 2).
 - Question: answer `PRD/work/player-visible-bugs/GATE-QUESTIONS.md` — two verdict slots (REQ-214 amended: the In-Depth scanner says in one line under the camera why it will not add a card already on the Stack; REQ-085 amended: reopening a saved question or its draft from Question History while on Life Tracker keeps that question's players instead of copying the tracker's), each accept / edit / reject with a reason for edit or reject; no blocker questions. The brief ships bug 1 as slice A inside one code PR; say at the gate if you want it as its own PR first.
 - Evidence: `QUALITY-CHECK.md` (PASS, commit `81e16553`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.

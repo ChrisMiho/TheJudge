@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first. Quality-check PASS (attempt 2). Gate answered 2026-10-19 (REQ-214 and REQ-085 both accept); docs PR #328 merged; build half running |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first. Quality-check PASS (attempt 2). Answer `PRD/work/player-visible-bugs/GATE-QUESTIONS.md` (REQ-214 scanner refusal line, REQ-085 no roster copy on reopen), then merge the docs PR to build |
 
 ## deferred
 
