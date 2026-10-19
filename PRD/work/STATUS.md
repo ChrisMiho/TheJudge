@@ -33,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first. Quality-check PASS (attempt 2). Answer `PRD/work/player-visible-bugs/GATE-QUESTIONS.md` (REQ-214 scanner refusal line, REQ-085 no roster copy on reopen), then merge the docs PR to build |
 
 ## deferred
 
