@@ -28,12 +28,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| browser-smoke-suite | PR check: built site opens in a headless browser, each tool loads and does one basic action |
 
 ## owner-action
 
 | Package | Note |
 | --- | --- |
+| browser-smoke-suite | Parked mid-define: drafts written (NFR-021 proposal) but uncommitted; run id trapped by the hook's retry guard on the run-state file — rotate the run id to resume |
 
 ## deferred
 

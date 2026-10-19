@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/browser-smoke-suite` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke` (in-place shape: the session is rooted in this linked worktree; rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` by the build half's claim)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `define`
-- Next action: `/graph-kickoff PRD/work/browser-smoke-suite/`
+- Current node: `owner-action` (parked before `define` attempt 2)
+- Next action: owner approves a rotated run id, then `/graph-kickoff PRD/work/browser-smoke-suite/` resumes at `define` attempt 2
 
 ## Node ledger
 
@@ -19,7 +19,11 @@
 
 ## Open gate
 
-- None
+- Terminal state: PARKED at `owner-action` before `define` attempt 2 was dispatched.
+- Question: may the run resume under a rotated run id? The hook's `denied-command-retry` rule now denies every write to `.worktrees/.graph-run-state.json` for run `graph-20261018-233939`, so the driver cannot point the run state at `define/2`.
+- Evidence: the driver's `Write` of `.worktrees/.graph-run-state.json` (content `{ "runId": "graph-20261018-233939", "node": "define", "attempt": 2 }`) was denied with `This exact call was already denied during this run (tool-call-cap)`. The original denial was the cap-exhausted `define/1` block on a `Write` to the same path (call 185). `denialKey()` in `scripts/lib/boundary-rules.mjs:760` keys a file-tool denial on tool + path only, and `tool-call-cap` is not in `REMEDIABLE_RULES` (`scripts/lib/boundary-rules.mjs:189`), so a cap denial on the run-state path traps the run id for every later attempt.
+- State left: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `evidence/measurements.md` untracked in the working directory, complete through their last sections; `STATUS.owner-action`; board row moved to owner-action.
+- Resume: rotate the run id (a new `--run-id` for `graph-preflight --take-lock`, recorded in this header) and dispatch `define` attempt 2 with the prompt recorded below. Separately, the hook fix: scope `tool-call-cap` retry denials to their node/attempt, or exempt the run-state path from the retry guard.
 
 ## Dispatch prompts
 
