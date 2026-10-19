@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/browser-smoke-suite` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke` (in-place shape: the session is rooted in this linked worktree; rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` by the build half's claim)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `gate-qc` (attempt 1)
-- Next action: `gate-qc`; on PASS, docs PR into `main` and park at `owner-action`
+- Current node: `owner-action` (parked after `gate-qc` PASS)
+- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/browser-smoke-suite/`
 
 ## Node ledger
 
@@ -17,8 +17,16 @@
 | 2 | shape | sonnet | ok | `0 → 14` | `PRD/work/browser-smoke-suite/` (IDEA.md with 8 `## Prior run` lines, 3 ideasForLater citations, the #326 overlap as an open question; README.md; STATUS.ideation) and board row committed `286ffd11`, pushed (`git ls-remote` → `286ffd11`); porcelain empty | 2026-10-18 |
 | 3 | define | opus | failed | `0 → 185` | tool-call cap exhausted: cap 150 + 30-call park grace passed (hook denial at call 184); the node ended without a report and without committing. Left untracked and complete through their last sections: `DESIGN-BRIEF.md` (511 lines), `GATE-QUESTIONS.md` (NFR-021 new; REQ-166 and NFR-012 amended with #326-first counting; `## Blocker questions` none), `evidence/measurements.md` (200 lines); marker still `STATUS.ideation`, board row not moved. Calls 183–185 were the driver's own post-node checks, charged to `define/1` because the run state was not reset first. The lock and run state were removed by the owner (`! rm …/.graph-run-state.json …/.graph-run.lock`); the lock was retaken with `graph-preflight --take-lock` and the graph canary `nohup true` was denied (repeat-denial rule: already denied during this run, `nohup-wrapper`). No leftover servers from this run (`ps`); NFR-021 unused in `PRD/sections/`; branch diff vs merge-base touches no `PRD/sections`, `apps`, `scripts` or `.github` | 2026-10-18 |
 | 4 | define (attempt 2, run `graph-20261019-174628`) | opus | ok | `0 → 46` | commit `c266d575`, pushed (`git ls-remote` → `c266d575`); drafts finished on top of #326's accepted changes (no either-way wording; NFR-012 7→8; REQ-166 list gains `browser-smoke` after `built-server`); every today line checked to match `PRD/sections/` exactly once after the main merge; disposition greps re-run (74 and 101 hits, none new); `GATE-QUESTIONS.md` present (NFR-021 new; REQ-166, NFR-012 amended; blocker questions none); `STATUS.refined`, board row moved owner-action → refined; diff vs merge-base on `PRD/sections apps scripts .github` empty; porcelain empty; no servers, no browser, no denials. The dispatched prompt matched the recorded one, plus three driver lines: the 150-call budget figure, a prefer-whole-file-reads hint, and leave the `ci-built-server-smoke` board row alone | 2026-10-19 |
+| 5 | gate-qc | sonnet | ok (PASS) | `0 → 18` | `PRD/work/browser-smoke-suite/QUALITY-CHECK.md`, commit `6c57627e`, pushed (`git ls-remote` → `6c57627e`); no blocking findings; four advisories recorded in README `## Preparation gate`; porcelain empty. Driver then parked: `STATUS.owner-action`, board row refined → owner-action, README Preparation gate written | 2026-10-19 |
 
 ## Open gate
+
+- Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 1).
+- Question: answer `PRD/work/browser-smoke-suite/GATE-QUESTIONS.md` (NFR-021 new; REQ-166 and NFR-012 amended, each on top of #326's accepted changes), then merge the docs PR to build.
+- Evidence: `QUALITY-CHECK.md` PASS, commit `6c57627e`; README `## Preparation gate` lists the four advisories.
+- Resume: the owner's merge of the docs PR is the build signal; then `/graph-implement PRD/work/browser-smoke-suite/`.
+
+Earlier park (history):
 
 - Resolved 2026-10-19: the owner approved resuming under a rotated run id (`go`). The record below is kept as the park's history. Before the dispatch, the driver merged `origin/main` (`0f916890`, which includes merged docs PR #326) into the run branch and kept both owner-action board rows.
 - Terminal state: PARKED at `owner-action` before `define` attempt 2 was dispatched.
