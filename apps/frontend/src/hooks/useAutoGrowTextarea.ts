@@ -15,17 +15,6 @@ const VIEWPORT_BOTTOM_MARGIN_PX = 24;
 const CONTROL_ROW_RESERVE_PX = 64;
 
 /**
- * Grow-to-fit behavior shared by both pre-submit question composers (Enrichment's optional
- * question, Quick Question's question) — DEC-131 prefers one shared implementation over two
- * divergent per-field ones. Accepts the caller's own `<textarea>` ref (rather than returning
- * a new one) so a call site that already needs the element for something else — Quick
- * Question hands it to the composer pill — doesn't have to merge two refs. The field
- * grows with its content and shrinks back down as content is removed, capped so it never
- * grows past the viewport's own bottom edge and forces a document/page scroll. The
- * character-count cap itself is unrelated and stays owned by each call site
- * (`maxLength`/`onChange` slicing).
- */
-/**
  * Height of one line of the field's own text, including padding under `border-box`.
  * Used as a floor so ceiling maths can never resolve to a field too short to show
  * the line the user is typing (REQ-120). Returns `0` when the environment reports
@@ -43,6 +32,17 @@ function measureSingleLineHeight(textarea: HTMLTextAreaElement): number {
   return lineHeight + paddingTop + paddingBottom;
 }
 
+/**
+ * Grow-to-fit behavior shared by both pre-submit question composers (Enrichment's optional
+ * question, Quick Question's question) — DEC-131 prefers one shared implementation over two
+ * divergent per-field ones. Accepts the caller's own `<textarea>` ref (rather than returning
+ * a new one) so a call site that already needs the element for something else — Quick
+ * Question hands it to the composer pill — doesn't have to merge two refs. The field
+ * grows with its content and shrinks back down as content is removed, capped so it never
+ * grows past the viewport's own bottom edge and forces a document/page scroll. The
+ * character-count cap itself is unrelated and stays owned by each call site
+ * (`maxLength`/`onChange` slicing).
+ */
 export function useAutoGrowTextarea(
   value: string,
   textareaRef: RefObject<HTMLTextAreaElement>
