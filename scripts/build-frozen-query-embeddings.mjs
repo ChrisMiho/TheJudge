@@ -8,9 +8,9 @@
 //
 // "Labelled" means the fixture carries `expectedSupplementalRuleIds` and/or
 // `forbiddenSupplementalRuleIds` — the only fixtures the two checks above run
-// against (contextEvaluationHarness.ts). That is 8 of the fixture corpus
-// today, not 9: `quick-lookup-off-domain` asserts only System 2 topic ids, no
-// supplemental expectation, so System 3 never scores it either path.
+// against (contextEvaluationHarness.ts). That is 9 fixtures today; the rest
+// (`quick-lookup-off-domain` among them, which asserts only System 2 topic ids)
+// carry no supplemental expectation, so System 3 never scores them on either path.
 //
 // Re-run this whenever a labelled fixture's question or card data changes:
 //
@@ -35,7 +35,8 @@ async function loadLabeledFixtures() {
   );
   // Only fixtures the harness actually runs `system3-expected-recall` /
   // `system3-noise-excluded` against — i.e. ones with an expected or
-  // forbidden supplemental-rule-id list (see contextEvaluationHarness.ts:583).
+  // forbidden supplemental-rule-id list (see `evaluateSystem3RelevanceChecks`
+  // in contextEvaluationHarness.ts).
   return fixtures.filter(
     (fixture) => fixture.expected?.expectedSupplementalRuleIds || fixture.expected?.forbiddenSupplementalRuleIds
   );
