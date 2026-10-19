@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | in-place shape in `.worktrees/session-ci-smoke` (switched from the parked, fully pushed `thejudge-auto/ci-built-server-smoke` to `thejudge-auto/browser-smoke-suite`, cut from `origin/main` `071e9a18`); branch pushed (`git ls-remote` → `071e9a18`); porcelain empty; lock `.worktrees/.graph-run.lock` runId `graph-20261018-233939` pid 98719; universal canary and graph canary `nohup true` both denied | 2026-10-18 |
 | 2 | shape | sonnet | ok | `0 → 14` | `PRD/work/browser-smoke-suite/` (IDEA.md with 8 `## Prior run` lines, 3 ideasForLater citations, the #326 overlap as an open question; README.md; STATUS.ideation) and board row committed `286ffd11`, pushed (`git ls-remote` → `286ffd11`); porcelain empty | 2026-10-18 |
+| 3 | define | opus | failed | `0 → 185` | tool-call cap exhausted: cap 150 + 30-call park grace passed (hook denial at call 184); the node ended without a report and without committing. Left untracked and complete through their last sections: `DESIGN-BRIEF.md` (511 lines), `GATE-QUESTIONS.md` (NFR-021 new; REQ-166 and NFR-012 amended with #326-first counting; `## Blocker questions` none), `evidence/measurements.md` (200 lines); marker still `STATUS.ideation`, board row not moved. Calls 183–185 were the driver's own post-node checks, charged to `define/1` because the run state was not reset first. The lock and run state were removed by the owner (`! rm …/.graph-run-state.json …/.graph-run.lock`); the lock was retaken with `graph-preflight --take-lock` and the graph canary `nohup true` was denied (repeat-denial rule: already denied during this run, `nohup-wrapper`). No leftover servers from this run (`ps`); NFR-021 unused in `PRD/sections/`; branch diff vs merge-base touches no `PRD/sections`, `apps`, `scripts` or `.github` | 2026-10-18 |
 
 ## Open gate
 
@@ -100,6 +101,27 @@ What to produce:
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. Do not edit the README `## Autonomous metadata` section or `GRAPH-RUN.md`. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, files written, the proposed stable IDs (one line each, in plain words), any blocker questions, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` (must be empty), `git status --porcelain` of the working directory (must be empty), the ports released, and that `browser_close` was called.
+
+### define (attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke
+
+You are node 3 (`define`) of graph run `graph-20261018-233939`, attempt 2. Attempt 1 ran out of its tool-call budget after writing its outputs but before finishing: `PRD/work/browser-smoke-suite/DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` and `evidence/measurements.md` exist in the working directory, untracked and uncommitted; the status marker is still `STATUS.ideation` and the `PRD/work/STATUS.md` board row has not moved. Run the `thejudge-refinement` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.claude/skills/thejudge-refinement/SKILL.md and follow it in its graph-controlled mode) to finish this package, starting from those drafts. Also read `PRD/instructions/graph-workflow-contract.md` sections `## Propose / apply / close` and `## The two runs`, and `PRD/instructions/plain-language-standard.md`. Work ONLY inside the working directory above. It is on branch `thejudge-auto/browser-smoke-suite`.
+
+Your budget is tight, so do NOT repeat the live browser session: the evidence in `evidence/measurements.md` stands. Start no servers and open no browser unless a specific claim in the brief cannot be checked any other way; if you do, follow the server rules in the attempt-1 prompt above (Bash background option, `kill <pid>`, `browser_close`).
+
+What to do:
+1. Read the three drafts in full. Check that they are internally consistent and complete against the attempt-1 prompt above (player terms first, repository-grounded claims, per-tool coverage, headless limits, #326 relationship, answers to the `IDEA.md` open questions, disposition table). Fix gaps with the Edit tool; do not rewrite what holds.
+2. Check `GATE-QUESTIONS.md` against current `PRD/sections/`: every proposed diff matches current text exactly once; every proposed new or amended stable ID has its own block opening with the three plain-language lines, a complete diff, and blank `- Verdict:` / `- Reason:`; NFR-021 is unused in `PRD/sections/` and does not reuse or redefine NFR-020. Note that `origin/main` has moved since attempt 1 (codehealth merges #324, #325, #327); confirm the diffs still match `PRD/sections/` as of this branch and say so.
+3. Do NOT edit `PRD/sections/`, `.github/`, or any code; refinement proposes only. Never add a `DEC-###` entry.
+4. Set the status marker per the refinement skill (exactly one marker) and move the `PRD/work/STATUS.md` board row fully (remove from the old section, add to the new). Update the package `README.md` body to list the package files, without touching its `## Autonomous metadata` section.
+5. Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`. Do not commit build output or `.playwright-mcp/` captures if they are gitignored.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. Do not edit `GRAPH-RUN.md`. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, what you changed in the drafts (one line each), the proposed stable IDs (one line each, in plain words), any blocker questions, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite`), `git diff --stat $(git merge-base origin/main HEAD) HEAD -- PRD/sections apps scripts .github` (must be empty), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
