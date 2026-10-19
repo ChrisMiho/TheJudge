@@ -63,6 +63,9 @@ type UseAskAiSubmitOrchestrationResult = {
   isFollowUpSubmitting: boolean;
   retryCountdown: number;
   canRetry: boolean;
+  /** True while a failed request is saved and Retry can resend it. */
+  hasPendingRetry: boolean;
+  retryPending: () => Promise<void>;
   visibleMessages: ConversationMessage[];
   frozenContext: FrozenAskAiContext | null;
   frozenGameContext: GameContext | null;
@@ -262,6 +265,39 @@ export function useAskAiSubmitOrchestration({
     }
   }
 
+  /** REQ-014: resend the saved failed request (decrypt or follow-up) with no new payload. */
+  async function retryPending(): Promise<void> {
+    if (!pendingRetry) return;
+    const correlationId = createCorrelationId();
+
+    if (pendingRetry.kind === "followup") {
+      logFrontendDebug("ask_ai.submit_attempted", {
+        source: "retry",
+        correlationId,
+        stackSize: 0,
+        questionLength: pendingRetry.text.length,
+        usedFallbackQuestion: false
+      });
+      await doFollowUpRequest(pendingRetry.payload, pendingRetry.text, correlationId);
+      return;
+    }
+
+    logFrontendDebug("ask_ai.submit_attempted", {
+      source: "retry",
+      correlationId,
+      stackSize: pendingRetry.stackSize,
+      questionLength: pendingRetry.finalQuestion.length,
+      usedFallbackQuestion: pendingRetry.usedFallbackQuestion
+    });
+    await doDecryptRequest(
+      pendingRetry.payload,
+      correlationId,
+      pendingRetry.stackSize,
+      pendingRetry.finalQuestion,
+      pendingRetry.usedFallbackQuestion
+    );
+  }
+
   async function submitAttempt({
     source,
     payload,
@@ -269,38 +305,12 @@ export function useAskAiSubmitOrchestration({
     finalQuestion,
     usedFallbackQuestion
   }: SubmitAttemptOptions): Promise<void> {
-    const correlationId = createCorrelationId();
-
     if (source === "retry" && pendingRetry) {
-      if (pendingRetry.kind === "followup") {
-        logFrontendDebug("ask_ai.submit_attempted", {
-          source: "retry",
-          correlationId,
-          stackSize: 0,
-          questionLength: pendingRetry.text.length,
-          usedFallbackQuestion: false
-        });
-        await doFollowUpRequest(pendingRetry.payload, pendingRetry.text, correlationId);
-        return;
-      }
-
-      logFrontendDebug("ask_ai.submit_attempted", {
-        source: "retry",
-        correlationId,
-        stackSize: pendingRetry.stackSize,
-        questionLength: pendingRetry.finalQuestion.length,
-        usedFallbackQuestion: pendingRetry.usedFallbackQuestion
-      });
-      await doDecryptRequest(
-        pendingRetry.payload,
-        correlationId,
-        pendingRetry.stackSize,
-        pendingRetry.finalQuestion,
-        pendingRetry.usedFallbackQuestion
-      );
+      await retryPending();
       return;
     }
 
+    const correlationId = createCorrelationId();
     logFrontendDebug("ask_ai.submit_attempted", {
       source,
       correlationId,
@@ -365,6 +375,8 @@ export function useAskAiSubmitOrchestration({
     isFollowUpSubmitting,
     retryCountdown,
     canRetry,
+    hasPendingRetry: pendingRetry !== null,
+    retryPending,
     visibleMessages,
     frozenContext,
     frozenGameContext,

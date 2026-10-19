@@ -32,16 +32,22 @@ export const FeedbackSeamContext = createContext<FeedbackSeamValue>(detachedSeam
  * component is mounted. The last registration wins (v1 has exactly one live
  * flow); unmounting clears it, after which snapshots fall back to shell fields.
  */
-export function useRegisterFeedbackContributor(contributor: FeedbackContextContributor): void {
+export function useRegisterFeedbackContributor(
+  contributor: FeedbackContextContributor,
+  active = true
+): void {
   const { registerContributor } = useContext(FeedbackSeamContext);
   const contributorRef = useRef(contributor);
   contributorRef.current = contributor;
 
   useEffect(() => {
+    // REQ-088: a hidden, still-mounted feature must not describe itself as the
+    // screen on view, so it registers only while `active`.
+    if (!active) return undefined;
     // Register a stable indirection so a caller passing an inline arrow does not
     // re-register on every render, while still invoking its latest closure.
     return registerContributor(() => contributorRef.current());
-  }, [registerContributor]);
+  }, [registerContributor, active]);
 }
 
 /**
