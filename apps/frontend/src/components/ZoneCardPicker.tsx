@@ -18,6 +18,8 @@ type ZoneCardPickerScanProps = {
   isOpen: boolean;
   isLoading: boolean;
   error: string | null;
+  /** REQ-214: why the last recognised card was refused; shown inside the scanner. */
+  blockedNotice?: string | null;
   convergence: ScanConvergence;
   addConfirmation: ScanAddConfirmation | null;
   scanDebug: ScanDebugMetrics | null;
@@ -265,6 +267,7 @@ export function ZoneCardPicker({
             destinationLabel={`the ${ZONE_LABELS[zoneId]}`}
             isLoading={scan.isLoading}
             error={scan.error}
+            blockedNotice={scan.blockedNotice}
             convergence={scan.convergence}
             addConfirmation={scan.addConfirmation}
             scanDebug={scan.scanDebug}

@@ -479,7 +479,7 @@ export function useScanCapture({
             heldIdRef.current += 1;
             setHeldEntries((entries) => [
               ...entries,
-              { id: heldIdRef.current, card: locked, scanImageUrl, candidates: votingCandidates }
+              { id: heldIdRef.current, card: locked, scanImageUrl, candidates: result.candidates }
             ]);
             addCounterRef.current += 1;
             setAddConfirmation({ id: addCounterRef.current, cardName: locked.name });

@@ -135,6 +135,9 @@ game survives a phone lock or reload because it saves itself as you play.
   game-setup roster — player count, display names, life totals, and
   counters — from current tracker state. The user may still edit any seeded
   value before Decrypt.
+- Built: reopening a saved In-Depth question or its Draft from Question
+  History while on the tracker does not seed: the reopened question keeps its
+  own players. (REQ-085, REQ-213)
 - Built: the seed is one-way (tracker → Assistant); edits made in Assistant
   do not write back to the tracker, and returning to the tracker preserves
   its own live state.

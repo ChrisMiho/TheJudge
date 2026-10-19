@@ -319,6 +319,8 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     isFollowUpSubmitting,
     retryCountdown,
     canRetry,
+    hasPendingRetry,
+    retryPending,
     visibleMessages,
     frozenGameContext,
     isConversationActive,
@@ -437,16 +439,19 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   // reflects that step. Read-only: nothing here mutates flow state. Once the
   // question is submitted the orchestration freezes the context it actually sent,
   // which is the more useful thing to disclose.
-  useRegisterFeedbackContributor(() => ({
-    screen: "MTG Assistant",
-    flowStep,
-    gameContext: frozenGameContext ?? gameContext,
-    question,
-    selectedZones,
-    zoneCards: zoneCardsByZone,
-    isConversationActive,
-    conversation: visibleMessages
-  }));
+  useRegisterFeedbackContributor(
+    () => ({
+      screen: "MTG Assistant",
+      flowStep,
+      gameContext: frozenGameContext ?? gameContext,
+      question,
+      selectedZones,
+      zoneCards: zoneCardsByZone,
+      isConversationActive,
+      conversation: visibleMessages
+    }),
+    isActive
+  );
 
   function flashStatus(message: string): void {
     setStatusMessage(message);
@@ -742,7 +747,15 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   }
 
   async function handleRetry(): Promise<void> {
-    if (!canRetry || !gameContext) return;
+    if (!canRetry) return;
+    if (hasPendingRetry) {
+      await retryPending();
+      return;
+    }
+    if (!gameContext) {
+      flashStatus("Confirm game context before decrypting.");
+      return;
+    }
     if (!canAdvance("enrichment", { gameContext: { selectedZones, zones: zoneCardsByZone } })) {
       flashStatus("Add at least one card by searching or scanning before decrypting.");
       return;

@@ -11,6 +11,8 @@ type ScanPanelProps = {
   destinationLabel: string;
   isLoading: boolean;
   error: string | null;
+  /** REQ-214: why the last recognised card was refused (the zone's own add rule); none when not refused. */
+  blockedNotice?: string | null;
   convergence: ScanConvergence;
   addConfirmation: ScanAddConfirmation | null;
   scanDebug: ScanDebugMetrics | null;
@@ -36,6 +38,7 @@ export function ScanPanel({
   destinationLabel,
   isLoading,
   error,
+  blockedNotice = null,
   convergence,
   addConfirmation,
   scanDebug,
@@ -82,6 +85,11 @@ export function ScanPanel({
       {error && (
         <p role="alert" className="motion-error idq-error">
           {error}
+        </p>
+      )}
+      {blockedNotice && (
+        <p role="status" className="tb-note">
+          {blockedNotice}
         </p>
       )}
     </div>

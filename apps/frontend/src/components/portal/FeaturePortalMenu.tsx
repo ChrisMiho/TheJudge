@@ -54,6 +54,12 @@ export interface FeaturePortalMenuProps {
    */
   activeDestinationAliasId?: DestinationId;
   onSelect: (id: DestinationId) => void;
+  /**
+   * REQ-085: reopening a saved In-Depth conversation or resuming its Draft is not a move
+   * between tools, so it must not run `onSelect`'s Life Tracker roster seed. Falls back to
+   * `onSelect` where a host has no seed to skip.
+   */
+  onResume?: (id: DestinationId) => void;
   paletteId: string;
   onPaletteSelect: (id: string) => void;
   colorlessCustomHex: string | undefined;
@@ -74,6 +80,7 @@ export function FeaturePortalMenu({
   activeDestinationId,
   activeDestinationAliasId,
   onSelect,
+  onResume,
   paletteId,
   onPaletteSelect,
   colorlessCustomHex,
@@ -102,7 +109,11 @@ export function FeaturePortalMenu({
   // through `onSelect`'s normal destination-id path.
   function handleResumeHistoryEntry(entry: ConversationHistoryEntry): void {
     queueHistoryResume(entry);
-    onSelect(entry.mode === "lookup" ? "quick-lookup" : "mtg-assistant");
+    if (entry.mode === "lookup") {
+      onSelect("quick-lookup");
+    } else {
+      (onResume ?? onSelect)("mtg-assistant");
+    }
   }
 
   // DEC-143/REQ-118/FLOW-018: deletes from storage, refreshes this sheet's own list, and
@@ -134,7 +145,7 @@ export function FeaturePortalMenu({
   function handleResumeGameDraft(): void {
     setIsHistoryOpen(false);
     queueDraftResume("game");
-    onSelect("mtg-assistant");
+    (onResume ?? onSelect)("mtg-assistant");
   }
 
   function handleResumeLookupDraft(): void {

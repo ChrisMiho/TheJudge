@@ -11,6 +11,8 @@ import {
 } from "./lib/lifeTracker/state";
 import { saveTrackerState, TRACKER_STORAGE_KEY } from "./lib/lifeTracker/persistence";
 import {
+  advanceToBattlefieldZoneCollection,
+  openHistory,
   expandSecondaryPlayerDetails,
   startOnInDepthQuestion,
   selectDestination
@@ -148,6 +150,66 @@ describe("Frontend - Portal", () => {
     await selectDestination(user, "In-Depth Question");
 
     expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Edited in Assistant");
+  });
+
+  // REQ-085: reopening a saved question, or resuming the Draft, from Question History is
+  // not a move between tools — even with Life Tracker active, the players stay In-Depth's own.
+  it("does not seed when a saved In-Depth question is reopened from Life Tracker", async () => {
+    const user = userEvent.setup();
+    saveTrackerState(seededTrackerState());
+    localStorage.setItem(
+      "thejudge.conversationHistory.entries",
+      JSON.stringify([
+        {
+          id: "game-saved",
+          mode: "game",
+          flowLabel: "In-Depth Question",
+          frozenContext: { kind: "game", gameContext: { playerCount: 2, players: [], turnPhase: "main_1" } },
+          hiddenInitialQuestion: "Earlier game question",
+          visibleMessages: [
+            { role: "user", content: "Earlier game question" },
+            { role: "assistant", content: "Earlier game answer" }
+          ],
+          createdAt: "2026-01-01T00:00:00.000Z",
+          updatedAt: "2026-01-01T00:00:00.000Z"
+        }
+      ])
+    );
+    render(<App />);
+
+    await selectDestination(user, "Life Tracker");
+    await openHistory(user);
+    await user.click(await screen.findByRole("button", { name: /^(?!Delete:).*Earlier game question/ }));
+    await user.click(screen.getByRole("button", { name: "Open conversation" }));
+    expect(await screen.findByText("Earlier game answer")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(await screen.findByRole("button", { name: "Station 1: Game" }));
+    await user.click(await screen.findByRole("button", { name: "Show player details" }));
+
+    expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Player 1");
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
+    expect(screen.getByText("2 players")).toBeInTheDocument();
+  });
+
+  it("does not seed when the In-Depth Draft is resumed from Life Tracker", async () => {
+    const user = userEvent.setup();
+    saveTrackerState(seededTrackerState());
+    render(<App />);
+
+    await advanceToBattlefieldZoneCollection(user);
+    await selectDestination(user, "Life Tracker");
+    await openHistory(user);
+    await user.click(await screen.findByRole("button", { name: /Draft/ }));
+    const resume = screen.queryByRole("button", { name: /Resume|Open/ });
+    if (resume) await user.click(resume);
+
+    await user.click(await screen.findByRole("button", { name: "Back" }));
+    await user.click(await screen.findByRole("button", { name: "Back" }));
+    await user.click(await screen.findByRole("button", { name: "Show player details" }));
+
+    expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Player 1");
+    expect(screen.getByLabelText("Player 1 life total")).toHaveValue("20");
+    expect(screen.getByText("2 players")).toBeInTheDocument();
   });
 
   // REQ-206 (slice C, 2026-10-01): un-skipped — reaches the seeded, further-progressed

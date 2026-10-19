@@ -1383,7 +1383,7 @@ select.field {
 
 .zone-tabs button {
   flex: 0 0 auto;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0.3rem 0.8rem;
   border-radius: 999px;
   border: 1px solid var(--surface-edge);
@@ -2173,7 +2173,7 @@ select.field {
   justify-content: center;
   gap: 0.35rem;
   flex: 1 1 0;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 0.8rem;
   border: 0;
   background: transparent;
