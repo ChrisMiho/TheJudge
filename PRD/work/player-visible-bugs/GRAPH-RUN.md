@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs` (build half, on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`; the spec-forming half ran in place at the session root, so no kickoff worktree existed to remove)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/.graph-intake/graph-20261018-231413/` (one file, `IDEA.md`, copied verbatim to `PRD/work/player-visible-bugs/intake/IDEA.md`, `cmp` identical; node 2 removed the staged copy after committing it)
-- Current node: `build` (attempt 2, review loop 1 of 2)
+- Current node: `review` (attempt 2)
 - Next action: `/graph-implement PRD/work/player-visible-bugs/`
 
 ## Node ledger
@@ -24,6 +24,7 @@
 | 5 | plan | sonnet | ok | `0 → 28` | commit `d0c9a868` (= origin tip): `GAMEPLAN.md`, five slice docs A–E (A Trade scanned printing first; C applies REQ-214, D applies REQ-085; E carries the REQ-202 Life Tracker pair), five `slice-*.criteria.json` all `false` (31 criteria, 3 manual); `STATUS.active` only marker; board row under active; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty; porcelain empty | 2026-10-19 |
 | 6 | build | sonnet | ok | `0 → 215` | PR https://github.com/ChrisMiho/TheJudge/pull/337 (`thejudge-auto/player-visible-bugs-work` → `main`, open); slice commits A `6aefffbe`, B `8928c25e`, C `3d8fac5f` (applies REQ-214), D `1339f111` (applies REQ-085), E `763e28d9` (= origin tip); 31/31 criteria `true`, **self-reported** (hook evidence log reads the launch root, not this worktree; no hook-earned evidence); node reports `npm run quality:check` exit 0 and full frontend suite 158 files / 1679 tests on local Node v26.0.0 (CI is Node 22; CI on `763e28d9` pending at return); `STATUS.ship-ready` only marker; return-side: launch checkout `git status --porcelain` identical before/after (`cmp`), `classifyBuildWrites` over 41 paths (37 branch-changed files + `.playwright-mcp/` + 3 `.tmp/` logs) → ok; Playwright MCP's own logs under `~/.cache/playwright-mcp/` are outside the repository and written by the MCP server, not a node tool write; dev server port 5473 released; one Python heredoc edit denied by the session classifier, not retried | 2026-10-19 |
 | 7 | review | opus | failed | `0 → 60` | CHANGES on `6a282e15`, re-verified independently (full frontend suite 158 files / 1687 tests, typecheck and lint exit 0, both `PRD/sections/` diffs line-identical to the finalized gate diffs); 29/31 criteria met; 2 Important: B1 — `App.feedback.test.tsx:172-186` never switches back to In-Depth, so the return half is tested only at hook level; C2 — `ZoneCollectionStep.test.tsx:233-245` drives no scan lock and its holding-list assertion cannot fail (mock hard-codes `heldEntries: []` at `:52`); 3 Minor: stale comments `App.tsx:58-60` and `App.feedback.test.tsx:199-201`, loose Draft resume step `App.player-life-tracker-seed.test.tsx:203-204`; product code correct; CI green on `6a282e15` (`gh pr checks 337`); reviewer left porcelain empty; loops to `build` (1 of 2) | 2026-10-19 |
+| 6 | build (attempt 2) | sonnet | ok | `0 → 53` | commits `67d9b798` (reopen B and C), `acd36917` (tests + comments), `5afd84bf` (= origin tip; B1, C2 `true`, `STATUS.ship-ready`); B1: new `App.feedback.test.tsx` test returns to In-Depth by browser Back and asserts Screen `MTG Assistant` + Flow step, fails with one-time registration (`expected undefined to be 'MTG Assistant'`); C2: new `useScanCapture.test.ts` test drives a real lock with `canHold` refusing, asserts `heldEntries` empty + `blockedNotice`, fails when the refusal branch adds the card; stale comments fixed in `App.tsx` and `App.feedback.test.tsx`; product code unchanged (`git diff fc58d0dd HEAD` touches only the two test files and a 3-line `App.tsx` comment); node reports quality:check exit 0, frontend 158 files / 1689 tests on Node v26.0.0; return-side: launch porcelain identical (`cmp`), all written paths inside `.worktrees/implement-player-visible-bugs/`; the hook denied two writes outside the worktree under `build-write-outside-worktree` (attempt 1: an `npm ci` log to `/tmp`; attempt 2: a backup copy to the session scratchpad) — both refused, nothing written, neither retried verbatim | 2026-10-19 |
 
 ## Gate verdicts
 
@@ -373,6 +374,26 @@ Commits: explicit paths only, as short separate calls from the working directory
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. Do not dispatch subagents; if you nevertheless do, copy the `Working directory:` line above unchanged into its prompt. Never answer a product question yourself; stop and report it. Budget: 4000 tool calls.
 
 Return a report: `outcome: ok|failed`; per fix the commit sha, the test name, the command and pass line, and the fail-without-fix observation for fixes 1 and 2; `npm run quality:check` result; full frontend suite counts; the final `git ls-remote --heads origin thejudge-auto/player-visible-bugs-work`; `git status --porcelain` (must be empty); the status marker; and every path written.
+
+### review (attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs
+
+You are node 7 (`review`) of graph run `graph-20261019-083336`, attempt 2: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit tool, and you must not change any file by any other means (no Bash redirection, no `git commit`, no `git checkout` of files, no `npm` script that rewrites tracked files). Read and run checks only. Work ONLY inside the working directory above, on branch `thejudge-auto/player-visible-bugs-work` (PR #337 into `main`).
+
+A first review approved every criterion except two and found the product code correct. It returned two Important findings, and a build pass addressed them in commits `67d9b798..5afd84bf` (the diff since `fc58d0dd`):
+- B1 (slice B, `slice-b-feedback-and-retry.md`): 'After visiting In-Depth then opening Trade, the feedback snapshot has no MTG Assistant screen, flow step or zone cards, and they return on switching back (test)'. The earlier App-level test never switched back to In-Depth.
+- C2 (slice C, `slice-c-scanner-refusal-line.md`): '`ZoneCollectionStep.test.tsx`: with a card already on the Stack, a scan lock of that card shows the duplicate message inside the open scanner and the holding list does not grow'. The earlier test drove no scan lock, and its holding-list assertion could not fail because the hook was mocked with an empty list.
+
+Your job: (1) judge whether B1 and C2 are now met, by reading the new tests in `apps/frontend/src/App.feedback.test.tsx` and `apps/frontend/src/hooks/useScanCapture.test.ts` and running them; for each, say whether the test drives the real path and could fail if the behavior regressed (reason it from the code; do not mutate files). Taken together, the `ZoneCollectionStep.test.tsx` display test and the new hook-level lock test may satisfy C2's intent; judge that against the criterion's wording. (2) Confirm the diff since `fc58d0dd` changes no product code beyond the `apps/frontend/src/App.tsx` comment, and that the two comment corrections match the code. (3) Re-run the whole frontend suite (`npm --workspace apps/frontend run test`), `npm run typecheck` and `npm run lint` to confirm nothing else regressed, and confirm every `slice-*.criteria.json` criterion is `true` and `STATUS.ship-ready` is the only marker.
+
+Severity rule: Critical or Important only for a gap that breaks correctness or a slice's stated acceptance criterion. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important; rate it Minor, and it never sends the run back to `build`. Do not manufacture findings. The loose resume step in `App.player-life-tracker-seed.test.tsx:203-204` was already rated Minor and left as is; do not re-raise it above Minor.
+
+Do not dispatch subagents. Budget: 120 tool calls.
+
+Return a report: `verdict: APPROVE|CHANGES`; B1 and C2 each `met` or `not met` with the command and output line you based it on; the full-suite, typecheck and lint results; then findings, each with severity, file:line, and the criterion it affects.
 
 ## Instruction ledger
 
