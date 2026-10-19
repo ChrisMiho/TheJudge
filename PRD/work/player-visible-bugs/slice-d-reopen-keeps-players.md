@@ -1,6 +1,6 @@
 # Slice D — Reopening a saved question keeps its players
 
-## Status: planned
+## Status: done
 
 ## Goal
 

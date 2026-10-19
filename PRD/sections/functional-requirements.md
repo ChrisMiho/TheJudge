@@ -2024,6 +2024,7 @@
 - Description: Switching from the tracker into MTG Assistant seeds the game-setup roster from current tracker state as a one-way handoff.
 - Acceptance Criteria:
   - selecting MTG Assistant from the portal while tracker state exists pre-fills the game-setup player count, display names, life totals, and counters from the current tracker state
+  - reopening a saved In-Depth conversation or resuming the In-Depth Draft from Question History (REQ-213) is not a seed trigger, even when Life Tracker is the active destination: the reopened conversation or Draft keeps its own players, and the tracker roster is not copied
   - the user can still edit any seeded value before Decrypt
   - the seed is one-way (tracker → Assistant); edits in Assistant do not write back to the tracker
   - returning to the tracker preserves its live state

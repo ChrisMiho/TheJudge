@@ -73,6 +73,14 @@ function PortalShell(): JSX.Element {
     setActiveDestinationId(nextDestinationId);
   }
 
+  // REQ-085: reopening a saved In-Depth conversation or resuming its Draft from Question
+  // History sets the destination without the roster-seed check above — the reopened
+  // conversation keeps its own players, even when Life Tracker is where History was opened.
+  function handleResumeDestination(nextDestinationId: DestinationId): void {
+    arrivedAtQuickLookupFromLifeTrackerRef.current = false;
+    setActiveDestinationId(nextDestinationId);
+  }
+
   // REQ-206: Ask a Question's "Add in-depth details" pill — the one live gesture that still
   // reaches `mtg-assistant`. Mirrors handleDestinationSelect's roster-seed check above,
   // narrowly re-tied to this one explicit gesture (same negative tests): a quick-lookup
@@ -122,6 +130,7 @@ function PortalShell(): JSX.Element {
         // `in-depth` is open too, since it has no row of its own.
         activeDestinationAliasId={activeDestinationId === "mtg-assistant" ? "quick-lookup" : undefined}
         onSelect={handleDestinationSelect}
+        onResume={handleResumeDestination}
         paletteId={paletteId}
         onPaletteSelect={setPalette}
         colorlessCustomHex={colorlessCustomHex}
