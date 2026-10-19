@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs` (build half, on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`; the spec-forming half ran in place at the session root, so no kickoff worktree existed to remove)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/.graph-intake/graph-20261018-231413/` (one file, `IDEA.md`, copied verbatim to `PRD/work/player-visible-bugs/intake/IDEA.md`, `cmp` identical; node 2 removed the staged copy after committing it)
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/player-visible-bugs/`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 16` | PASS, 0 blocking, 3 advisory (anchor the base `.seg button` assertion; optional test location; one long sentence); all seven attempt-1 findings resolved; every gate diff line matches `PRD/sections/` once (scripted); `QUALITY-CHECK.md` commit `81e16553` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 | 5 | gate-review | sonnet | ok | `0 → 16` | build half run `graph-20261019-083336`: docs PR #328 merged (`origin/main` `e19dd31e`); in-place spec half, no kickoff worktree to remove; claim commit `aefeadcb` on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`, pushed; lock taken from the launch root (pid 98290); graph canary `nohup true` denied; `graph-gate-review` commit `98073d9c` (= origin tip): 2 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree | 2026-10-19 |
 | 4 | gate-qc (build-half re-grade) | sonnet | ok | `0 → 18` | PASS, 0 blocking, 3 advisory carried; every cited file:line unchanged on `e19dd31e` (only drift since `a4128f1c`: new `apps/frontend/src/lib/sharedContractLists.test.ts`); both gate diffs match `PRD/sections/` once (scripted); no colliding active package; `QUALITY-CHECK.md` commit `043da2eb` (= origin tip); `STATUS.refined` unchanged; README `## Preparation gate` PASS recorded by the driver | 2026-10-19 |
+| 5 | plan | sonnet | ok | `0 → 28` | commit `d0c9a868` (= origin tip): `GAMEPLAN.md`, five slice docs A–E (A Trade scanned printing first; C applies REQ-214, D applies REQ-085; E carries the REQ-202 Life Tracker pair), five `slice-*.criteria.json` all `false` (31 criteria, 3 manual); `STATUS.active` only marker; board row under active; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty; porcelain empty | 2026-10-19 |
 
 ## Gate verdicts
 
@@ -259,6 +260,30 @@ Budget: this node has a 120 tool-call cap. Do not dispatch subagents; their call
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you nevertheless dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, the slices (letter, one plain-words line, criteria count), files written, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/player-visible-bugs-work`), `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` (must be empty), and `git status --porcelain` of the working directory (must be empty).
+
+### build
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs
+
+You are node 6 (`build`) of graph run `graph-20261019-083336`. Shared branch: `thejudge-auto/player-visible-bugs-work` (checked out in the working directory above, already pushed; confirm with `git branch --show-current`). Run the `thejudge-implement-all` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs/.claude/skills/thejudge-implement-all/SKILL.md and its `reference.md`, and follow them in graph-controlled mode: work in place in this worktree, no second worktree, no contributor branch) on `PRD/work/player-visible-bugs/`. Implement every slice A to E in letter order; slice A (the Trade scanned-printing bug) first and in its own commits, as the owner asked. Open the code PR `thejudge-auto/player-visible-bugs-work` into `main` with `gh pr create --base main --head thejudge-auto/player-visible-bugs-work` after the first push; never merge or close it. The PR body opens with the plain-language block from `PRD/instructions/plain-language-standard.md` and ends with the line `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+
+Product truth: slice C applies the finalized REQ-214 diff and slice D the finalized REQ-085 diff from `GATE-QUESTIONS.md` to `PRD/sections/`, by intent against current truth, in the same slice commit as the code. Apply each exactly once. Every other bug is fixed to an existing spec line; add no other product truth and never add a `DEC-###`.
+
+Write scope: write ONLY inside the working directory above. Use absolute paths under it for every file you write, including screenshots, which go to /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs/PRD/work/player-visible-bugs/.playwright-mcp/ (never a relative Playwright path, never the launch checkout). The launch checkout /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs must stay byte-unchanged. Report every path you wrote.
+
+Dependencies: this worktree is fresh; install with `npm ci` from the working directory before running tests. Dev servers: start them with the Bash tool's run_in_background option (a trailing `&` and `nohup` are denied while the run holds the lock), on a free port you own; stop each by its PID with `kill <pid>` (`pkill` and `killall` are denied), confirm the port is free, and call `browser_close` after every browser session, recording that cleanup evidence for slice E's manual criteria.
+
+Criteria: a criterion goes `true` only after you ran its check and saw it pass. The hook's evidence log does not see this worktree's criteria files (known gap: it reads the launch checkout), so the flip guard will not stop a false `true`; the criteria pass is self-reported. For every criterion, quote the command you ran and the pass line of its output in your report. `ok` only when every criterion in every `slice-*.criteria.json` is `true` and `npm run quality:check` passes on the final tree. CI runs Node 22; if your local Node differs, say which you used.
+
+Stops: a blocked slice, a gate failure you cannot fix, or a rebase conflict whose intent is not derivable ends the node `failed` with the evidence. Never answer a product question yourself: if one arises that the brief, the finalized gate file and the spec do not settle, stop and report it.
+
+Commits: explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push` (never force). Never `git add -A`/`.`/`--all`, never `git stash`, never `git reset --hard`, never `git clean`. Commit messages end with the two lines `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>` and `Claude-Session: https://claude.ai/code/session_01VBY335wHmWcwebiBHfbNyA`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. Do not dispatch implementation subagents; if you nevertheless dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt. Budget: 4000 tool calls.
+
+Return a report: `outcome: ok|failed`; per slice its commit sha and one plain-words line; per criterion the command and its pass line (or the dated observation for a manual one); the PR URL; `npm run quality:check` result; the final `git ls-remote --heads origin thejudge-auto/player-visible-bugs-work`; `git status --porcelain` of the working directory (must be empty); the status marker (`STATUS.ship-ready` when every slice is done); every path written; and dev-server ports used and released.
 
 ## Instruction ledger
 
