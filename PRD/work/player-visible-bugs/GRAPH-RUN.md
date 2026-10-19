@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs` (build half, on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`; the spec-forming half ran in place at the session root, so no kickoff worktree existed to remove)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/.graph-intake/graph-20261018-231413/` (one file, `IDEA.md`, copied verbatim to `PRD/work/player-visible-bugs/intake/IDEA.md`, `cmp` identical; node 2 removed the staged copy after committing it)
-- Current node: `gate-qc` (build half re-grade)
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/player-visible-bugs/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 3 | define (attempt 2) | opus | ok | `0 → 74` | commit `a4128f1c` (= origin tip): blocker 1 resolved as state copy outside REQ-070's helper-text clause (no REQ-070 amendment; REQ-070 grep disposition table, 7 rows); blocker 2 resolved — `.lt-scope .seg button` stays 42px, proof test asserts it, REQ-202 pair named; 5 advisories resolved; `GATE-QUESTIONS.md` REQ-214, REQ-085, blockers none; `STATUS.refined` only marker, board row moved; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty (`origin/main` moved by #323–#327, `scripts/` and one frontend test only, no `PRD/sections/` or `PRD/work/STATUS.md` change); porcelain empty | 2026-10-18 |
 | 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 16` | PASS, 0 blocking, 3 advisory (anchor the base `.seg button` assertion; optional test location; one long sentence); all seven attempt-1 findings resolved; every gate diff line matches `PRD/sections/` once (scripted); `QUALITY-CHECK.md` commit `81e16553` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 | 5 | gate-review | sonnet | ok | `0 → 16` | build half run `graph-20261019-083336`: docs PR #328 merged (`origin/main` `e19dd31e`); in-place spec half, no kickoff worktree to remove; claim commit `aefeadcb` on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`, pushed; lock taken from the launch root (pid 98290); graph canary `nohup true` denied; `graph-gate-review` commit `98073d9c` (= origin tip): 2 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree | 2026-10-19 |
+| 4 | gate-qc (build-half re-grade) | sonnet | ok | `0 → 18` | PASS, 0 blocking, 3 advisory carried; every cited file:line unchanged on `e19dd31e` (only drift since `a4128f1c`: new `apps/frontend/src/lib/sharedContractLists.test.ts`); both gate diffs match `PRD/sections/` once (scripted); no colliding active package; `QUALITY-CHECK.md` commit `043da2eb` (= origin tip); `STATUS.refined` unchanged; README `## Preparation gate` PASS recorded by the driver | 2026-10-19 |
 
 ## Gate verdicts
 
@@ -238,6 +239,26 @@ Budget: this node has a 60 tool-call cap. Do not dispatch subagents; their calls
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you nevertheless dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/player-visible-bugs-work`), and `git status --porcelain` of the working directory (must be empty).
+
+### plan
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs
+
+You are node 5 (`plan`) of graph run `graph-20261019-083336`, on branch `thejudge-auto/player-visible-bugs-work` (already pushed). Run the `thejudge-map-out` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs/.claude/skills/thejudge-map-out/SKILL.md and its `reference.md`, and follow them in graph-controlled mode) on `PRD/work/player-visible-bugs/`. Work ONLY inside the working directory above.
+
+Inputs: `DESIGN-BRIEF.md` (its slice sketch: A bug 1 first, by the owner's order; B bugs 3 and 5; C bug 2; D bug 4; E bug 7), the finalized `GATE-QUESTIONS.md` (REQ-214 accept, REQ-085 accept; both diffs are applied to `PRD/sections/` by `build` together with the code, by intent against current truth), `QUALITY-CHECK.md` (PASS; carry its three advisories into the slice they belong to), and `evidence/measurements.md`. The README `## Preparation gate` records `Quality-check: PASS`; verify it there before writing anything. The brief chose one code PR with slice A in its own commits, and the owner did not ask otherwise at the gate.
+
+Required outputs: `GAMEPLAN.md`, one `slice-<letter>.md` per slice with its `## Acceptance criteria`, and one `slice-<letter>.criteria.json` beside each, every criterion initialised `false` with an evidence block, per the map-out reference. Each slice that applies a gate diff names which stable ID's finalized diff it applies to `PRD/sections/`. Slice E names the REQ-202 Life Tracker screenshot pair. Criteria must be satisfiable inside the build worktree by the build node (no post-merge checks, no deploy, no live paid calls). Set `STATUS.active` (exactly one marker) and the README `status:` field, and move the `PRD/work/STATUS.md` board row fully (remove from refined, add under active). Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, or the README `## Autonomous metadata` / `## Preparation gate` sections.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>` (use `git rm` for the removed marker), then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Budget: this node has a 120 tool-call cap. Do not dispatch subagents; their calls charge this node's cap.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you nevertheless dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, the slices (letter, one plain-words line, criteria count), files written, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/player-visible-bugs-work`), `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` (must be empty), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
