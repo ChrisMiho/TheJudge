@@ -1,6 +1,6 @@
 # Slice A — Trade scan keeps the scanned printing
 
-## Status: planned
+## Status: done
 
 ## Goal
 
