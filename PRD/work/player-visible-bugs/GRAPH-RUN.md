@@ -1,10 +1,10 @@
 # Graph run — player-visible-bugs
 
-- Run ID: `graph-20261018-231413`
-- Profile: `loaded (env sentinel)`
-- Canary: `denied — hook live (rm -rf canary: [graph-boundary] rm -rf is denied in every session; graph canary nohup: denied while a graph run holds the lock)`
-- Autonomous base: `origin/thejudge-auto/player-visible-bugs` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs` (in-place shape: the session is rooted in a linked worktree, so preflight created the branch here and no kickoff worktree exists; rewritten to `<root>/.worktrees/implement-player-visible-bugs` by the build half's claim)
+- Run ID: `graph-20261018-231413` (spec-forming half); `graph-20261019-083336` (build half)
+- Profile: `loaded (env sentinel)` at node 1; build half `loaded (env sentinel)` (`THEJUDGE_GRAPH_PROFILE=1` observed in the driver session)
+- Canary: `denied — hook live (rm -rf canary: [graph-boundary] rm -rf is denied in every session; graph canary nohup: denied while a graph run holds the lock)`; build half: graph canary `nohup true` denied (`[graph-boundary] nohup is denied while a graph run holds the lock`) after `--take-lock` from the launch root, pid 98290
+- Autonomous base: `origin/main` (rewritten by the build half's claim)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs` (build half, on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`; the spec-forming half ran in place at the session root, so no kickoff worktree existed to remove)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/.graph-intake/graph-20261018-231413/` (one file, `IDEA.md`, copied verbatim to `PRD/work/player-visible-bugs/intake/IDEA.md`, `cmp` identical; node 2 removed the staged copy after committing it)
 - Current node: `owner-action`
 - Next action: answer `PRD/work/player-visible-bugs/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/player-visible-bugs/` picks it up

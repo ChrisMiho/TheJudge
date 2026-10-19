@@ -12,7 +12,7 @@ Fix the seven player-visible bugs from section a of the codebase-cleanup follow-
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/player-visible-bugs
+- Autonomous base: origin/main
 
 ## Preparation gate
 
