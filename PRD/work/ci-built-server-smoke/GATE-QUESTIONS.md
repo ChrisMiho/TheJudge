@@ -88,8 +88,8 @@ Companion edit — `PRD/sections/system-map.md`, `### Deploy and cost guardrails
 +- Backed by: DEC-084, NFR-004, REQ-165, REQ-166, NFR-017, NFR-020
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner took the recommendation, 2026-10-19. A proposed widening, to also run the frontend production build, was dropped: every PR already runs it. `scripts/frontend-public-static-files.test.mjs` (REQ-198) runs `vite build` under `npm run test:scripts`, and `npm run typecheck` covers the `tsc -b` half (the frontend has a single `tsconfig.json` with no references). Opening the built site in a browser is the separate browser-smoke-suite proposal (NFR-021).
 
 ## REQ-166 — the new check also runs on every merge to main
 
@@ -113,8 +113,8 @@ Proposed diff — `PRD/sections/functional-requirements.md`, `### REQ-166` Accep
 +  - the quality-check jobs (`static`, `backend`, `frontend`, `coverage-merge`, `built-server`) still run on every push to `main`, so `main` keeps a green CI signal on a docs-only merge
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner took the recommendation, 2026-10-19
 
 ## NFR-012 — the CI job count note goes from 6 to 7
 
@@ -139,5 +139,5 @@ Proposed diff — `PRD/sections/non-functional-requirements.md`, `### NFR-012` N
 +  - CI cost exposure: the repository is public, so standard-runner minutes are free and unlimited and shard count carries no minute cost; the binding limit is concurrent jobs (20 on the Free plan) against the 7 this workflow uses on a pull request (the seventh is NFR-020's `built-server` job). Actions billing rounds each job up to the nearest minute, so if the repository is ever made private the current 1m58s run bills ~9 minutes rather than 2, plus about one minute for `built-server` — sharding trades billed minutes for wall time, making it free today and the largest cost multiplier if visibility changes
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner took the recommendation, 2026-10-19
