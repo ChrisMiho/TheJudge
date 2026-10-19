@@ -141,7 +141,13 @@ becomes the only way to add a card. It sits outside the core product loop
   destination's current cards and anything already held — so a blocked re-scan
   still surfaces its message immediately rather than silently failing to
   commit; Trade Balancer enforces no such rule, so every recognition is held
-  (REQ-065's duplicates-allowed behaviour is unaffected). (REQ-214)
+  (REQ-065's duplicates-allowed behaviour is unaffected). On In-Depth's Cards
+  station the refusal shows as one line inside the scanner panel, under the
+  camera, in the zone's own manual-add wording ("Duplicate cards are not
+  supported in MVP1." / "MVP stack limit reached (10 cards)."), until the next
+  card is held or the scanner closes. Like the loading and scan-data failure
+  lines, it is state copy, not mockup-governed helper text (REQ-070's
+  redesigned-screens exception does not apply). (REQ-214)
 - Built: the scan preview and the added card's thumbnail show the **scanned
   printing's** art — not the oracle-level representative image — so on-screen
   art matches the physical card; a missing printing image falls back to the

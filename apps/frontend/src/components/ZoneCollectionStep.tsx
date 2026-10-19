@@ -452,6 +452,7 @@ export function ZoneCollectionStep({
                 isOpen: isScanOpen,
                 isLoading: scanCapture.isLoading,
                 error: scanCapture.error,
+                blockedNotice: scanCapture.blockedNotice,
                 convergence: scanCapture.convergence,
                 addConfirmation: scanCapture.addConfirmation,
                 scanDebug: scanCapture.scanDebug,

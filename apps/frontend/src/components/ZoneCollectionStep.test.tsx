@@ -38,7 +38,7 @@ function makeZoneCard(cardId: string, name: string, overrides: Partial<ZoneCardI
   };
 }
 
-function mockScanCapture(isOpen: boolean): void {
+function mockScanCapture(isOpen: boolean, blockedNotice: string | null = null): void {
   vi.mocked(useScanCapture).mockReturnValue({
     isOpen,
     isLoading: false,
@@ -46,7 +46,7 @@ function mockScanCapture(isOpen: boolean): void {
     setCameraStatus: vi.fn(),
     convergence: searching,
     scanDebug: null,
-    blockedNotice: null,
+    blockedNotice,
     addConfirmation: null,
     heldEntries: [],
     removeHeld: vi.fn(),
@@ -211,6 +211,48 @@ describe("ZoneCollectionStep scan focus", () => {
     expect(screen.queryByText("Stacked")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Exit scan" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Capture" })).toBeInTheDocument();
+  });
+
+  describe("REQ-214: a refused scan says why inside the scanner", () => {
+    function scanHostRule(): (card: CardMetadataItem, held: never[]) => { ok: boolean; message?: string } {
+      const options = vi.mocked(useScanCapture).mock.calls.at(-1)?.[0] as unknown as {
+        canHold: (card: CardMetadataItem, held: never[]) => { ok: boolean; message?: string };
+      };
+      return options.canHold;
+    }
+    const optMetadata: CardMetadataItem = { cardId: "opt", name: "Opt", imageId: "", colors: [] };
+
+    it("shows the duplicate message under the camera and leaves the holding list empty", () => {
+      renderStep([makeZoneCard("opt", "Opt")]);
+      const refusal = scanHostRule()(optMetadata, []);
+      expect(refusal).toEqual({ ok: false, message: "Duplicate cards are not supported in MVP1." });
+
+      cleanup();
+      mockScanCapture(true, refusal.message ?? null);
+      renderStep([makeZoneCard("opt", "Opt")]);
+
+      expect(screen.getByRole("status")).toHaveTextContent("Duplicate cards are not supported in MVP1.");
+      expect(screen.getByRole("button", { name: "Exit scan" })).toBeInTheDocument();
+      expect(screen.queryByLabelText(/Scanned this session/)).not.toBeInTheDocument();
+    });
+
+    it("shows the Stack-cap message at the 10-card cap", () => {
+      const ten = Array.from({ length: 10 }, (_, index) => makeZoneCard(`card-${index}`, `Card ${index}`));
+      renderStep(ten);
+      const refusal = scanHostRule()({ cardId: "extra", name: "Extra", imageId: "", colors: [] }, []);
+      expect(refusal).toEqual({ ok: false, message: "MVP stack limit reached (10 cards)." });
+
+      cleanup();
+      mockScanCapture(true, refusal.message ?? null);
+      renderStep(ten);
+
+      expect(screen.getByRole("status")).toHaveTextContent("MVP stack limit reached (10 cards).");
+    });
+
+    it("shows no notice line when nothing was refused", () => {
+      renderStep([makeZoneCard("opt", "Opt")]);
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
   });
 
   it("removes only the matching instance when duplicate cardIds are present in a non-stack zone", async () => {

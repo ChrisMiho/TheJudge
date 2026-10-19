@@ -83,6 +83,20 @@ describe("Frontend - Card Scan", () => {
       expect(screen.getByRole("alert")).toHaveTextContent("Card scanning is unavailable right now");
     });
 
+    it("renders the blocked-scan notice with role=status under the camera when given, and not otherwise", () => {
+      renderPanel({ blockedNotice: "Duplicate cards are not supported in MVP1." });
+      const notice = screen.getByRole("status");
+      expect(notice).toHaveTextContent("Duplicate cards are not supported in MVP1.");
+      expect(notice).toHaveClass("tb-note");
+      const camera = screen.getByTestId("scan-camera");
+      expect(camera.compareDocumentPosition(notice) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it("renders no status line when there is no blocked-scan notice", () => {
+      renderPanel();
+      expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    });
+
     it("passes held entries to the review bubble with the destination label", () => {
       renderPanel({ heldEntries: [held], destinationLabel: "your question" });
       expect(screen.getByLabelText("Scanned this session: 1")).toBeInTheDocument();
