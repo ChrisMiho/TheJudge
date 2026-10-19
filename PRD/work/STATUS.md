@@ -33,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-built-server-smoke | Quality-check PASS — answer `GATE-QUESTIONS.md` (NFR-020 new; REQ-166, NFR-012 amended), then merge the docs PR to build |
 
 ## deferred
 
