@@ -1,0 +1,42 @@
+{
+  "slug": "player-visible-bugs",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "useScanCapture.ts stores the identify step's candidates on the held card while voting still uses the card-level list",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/hooks/useScanCapture.ts"] }
+    },
+    {
+      "id": "A2",
+      "statement": "The new useScanCapture.test.ts case passes and fails against the old line",
+      "value": false,
+      "evidence": { "command": "run test.*useScanCapture|vitest run.*useScanCapture" }
+    },
+    {
+      "id": "A3",
+      "statement": "The Trade scan test asserts the entry defaults to the scanned printing and passes",
+      "value": false,
+      "evidence": { "command": "run test.*TradeBalancer\\.scan|vitest run.*TradeBalancer\\.scan" }
+    },
+    {
+      "id": "A4",
+      "statement": "The Trade, QuickLookup, ZoneCollectionStep scan tests and the scan hook tests all pass",
+      "value": false,
+      "evidence": { "command": "run test.*(ZoneCollectionStep|QuickLookupApp)|vitest run.*(ZoneCollectionStep|QuickLookupApp)" }
+    },
+    {
+      "id": "A5",
+      "statement": "Typecheck and lint pass",
+      "value": false,
+      "evidence": { "command": "npm run typecheck|npm run lint|npm run quality:check" }
+    },
+    {
+      "id": "A6",
+      "statement": "Slice A commits contain no file outside the Files list",
+      "value": false,
+      "evidence": { "command": "git (diff|show|log).*--(stat|name-only)" }
+    }
+  ]
+}

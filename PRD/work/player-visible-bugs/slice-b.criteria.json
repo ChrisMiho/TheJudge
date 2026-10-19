@@ -1,0 +1,48 @@
+{
+  "slug": "player-visible-bugs",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "After visiting In-Depth then opening Trade, the feedback snapshot has no MTG Assistant screen, flow step or zone cards, and they return on switching back (test)",
+      "value": false,
+      "evidence": { "command": "run test.*(App\\.feedback|FeedbackContextProvider)|vitest run.*(App\\.feedback|FeedbackContextProvider)" }
+    },
+    {
+      "id": "B2",
+      "statement": "Feedback contributor registration is gated on the active flag and In-Depth passes isActive",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/lib/feedback/feedbackSeam.ts", "apps/frontend/src/components/portal/MtgAssistantApp.tsx"] }
+    },
+    {
+      "id": "B3",
+      "statement": "The submit hook exposes hasPendingRetry and retryPending, and handleRetry uses them before staging checks",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts"] }
+    },
+    {
+      "id": "B4",
+      "statement": "A reopened conversation with a failed follow-up resends it on Retry after the cooldown (test)",
+      "value": false,
+      "evidence": { "command": "run test.*(MtgAssistantApp\\.retry|interaction-flows\\.submission)|vitest run.*(MtgAssistantApp\\.retry|interaction-flows\\.submission)" }
+    },
+    {
+      "id": "B5",
+      "statement": "With nothing saved and no game context, Retry shows \"Confirm game context before decrypting.\" (test)",
+      "value": false,
+      "evidence": { "command": "run test.*(MtgAssistantApp\\.retry|interaction-flows\\.submission)|vitest run.*(MtgAssistantApp\\.retry|interaction-flows\\.submission)" }
+    },
+    {
+      "id": "B6",
+      "statement": "Existing feedback and submission suites still pass",
+      "value": false,
+      "evidence": { "command": "run test|vitest run" }
+    },
+    {
+      "id": "B7",
+      "statement": "Typecheck and lint pass",
+      "value": false,
+      "evidence": { "command": "npm run typecheck|npm run lint|npm run quality:check" }
+    }
+  ]
+}

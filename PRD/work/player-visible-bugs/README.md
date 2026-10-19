@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # player-visible-bugs
 
@@ -9,6 +9,19 @@ Fix the seven player-visible bugs from section a of the codebase-cleanup follow-
 - Design brief: `DESIGN-BRIEF.md`
 - Gate questions (REQ-214, REQ-085): `GATE-QUESTIONS.md`
 - Live measurements: `evidence/measurements.md`
+- Gameplan: `GAMEPLAN.md`
+
+## Slices
+
+One code PR; slice A in its own commits. Parallel-ready; run in letter order.
+
+| Slice | Doc | Bug | Depends on |
+| --- | --- | --- | --- |
+| A | `slice-a-trade-scanned-printing.md` | 1 Trade scanned printing | none |
+| B | `slice-b-feedback-and-retry.md` | 3 feedback context, 5 Retry | none |
+| C | `slice-c-scanner-refusal-line.md` | 2 scanner refusal line (applies REQ-214 diff) | none |
+| D | `slice-d-reopen-keeps-players.md` | 4 reopen keeps players (applies REQ-085 diff) | none |
+| E | `slice-e-tap-floor.md` | 7 tap floor; REQ-202 screenshot pair; ship gates | none |
 
 ## Autonomous metadata
 

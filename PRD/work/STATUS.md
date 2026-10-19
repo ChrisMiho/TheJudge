@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first. Mapped into slices A-E (one code PR); REQ-214 and REQ-085 accepted; build half running |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first. Quality-check PASS (attempt 2). Gate answered 2026-10-19 (REQ-214 and REQ-085 both accept); docs PR #328 merged; build half running |
 
 ## refining
 
