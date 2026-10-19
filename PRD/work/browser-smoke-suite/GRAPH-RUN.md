@@ -23,7 +23,7 @@
 
 - Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 1).
 - Question: answer `PRD/work/browser-smoke-suite/GATE-QUESTIONS.md` (NFR-021 new; REQ-166 and NFR-012 amended, each on top of #326's accepted changes), then merge the docs PR to build.
-- Evidence: `QUALITY-CHECK.md` PASS, commit `6c57627e`; README `## Preparation gate` lists the four advisories.
+- Evidence: `QUALITY-CHECK.md` PASS, commit `6c57627e`; README `## Preparation gate` lists the four advisories; docs PR https://github.com/ChrisMiho/TheJudge/pull/338 (`gh pr create --base main --head thejudge-auto/browser-smoke-suite`).
 - Resume: the owner's merge of the docs PR is the build signal; then `/graph-implement PRD/work/browser-smoke-suite/`.
 
 Earlier park (history):
