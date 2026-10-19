@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs` (build half, on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`; the spec-forming half ran in place at the session root, so no kickoff worktree existed to remove)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/.graph-intake/graph-20261018-231413/` (one file, `IDEA.md`, copied verbatim to `PRD/work/player-visible-bugs/intake/IDEA.md`, `cmp` identical; node 2 removed the staged copy after committing it)
-- Current node: `owner-action`
-- Next action: answer `PRD/work/player-visible-bugs/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/player-visible-bugs/` picks it up
+- Current node: `gate-qc` (build half re-grade)
+- Next action: `/graph-implement PRD/work/player-visible-bugs/`
 
 ## Node ledger
 
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | failed | `0 → 26` | FAIL — 2 blocking (bug 2's scanner refusal line vs REQ-070's mockup rule at `functional-requirements.md:1690`; bug 7's `.seg` also used by Life Tracker, `.lt-scope .seg button` at `index.css:4587` 42px — both confirmed by the driver), 5 advisory; `QUALITY-CHECK.md` commit `c485b158` (= origin tip); `STATUS.refining`, board row moved; README `## Preparation gate` FAIL recorded by the driver; loops to `define` (FAIL 1 of 3) | 2026-10-18 |
 | 3 | define (attempt 2) | opus | ok | `0 → 74` | commit `a4128f1c` (= origin tip): blocker 1 resolved as state copy outside REQ-070's helper-text clause (no REQ-070 amendment; REQ-070 grep disposition table, 7 rows); blocker 2 resolved — `.lt-scope .seg button` stays 42px, proof test asserts it, REQ-202 pair named; 5 advisories resolved; `GATE-QUESTIONS.md` REQ-214, REQ-085, blockers none; `STATUS.refined` only marker, board row moved; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty (`origin/main` moved by #323–#327, `scripts/` and one frontend test only, no `PRD/sections/` or `PRD/work/STATUS.md` change); porcelain empty | 2026-10-18 |
 | 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 16` | PASS, 0 blocking, 3 advisory (anchor the base `.seg button` assertion; optional test location; one long sentence); all seven attempt-1 findings resolved; every gate diff line matches `PRD/sections/` once (scripted); `QUALITY-CHECK.md` commit `81e16553` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
+| 5 | gate-review | sonnet | ok | `0 → 16` | build half run `graph-20261019-083336`: docs PR #328 merged (`origin/main` `e19dd31e`); in-place spec half, no kickoff worktree to remove; claim commit `aefeadcb` on `thejudge-auto/player-visible-bugs-work` cut from `origin/main` `e19dd31e`, pushed; lock taken from the launch root (pid 98290); graph canary `nohup true` denied; `graph-gate-review` commit `98073d9c` (= origin tip): 2 accept / 0 edit / 0 reject, `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main...HEAD -- PRD/sections apps scripts` empty; porcelain empty in worktree | 2026-10-19 |
 
 ## Gate verdicts
 
@@ -212,6 +213,31 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. Do not dispatch subagents. Never advance a node and never run a `thejudge-*` skill.
 
 Return a short report: `outcome: ok|refused`, the verdict counts per ID, the `### Brief reconciliation` list (or `none`), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/player-visible-bugs-work`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), and `git status --porcelain` of the working directory (must be empty).
+
+### gate-qc (attempt 3, build half)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs
+
+You are node 4 (`gate-qc`) of graph run `graph-20261019-083336`, the build half's re-grade after gate resolution, on branch `thejudge-auto/player-visible-bugs-work` (cut from current `origin/main`, already pushed). Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/player-visible-bugs/DESIGN-BRIEF.md`, together with the finalized `GATE-QUESTIONS.md` (owner verdicts: REQ-214 accept, REQ-085 accept; see `## Gate verdicts` in `GRAPH-RUN.md`), `IDEA.md`, `intake/IDEA.md`, `evidence/measurements.md` and the prior `QUALITY-CHECK.md` in the same folder. Work ONLY inside the working directory above.
+
+Why this re-grade: the brief was written and passed against an older `origin/main`; this branch is cut from the current one (`e19dd31e`), which has since taken other merges. Check in particular:
+- Every file:line the brief cites for a bug's cause and fix still points at the code it describes on this branch. A drifted line number with unchanged code is advisory (say the new line); a cause or fix the current code no longer supports is blocking.
+- Every proposed diff in `GATE-QUESTIONS.md` still matches current `PRD/sections/` text exactly once and applies cleanly.
+- The brief, the finalized proposal and the owner verdicts agree (both accepts, no reconciliation needed).
+- `PRD/work/STATUS.md`: any package now active that owns the same files as this brief (collision section), and whether its handling still holds.
+- The three advisories from the prior check are carried as advisories, not re-raised as blocking.
+
+Write `QUALITY-CHECK.md` in the package folder per the skill (replace it with this attempt's result), with PASS or FAIL and the complete findings. Set the status marker as the skill directs (exactly one marker; on PASS keep `STATUS.refined`; on FAIL `STATUS.refining`, and move the `PRD/work/STATUS.md` board row fully). Do NOT write the README `## Preparation gate` section; the driver owns it. Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, or `GRAPH-RUN.md`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Budget: this node has a 60 tool-call cap. Do not dispatch subagents; their calls charge this node's cap.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you nevertheless dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/player-visible-bugs-work`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
