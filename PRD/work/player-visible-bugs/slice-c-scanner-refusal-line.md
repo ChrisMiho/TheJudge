@@ -1,6 +1,6 @@
 # Slice C — Scanner says why it refused a repeat card
 
-## Status: done
+## Status: in-progress
 
 ## Goal
 

@@ -5,7 +5,7 @@
     {
       "id": "B1",
       "statement": "After visiting In-Depth then opening Trade, the feedback snapshot has no MTG Assistant screen, flow step or zone cards, and they return on switching back (test)",
-      "value": true,
+      "value": false,
       "evidence": { "command": "run test.*(App\\.feedback|FeedbackContextProvider)|vitest run.*(App\\.feedback|FeedbackContextProvider)" }
     },
     {

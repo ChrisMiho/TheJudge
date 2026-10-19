@@ -1,4 +1,4 @@
-status: ship-ready
+status: active
 
 # player-visible-bugs
 

@@ -1,6 +1,6 @@
 # Slice B — Feedback names the right screen; Retry resends
 
-## Status: done
+## Status: in-progress
 
 ## Goal
 

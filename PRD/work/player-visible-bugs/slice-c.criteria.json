@@ -11,7 +11,7 @@
     {
       "id": "C2",
       "statement": "ZoneCollectionStep.test.tsx: with a card already on the Stack, a scan lock of that card shows the duplicate message inside the open scanner and the holding list does not grow",
-      "value": true,
+      "value": false,
       "evidence": { "command": "run test.*ZoneCollectionStep|vitest run.*ZoneCollectionStep" }
     },
     {
