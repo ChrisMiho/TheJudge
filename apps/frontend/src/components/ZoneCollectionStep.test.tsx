@@ -5,6 +5,7 @@ import { ZoneCollectionStep } from "./ZoneCollectionStep";
 import type { ScanConvergence } from "../hooks/useScanCapture";
 import { useScanCapture } from "../hooks/useScanCapture";
 import type { CardMetadataItem, ZoneCardItem } from "../types";
+import { appCss } from "../test/appTestHelpers";
 
 vi.mock("./ScanCameraSurface", () => ({
   ScanCameraSurface: ({ onCapture }: { onCapture: () => void }) => (
@@ -211,6 +212,13 @@ describe("ZoneCollectionStep scan focus", () => {
     expect(screen.queryByText("Stacked")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Exit scan" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Capture" })).toBeInTheDocument();
+  });
+
+  it("REQ-205: zone tabs and the Reorder / Copies buttons meet the 44px floor; Life Tracker stays 42px", () => {
+    expect(appCss).toMatch(/^\.zone-tabs button \{[^}]*min-height: 44px/m);
+    // Line-start anchored so it cannot match `.lt-scope .seg button`.
+    expect(appCss).toMatch(/^\.seg button \{[^}]*min-height: 44px/m);
+    expect(appCss).toMatch(/^\.lt-scope \.seg button \{[^}]*min-height: 42px/m);
   });
 
   describe("REQ-214: a refused scan says why inside the scanner", () => {

@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; slices A-E built, REQ-214 and REQ-085 applied; code PR #337 awaiting owner merge |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| player-visible-bugs | Seven player-visible bugs from the cleanup follow-ups; Trade scanned-printing first. Mapped into slices A-E (one code PR); REQ-214 and REQ-085 accepted; build half running |
 
 ## refined
 

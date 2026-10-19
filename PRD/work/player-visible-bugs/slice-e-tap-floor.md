@@ -1,6 +1,6 @@
 # Slice E — In-Depth tap floor of 44 px
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -5,37 +5,37 @@
     {
       "id": "E1",
       "statement": "index.css changes only the two min-height values, 40 px to 44 px",
-      "value": false,
+      "value": true,
       "evidence": { "command": "git diff.*index\\.css", "paths": ["apps/frontend/src/index.css"] }
     },
     {
       "id": "E2",
       "statement": "The stylesheet test asserts .zone-tabs button is 44 px, the line-anchored base .seg button is 44 px, and .lt-scope .seg button is still 42 px, and passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "run test.*(ZoneCollectionStep|ComposerPill)|vitest run.*(ZoneCollectionStep|ComposerPill)" }
     },
     {
       "id": "E3",
       "statement": "Measured at 390x844: In-Depth zone tabs and Reorder buttons are 44 px; Life Tracker Counters tabs are 42 px",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E4",
       "statement": "REQ-202 Life Tracker before/after screenshot pair (Counters sheet and Game Setup, 390x844 and 1440x900) plus the In-Depth Cards station pair (390x844) are captured and named in slice-e.evidence.md",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E5",
       "statement": "Browser closed, owned server(s) stopped, ports released; captures written to PRD/work/player-visible-bugs/.playwright-mcp/",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E6",
       "statement": "Typecheck and lint pass",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run typecheck|npm run lint|npm run quality:check" }
     }
   ]
