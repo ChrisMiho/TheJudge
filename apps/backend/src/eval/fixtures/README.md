@@ -73,6 +73,13 @@ Label rule ids by **human judgment** of relevance, then confirm they are reachab
 rule ids are excluded from System 3). A fixture with all three fields adds 3 to its
 `maxScore`.
 
+`lexicalKnownMisses` is optional and adds no check. It lists ids from
+`expectedSupplementalRuleIds` that the word-only (lexical) retrieval path is known
+to miss while the semantic path finds them; only the lexical run of
+`system3-expected-recall` skips those ids, and the semantic run still requires
+every one. Record the reason for each entry in the fixture's `description` (see
+`upkeep-trigger.fixture.json`).
+
 ## Commander Spellbook combo fixtures
 
 Scenarios named `commander-spellbook-*` cover the combo-enrichment branches. They
@@ -89,6 +96,8 @@ churn a prompt golden. The harness derives oracle membership from the fixture's
 | `commander-spellbook-wrong-zone` | ingredient present but incompatibly zoned |
 | `commander-spellbook-unresolved-template` | template with no authoritative card list — never fully assigned |
 | `commander-spellbook-lookup-attached-intent` | lookup mode, attached card plus explicit intent |
+| `commander-spellbook-lookup-multi-card-complete` | lookup mode, two attached cards that together complete a combo — complete candidate ranked ahead of a partial one |
+| `commander-spellbook-lookup-multi-card-partial` | lookup mode, two attached cards that complete nothing — each partial candidate names its missing card or template role, never a recommendation |
 | `commander-spellbook-lookup-unrelated` | lookup mode, attached card but no combo intent — no retrieval |
 | `commander-spellbook-degraded` | no catalog loaded at all — no section, request still answered |
 
