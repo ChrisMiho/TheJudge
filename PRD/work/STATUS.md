@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| browser-smoke-suite | Refined — proposal written (NFR-021 new; REQ-166, NFR-012 amended on top of #326's accepted changes); next: quality-check |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| browser-smoke-suite | Parked mid-define: drafts written (NFR-021 proposal) but uncommitted; run id trapped by the hook's retry guard on the run-state file — rotate the run id to resume |
 | ci-built-server-smoke | Quality-check PASS — answer `GATE-QUESTIONS.md` (NFR-020 new; REQ-166, NFR-012 amended), then merge the docs PR to build |
 
 ## deferred
