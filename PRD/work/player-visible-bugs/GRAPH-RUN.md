@@ -185,8 +185,25 @@ Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed
 
 Return a short report: `outcome: PASS|FAIL`, each prior finding resolved or not (one line each), the complete new findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/player-visible-bugs`), and `git status --porcelain` of the working directory (must be empty).
 
+### gate-review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs
+
+You are the gate-resolution step of graph run `graph-20261019-083336` (build half of package `player-visible-bugs`), on branch `thejudge-auto/player-visible-bugs-work`, already pushed. Run the `graph-gate-review` skill: read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-player-bugs/.worktrees/implement-player-visible-bugs/.claude/skills/graph-gate-review/SKILL.md and follow it exactly on `PRD/work/player-visible-bugs/GATE-QUESTIONS.md`. Work ONLY inside the working directory above; every path below is relative to it.
+
+The owner answered the file and merged the docs PR #328 (that merge is the build signal). Read every verdict from the file yourself; never infer one. Apply each verdict inside `GATE-QUESTIONS.md` only. Reconcile `DESIGN-BRIEF.md` and the README intake pointer to every `edit` or `reject` the file records, and write the `### Brief reconciliation` list under `## Gate verdicts` in `PRD/work/player-visible-bugs/GRAPH-RUN.md` (quote the grep, or write `none` when every verdict is `accept`). Mark `## Open gate` in `GRAPH-RUN.md` resolved with today's date (2026-10-19) and the verdict count. Restore the lifecycle position to `refined`: the README `status:` field, exactly one `STATUS.refined` marker (remove `STATUS.owner-action`), and move the `PRD/work/STATUS.md` board row fully (remove it from its current section, add it under the refined section). Never edit `PRD/sections/`, code, `intake/`, the ledger's `## Node ledger`, `## Dispatch prompts` or `## Instruction ledger`, or the README `## Autonomous metadata` / `## Preparation gate` sections; the driver owns those.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>` (use `git rm` for the removed marker), then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. Do not dispatch subagents. Never advance a node and never run a `thejudge-*` skill.
+
+Return a short report: `outcome: ok|refused`, the verdict counts per ID, the `### Brief reconciliation` list (or `none`), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/player-visible-bugs-work`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts` (must be empty), and `git status --porcelain` of the working directory (must be empty).
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Fix the player-visible bugs in section a, Trade scanned-printing bug first" | answered-once | shape | — |
+| owner build signal: verdicts answered in `GATE-QUESTIONS.md` (REQ-214 accept, REQ-085 accept), docs PR #328 merged, then invoked `/graph-implement PRD/work/player-visible-bugs/` | answered-once | gate-review | — |
