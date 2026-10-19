@@ -169,6 +169,22 @@ describe("Frontend - Feedback", () => {
       expect(atZoneCollection["Game context"]).toBe("2 players, turn phase main_1");
     });
 
+    it("REQ-088: feedback from Trade carries no In-Depth screen", async () => {
+      const user = userEvent.setup();
+      render(<App />);
+
+      await user.click(screen.getByRole("button", { name: "Confirm game context" }));
+      await openPortalMenu(user);
+      await user.click(screen.getByRole("menuitem", { name: "Trade Balancer" }));
+
+      await openFeedbackModal(user);
+      const onTrade = await readAppStateSummary(user);
+      expect(onTrade["Active view"]).not.toBe("mtg-assistant");
+      expect(onTrade["Screen"]).toBeUndefined();
+      expect(onTrade["Flow step"]).toBeUndefined();
+      expect(onTrade["Selected zones"]).toBeUndefined();
+    });
+
     it("falls back to the shell-only snapshot on a destination with no contributor", async () => {
       const user = userEvent.setup();
       render(<App />);

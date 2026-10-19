@@ -106,6 +106,30 @@ describe("Frontend - Feedback", () => {
       expect(context.flow).toEqual(createFlowSnapshot());
     });
 
+    it("REQ-088: a contributor registers only while active, and returns when active again", () => {
+      function ActiveProbe({ active }: { active: boolean }): null {
+        useRegisterFeedbackContributor(() => createFlowSnapshot(), active);
+        return null;
+      }
+      function ActiveHarness({ active }: { active: boolean }): JSX.Element {
+        return (
+          <FeedbackContextProvider activeDestinationId="trade-balancer" providerMode="mock">
+            <ReaderProbe />
+            <ActiveProbe active={active} />
+          </FeedbackContextProvider>
+        );
+      }
+
+      const { rerender } = render(<ActiveHarness active />);
+      expect(latestReader()().flow).toEqual(createFlowSnapshot());
+
+      rerender(<ActiveHarness active={false} />);
+      expect(latestReader()().flow).toBeNull();
+
+      rerender(<ActiveHarness active />);
+      expect(latestReader()().flow).toEqual(createFlowSnapshot());
+    });
+
     it("calls the contributor lazily — only when a snapshot is requested", () => {
       const contributor = vi.fn(() => createFlowSnapshot());
 
