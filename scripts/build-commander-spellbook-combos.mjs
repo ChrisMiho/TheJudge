@@ -4,7 +4,7 @@ import zlib from "node:zlib"
 import { pathToFileURL } from "node:url"
 
 import { streamJsonArrayObjects } from "./lib/stream-json-array.mjs"
-import { brotliCompress, ensureParentDirectory, formatBytes } from "./lib/fs-helpers.mjs"
+import { brotliCompress, ensureParentDirectory, formatBytes, readBrotliJson } from "./lib/fs-helpers.mjs"
 
 const defaultRawInputDir = path.resolve("apps/backend/data/commander-spellbook")
 const defaultDetailPath = path.resolve("apps/backend/data/commanderSpellbookComboBlocks.br")
@@ -594,7 +594,7 @@ function readExistingIndexArtifact(filePath) {
     console.warn(`No existing combo index artifact found to preserve: ${filePath}`)
     return null
   }
-  const artifact = JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(filePath)).toString("utf8"))
+  const artifact = readBrotliJson(filePath)
   if (typeof artifact !== "object" || artifact === null || Array.isArray(artifact)) {
     throw new Error(`Unexpected combo index artifact shape in ${filePath}; expected a JSON object.`)
   }
@@ -640,7 +640,7 @@ export async function trimCommittedArtifacts(options = {}) {
   const indexPath = options.indexPath ?? defaultIndexPath
   const minPopularity = options.minPopularity ?? MIN_VARIANT_POPULARITY
 
-  const index = JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(indexPath)).toString("utf8"))
+  const index = readBrotliJson(indexPath)
   const detailBuffer = fs.readFileSync(detailPath)
   const variantIds = Array.isArray(index?.variantIds) ? index.variantIds : []
   const blockDirectory = index?.blocks ?? []
