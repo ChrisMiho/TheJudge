@@ -2,12 +2,12 @@
 
 - Run ID: `graph-20261019-190721` (build half, claimed 2026-10-19; the spec-forming half ran as `graph-20261019-174628`, rotated with owner approval from `graph-20261018-233939`, whose run-state writes the retry guard denied)
 - Profile: `loaded (env sentinel)`
-- Canary: `denied — hook live (rm -rf canary: [graph-boundary] rm -rf is denied in every session; graph canary nohup: denied while a graph run holds the lock)`; after the rotation, lock retaken with `graph-preflight --take-lock --run-id graph-20261019-174628 --pid 98719` and the graph canary `nohup true` denied: `nohup is denied while a graph run holds the lock`
+- Canary: `denied — hook live (rm -rf canary: [graph-boundary] rm -rf is denied in every session; graph canary nohup: denied while a graph run holds the lock)`; after the rotation, lock retaken with `graph-preflight --take-lock --run-id graph-20261019-174628 --pid 98719` and the graph canary `nohup true` denied: `nohup is denied while a graph run holds the lock`. Build half: lock taken from the launch root with `node scripts/graph-preflight.mjs --take-lock --slug browser-smoke-suite --run-id graph-20261019-190721 --pid 17325` (lock verified at `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-run.lock`); graph canary `nohup true` denied: `nohup is denied while a graph run holds the lock: a detached command outlives the run that started it`
 - Autonomous base: origin/main
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` (the spec-forming half ran in-place in `.worktrees/session-ci-smoke`, since pruned)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `owner-action` (parked after `gate-qc` PASS)
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/browser-smoke-suite/`
+- Current node: `gate-review` (build half, run `graph-20261019-190721`)
+- Next action: `/graph-implement PRD/work/browser-smoke-suite/` resumes from the marker in the build worktree
 
 ## Node ledger
 
@@ -160,6 +160,26 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite`), and `git status --porcelain` of the working directory (must be empty).
+
+### gate-review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite
+
+You are the gate-resolution step (`gate-review`) of build-half graph run `graph-20261019-190721`, attempt 1, for the package `PRD/work/browser-smoke-suite/`. Run the `graph-gate-review` skill: read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite/.claude/skills/graph-gate-review/SKILL.md and follow it, plus `PRD/instructions/graph-workflow-contract.md` as it asks. Work ONLY inside the working directory above. It is the build worktree on the shared branch `thejudge-auto/browser-smoke-suite-work`, cut from `origin/main` (`8bf88d17`, which includes merged code PR #339) and already pushed; the claim commit `a8985a74` is its tip. Your budget is 60 tool calls; verify directly, spawn no subagents, and do not start servers or open a browser.
+
+Every verdict comes from the answered `GATE-QUESTIONS.md` in the package and nowhere else. The owner answered all three slots (NFR-021, REQ-166, NFR-012). Apply them inside `GATE-QUESTIONS.md` only, never to `PRD/sections/`.
+
+Reconcile `DESIGN-BRIEF.md`, and the README pointer to any verbatim `intake/` file, to every `edit` or `reject` verdict, bounded to passages that contradict a verdict; `intake/` stays verbatim. Also check whether any verdict Reason line records a decision the brief still leaves open or contradicts (the NFR-021 Reason says the extra 20–30 s on the local pre-PR check is acceptable, so the browser smoke runs in the local check too) and reconcile that passage. Report the result as a `### Brief reconciliation` list (write `none` with the grep you used if nothing needed changing).
+
+Record the verdicts under `## Gate verdicts` in `GRAPH-RUN.md` per the skill, add the resolution line under the open gate per the skill, restore exactly one marker `STATUS.refined`, set the README status line to match, and move the `PRD/work/STATUS.md` board row fully (remove from the old section, add to the refined section). Leave alone: the README autonomous-metadata and preparation-gate sections, and the node-ledger, dispatch-prompts and instruction-ledger sections of `GRAPH-RUN.md` — the driver owns those. Do not edit `PRD/sections/`, code, `.github/`, or any `thejudge-*` skill.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`. End the commit message with the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, verdict counts (accept/edit/reject) with one plain line per ID, the `### Brief reconciliation` list, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` (must be empty), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
