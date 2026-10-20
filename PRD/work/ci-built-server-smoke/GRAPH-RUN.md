@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim, run `graph-20261019-182200`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke` (build half; session root is the linked worktree `.worktrees/session-ci-smoke`)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `review` (build half, run `graph-20261019-182200`)
+- Current node: `close` (build half, run `graph-20261019-182200`)
 - Next action: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/ci-built-server-smoke/` picks it up
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 4 | gate-qc (build half re-grade) | sonnet | ok | `0 → 16` | PASS, 0 blocking, 6 advisory (timeouts and 30 s constant for map-out; card-only and ruleset settled; two harmless brief wording notes); all five diffs re-read against this branch's `PRD/sections/`, each matches once; NFR-020 unused; repo claims confirmed (`deploy.needs` = static, backend, coverage-merge, changes); `QUALITY-CHECK.md` commit `c3b81218` (= origin tip); README `## Preparation gate` PASS recorded by the driver; `STATUS.refined` only marker; porcelain empty | 2026-10-19 |
 | 5 | plan | sonnet | ok | `0 → 22` | commit `a0478fc7` (= origin tip): `GAMEPLAN.md`, one slice `slice-a-built-server-smoke.md` (smoke script + tests, `quality:check` entry, `built-server` CI job on Node 24 with `timeout-minutes: 10`, `deploy.needs`, product truth applied by intent), `slice-a.criteria.json` 13 criteria all `false`, none manual or post-merge; `READY_DEADLINE_MS = 30000` and `REQUEST_TIMEOUT_MS` named; no frontend build step (parity-asserted); `STATUS.active` only marker; board row under active; porcelain empty | 2026-10-19 |
 | 6 | build | sonnet | ok | `0 → 56` | PR https://github.com/ChrisMiho/TheJudge/pull/339 open, head `5ebf10ce` (= origin tip; feat `0b8f9f77`, ship-ready `5ebf10ce`); 14 files: `scripts/smoke-built-server.mjs` + 17-test `scripts/smoke-built-server.test.mjs`, parity tests, `package.json` (`smoke:built-server` in `quality:check`), `built-server` job + `deploy.needs`, `PRD/sections/` NFR-020 / NFR-012 / REQ-166 / integrations-and-data / system-map applied by intent; `npm run quality:check` exit 0 (smoke: ready 534 ms, health 200, Sol Ring 200, port released); `gh pr checks 339` static, backend, built-server (26 s), frontend-shard 1-3, coverage-merge pass, changes/deploy skipping (main-only); `STATUS.ship-ready` only marker; launch-checkout porcelain identical before/after (empty); every reported path inside `.worktrees/implement-ci-built-server-smoke/` (scratch in its ignored `.tmp/`); 2 hook denials (`build-write-outside-worktree` on a heredoc commit message and a read-only `sed -n` chain — both redone with Edit); criteria A1–A13 `true` set by the builder (A1 Edit, A2–A13 one `node -e` replace) — hook evidence log has 0 entries for this run, so the criteria are self-reported and review is the gate | 2026-10-19 |
+| 7 | review | opus | ok | `0 → 28` | no-write reviewer (read-only agent, fresh context); verdict approve, 0 Critical, 0 Important, 5 Minor (port-released check binds 127.0.0.1 only; deadline can stretch to ~35 s; timeout test checks signal presence only; shutdown output not captured; SIGKILL-ignoring child could hang, bounded by job timeout); A1–A13 each verified independently: `node --test scripts/smoke-built-server.test.mjs` 17/17, `npm run smoke:built-server` exit 0 (ready 540 ms, health 200, Sol Ring 200), `lsof` port free after, `npm run test:scripts` 1085/0, typecheck/lint/format exit 0; both failure modes reproduced with throwaway child processes; five `PRD/sections/` edits match accepted `GATE-QUESTIONS.md` word for word; graded head `405cd195` (= `5ebf10ce` + ledger commit) | 2026-10-19 |
 
 ## Open gate
 
@@ -271,6 +272,36 @@ Severity rule: Critical or Important only for a gap that breaks correctness or o
 If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt, and give it no write tools.
 
 Return: `verdict: approve | changes-needed`, one line per criterion A1–A13 (holds / does not hold, with the evidence: command output or file:line), then findings grouped Critical / Important / Minor, each with file:line and the requirement it breaks.
+
+### close
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke
+
+You are node 8 (`close`) of build-half graph run `graph-20261019-182200`, attempt 1. Run the `thejudge-cleanup` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke/.claude/skills/thejudge-cleanup/SKILL.md and follow its PR-ready path in graph-controlled mode) on the package `PRD/work/ci-built-server-smoke/`, which is `STATUS.ship-ready`. You run on the code branch `thejudge-auto/ci-built-server-smoke-work`, checked out in the working directory above, BEFORE the owner merges code PR https://github.com/ChrisMiho/TheJudge/pull/339; the receipt and the package deletion ride in that PR.
+
+Durable truth was applied at build (NFR-020 new; NFR-012, REQ-166, the `integrations-and-data.md` health purposes line and the `system-map.md` guardrails entry amended); the reviewer confirmed all five match the accepted `GATE-QUESTIONS.md` text word for word. Confirm it is present and promote only a leftover, never re-write.
+
+Write the receipt under `PRD/instructions/receipts/` named per the skill. Fold `GRAPH-RUN.md`'s `## Node ledger` and `## Instruction ledger` verbatim into its `## Graph run` section, with a `- PR: https://github.com/ChrisMiho/TheJudge/pull/339` line and the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/339`. Record the review node's outcome: verdict approve, 0 Critical, 0 Important, and these five Minor follow-ups, one line each:
+1. `scripts/smoke-built-server.mjs:45-51` — the port-released check test-binds 127.0.0.1 only; on macOS it reports free while a server listens on `::`. Fix: also test-bind `::` or bind with no host.
+2. `scripts/smoke-built-server.mjs:86-95` — the 30 s ready deadline can stretch to about 35 s because it is checked only after each health request (5 s request timeout).
+3. `scripts/smoke-built-server.test.mjs:117-126` — the timeout test checks that a signal is attached, not that it is a timeout; no test proves every request goes through `fetchJson`.
+4. `scripts/smoke-built-server.mjs:177` — server output printed during shutdown is not captured.
+5. `scripts/smoke-built-server.mjs:133-134` — a child that ignored SIGKILL would hang the await; the job `timeout-minutes: 10` bounds it.
+Also record in the receipt that the hook evidence log earned 0 entries for this run, so criteria A1–A13 were set by the builder and the no-write reviewer verified each one independently.
+
+Then update `PRD/work/STATUS.md` per the skill, and delete `PRD/work/ci-built-server-smoke/` with `git rm -r` on that explicit path (the skill refuses the delete if the receipt lacks the `## Graph run` section). Do not edit `PRD/sections/` beyond a confirmed leftover, code, `.github/`, any `thejudge-*` skill, `.claude/settings*.json`, `.claude/graph-profile.json`, or `CLAUDE.md`. Never merge or close the PR.
+
+End every commit message with these two lines:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01AWwrw8DJYBqJZsWEhZTwF2
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>` (or `git rm -r <explicit path>`), then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, the receipt path, the promotion check result, the board change, commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke-work`), `ls PRD/work/ci-built-server-smoke` (must not exist), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger` in `GRAPH-RUN.md` — the driver owns those. Do not edit `PRD/sections/`, code, `.github/`, or any `thejudge-*` skill.
 
