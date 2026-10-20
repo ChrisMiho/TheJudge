@@ -6,7 +6,7 @@
 - Autonomous base: origin/main
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` (the spec-forming half ran in-place in `.worktrees/session-ci-smoke`, since pruned)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `gate-review` (build half, run `graph-20261019-190721`)
+- Current node: `gate-qc` (build half re-grade, run `graph-20261019-190721`)
 - Next action: `/graph-implement PRD/work/browser-smoke-suite/` resumes from the marker in the build worktree
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | failed | `0 → 185` | tool-call cap exhausted: cap 150 + 30-call park grace passed (hook denial at call 184); the node ended without a report and without committing. Left untracked and complete through their last sections: `DESIGN-BRIEF.md` (511 lines), `GATE-QUESTIONS.md` (NFR-021 new; REQ-166 and NFR-012 amended with #326-first counting; `## Blocker questions` none), `evidence/measurements.md` (200 lines); marker still `STATUS.ideation`, board row not moved. Calls 183–185 were the driver's own post-node checks, charged to `define/1` because the run state was not reset first. The lock and run state were removed by the owner (`! rm …/.graph-run-state.json …/.graph-run.lock`); the lock was retaken with `graph-preflight --take-lock` and the graph canary `nohup true` was denied (repeat-denial rule: already denied during this run, `nohup-wrapper`). No leftover servers from this run (`ps`); NFR-021 unused in `PRD/sections/`; branch diff vs merge-base touches no `PRD/sections`, `apps`, `scripts` or `.github` | 2026-10-18 |
 | 4 | define (attempt 2, run `graph-20261019-174628`) | opus | ok | `0 → 46` | commit `c266d575`, pushed (`git ls-remote` → `c266d575`); drafts finished on top of #326's accepted changes (no either-way wording; NFR-012 7→8; REQ-166 list gains `browser-smoke` after `built-server`); every today line checked to match `PRD/sections/` exactly once after the main merge; disposition greps re-run (74 and 101 hits, none new); `GATE-QUESTIONS.md` present (NFR-021 new; REQ-166, NFR-012 amended; blocker questions none); `STATUS.refined`, board row moved owner-action → refined; diff vs merge-base on `PRD/sections apps scripts .github` empty; porcelain empty; no servers, no browser, no denials. The dispatched prompt matched the recorded one, plus three driver lines: the 150-call budget figure, a prefer-whole-file-reads hint, and leave the `ci-built-server-smoke` board row alone | 2026-10-19 |
 | 5 | gate-qc | sonnet | ok (PASS) | `0 → 18` | `PRD/work/browser-smoke-suite/QUALITY-CHECK.md`, commit `6c57627e`, pushed (`git ls-remote` → `6c57627e`); no blocking findings; four advisories recorded in README `## Preparation gate`; porcelain empty. Driver then parked: `STATUS.owner-action`, board row refined → owner-action, README Preparation gate written | 2026-10-19 |
+| 5a | gate-review | sonnet | ok | `0 → 21` | build half run `graph-20261019-190721`: docs PR #338 merged (package on `origin/main` `8bf88d17`, which also carries code PR #339); no kickoff worktree to remove (spec-forming half ran in place in `.worktrees/session-ci-smoke`, since pruned); claim commit `a8985a74` on `thejudge-auto/browser-smoke-suite-work` cut from `origin/main` `8bf88d17`, pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `c8a7a75b` (= origin tip): 3 accept / 0 edit / 0 reject (NFR-021, REQ-166, NFR-012); `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; worktree porcelain empty, launch checkout unchanged (only the pre-existing untracked `PRD/work/probe-codebase-health-pass/`). Driver moved the node's `## Gate verdicts` section out of the middle of `## Open gate` (it had split off the earlier-park history) and fixed the README file list's marker name | 2026-10-19 |
 
 ## Open gate
 
@@ -27,6 +28,15 @@
 - Resume: the owner's merge of the docs PR is the build signal; then `/graph-implement PRD/work/browser-smoke-suite/`.
 
 - Resolved 2026-10-19: gate-review applied the owner's answers in `GATE-QUESTIONS.md` (3 accept, 0 edit, 0 reject); marker restored to `STATUS.refined`.
+
+Earlier park (history):
+
+- Resolved 2026-10-19: the owner approved resuming under a rotated run id (`go`). The record below is kept as the park's history. Before the dispatch, the driver merged `origin/main` (`0f916890`, which includes merged docs PR #326) into the run branch and kept both owner-action board rows.
+- Terminal state: PARKED at `owner-action` before `define` attempt 2 was dispatched.
+- Question: may the run resume under a rotated run id? The hook's `denied-command-retry` rule now denies every write to `.worktrees/.graph-run-state.json` for run `graph-20261018-233939`, so the driver cannot point the run state at `define/2`.
+- Evidence: the driver's `Write` of `.worktrees/.graph-run-state.json` (content `{ "runId": "graph-20261018-233939", "node": "define", "attempt": 2 }`) was denied with `This exact call was already denied during this run (tool-call-cap)`. The original denial was the cap-exhausted `define/1` block on a `Write` to the same path (call 185). `denialKey()` in `scripts/lib/boundary-rules.mjs:760` keys a file-tool denial on tool + path only, and `tool-call-cap` is not in `REMEDIABLE_RULES` (`scripts/lib/boundary-rules.mjs:189`), so a cap denial on the run-state path traps the run id for every later attempt.
+- State left: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `evidence/measurements.md` untracked in the working directory, complete through their last sections; `STATUS.owner-action`; board row moved to owner-action.
+- Resume: rotate the run id (a new `--run-id` for `graph-preflight --take-lock`, recorded in this header) and dispatch `define` attempt 2 with the prompt recorded below. Separately, the hook fix: scope `tool-call-cap` retry denials to their node/attempt, or exempt the run-state path from the retry guard.
 
 ## Gate verdicts
 
@@ -40,15 +50,6 @@
 
 none
 - grep: `grep -nEi "quality:check|pre-PR|20.30 s|either|undecided" DESIGN-BRIEF.md` — no edit or reject verdicts; the NFR-021 Reason's local-check cost is already the brief's design (`DESIGN-BRIEF.md:195-196`, "joins `npm run quality:check`", roughly 20–30 s locally), so nothing contradicts it and nothing was rewritten. No intake files, so no README supersession note.
-
-Earlier park (history):
-
-- Resolved 2026-10-19: the owner approved resuming under a rotated run id (`go`). The record below is kept as the park's history. Before the dispatch, the driver merged `origin/main` (`0f916890`, which includes merged docs PR #326) into the run branch and kept both owner-action board rows.
-- Terminal state: PARKED at `owner-action` before `define` attempt 2 was dispatched.
-- Question: may the run resume under a rotated run id? The hook's `denied-command-retry` rule now denies every write to `.worktrees/.graph-run-state.json` for run `graph-20261018-233939`, so the driver cannot point the run state at `define/2`.
-- Evidence: the driver's `Write` of `.worktrees/.graph-run-state.json` (content `{ "runId": "graph-20261018-233939", "node": "define", "attempt": 2 }`) was denied with `This exact call was already denied during this run (tool-call-cap)`. The original denial was the cap-exhausted `define/1` block on a `Write` to the same path (call 185). `denialKey()` in `scripts/lib/boundary-rules.mjs:760` keys a file-tool denial on tool + path only, and `tool-call-cap` is not in `REMEDIABLE_RULES` (`scripts/lib/boundary-rules.mjs:189`), so a cap denial on the run-state path traps the run id for every later attempt.
-- State left: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `evidence/measurements.md` untracked in the working directory, complete through their last sections; `STATUS.owner-action`; board row moved to owner-action.
-- Resume: rotate the run id (a new `--run-id` for `graph-preflight --take-lock`, recorded in this header) and dispatch `define` attempt 2 with the prompt recorded below. Separately, the hook fix: scope `tool-call-cap` retry denials to their node/attempt, or exempt the run-state path from the retry guard.
 
 ## Dispatch prompts
 
@@ -195,6 +196,28 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, verdict counts (accept/edit/reject) with one plain line per ID, the `### Brief reconciliation` list, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` (must be empty), and `git status --porcelain` of the working directory (must be empty).
+
+### gate-qc (build half re-grade)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite
+
+You are node 4 (`gate-qc`) of build-half graph run `graph-20261019-190721`, attempt 1 (the re-grade after the owner's verdicts). Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/browser-smoke-suite/DESIGN-BRIEF.md`, together with the finalized `GATE-QUESTIONS.md` (all three verdicts accept: NFR-021, REQ-166, NFR-012), `evidence/measurements.md`, the first grade's `QUALITY-CHECK.md`, and the gate-verdicts section of `GRAPH-RUN.md`. Work ONLY inside the working directory above. It is the build worktree on the shared branch `thejudge-auto/browser-smoke-suite-work`, already pushed. Your budget is 60 tool calls; verify directly, spawn no subagents or forks, do not sleep or poll, and do not start servers or open a browser.
+
+Check in particular:
+- The package is one consistent story after the verdicts: nothing in the brief contradicts an accepted diff or a verdict Reason line.
+- `main` moved since the first grade: code PR #339 merged and wrote NFR-020, the `built-server` CI job, `scripts/smoke-built-server.mjs`, and the #326 amendments to REQ-166 and NFR-012 into `PRD/sections/`. This package's diffs were drafted on top of #326's accepted text. Re-read every target line on this branch (cut from today's `origin/main`) and confirm each line a diff shows as current text now matches `PRD/sections/` exactly once and applies cleanly; NFR-021 is still unused. Name any line that moved or changed wording.
+- The brief's technical claims still hold against the repository as it is now: `.github/workflows/quality-check.yml` job names (including the new `built-server` job) and the `deploy` job `needs` list; the frontend and backend build commands and outputs; how the built site reaches the built backend; the tools and each one's basic action; the data files the built site downloads and that they are committed; whether `playwright` (or any browser driver) is already a dependency; and anything the brief can reuse from the merged `scripts/smoke-built-server.mjs` rather than duplicate.
+- The brief is agent-ready: measurable acceptance conditions; smoke command, ports, browser on the CI runner, timeouts, viewport widths, network blocking, and pass/fail rule stated; headless limits handled; nothing depends on a paid API, `.secrets/`, AWS access, or a gitignored local data dump. Carry the first grade's four advisory notes forward and say for each whether the brief now settles it or it stays advisory for map-out.
+
+Overwrite `QUALITY-CHECK.md` in the package folder per the skill, with PASS or FAIL and the complete findings. Set the status marker as the skill directs (exactly one marker; on PASS leave `STATUS.refined`; on FAIL, `STATUS.refining`, and move the `PRD/work/STATUS.md` board row fully). Do NOT write the README preparation-gate section — the driver owns it. Do not edit `PRD/sections/`, code, `.github/`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, or `GRAPH-RUN.md`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`. End the commit message with the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 

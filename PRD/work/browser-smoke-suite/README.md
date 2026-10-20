@@ -12,7 +12,7 @@ A pull request check that builds the site, opens it in a headless browser, and c
 - `evidence/measurements.md` — the live build and browser run (2026-10-18)
 - `QUALITY-CHECK.md` — the quality-check result (PASS, four advisories)
 - `GRAPH-RUN.md` — the graph run ledger
-- `STATUS.owner-action` — the package status marker
+- `STATUS.refined` — the package status marker
 
 Next: gate answered 2026-10-19 (3 accept); the run resumes at `gate-qc`.
 
