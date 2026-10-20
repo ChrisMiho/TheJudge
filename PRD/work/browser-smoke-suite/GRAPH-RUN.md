@@ -6,7 +6,7 @@
 - Autonomous base: origin/main
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` (the spec-forming half ran in-place in `.worktrees/session-ci-smoke`, since pruned)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `gate-qc` (build half re-grade, run `graph-20261019-190721`)
+- Current node: `plan` (build half, run `graph-20261019-190721`)
 - Next action: `/graph-implement PRD/work/browser-smoke-suite/` resumes from the marker in the build worktree
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | define (attempt 2, run `graph-20261019-174628`) | opus | ok | `0 → 46` | commit `c266d575`, pushed (`git ls-remote` → `c266d575`); drafts finished on top of #326's accepted changes (no either-way wording; NFR-012 7→8; REQ-166 list gains `browser-smoke` after `built-server`); every today line checked to match `PRD/sections/` exactly once after the main merge; disposition greps re-run (74 and 101 hits, none new); `GATE-QUESTIONS.md` present (NFR-021 new; REQ-166, NFR-012 amended; blocker questions none); `STATUS.refined`, board row moved owner-action → refined; diff vs merge-base on `PRD/sections apps scripts .github` empty; porcelain empty; no servers, no browser, no denials. The dispatched prompt matched the recorded one, plus three driver lines: the 150-call budget figure, a prefer-whole-file-reads hint, and leave the `ci-built-server-smoke` board row alone | 2026-10-19 |
 | 5 | gate-qc | sonnet | ok (PASS) | `0 → 18` | `PRD/work/browser-smoke-suite/QUALITY-CHECK.md`, commit `6c57627e`, pushed (`git ls-remote` → `6c57627e`); no blocking findings; four advisories recorded in README `## Preparation gate`; porcelain empty. Driver then parked: `STATUS.owner-action`, board row refined → owner-action, README Preparation gate written | 2026-10-19 |
 | 5a | gate-review | sonnet | ok | `0 → 21` | build half run `graph-20261019-190721`: docs PR #338 merged (package on `origin/main` `8bf88d17`, which also carries code PR #339); no kickoff worktree to remove (spec-forming half ran in place in `.worktrees/session-ci-smoke`, since pruned); claim commit `a8985a74` on `thejudge-auto/browser-smoke-suite-work` cut from `origin/main` `8bf88d17`, pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `c8a7a75b` (= origin tip): 3 accept / 0 edit / 0 reject (NFR-021, REQ-166, NFR-012); `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; worktree porcelain empty, launch checkout unchanged (only the pre-existing untracked `PRD/work/probe-codebase-health-pass/`). Driver moved the node's `## Gate verdicts` section out of the middle of `## Open gate` (it had split off the earlier-park history) and fixed the README file list's marker name | 2026-10-19 |
+| 4 | gate-qc (build half re-grade) | sonnet | ok | `0 → 15` | PASS, 0 blocking, 7 advisory (the first grade's four carried, none settled; new: stale pre-#339 narrative superseded, reuse of `scripts/smoke-built-server.mjs` helpers vs accepted NFR-021 no-shared-script text, backend built twice in `quality:check`); every diff's current-text line matches `PRD/sections/` once on `8bf88d17` (REQ-166 `functional-requirements.md:3930`, NFR-012 `non-functional-requirements.md:209`, three system-map lines, the runtime-process-hygiene sentence); NFR-021 unused; `deploy.needs` = static, backend, built-server, coverage-merge, changes; no browser driver in any `package.json`; `QUALITY-CHECK.md` commit `fd508e9b` (= origin tip); `STATUS.refined` only marker; porcelain empty. Driver wrote README `## Preparation gate` PASS with all seven advisories | 2026-10-19 |
 
 ## Open gate
 
@@ -218,6 +219,32 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), and `git status --porcelain` of the working directory (must be empty).
+
+### plan
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite
+
+You are node 5 (`plan`) of build-half graph run `graph-20261019-190721`, attempt 1. Run the `thejudge-map-out` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite/.claude/skills/thejudge-map-out/SKILL.md and its reference.md, and follow it in its graph-controlled mode) on the package `PRD/work/browser-smoke-suite/`. Work ONLY inside the working directory above. It is the build worktree on the shared branch `thejudge-auto/browser-smoke-suite-work`, already pushed. Your budget is 120 tool calls; verify directly, spawn no subagents or forks, do not sleep or poll, and do not start servers or open a browser.
+
+The README preparation-gate section records `Quality-check: PASS`; verify it there before writing anything. Inputs: `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (NFR-021 new, REQ-166 and NFR-012 amended, all accept), `QUALITY-CHECK.md`, and `evidence/measurements.md`.
+
+Write `GAMEPLAN.md`, the lettered slice docs, and one `slice-<letter>.criteria.json` beside each slice doc per the skill (every criterion `false`, each with an evidence block). Keep the slice count to what the work needs. Settle these in the slices, from the quality-check advisories in the README:
+- one absolute output path, computed by the script, for the frontend build, `vite preview`, and the CI artifact;
+- a clear failure message when Chrome cannot launch;
+- the not-`Camera unavailable` assertion kept separable so it can be dropped if the fake-camera flags do not work in CI;
+- the browser smoke is its own script: per accepted NFR-021 it shares no command, script or job with the built-backend check (NFR-020), so it neither imports `scripts/smoke-built-server.mjs` nor a module extracted from it, and that file is not refactored;
+- the brief's and gate file's sentences that say #326's text is unwritten, NFR-020 is only reserved, or `built-server` is not yet in the workflow are superseded by merged #339; plan against the live `PRD/sections/` and `.github/workflows/quality-check.yml`.
+The slice that changes code also applies the accepted product truth to `PRD/sections/` by intent, together with the code, in the same PR. Criteria evidence must be earnable inside the build node by a command it runs or a file it writes; do not put any post-merge or post-deploy check in criteria. Every check must run locally and in CI with no paid API, no `.secrets/`, no AWS access, and no gitignored local data dump. Nothing the PR ships may live under `PRD/work/` (that folder is deleted at close); local run output goes in an ignored folder such as `.tmp/`.
+
+Set `STATUS.active` (exactly one marker), set the README status line to match, and move the `PRD/work/STATUS.md` board row fully (remove from refined, add to active). Do not edit `PRD/sections/`, code, `.github/`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, or the README autonomous-metadata and preparation-gate sections.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`. End the commit message with the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, the slices (one plain line each), criteria counts per slice, where every shipped file will live, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
