@@ -121,6 +121,18 @@ test("classifyRequest: a local 400+ or a local network failure fails", () => {
   assert.equal(classifyRequest({ url: "http://127.0.0.1:4002/x.js", failure: "net::ERR_FAILED" }, ORIGINS).kind, "fail");
 });
 
+test("classifyRequest: Chrome cancelling a media preload is not a failed request", () => {
+  const aborted = { url: "http://127.0.0.1:4002/assets/scanSuccess.wav", failure: "net::ERR_ABORTED" };
+  assert.deepEqual(classifyRequest({ ...aborted, resourceType: "media" }, ORIGINS), { kind: "ok" });
+  // Any other abort, or any other failure of a media file, still fails.
+  assert.equal(classifyRequest({ ...aborted, resourceType: "script" }, ORIGINS).kind, "fail");
+  assert.equal(classifyRequest({ ...aborted }, ORIGINS).kind, "fail");
+  assert.equal(
+    classifyRequest({ ...aborted, failure: "net::ERR_CONNECTION_REFUSED", resourceType: "media" }, ORIGINS).kind,
+    "fail"
+  );
+});
+
 test("classifyRequest: card images are answered locally with a placeholder", () => {
   assert.equal(classifyRequest({ url: "https://cards.scryfall.io/normal/front/a/b.jpg" }, ORIGINS).kind, "placeholder");
 });

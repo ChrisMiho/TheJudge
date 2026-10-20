@@ -132,7 +132,7 @@ export function isPortFree(port) {
  * answered locally; any other host fails; a local request fails when it did not
  * complete or answered 400 or above.
  */
-export function classifyRequest({ url, status, failure }, origins) {
+export function classifyRequest({ url, status, failure, resourceType }, origins) {
   if (url.startsWith("data:") || url.startsWith("blob:")) return { kind: "ok" };
   let parsed;
   try {
@@ -144,6 +144,9 @@ export function classifyRequest({ url, status, failure }, origins) {
   if (!origins.includes(parsed.origin)) {
     return { kind: "fail", reason: `request to outside host ${parsed.host}: ${url}` };
   }
+  // Chrome cancels a media element's preload (the scanner's sound) when the element is
+  // reused or dropped; that is the browser's choice, not a failed request.
+  if (failure === "net::ERR_ABORTED" && resourceType === "media") return { kind: "ok" };
   if (failure) return { kind: "fail", reason: `${url} failed: ${failure}` };
   if (typeof status === "number" && status >= 400) {
     return { kind: "fail", reason: `${url} answered ${status}` };
@@ -290,7 +293,14 @@ function watchPage(context, page, origins) {
     }
   });
   page.on("requestfailed", (request) => {
-    const verdict = classifyRequest({ url: request.url(), failure: request.failure()?.errorText ?? "failed" }, origins);
+    const verdict = classifyRequest(
+      {
+        url: request.url(),
+        failure: request.failure()?.errorText ?? "failed",
+        resourceType: request.resourceType()
+      },
+      origins
+    );
     if (verdict.kind === "fail") state.requestProblems.push(verdict.reason);
   });
   return state;
