@@ -6,7 +6,7 @@
 - Autonomous base: origin/main
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` (the spec-forming half ran in-place in `.worktrees/session-ci-smoke`, since pruned)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `review` attempt 2 (build half, run `graph-20261019-190721`)
+- Current node: `close` (build half, run `graph-20261019-190721`)
 - Next action: `/graph-implement PRD/work/browser-smoke-suite/` resumes from the marker in the build worktree
 
 ## Node ledger
@@ -24,6 +24,7 @@
 | 6 | build | sonnet | ok | `0 → 82` | PR https://github.com/ChrisMiho/TheJudge/pull/340 open, title `[THEJUDGE-AUTO][READY] Browser smoke suite (browser-smoke-suite)`, registration marker in body; head `02a48a14` (= origin tip; feat `c14687b2`, ship-ready `f829c293`, media-abort fix `02a48a14`); new `scripts/smoke-browser.mjs` + `scripts/smoke-browser.test.mjs`, `playwright` 1.63.0 exact-pinned (1.64.x under two weeks old), `quality:check` join, `browser-smoke` job + `deploy.needs`, `eslint.config.mjs` ignores `.tmp/**` (outside the slice file list), `PRD/sections/` NFR-021 / NFR-012 / REQ-166 / system-map and `runtime-process-hygiene.md` applied by intent; `npm run quality:check` exit 0 (browser smoke 12/12 step runs, about 19 s); `gh pr checks 340` static, backend, built-server, browser-smoke (1m15s), frontend-shard 1-3, coverage-merge pass, changes/deploy skipping (main-only); one earlier CI run on `f829c293` failed on a cancelled `scanSuccess.wav` preload, fixed test-first; builder found Player 1's phone Decrease-life button centre covered by the counters control and taps the near-edge instead (app unchanged); `STATUS.ship-ready` only marker; launch-checkout porcelain identical before/after; `classifyBuildWrites` outside = [] on every reported path; no `.playwright-mcp`/`.tmp` writes at the launch root after the pre-build marker; no run process left (leftover `vite` pids belong to other worktrees); 0 hook denials, one `sed -i` permission denial redone with Write; criteria A1–A13 `true` set by the builder — hook evidence log has 0 entries for this run, so the criteria are self-reported and review is the gate | 2026-10-19 |
 | 7 | review | opus | failed | `0 → 31` | no-write reviewer (read-only `Plan` agent, fresh context) graded head `9e23ce4c` (code identical to `02a48a14`); verdict changes-needed: A1–A13 each hold on the pass path (`npm run test:scripts` 1106/0, `node --test scripts/smoke-browser.test.mjs` 21/21, local `npm run smoke:browser` 12/12, typecheck/lint/format exit 0, parity 7/7, accepted diffs match `PRD/sections/` line for line, `lsof`/`ps` clean); 0 Critical, 1 Important — I1 `scripts/smoke-browser.mjs:327-331` and `:428-432`: `page.waitForResponse` started un-awaited before the Ask / Decrypt Stack click, so a failed click leaves a rejecting promise with no handler; the reviewer's `node -e` probe died with an uncaught `page.waitForResponse: Timeout exceeded` before catch or `finally` ran (no FAIL line, no screenshot, no server output, servers left running locally) — breaks slice item 7; driver confirmed the lines. 7 Minor (M1 the step-budget `sleep` race timer is never cleared, about 15 s extra per run; M2 output path only in the console log; M3 no parity assertion for `browser-smoke`; M4 answer check uses CSS classes; M5 a missing `playwright` import reports Chrome missing; M6 data files count as loaded on headers; M7 phone tap target on Player 1's minus band, outside the slice). Loop to `build` attempt 2 (1 of 2) for I1, with M1 added by the driver as it is in the same step runner | 2026-10-19 |
 | 6 | build (attempt 2) | sonnet | ok | `0 → 26` | commit `99a24150` (= origin tip, PR #340 head): only `scripts/smoke-browser.mjs` and `scripts/smoke-browser.test.mjs` changed (`git diff --name-only 5d8f116c HEAD`); I1: new `clickAndAwaitAskAi` attaches a catch to the response wait before the click, used by `askQuestion` and `inDepthWalk`; new `runWithBudget` catches the step's own promise and clears its budget timer in `finally` (M1); `runStep` exported for the test; three new tests (failed Ask click reported with screenshot and no unhandled rejection — failed before the fix; timer cleared — 8073 ms before; late failure after budget — guard); `npm run test:scripts` 1109/0; `npm run quality:check` exit 0; smoke printed 18628 ms vs 19 s wall clock; `gh pr checks 340` all pass (browser-smoke 1m2s), changes/deploy skipping; criteria file untouched, A1–A13 `true`; launch-checkout porcelain identical; no launch-root `.playwright-mcp`/`.tmp` writes; no run process left | 2026-10-19 |
+| 7 | review (attempt 2) | opus | ok | `0 → 26` | no-write reviewer (read-only `Plan` agent, fresh context) graded head `99a24150`; verdict approve, 0 Critical, 0 Important; I1 resolved: `clickAndAwaitAskAi` (`scripts/smoke-browser.mjs:329-337`) and `runWithBudget` (`:345-357`), every other promise in the file read and found handled; live probe with both clicks forced to fail and one step run past its budget printed 6 FAIL lines, saved 6 screenshots, printed both servers' output, released both ports, 0 `unhandledRejection` over 20 s; Chrome-launch-failure probe exits 1 with the clear message and 0 unhandled rejections; A1–A13 each verified (`npm run test:scripts` 1109/0, smoke tests 24/24, local smoke 12/12 in 18.4 s, typecheck/lint/format exit 0, parity 7/7, CI browser-smoke 1m7s, accepted diffs match line for line, `lsof`/`ps` clean); 7 Minor: budget-expired step keeps running until its context closes (harmless); no SIGINT/SIGTERM handler; data files count as loaded on headers; answer check uses CSS classes; a failed `playwright` import reports Chrome missing; no parity assertion for `browser-smoke`; NFR-021 note cites `evidence/measurements.md`, which its own text says is folded into the receipt at close. Worktree and launch-checkout porcelain clean after; no process left | 2026-10-19 |
 
 ## Open gate
 
@@ -384,6 +385,39 @@ Severity rule: Critical or Important only for a gap that breaks correctness or o
 If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt, and give it no write tools.
 
 Return: `verdict: approve | changes-needed`, whether I1 is resolved (with the evidence), one line per criterion A1–A13 (holds / does not hold, with the evidence), then findings grouped Critical / Important / Minor, each with file:line and the requirement it breaks.
+
+### close
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite
+
+You are node 8 (`close`) of build-half graph run `graph-20261019-190721`, attempt 1. Run the `thejudge-cleanup` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite/.claude/skills/thejudge-cleanup/SKILL.md and follow its PR-ready path in graph-controlled mode) on the package `PRD/work/browser-smoke-suite/`, which is `STATUS.ship-ready`. You run on the code branch `thejudge-auto/browser-smoke-suite-work`, checked out in the working directory above, BEFORE the owner merges code PR https://github.com/ChrisMiho/TheJudge/pull/340; the receipt and the package deletion ride in that PR. Your budget is 120 tool calls; spawn no subagents, do not start servers or open a browser.
+
+Durable truth was applied at build (NFR-021 new; NFR-012, REQ-166, the `system-map.md` deploy and cost guardrails entry and the `PRD/instructions/runtime-process-hygiene.md` sentence amended); the reviewer confirmed each matches the accepted `GATE-QUESTIONS.md` text line for line. Confirm it is present and promote only a leftover, never re-write.
+
+Write the receipt under `PRD/instructions/receipts/` named per the skill. Fold `GRAPH-RUN.md`'s `## Node ledger` and `## Instruction ledger` verbatim into its `## Graph run` section, with a `- PR: https://github.com/ChrisMiho/TheJudge/pull/340` line and the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/340`. The accepted NFR-021 note cites `evidence/measurements.md` as folded into the receipt at close, so fold its measured figures into the receipt (with the slice's promotion checklist item: the CI time was an estimate until the first run; the first green `browser-smoke` runs took 1m35s, 1m15s, 1m2s and 1m7s on the x86 runner, and the local smoke about 19 s).
+
+Record the review outcome: attempt 1 changes-needed on one Important finding (a failed Ask or Decrypt Stack click crashed the script before cleanup), fixed in `99a24150` with a test that failed before the fix; attempt 2 approve, 0 Critical, 0 Important. Record these Minor follow-ups, one line each:
+1. `scripts/smoke-browser.mjs` has no SIGINT/SIGTERM handler; a cancelled CI job or Ctrl-C relies on the OS to kill the child servers.
+2. A scanner data file counts as loaded when its response headers arrive, not when its body finishes.
+3. The answer check finds the answer by CSS classes (`.msg.judge .conversation-markdown`) rather than a visible label.
+4. A failed `import("playwright")` reports Chrome as missing.
+5. `scripts/ci-workflow-parity.test.mjs` has no assertion for the `browser-smoke` job or its place in `deploy.needs`, unlike `built-server`.
+6. The output folder is recorded only in the run log.
+7. A step that runs out of budget keeps running until its context closes (harmless; its late rejection is handled).
+8. Player-visible, outside this slice: on a phone, the centre of Player 1's Decrease-life button in Life Tracker is covered by the counters control, so a tap mid-button can miss; the smoke taps the near edge instead and the app was not changed.
+Also record that the hook evidence log earned 0 entries for this run, so criteria A1–A13 were set by the builder and the no-write reviewer verified each one independently, and that `playwright` is pinned at 1.63.0 because 1.64.x was under two weeks old.
+
+Then update `PRD/work/STATUS.md` per the skill, and delete `PRD/work/browser-smoke-suite/` with `git rm -r` on that explicit path (the skill refuses the delete if the receipt lacks the `## Graph run` section). Do not edit `PRD/sections/` beyond a confirmed leftover, code, `.github/`, any `thejudge-*` skill, `.claude/settings*.json`, `.claude/graph-profile.json`, or `CLAUDE.md`. Never merge or close the PR.
+
+End every commit message with the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>` (or `git rm -r <explicit path>`), then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, the receipt path, the promotion check result, the board change, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), `ls PRD/work/browser-smoke-suite` (must not exist), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
