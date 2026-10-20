@@ -206,7 +206,7 @@
   - DEC-086's deferral of workspace parallelism and vitest sharding is discharged by DEC-155, which supplies the CI-runner-core data it waited on (the public-repo `ubuntu-latest` runner is 4-vCPU)
   - shard-count scaling rule, measured on run `31134177316`: gate wall ≈ `45s + (1.32 × T) / N`, where `T` is total frontend test seconds and `N` is the shard count. The 45s constant is fixed overhead sharding cannot cross (~17s shard setup + 23s `coverage-merge` + scheduling), of which ~34s is `checkout + setup-node + npm ci` paid twice. The practical trigger is `N ≥ frontend_cases / 440`: 3 shards hold to ~1330 cases, 4 to ~1770, 5 to ~2650. At the measured 1227 cases / 183s the gate is 1m58s against a 2m00s target — roughly 100 additional frontend cases exhaust 3 shards, so the next growth increment needs a 4th
   - raising the shard count is a one-line matrix change and cannot affect correctness, because `coverage-merge` applies thresholds once to merged blobs regardless of `N`; sharding is the correct lever only while test execution dominates the 45s floor. Past roughly 6 shards the sanctioned next lever is running only affected tests (scales with change size, not suite size), not an unbounded shard count
-  - CI cost exposure: the repository is public, so standard-runner minutes are free and unlimited and shard count carries no minute cost; the binding limit is concurrent jobs (20 on the Free plan) against the 6 this workflow uses. Actions billing rounds each job up to the nearest minute, so if the repository is ever made private the current 1m58s run bills ~9 minutes rather than 2 — sharding trades billed minutes for wall time, making it free today and the largest cost multiplier if visibility changes
+  - CI cost exposure: the repository is public, so standard-runner minutes are free and unlimited and shard count carries no minute cost; the binding limit is concurrent jobs (20 on the Free plan) against the 7 this workflow uses on a pull request (the seventh is NFR-020's `built-server` job). Actions billing rounds each job up to the nearest minute, so if the repository is ever made private the current 1m58s run bills ~9 minutes rather than 2, plus about one minute for `built-server` — sharding trades billed minutes for wall time, making it free today and the largest cost multiplier if visibility changes
   - measured cost drivers are fixed overhead rather than case count: v8 coverage instrumentation adds ~86% test CPU (4.6x on tight numeric loops such as `src/lib/scan/**`), and a global jsdom environment charges every frontend test file ~0.47s CPU
   - splitting an oversized test file remains an assertion- and case-count-preserving refactor; under DEC-155 it also lowers the slowest-shard floor, since a single long file bounds how much sharding can help
 
@@ -343,3 +343,30 @@
   - oracle text alone was 45.4% of the prior file; moving it plus type line, mana, and sub/supertypes off the up-front list is the bulk of the reduction
   - owner-recalibrated 2026-09-04: the original 80% figure was derived from raw-byte proportions but stamped onto a gzipped gate; the removed descriptive text compresses well while the kept `cardId`/`imageUrl` barely did, so raw size drops ~87% but gzipped drops only ~48.1% (4.25 MB → 2.20 MB, measured against the live 33,399-card corpus). The relative-gate shape is kept (robust to corpus growth); only the floor moved, to ≥40%, below the measured ~48% with headroom for data-refresh drift while still failing a real first-load regression
   - re-measured after REQ-174/Slice C (trade-balancer-price-slim): the slim shape now stores a representative-printing id (`imageId`) instead of the full `imageUrl` string, so it compresses further — gzipped drops ~57.2% (4.23 MB → 1.81 MB, measured against the same live 33,399-card corpus). The ≥40% floor is unchanged and still has headroom
+
+### NFR-020
+- Title: Built backend boots and answers a card lookup on every pull request
+- Description: Every pull request and every push to `main` proves that the compiled backend — the output of `npm --workspace apps/backend run build`, the same build the deploy packages — starts, answers its health check, and serves one real card from the committed card data. A change that type-checks and passes its tests but leaves the built server unable to start, or started without its card data, fails before merge and never deploys. Before this, no pull-request job ran the compiled output: `typecheck` emits nothing, the tests run the TypeScript sources, and the build first ran in the `deploy` job after merge.
+- Constraints:
+  - the check is the committed command `npm run smoke:built-server`: it builds the backend, starts `node apps/backend/dist/index.js` on a free port, and passes only when `GET /api/health` answers `200 {"ok": true}` within the ready deadline and `GET /api/cards/6ad8011d-3471-4369-9d68-b264cc027487` (Sol Ring) answers `200` with a card block — a non-empty `oracleText` string and a non-empty `typeLine` string
+  - it fails on any other status or body, when the server exits before it is ready, or when the ready deadline passes; it prints the server's output on failure and stops the server in every case
+  - the card lookup is required, not optional: a missing or unreadable data file does not stop the server — each loader logs a warning and serves an empty index — so the health check stays `200` while every card lookup answers `404 card_not_found`
+  - the assertion checks the card block's shape, never its exact Oracle wording, so a data refresh that rewords card text cannot fail it
+  - `npm run smoke:built-server` is part of `npm run quality:check`, so the canonical local pre-PR command and CI stay equivalent (NFR-012); its pass/fail rules are unit-tested under `scripts/` and run by `npm run test:scripts`
+  - CI runs it in its own `built-server` job in `.github/workflows/quality-check.yml` on every pull request and every push to `main`, with no path filter (REQ-166's no-trigger-filter rule), on the Node major the Lambda runs (`nodejs24.x`, `scripts/aws-bootstrap.sh`); the `deploy` job lists `built-server` in `needs:`
+  - the server runs with `ASK_AI_PROVIDER`, `EMBEDDING_PROVIDER`, `OPENAI_API_KEY` and `NODE_ENV` unset, so both providers are the checkout default `mock` and no `.env` or `.secrets/` file is read; the check reads only committed files under `apps/backend/data/`, makes no network call, downloads no model, and needs no gitignored local data (REQ-181, REQ-237)
+  - the `built-server` job gets no `id-token` permission and no secret; only `deploy` may assume AWS credentials (DEC-084)
+- Dependencies:
+  - NFR-012
+  - NFR-017
+  - REQ-166
+  - REQ-175
+  - REQ-181
+  - REQ-237
+  - DEC-084
+- Notes:
+  - what it does not prove: the deployed Lambda entry point (`apps/backend/dist/lambda.js`, wrapped by `@codegenie/serverless-express`), the pruned `npm ci --omit=dev` linux/arm64 install, the arm64 native bindings the local embedder needs (REQ-184), the SSM key load, and the OpenAI call; those stay covered by `scripts/package-lambda.sh`'s refusals and the post-deploy live check
+  - `dist/index.js` is a development and CI entry point, not the deployed one: it imports `dotenv`, a devDependency the Lambda package omits
+  - Sol Ring is the card because it is a staple colorless artifact that will not leave the corpus; its block lives in the committed `apps/backend/data/cardDetailByOracleId.json.br`
+  - a red `built-server` result shows on the pull request and blocks the `main` deploy, the same as every other gate job; GitHub's ruleset on `main` requires no status check today, so no gate job locks the merge button
+  - measured 2026-10-18 on macOS arm64: build 1.2 s, server listening ~0.5 s after launch, both calls under 2 ms; with the data folder removed, health answered `200` and Sol Ring `404`; the built code booted on Node 22, 24 and 26

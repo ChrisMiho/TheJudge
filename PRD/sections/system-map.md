@@ -533,9 +533,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Deploy and cost guardrails
 
 - Status: shipped
-- Summary: Gates every main-branch deploy on `quality:check`, skips the deploy job on merges that touch no code-set path (with a `workflow_dispatch` manual override), caps Lambda concurrency when the account quota permits, retains the account limit as the fallback cap, and configures a low monthly AWS Budget alert.
-- Lives in: `.github/workflows/quality-check.yml` (`changes` and `deploy` jobs), `scripts/aws-bootstrap.sh`
-- Backed by: DEC-084, NFR-004, REQ-165, REQ-166, NFR-017
+- Summary: Gates every main-branch deploy on `quality:check` — including the built-backend boot check, which starts the compiled server on every pull request and requires the health check and one card lookup to answer — skips the deploy job on merges that touch no code-set path (with a `workflow_dispatch` manual override), caps Lambda concurrency when the account quota permits, retains the account limit as the fallback cap, and configures a low monthly AWS Budget alert.
+- Lives in: `.github/workflows/quality-check.yml` (`built-server`, `changes` and `deploy` jobs), `scripts/smoke-built-server.mjs`, `scripts/aws-bootstrap.sh`
+- Backed by: DEC-084, NFR-004, REQ-165, REQ-166, NFR-017, NFR-020
 
 ## Quick Lookup
 

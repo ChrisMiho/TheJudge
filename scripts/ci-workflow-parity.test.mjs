@@ -214,3 +214,44 @@ test("superseded PR runs cancel, but push runs never do", () => {
     "cancellation must be limited to pull_request runs"
   );
 });
+
+test("built-server job proves the compiled backend boots on every pull request (NFR-020)", () => {
+  const workflow = loadWorkflow(GATE_WORKFLOW);
+  const job = workflow.jobs["built-server"];
+  assert.ok(job, "a built-server job must exist");
+
+  assert.ok(Number.isInteger(job["timeout-minutes"]), "built-server must set timeout-minutes");
+  assert.equal(job.if, undefined, "built-server must not be conditional");
+  assert.equal(job["runs-on"], "ubuntu-24.04");
+
+  const setupNode = (job.steps ?? []).find((step) => String(step.uses ?? "").startsWith("actions/setup-node@"));
+  assert.ok(setupNode, "built-server must set up Node");
+  assert.equal(String(setupNode.with["node-version"]), "24", "built-server runs on the Lambda's Node major");
+
+  assert.ok(
+    !("id-token" in (job.permissions ?? {})),
+    "built-server must not receive an id-token permission"
+  );
+  assert.equal(job.env, undefined, "built-server must not carry secrets or env of its own");
+
+  const runs = (job.steps ?? []).map((step) => step.run).filter((run) => typeof run === "string");
+  assert.ok(
+    runs.some((run) => normalize(run) === "npm run smoke:built-server"),
+    "built-server must run npm run smoke:built-server"
+  );
+  assert.ok(
+    !runs.some((run) => /\bvite\b|apps\/frontend|npm run build\b/.test(run)),
+    "built-server must not run a frontend build step"
+  );
+
+  const raw = readFileSync(new URL(GATE_WORKFLOW, WORKFLOWS), "utf8");
+  assert.ok(!/^\s+paths(-ignore)?:/m.test(raw), "the workflow must have no path filter");
+});
+
+test("deploy waits for built-server", () => {
+  const workflow = loadWorkflow(GATE_WORKFLOW);
+  assert.ok(
+    (workflow.jobs.deploy.needs ?? []).includes("built-server"),
+    "deploy must depend on built-server"
+  );
+});

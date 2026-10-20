@@ -3927,7 +3927,7 @@
 - Acceptance Criteria:
   - the `deploy` job in `.github/workflows/quality-check.yml` runs only when the push to `main` changed at least one path in the **code set**: `apps/**`, `scripts/**`, `.github/workflows/**`, `package.json`, `package-lock.json`, `tsconfig*.json`
   - a merge whose changed paths are all outside the code set (for example `PRD/**`, `docs/**`, any `*.md`, `.claude/**`, `eslint.config.mjs`) skips the deploy job; no frontend and no Lambda deploy runs
-  - the quality-check jobs (`static`, `backend`, `frontend`, `coverage-merge`) still run on every push to `main`, so `main` keeps a green CI signal on a docs-only merge
+  - the quality-check jobs (`static`, `backend`, `frontend`, `coverage-merge`, `built-server`) still run on every push to `main`, so `main` keeps a green CI signal on a docs-only merge
   - a `workflow_dispatch` trigger allows a manual full deploy from the Actions tab with no code change
   - the change-detection step logs the changed paths it evaluated and its deploy/skip decision, so a skip is visible in the run log rather than silent
   - when the changed-file set cannot be determined (for example a first push or an all-zeros base SHA), the job deploys rather than skips — the fail-safe favors deploying
