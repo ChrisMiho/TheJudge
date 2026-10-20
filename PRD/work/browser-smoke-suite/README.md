@@ -18,7 +18,7 @@ Next: answer `PRD/work/browser-smoke-suite/GATE-QUESTIONS.md`, then merge the do
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/browser-smoke-suite
+- Autonomous base: origin/main
 
 ## Preparation gate
 

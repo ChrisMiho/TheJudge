@@ -1,10 +1,10 @@
 # Graph run — browser-smoke-suite
 
-- Run ID: `graph-20261019-174628` (rotated 2026-10-19 with owner approval from `graph-20261018-233939`, whose run-state writes the retry guard denied)
+- Run ID: `graph-20261019-190721` (build half, claimed 2026-10-19; the spec-forming half ran as `graph-20261019-174628`, rotated with owner approval from `graph-20261018-233939`, whose run-state writes the retry guard denied)
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (rm -rf canary: [graph-boundary] rm -rf is denied in every session; graph canary nohup: denied while a graph run holds the lock)`; after the rotation, lock retaken with `graph-preflight --take-lock --run-id graph-20261019-174628 --pid 98719` and the graph canary `nohup true` denied: `nohup is denied while a graph run holds the lock`
-- Autonomous base: `origin/thejudge-auto/browser-smoke-suite` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke` (in-place shape: the session is rooted in this linked worktree; rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` by the build half's claim)
+- Autonomous base: origin/main
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` (the spec-forming half ran in-place in `.worktrees/session-ci-smoke`, since pruned)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
 - Current node: `owner-action` (parked after `gate-qc` PASS)
 - Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/browser-smoke-suite/`
