@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-built-server-smoke | Slice A built, 13/13 criteria, code PR #339 checks green; awaiting owner merge |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| ci-built-server-smoke | Mapped 2026-10-19: one slice (A), 13 criteria; build next |
 
 ## refined
 
