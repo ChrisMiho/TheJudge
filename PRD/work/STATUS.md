@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| browser-smoke-suite | Slice A built; code PR #340, all CI checks green (browser-smoke 1m35s); next: owner merge, then cleanup |
 
 ## active
 
