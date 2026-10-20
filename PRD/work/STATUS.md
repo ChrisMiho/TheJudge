@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| browser-smoke-suite | Slice A built; code PR #340, all CI checks green (browser-smoke 1m35s); next: owner merge, then cleanup |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| browser-smoke-suite | Mapped 2026-10-19: one slice (A), 13 criteria; next: build slice A |
 
 ## refined
 

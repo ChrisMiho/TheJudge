@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # browser-smoke-suite
 
@@ -14,7 +14,7 @@ A pull request check that builds the site, opens it in a headless browser, and c
 - `GRAPH-RUN.md` — the graph run ledger
 - `GAMEPLAN.md` — architecture, data flow, verification checklist
 - `slice-a-browser-smoke-check.md`, `slice-a.criteria.json` — the one build slice and its 13 criteria
-- `STATUS.active` — the package status marker
+- `STATUS.ship-ready` — the package status marker
 
 ## Slices
 
