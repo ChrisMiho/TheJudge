@@ -1,4 +1,4 @@
-status: owner-action
+status: refined
 
 # browser-smoke-suite
 
@@ -14,7 +14,7 @@ A pull request check that builds the site, opens it in a headless browser, and c
 - `GRAPH-RUN.md` — the graph run ledger
 - `STATUS.owner-action` — the package status marker
 
-Next: answer `PRD/work/browser-smoke-suite/GATE-QUESTIONS.md`, then merge the docs PR to build.
+Next: gate answered 2026-10-19 (3 accept); the run resumes at `gate-qc`.
 
 ## Autonomous metadata
 

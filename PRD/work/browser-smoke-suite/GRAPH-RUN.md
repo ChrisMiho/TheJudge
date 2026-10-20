@@ -26,6 +26,21 @@
 - Evidence: `QUALITY-CHECK.md` PASS, commit `6c57627e`; README `## Preparation gate` lists the four advisories; docs PR https://github.com/ChrisMiho/TheJudge/pull/338 (`gh pr create --base main --head thejudge-auto/browser-smoke-suite`).
 - Resume: the owner's merge of the docs PR is the build signal; then `/graph-implement PRD/work/browser-smoke-suite/`.
 
+- Resolved 2026-10-19: gate-review applied the owner's answers in `GATE-QUESTIONS.md` (3 accept, 0 edit, 0 reject); marker restored to `STATUS.refined`.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `NFR-021` | accept | "owner verdict, 2026-10-19. The extra 20–30 s on the local pre-PR check is acceptable: agents run that check, so the owner will not notice it" |
+| `REQ-166` | accept | "owner verdict, 2026-10-19" |
+| `NFR-012` | accept | "owner verdict, 2026-10-19" |
+
+### Brief reconciliation
+
+none
+- grep: `grep -nEi "quality:check|pre-PR|20.30 s|either|undecided" DESIGN-BRIEF.md` — no edit or reject verdicts; the NFR-021 Reason's local-check cost is already the brief's design (`DESIGN-BRIEF.md:195-196`, "joins `npm run quality:check`", roughly 20–30 s locally), so nothing contradicts it and nothing was rewritten. No intake files, so no README supersession note.
+
 Earlier park (history):
 
 - Resolved 2026-10-19: the owner approved resuming under a rotated run id (`go`). The record below is kept as the park's history. Before the dispatch, the driver merged `origin/main` (`0f916890`, which includes merged docs PR #326) into the run branch and kept both owner-action board rows.
