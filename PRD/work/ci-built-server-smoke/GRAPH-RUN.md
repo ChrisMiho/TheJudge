@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim, run `graph-20261019-182200`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke` (build half; session root is the linked worktree `.worktrees/session-ci-smoke`)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `build` (build half, run `graph-20261019-182200`)
+- Current node: `review` (build half, run `graph-20261019-182200`)
 - Next action: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/ci-built-server-smoke/` picks it up
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 4a | gate-review | sonnet | ok | `0 → 20` | build half run `graph-20261019-182200`: docs PR #326 merged (on `origin/main` `06698d0a`); no kickoff worktree to remove (spec-forming half ran in place in `.worktrees/session-ci-smoke`); claim commit `d22fcb58` on `thejudge-auto/ci-built-server-smoke-work` cut from `origin/main` `06698d0a`, pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `0c709531` (= origin tip): 3 accept / 0 edit / 0 reject (NFR-020, REQ-166, NFR-012); `### Brief reconciliation` none (grep for the dropped frontend-build widening found only `DESIGN-BRIEF.md:192`, already agreeing); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; worktree and launch-checkout porcelain empty | 2026-10-19 |
 | 4 | gate-qc (build half re-grade) | sonnet | ok | `0 → 16` | PASS, 0 blocking, 6 advisory (timeouts and 30 s constant for map-out; card-only and ruleset settled; two harmless brief wording notes); all five diffs re-read against this branch's `PRD/sections/`, each matches once; NFR-020 unused; repo claims confirmed (`deploy.needs` = static, backend, coverage-merge, changes); `QUALITY-CHECK.md` commit `c3b81218` (= origin tip); README `## Preparation gate` PASS recorded by the driver; `STATUS.refined` only marker; porcelain empty | 2026-10-19 |
 | 5 | plan | sonnet | ok | `0 → 22` | commit `a0478fc7` (= origin tip): `GAMEPLAN.md`, one slice `slice-a-built-server-smoke.md` (smoke script + tests, `quality:check` entry, `built-server` CI job on Node 24 with `timeout-minutes: 10`, `deploy.needs`, product truth applied by intent), `slice-a.criteria.json` 13 criteria all `false`, none manual or post-merge; `READY_DEADLINE_MS = 30000` and `REQUEST_TIMEOUT_MS` named; no frontend build step (parity-asserted); `STATUS.active` only marker; board row under active; porcelain empty | 2026-10-19 |
+| 6 | build | sonnet | ok | `0 → 56` | PR https://github.com/ChrisMiho/TheJudge/pull/339 open, head `5ebf10ce` (= origin tip; feat `0b8f9f77`, ship-ready `5ebf10ce`); 14 files: `scripts/smoke-built-server.mjs` + 17-test `scripts/smoke-built-server.test.mjs`, parity tests, `package.json` (`smoke:built-server` in `quality:check`), `built-server` job + `deploy.needs`, `PRD/sections/` NFR-020 / NFR-012 / REQ-166 / integrations-and-data / system-map applied by intent; `npm run quality:check` exit 0 (smoke: ready 534 ms, health 200, Sol Ring 200, port released); `gh pr checks 339` static, backend, built-server (26 s), frontend-shard 1-3, coverage-merge pass, changes/deploy skipping (main-only); `STATUS.ship-ready` only marker; launch-checkout porcelain identical before/after (empty); every reported path inside `.worktrees/implement-ci-built-server-smoke/` (scratch in its ignored `.tmp/`); 2 hook denials (`build-write-outside-worktree` on a heredoc commit message and a read-only `sed -n` chain — both redone with Edit); criteria A1–A13 `true` set by the builder (A1 Edit, A2–A13 one `node -e` replace) — hook evidence log has 0 entries for this run, so the criteria are self-reported and review is the gate | 2026-10-19 |
 
 ## Open gate
 
@@ -232,6 +233,44 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, every path you wrote (absolute), the criteria file state (each id and true/false), `npm run quality:check` result, the PR URL, each `gh pr checks` result, the status marker, final commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke-work`), ports released, and `git status --porcelain` of the working directory (must be empty).
+
+### review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke
+
+You are node 7 (`review`) of build-half graph run `graph-20261019-182200`, attempt 1: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit tool and must not change any file, commit, push, or comment on the PR. Read-only git, `gh pr view`/`gh pr diff`/`gh pr checks`, and running tests or the smoke command to confirm behavior are allowed (build output under `apps/backend/dist/` is gitignored).
+
+Subject: code PR https://github.com/ChrisMiho/TheJudge/pull/339 (`thejudge-auto/ci-built-server-smoke-work` → `main`), head `5ebf10ce`. The diff to grade is `git diff origin/main...HEAD` in the working directory. Package artifacts: `PRD/work/ci-built-server-smoke/` — `slice-a-built-server-smoke.md` (the slice doc), `slice-a.criteria.json`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (NFR-020 new, REQ-166 and NFR-012 amended, all accepted by the owner), `QUALITY-CHECK.md`, `evidence/measurements.md`.
+
+Rubric — the slice's own acceptance criteria, quoted:
+
+## Acceptance criteria
+
+- [ ] A1 The smoke script exists and its unit tests pass: `node --test scripts/smoke-built-server.test.mjs`
+- [ ] A2 The script defines the named constants `READY_DEADLINE_MS` (30 000), `REQUEST_TIMEOUT_MS`, `SOL_RING_ORACLE_ID`, and the unit tests assert the deadline value and that every fetch carries a timeout
+- [ ] A3 Unit tests cover the pass/fail rules, including health `200` with card `404` fails, child exit before ready fails, deadline passed fails, empty `oracleText` fails
+- [ ] A4 Unit tests assert the child environment drops `ASK_AI_PROVIDER`, `EMBEDDING_PROVIDER`, `OPENAI_API_KEY` and `NODE_ENV`, and that the child is stopped on pass and on fail
+- [ ] A5 `npm run smoke:built-server` exits 0 locally and prints boot time and both statuses
+- [ ] A6 After the smoke run no process listens on the port it used (the script's own post-run check or `lsof`)
+- [ ] A7 `smoke:built-server` is in `quality:check`, and `npm run test:scripts` passes including the parity guard
+- [ ] A8 The `built-server` job in `.github/workflows/quality-check.yml` sets `timeout-minutes`, uses Node 24, has no `if:`/path filter, no `id-token`, and no frontend build step; a parity test asserts each
+- [ ] A9 `deploy.needs` lists `built-server`, asserted by the parity test
+- [ ] A10 NFR-020 exists in `PRD/sections/non-functional-requirements.md` matching the accepted text, and NFR-012's note says 7 jobs
+- [ ] A11 REQ-166's job list names `built-server`, the `integrations-and-data.md` health purposes list has the CI boot check line, and the `system-map.md` guardrails entry names `built-server`, `scripts/smoke-built-server.mjs` and NFR-020
+- [ ] A12 `npm run typecheck`, `npm run lint` and `npm run format:check` pass
+- [ ] A13 No new dependency is added to any `package.json` and no secret, `.env` or `.secrets/` path is read or written by the script
+
+Also check, as stated requirements of the slice and the accepted proposal: the `PRD/sections/` edits carry the intent of each accepted `GATE-QUESTIONS.md` diff against current text (nothing dropped, nothing invented); the smoke script catches both failures the design names (a server that never starts, and one that starts with health 200 but card lookup failing); the child process is stopped on every path; nothing reads `.secrets/`, a paid API, AWS, or a gitignored data dump.
+
+The criteria file was set to `true` by the builder itself; the hook earned no evidence for this run, so treat every `true` as a claim to verify, not as proof. Confirm each criterion against the code and, where it names a command, by running it.
+
+Severity rule: Critical or Important only for a gap that breaks correctness or one of the stated requirements above. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important and never loops back to `build` — rate it Minor.
+
+If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt, and give it no write tools.
+
+Return: `verdict: approve | changes-needed`, one line per criterion A1–A13 (holds / does not hold, with the evidence: command output or file:line), then findings grouped Critical / Important / Minor, each with file:line and the requirement it breaks.
 
 ## Instruction ledger` in `GRAPH-RUN.md` — the driver owns those. Do not edit `PRD/sections/`, code, `.github/`, or any `thejudge-*` skill.
 
