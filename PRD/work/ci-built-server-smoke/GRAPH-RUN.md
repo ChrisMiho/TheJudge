@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim, run `graph-20261019-182200`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke` (build half; session root is the linked worktree `.worktrees/session-ci-smoke`)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `gate-qc` (build half, run `graph-20261019-182200`)
+- Current node: `plan` (build half, run `graph-20261019-182200`)
 - Next action: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/ci-built-server-smoke/` picks it up
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 81` | commit `415e40db` (= origin tip): `DESIGN-BRIEF.md` (disposition table, 52 grep hits + 12 deploy-wording rows), `GATE-QUESTIONS.md` (NFR-020 new, REQ-166 and NFR-012 amended; no blocker questions), `evidence/measurements.md` (live: build 1.2 s, listen ~0.5 s, `/api/health` 200, Sol Ring `/api/cards/6ad8011d-…` 200; data folder removed → health 200 but card 404; Lambda handler in-process on Node 22/24/26); `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; porcelain empty; port 3917 released (`lsof` empty); NFR-020 unused in `PRD/sections/` | 2026-10-18 |
 | 4 | gate-qc | sonnet | ok | `0 → 17` | PASS, 0 blocking, 4 advisory (per-request + job timeout; fix 30 s deadline as a constant; only card data asserted; ruleset 15384308 has no required checks, re-read with `gh`); all five proposed diffs match `PRD/sections/` once each; `QUALITY-CHECK.md` commit `9d426a91` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 | 4a | gate-review | sonnet | ok | `0 → 20` | build half run `graph-20261019-182200`: docs PR #326 merged (on `origin/main` `06698d0a`); no kickoff worktree to remove (spec-forming half ran in place in `.worktrees/session-ci-smoke`); claim commit `d22fcb58` on `thejudge-auto/ci-built-server-smoke-work` cut from `origin/main` `06698d0a`, pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `0c709531` (= origin tip): 3 accept / 0 edit / 0 reject (NFR-020, REQ-166, NFR-012); `### Brief reconciliation` none (grep for the dropped frontend-build widening found only `DESIGN-BRIEF.md:192`, already agreeing); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; worktree and launch-checkout porcelain empty | 2026-10-19 |
+| 4 | gate-qc (build half re-grade) | sonnet | ok | `0 → 16` | PASS, 0 blocking, 6 advisory (timeouts and 30 s constant for map-out; card-only and ruleset settled; two harmless brief wording notes); all five diffs re-read against this branch's `PRD/sections/`, each matches once; NFR-020 unused; repo claims confirmed (`deploy.needs` = static, backend, coverage-merge, changes); `QUALITY-CHECK.md` commit `c3b81218` (= origin tip); README `## Preparation gate` PASS recorded by the driver; `STATUS.refined` only marker; porcelain empty | 2026-10-19 |
 
 ## Open gate
 
@@ -174,6 +175,30 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke-work`), and `git status --porcelain` of the working directory (must be empty).
+
+### plan
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke
+
+You are node 5 (`plan`) of build-half graph run `graph-20261019-182200`, attempt 1. Run the `thejudge-map-out` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke/.claude/skills/thejudge-map-out/SKILL.md and its reference.md, and follow it in its graph-controlled mode) on the package `PRD/work/ci-built-server-smoke/`. Work ONLY inside the working directory above. It is the build worktree on the shared branch `thejudge-auto/ci-built-server-smoke-work`, already pushed.
+
+The README `## Preparation gate` records `Quality-check: PASS`; verify it there before writing anything. Inputs: `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (NFR-020 new, REQ-166 and NFR-012 amended, all accept), `QUALITY-CHECK.md`, and `evidence/measurements.md`.
+
+Write `GAMEPLAN.md`, the lettered slice docs, and one `slice-<letter>.criteria.json` beside each slice doc per the skill (every criterion `false`, each with an evidence block). Keep the slice count to what the work needs. Settle these in the slices, from the quality-check advisories:
+- a per-request timeout and a job `timeout-minutes` for the new CI job;
+- the 30 s ready deadline fixed as a named constant in the smoke script and asserted by its unit tests;
+- no frontend build step is added (every PR already runs `vite build` through the REQ-198 test and the frontend `tsc` through `npm run typecheck`).
+The slice that changes code also applies the accepted product truth to `PRD/sections/` by intent, together with the code, in the same PR. Criteria evidence must be earnable inside the build node by a command it runs or a file it writes; do not put any post-merge or post-deploy check in criteria. Every check must run locally and in CI with no paid API, no `.secrets/`, no AWS access, and no gitignored local data dump.
+
+Set `STATUS.active` (exactly one marker), set the README status line to match, and move the `PRD/work/STATUS.md` board row fully (remove from refined, add to active). Do not edit `PRD/sections/`, code, `.github/`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, or the README `## Autonomous metadata` and `## Preparation gate` sections.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, the slices (one plain line each), criteria counts per slice, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke-work`), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger` in `GRAPH-RUN.md` — the driver owns those. Do not edit `PRD/sections/`, code, `.github/`, or any `thejudge-*` skill.
 
