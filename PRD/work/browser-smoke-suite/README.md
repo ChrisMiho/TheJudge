@@ -22,7 +22,7 @@ A pull request check that builds the site, opens it in a headless browser, and c
 | --- | --- | --- |
 | A | Browser smoke script, unit tests, CI job, `quality:check` join, accepted PRD text | none |
 
-Next: build slice A (`/thejudge-implement PRD/work/browser-smoke-suite/ slice A`).
+Slice A built 2026-10-20 in code PR `thejudge-auto/browser-smoke-suite-work`: `playwright` pinned at 1.63.0 (1.64.0 and 1.64.1 are under two weeks old); the local browser smoke passes at both widths in about 20 s; the accepted PRD text is applied in the same PR. Next: owner review and merge, then cleanup.
 
 ## Autonomous metadata
 

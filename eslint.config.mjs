@@ -13,6 +13,8 @@ export default tseslint.config(
       "**/build/**",
       "**/coverage/**",
       ".worktrees/**",
+      // Git-ignored local output (the browser smoke check builds the site here): never product code.
+      ".tmp/**",
       "**/.claude/worktrees/**",
       // Git-ignored local output (the model-training Python environment, scoring results): never product code.
       "output/**",

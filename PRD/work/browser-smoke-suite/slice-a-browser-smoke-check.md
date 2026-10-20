@@ -1,6 +1,6 @@
 # Slice A — The browser smoke check, CI job and product truth
 
-## Status: planned
+## Status: done
 
 ## Goal
 

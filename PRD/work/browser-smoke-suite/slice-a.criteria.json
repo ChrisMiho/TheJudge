@@ -5,67 +5,67 @@
     {
       "id": "A1",
       "statement": "playwright is an exact-pinned root devDependency and package-lock.json records it",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["package.json", "package-lock.json"] }
     },
     {
       "id": "A2",
       "statement": "scripts/smoke-browser.mjs exists, npm run smoke:browser runs it, and it does not import smoke-built-server or a module extracted from it",
-      "value": false,
+      "value": true,
       "evidence": { "command": "grep .*smoke-built-server.*smoke-browser|grep .*smoke-browser.*smoke-built-server|npm run test:scripts", "paths": ["scripts/smoke-browser.mjs"] }
     },
     {
       "id": "A3",
       "statement": "scripts/smoke-built-server.mjs is unchanged by this slice",
-      "value": false,
+      "value": true,
       "evidence": { "command": "git diff.*smoke-built-server" }
     },
     {
       "id": "A4",
       "statement": "One absolute output path is computed by the script and used for the build, vite preview, screenshots and CI artifact; nothing is written to apps/frontend/dist",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run test:scripts|node --test scripts/smoke-browser" }
     },
     {
       "id": "A5",
       "statement": "When Chrome cannot launch the script exits non-zero with a clear message, covered by a unit test",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run test:scripts|node --test scripts/smoke-browser" }
     },
     {
       "id": "A6",
       "statement": "The not-Camera-unavailable assertion is a separate droppable function; a unit test shows other scanner checks do not depend on it",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run test:scripts|node --test scripts/smoke-browser" }
     },
     {
       "id": "A7",
       "statement": "scripts/smoke-browser.test.mjs passes inside npm run test:scripts",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run test:scripts|node --test scripts/smoke-browser" }
     },
     {
       "id": "A8",
       "statement": "npm run smoke:browser passes locally: six steps at both widths, zero console errors, zero failed local requests",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run smoke:browser|node scripts/smoke-browser.mjs" }
     },
     {
       "id": "A9",
       "statement": "quality:check runs smoke:browser, and typecheck, lint and format:check pass",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run (typecheck|lint|format:check)|npm run quality:check", "paths": ["package.json"] }
     },
     {
       "id": "A10",
       "statement": "quality-check.yml has the browser-smoke job (Node 24, no secrets, no id-token, 7-day failure artifact of .tmp/browser-smoke/) and deploy.needs lists it; ci-workflow-parity passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run test:scripts|ci-workflow-parity", "paths": [".github/workflows/quality-check.yml"] }
     },
     {
       "id": "A11",
       "statement": "The accepted NFR-021, REQ-166, NFR-012, system-map and runtime-process-hygiene text is in place",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/non-functional-requirements.md",
@@ -78,13 +78,13 @@
     {
       "id": "A12",
       "statement": "Browser closed, owned servers stopped, ports released after the local run; output path recorded",
-      "value": false,
+      "value": true,
       "evidence": { "command": "lsof .*-iTCP|pgrep|ps -" }
     },
     {
       "id": "A13",
       "statement": "Nothing the PR ships is under PRD/work/",
-      "value": false,
+      "value": true,
       "evidence": { "command": "git diff --name-only|git status" }
     }
   ]
