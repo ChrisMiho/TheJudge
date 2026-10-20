@@ -11,7 +11,7 @@ Add a CI check that starts the built backend and calls `/api/health` plus one ca
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/ci-built-server-smoke
+- Autonomous base: origin/main
 
 ## Preparation gate
 

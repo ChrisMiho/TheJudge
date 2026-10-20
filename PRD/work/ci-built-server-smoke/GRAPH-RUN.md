@@ -3,8 +3,8 @@
 - Run ID: `graph-20261018-231424`
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (rm -rf canary: [graph-boundary] rm -rf is denied in every session; graph canary nohup: denied while a graph run holds the lock)`
-- Autonomous base: `origin/thejudge-auto/ci-built-server-smoke` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke` (in-place shape: the session is rooted in this linked worktree; rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ci-built-server-smoke` by the build half's claim)
+- Autonomous base: `origin/main` (rewritten by the build half's claim, run `graph-20261019-182200`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke` (build half; session root is the linked worktree `.worktrees/session-ci-smoke`)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
 - Current node: `owner-action`
 - Next action: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/ci-built-server-smoke/` picks it up
