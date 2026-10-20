@@ -6,7 +6,7 @@
 - Autonomous base: origin/main
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` (the spec-forming half ran in-place in `.worktrees/session-ci-smoke`, since pruned)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `build` attempt 2 (review loop 1 of 2, build half, run `graph-20261019-190721`)
+- Current node: `review` attempt 2 (build half, run `graph-20261019-190721`)
 - Next action: `/graph-implement PRD/work/browser-smoke-suite/` resumes from the marker in the build worktree
 
 ## Node ledger
@@ -23,6 +23,7 @@
 | 5 | plan | sonnet | ok | `0 → 22` | commit `ad4c11e4` (= origin tip): `GAMEPLAN.md`, one slice `slice-a-browser-smoke-check.md` (new `scripts/smoke-browser.mjs` + `scripts/smoke-browser.test.mjs`, exact-pinned `playwright` devDependency with Chrome channel and no browser download, `quality:check` join, `browser-smoke` CI job on Node 24 with `deploy.needs`, product truth applied by intent), `slice-a.criteria.json` 13 criteria all `false`, none manual or post-merge; advisories settled (one absolute output path under `.tmp/browser-smoke/`, clear Chrome-launch failure message, droppable camera assertion, no import from or edit to `scripts/smoke-built-server.mjs`); nothing shipped under `PRD/work/`; `STATUS.active` only marker; board row under active; porcelain empty | 2026-10-19 |
 | 6 | build | sonnet | ok | `0 → 82` | PR https://github.com/ChrisMiho/TheJudge/pull/340 open, title `[THEJUDGE-AUTO][READY] Browser smoke suite (browser-smoke-suite)`, registration marker in body; head `02a48a14` (= origin tip; feat `c14687b2`, ship-ready `f829c293`, media-abort fix `02a48a14`); new `scripts/smoke-browser.mjs` + `scripts/smoke-browser.test.mjs`, `playwright` 1.63.0 exact-pinned (1.64.x under two weeks old), `quality:check` join, `browser-smoke` job + `deploy.needs`, `eslint.config.mjs` ignores `.tmp/**` (outside the slice file list), `PRD/sections/` NFR-021 / NFR-012 / REQ-166 / system-map and `runtime-process-hygiene.md` applied by intent; `npm run quality:check` exit 0 (browser smoke 12/12 step runs, about 19 s); `gh pr checks 340` static, backend, built-server, browser-smoke (1m15s), frontend-shard 1-3, coverage-merge pass, changes/deploy skipping (main-only); one earlier CI run on `f829c293` failed on a cancelled `scanSuccess.wav` preload, fixed test-first; builder found Player 1's phone Decrease-life button centre covered by the counters control and taps the near-edge instead (app unchanged); `STATUS.ship-ready` only marker; launch-checkout porcelain identical before/after; `classifyBuildWrites` outside = [] on every reported path; no `.playwright-mcp`/`.tmp` writes at the launch root after the pre-build marker; no run process left (leftover `vite` pids belong to other worktrees); 0 hook denials, one `sed -i` permission denial redone with Write; criteria A1–A13 `true` set by the builder — hook evidence log has 0 entries for this run, so the criteria are self-reported and review is the gate | 2026-10-19 |
 | 7 | review | opus | failed | `0 → 31` | no-write reviewer (read-only `Plan` agent, fresh context) graded head `9e23ce4c` (code identical to `02a48a14`); verdict changes-needed: A1–A13 each hold on the pass path (`npm run test:scripts` 1106/0, `node --test scripts/smoke-browser.test.mjs` 21/21, local `npm run smoke:browser` 12/12, typecheck/lint/format exit 0, parity 7/7, accepted diffs match `PRD/sections/` line for line, `lsof`/`ps` clean); 0 Critical, 1 Important — I1 `scripts/smoke-browser.mjs:327-331` and `:428-432`: `page.waitForResponse` started un-awaited before the Ask / Decrypt Stack click, so a failed click leaves a rejecting promise with no handler; the reviewer's `node -e` probe died with an uncaught `page.waitForResponse: Timeout exceeded` before catch or `finally` ran (no FAIL line, no screenshot, no server output, servers left running locally) — breaks slice item 7; driver confirmed the lines. 7 Minor (M1 the step-budget `sleep` race timer is never cleared, about 15 s extra per run; M2 output path only in the console log; M3 no parity assertion for `browser-smoke`; M4 answer check uses CSS classes; M5 a missing `playwright` import reports Chrome missing; M6 data files count as loaded on headers; M7 phone tap target on Player 1's minus band, outside the slice). Loop to `build` attempt 2 (1 of 2) for I1, with M1 added by the driver as it is in the same step runner | 2026-10-19 |
+| 6 | build (attempt 2) | sonnet | ok | `0 → 26` | commit `99a24150` (= origin tip, PR #340 head): only `scripts/smoke-browser.mjs` and `scripts/smoke-browser.test.mjs` changed (`git diff --name-only 5d8f116c HEAD`); I1: new `clickAndAwaitAskAi` attaches a catch to the response wait before the click, used by `askQuestion` and `inDepthWalk`; new `runWithBudget` catches the step's own promise and clears its budget timer in `finally` (M1); `runStep` exported for the test; three new tests (failed Ask click reported with screenshot and no unhandled rejection — failed before the fix; timer cleared — 8073 ms before; late failure after budget — guard); `npm run test:scripts` 1109/0; `npm run quality:check` exit 0; smoke printed 18628 ms vs 19 s wall clock; `gh pr checks 340` all pass (browser-smoke 1m2s), changes/deploy skipping; criteria file untouched, A1–A13 `true`; launch-checkout porcelain identical; no launch-root `.playwright-mcp`/`.tmp` writes; no run process left | 2026-10-19 |
 
 ## Open gate
 
@@ -341,6 +342,48 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, every path you wrote (absolute), what changed for I1 and M1 (file:line), the new test names and their before/after result, the criteria file state, `npm run quality:check` result, the smoke's printed time vs wall-clock time, each `gh pr checks 340` result, final commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), ports released and Chrome processes gone, and `git status --porcelain` of the working directory (must be empty).
+
+### review (attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite
+
+You are node 7 (`review`) of build-half graph run `graph-20261019-190721`, attempt 2: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit tool and must not change any file, commit, push, or comment on the PR. Read-only git, `gh pr view`/`gh pr diff`/`gh pr checks`, and running tests or the smoke command to confirm behavior are allowed (build output under `.tmp/` is gitignored). If you run `npm run smoke:browser`, confirm afterwards that its ports are free and no headless Chrome from it remains. Your budget is 120 tool calls; verify directly and spawn no subagents.
+
+Subject: code PR https://github.com/ChrisMiho/TheJudge/pull/340 (`thejudge-auto/browser-smoke-suite-work` → `main`), head `99a24150`. The diff to grade is `git diff origin/main...HEAD` in the working directory. Package artifacts: `PRD/work/browser-smoke-suite/` — `slice-a-browser-smoke-check.md` (the slice doc), `slice-a.criteria.json`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (NFR-021 new, REQ-166 and NFR-012 amended, all accepted by the owner), `QUALITY-CHECK.md`, `evidence/measurements.md`.
+
+A previous review returned changes-needed with one Important finding, quoted:
+
+> I1. A failed Ask or Decrypt Stack click kills the script before cleanup (scripts/smoke-browser.mjs, the `page.waitForResponse` started un-awaited before the click in `askQuestion` and `inDepthWalk`). A failed click leaves the response wait rejecting with no handler, so Node dies with an uncaught rejection before the step is reported, the screenshot saved, or the servers stopped. Breaks slice item 7: on failure print the step, console messages, failed requests and both servers' output; save a screenshot; always close the browser and stop both servers, on pass and on fail.
+
+The fix is commit `99a24150` (`git diff 5d8f116c 99a24150`), which also clears the step-budget timer. Confirm I1 is resolved on every failure path the slice names, not only the two call sites, and that no promise the script creates can reject unhandled; a throwaway probe outside the repository is fine. Then grade the whole slice again.
+
+Rubric — the slice's own acceptance criteria, quoted:
+
+- A1 `playwright` is an exact-pinned root devDependency and `package-lock.json` records it
+- A2 `scripts/smoke-browser.mjs` exists, `npm run smoke:browser` runs it, and it neither imports `scripts/smoke-built-server.mjs` nor any module extracted from it
+- A3 `scripts/smoke-built-server.mjs` is unchanged by this slice
+- A4 One absolute output path is computed by the script and used for the frontend build, `vite preview`, screenshots and the CI artifact; nothing is written to `apps/frontend/dist/`
+- A5 When Chrome cannot launch, the script exits non-zero with a clear message, covered by a unit test
+- A6 The not-`Camera unavailable` assertion is a separate droppable function, and a unit test shows the other scanner checks do not depend on it
+- A7 `scripts/smoke-browser.test.mjs` passes inside `npm run test:scripts`
+- A8 `npm run smoke:browser` passes locally: six steps at both widths, zero console errors, zero failed local requests
+- A9 `quality:check` runs `smoke:browser`, and `typecheck`, `lint` and `format:check` pass
+- A10 `.github/workflows/quality-check.yml` has the `browser-smoke` job (Node 24, no secrets, no `id-token`, 7-day failure artifact of `.tmp/browser-smoke/`) and `deploy.needs` lists it; `ci-workflow-parity` passes
+- A11 The accepted NFR-021, REQ-166, NFR-012, system-map and `runtime-process-hygiene.md` text is in place
+- A12 Browser closed, owned servers stopped, ports released after the local run; the output path is recorded
+- A13 Nothing the PR ships is under `PRD/work/`
+
+Also check, as stated requirements of the slice and the accepted proposal: the `PRD/sections/` and `runtime-process-hygiene.md` edits carry the intent of each accepted `GATE-QUESTIONS.md` diff against current text; the script follows the pass rules the slice doc and accepted NFR-021 state (six steps at 390 x 844 and 1280 x 800, fresh context each, 15 s per step, zero console and page errors, no failing local request, outside hosts blocked except the card-image host answered locally, no retries, assertions on visible labels and shapes only); the media-preload exception lets only a media-type cancellation through; browser and both servers are stopped on every path; nothing reads `.secrets/`, a paid API, AWS, or a gitignored data dump.
+
+The criteria file was set to `true` by the builder itself; the hook earned no evidence for this run, so treat every `true` as a claim to verify, not as proof.
+
+Severity rule: Critical or Important only for a gap that breaks correctness or one of the stated requirements above. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important and never loops back to `build` — rate it Minor.
+
+If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt, and give it no write tools.
+
+Return: `verdict: approve | changes-needed`, whether I1 is resolved (with the evidence), one line per criterion A1–A13 (holds / does not hold, with the evidence), then findings grouped Critical / Important / Minor, each with file:line and the requirement it breaks.
 
 ## Instruction ledger
 
