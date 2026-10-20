@@ -6,7 +6,7 @@
 - Autonomous base: origin/main
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` (the spec-forming half ran in-place in `.worktrees/session-ci-smoke`, since pruned)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `build` (build half, run `graph-20261019-190721`)
+- Current node: `review` (build half, run `graph-20261019-190721`)
 - Next action: `/graph-implement PRD/work/browser-smoke-suite/` resumes from the marker in the build worktree
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 5a | gate-review | sonnet | ok | `0 → 21` | build half run `graph-20261019-190721`: docs PR #338 merged (package on `origin/main` `8bf88d17`, which also carries code PR #339); no kickoff worktree to remove (spec-forming half ran in place in `.worktrees/session-ci-smoke`, since pruned); claim commit `a8985a74` on `thejudge-auto/browser-smoke-suite-work` cut from `origin/main` `8bf88d17`, pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `c8a7a75b` (= origin tip): 3 accept / 0 edit / 0 reject (NFR-021, REQ-166, NFR-012); `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; worktree porcelain empty, launch checkout unchanged (only the pre-existing untracked `PRD/work/probe-codebase-health-pass/`). Driver moved the node's `## Gate verdicts` section out of the middle of `## Open gate` (it had split off the earlier-park history) and fixed the README file list's marker name | 2026-10-19 |
 | 4 | gate-qc (build half re-grade) | sonnet | ok | `0 → 15` | PASS, 0 blocking, 7 advisory (the first grade's four carried, none settled; new: stale pre-#339 narrative superseded, reuse of `scripts/smoke-built-server.mjs` helpers vs accepted NFR-021 no-shared-script text, backend built twice in `quality:check`); every diff's current-text line matches `PRD/sections/` once on `8bf88d17` (REQ-166 `functional-requirements.md:3930`, NFR-012 `non-functional-requirements.md:209`, three system-map lines, the runtime-process-hygiene sentence); NFR-021 unused; `deploy.needs` = static, backend, built-server, coverage-merge, changes; no browser driver in any `package.json`; `QUALITY-CHECK.md` commit `fd508e9b` (= origin tip); `STATUS.refined` only marker; porcelain empty. Driver wrote README `## Preparation gate` PASS with all seven advisories | 2026-10-19 |
 | 5 | plan | sonnet | ok | `0 → 22` | commit `ad4c11e4` (= origin tip): `GAMEPLAN.md`, one slice `slice-a-browser-smoke-check.md` (new `scripts/smoke-browser.mjs` + `scripts/smoke-browser.test.mjs`, exact-pinned `playwright` devDependency with Chrome channel and no browser download, `quality:check` join, `browser-smoke` CI job on Node 24 with `deploy.needs`, product truth applied by intent), `slice-a.criteria.json` 13 criteria all `false`, none manual or post-merge; advisories settled (one absolute output path under `.tmp/browser-smoke/`, clear Chrome-launch failure message, droppable camera assertion, no import from or edit to `scripts/smoke-built-server.mjs`); nothing shipped under `PRD/work/`; `STATUS.active` only marker; board row under active; porcelain empty | 2026-10-19 |
+| 6 | build | sonnet | ok | `0 → 82` | PR https://github.com/ChrisMiho/TheJudge/pull/340 open, title `[THEJUDGE-AUTO][READY] Browser smoke suite (browser-smoke-suite)`, registration marker in body; head `02a48a14` (= origin tip; feat `c14687b2`, ship-ready `f829c293`, media-abort fix `02a48a14`); new `scripts/smoke-browser.mjs` + `scripts/smoke-browser.test.mjs`, `playwright` 1.63.0 exact-pinned (1.64.x under two weeks old), `quality:check` join, `browser-smoke` job + `deploy.needs`, `eslint.config.mjs` ignores `.tmp/**` (outside the slice file list), `PRD/sections/` NFR-021 / NFR-012 / REQ-166 / system-map and `runtime-process-hygiene.md` applied by intent; `npm run quality:check` exit 0 (browser smoke 12/12 step runs, about 19 s); `gh pr checks 340` static, backend, built-server, browser-smoke (1m15s), frontend-shard 1-3, coverage-merge pass, changes/deploy skipping (main-only); one earlier CI run on `f829c293` failed on a cancelled `scanSuccess.wav` preload, fixed test-first; builder found Player 1's phone Decrease-life button centre covered by the counters control and taps the near-edge instead (app unchanged); `STATUS.ship-ready` only marker; launch-checkout porcelain identical before/after; `classifyBuildWrites` outside = [] on every reported path; no `.playwright-mcp`/`.tmp` writes at the launch root after the pre-build marker; no run process left (leftover `vite` pids belong to other worktrees); 0 hook denials, one `sed -i` permission denial redone with Write; criteria A1–A13 `true` set by the builder — hook evidence log has 0 entries for this run, so the criteria are self-reported and review is the gate | 2026-10-19 |
 
 ## Open gate
 
@@ -274,6 +275,42 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, every path you wrote (absolute), the criteria file state (each id and true/false), the `playwright` version chosen, `npm run quality:check` result with the browser smoke's run time, the PR URL, each `gh pr checks` result, the status marker, final commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), ports released and Chrome processes gone, and `git status --porcelain` of the working directory (must be empty).
+
+### review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite
+
+You are node 7 (`review`) of build-half graph run `graph-20261019-190721`, attempt 1: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit tool and must not change any file, commit, push, or comment on the PR. Read-only git, `gh pr view`/`gh pr diff`/`gh pr checks`, and running tests or the smoke command to confirm behavior are allowed (build output under `.tmp/` is gitignored). If you run `npm run smoke:browser`, confirm afterwards that its ports are free and no headless Chrome from it remains. Your budget is 120 tool calls; verify directly and spawn no subagents.
+
+Subject: code PR https://github.com/ChrisMiho/TheJudge/pull/340 (`thejudge-auto/browser-smoke-suite-work` → `main`), head `02a48a14`. The diff to grade is `git diff origin/main...HEAD` in the working directory. Package artifacts: `PRD/work/browser-smoke-suite/` — `slice-a-browser-smoke-check.md` (the slice doc), `slice-a.criteria.json`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (NFR-021 new, REQ-166 and NFR-012 amended, all accepted by the owner), `QUALITY-CHECK.md`, `evidence/measurements.md`.
+
+Rubric — the slice's own acceptance criteria, quoted:
+
+- A1 `playwright` is an exact-pinned root devDependency and `package-lock.json` records it
+- A2 `scripts/smoke-browser.mjs` exists, `npm run smoke:browser` runs it, and it neither imports `scripts/smoke-built-server.mjs` nor any module extracted from it
+- A3 `scripts/smoke-built-server.mjs` is unchanged by this slice
+- A4 One absolute output path is computed by the script and used for the frontend build, `vite preview`, screenshots and the CI artifact; nothing is written to `apps/frontend/dist/`
+- A5 When Chrome cannot launch, the script exits non-zero with a clear message, covered by a unit test
+- A6 The not-`Camera unavailable` assertion is a separate droppable function, and a unit test shows the other scanner checks do not depend on it
+- A7 `scripts/smoke-browser.test.mjs` passes inside `npm run test:scripts`
+- A8 `npm run smoke:browser` passes locally: six steps at both widths, zero console errors, zero failed local requests
+- A9 `quality:check` runs `smoke:browser`, and `typecheck`, `lint` and `format:check` pass
+- A10 `.github/workflows/quality-check.yml` has the `browser-smoke` job (Node 24, no secrets, no `id-token`, 7-day failure artifact of `.tmp/browser-smoke/`) and `deploy.needs` lists it; `ci-workflow-parity` passes
+- A11 The accepted NFR-021, REQ-166, NFR-012, system-map and `runtime-process-hygiene.md` text is in place
+- A12 Browser closed, owned servers stopped, ports released after the local run; the output path is recorded
+- A13 Nothing the PR ships is under `PRD/work/`
+
+Also check, as stated requirements of the slice and the accepted proposal: the `PRD/sections/` and `runtime-process-hygiene.md` edits carry the intent of each accepted `GATE-QUESTIONS.md` diff against current text (nothing dropped, nothing invented); the script follows the pass rules the slice doc and accepted NFR-021 state (six steps at 390 x 844 and 1280 x 800, fresh context each, 15 s per step, zero console and page errors, no failing local request, outside hosts blocked except the card-image host answered locally, no retries, assertions on visible labels and shapes only); the builder's media-preload exception lets only a media-type cancellation through and still fails every other abort or failure; the builder's Life Tracker near-edge tap still exercises the basic action the brief names; the `eslint.config.mjs` change (ignore `.tmp/**`) hides no shipped file from lint; browser and both servers are stopped on every path; nothing reads `.secrets/`, a paid API, AWS, or a gitignored data dump.
+
+The criteria file was set to `true` by the builder itself; the hook earned no evidence for this run, so treat every `true` as a claim to verify, not as proof. Confirm each criterion against the code and, where it names a command, by running it.
+
+Severity rule: Critical or Important only for a gap that breaks correctness or one of the stated requirements above. A preference, a style note, or an improvement outside the slice's stated requirements is never Critical or Important and never loops back to `build` — rate it Minor.
+
+If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt, and give it no write tools.
+
+Return: `verdict: approve | changes-needed`, one line per criterion A1–A13 (holds / does not hold, with the evidence: command output or file:line), then findings grouped Critical / Important / Minor, each with file:line and the requirement it breaks.
 
 ## Instruction ledger
 
