@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim, run `graph-20261019-182200`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke` (build half; session root is the linked worktree `.worktrees/session-ci-smoke`)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `gate-review` (build half, run `graph-20261019-182200`)
+- Current node: `gate-qc` (build half, run `graph-20261019-182200`)
 - Next action: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/ci-built-server-smoke/` picks it up
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/ci-built-server-smoke/` (IDEA.md with 5 `## Prior run` lines and related-material citations, README.md, STATUS.ideation) and board row committed `eaad6f32`, pushed (`git ls-remote` → `eaad6f32`); porcelain empty | 2026-10-18 |
 | 3 | define | opus | ok | `0 → 81` | commit `415e40db` (= origin tip): `DESIGN-BRIEF.md` (disposition table, 52 grep hits + 12 deploy-wording rows), `GATE-QUESTIONS.md` (NFR-020 new, REQ-166 and NFR-012 amended; no blocker questions), `evidence/measurements.md` (live: build 1.2 s, listen ~0.5 s, `/api/health` 200, Sol Ring `/api/cards/6ad8011d-…` 200; data folder removed → health 200 but card 404; Lambda handler in-process on Node 22/24/26); `STATUS.refined` only marker, board row moved; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; porcelain empty; port 3917 released (`lsof` empty); NFR-020 unused in `PRD/sections/` | 2026-10-18 |
 | 4 | gate-qc | sonnet | ok | `0 → 17` | PASS, 0 blocking, 4 advisory (per-request + job timeout; fix 30 s deadline as a constant; only card data asserted; ruleset 15384308 has no required checks, re-read with `gh`); all five proposed diffs match `PRD/sections/` once each; `QUALITY-CHECK.md` commit `9d426a91` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
+| 4a | gate-review | sonnet | ok | `0 → 20` | build half run `graph-20261019-182200`: docs PR #326 merged (on `origin/main` `06698d0a`); no kickoff worktree to remove (spec-forming half ran in place in `.worktrees/session-ci-smoke`); claim commit `d22fcb58` on `thejudge-auto/ci-built-server-smoke-work` cut from `origin/main` `06698d0a`, pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `0c709531` (= origin tip): 3 accept / 0 edit / 0 reject (NFR-020, REQ-166, NFR-012); `### Brief reconciliation` none (grep for the dropped frontend-build widening found only `DESIGN-BRIEF.md:192`, already agreeing); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; worktree and launch-checkout porcelain empty | 2026-10-19 |
 
 ## Open gate
 
@@ -152,7 +153,29 @@ Every verdict comes from the answered `GATE-QUESTIONS.md` in the package and now
 
 Reconcile `DESIGN-BRIEF.md`, and the README pointer to any verbatim `intake/` file, to every `edit` or `reject` verdict, bounded to passages that contradict a verdict; `intake/` stays verbatim. Also check whether any verdict Reason line records a scope change the brief still contradicts (for example a widening the owner dropped) and reconcile that passage too. Report the result as a `### Brief reconciliation` list (write `none` with the grep you used if nothing needed changing).
 
-Record the verdicts under `## Gate verdicts` in `GRAPH-RUN.md` per the skill, restore exactly one marker `STATUS.refined`, set the README status line to match, and move the `PRD/work/STATUS.md` board row fully (remove from the old section, add to the refined section). Do not touch the README `## Autonomous metadata` or `## Preparation gate` sections, `## Node ledger`, `## Dispatch prompts`, or `## Instruction ledger` in `GRAPH-RUN.md` — the driver owns those. Do not edit `PRD/sections/`, code, `.github/`, or any `thejudge-*` skill.
+Record the verdicts under `## Gate verdicts` in `GRAPH-RUN.md` per the skill, restore exactly one marker `STATUS.refined`, set the README status line to match, and move the `PRD/work/STATUS.md` board row fully (remove from the old section, add to the refined section). Do not touch the README `## Autonomous metadata` or `## Preparation gate` sections, `## Node ledger`, `## Dispatch prompts`, or `### gate-qc
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke
+
+You are node 4 (`gate-qc`) of build-half graph run `graph-20261019-182200`, attempt 1 (the re-grade after the owner's verdicts). Run the `thejudge-quality-check` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke/.claude/skills/thejudge-quality-check/SKILL.md and follow it in its graph-controlled mode) on `PRD/work/ci-built-server-smoke/DESIGN-BRIEF.md`, together with the finalized `GATE-QUESTIONS.md` (all three verdicts accept: NFR-020, REQ-166, NFR-012), `evidence/measurements.md`, and the `## Gate verdicts` section of `GRAPH-RUN.md`. Work ONLY inside the working directory above. It is the build worktree on the shared branch `thejudge-auto/ci-built-server-smoke-work`, already pushed.
+
+Check in particular:
+- The package is one consistent story after the verdicts: nothing in the brief contradicts an accepted diff or a verdict Reason line (the NFR-020 Reason records that a frontend production build widening was dropped because every PR already runs it).
+- Every proposed diff in `GATE-QUESTIONS.md` still matches current `PRD/sections/` on this branch (cut from today's `origin/main`) exactly once and applies cleanly; NFR-020 is still unused in `PRD/sections/`. `main` moved since the first grade (the browser-smoke-suite docs PR merged), so re-read the target lines rather than trusting the earlier report.
+- The brief's technical claims still hold against the repository: `.github/workflows/` job names and the `deploy` job `needs` list, the backend build command and built entry point, the health and card-lookup routes, and the committed data files a card lookup reads.
+- The brief is agent-ready: measurable acceptance conditions; smoke command, port handling, ready deadline, per-request timeout, job timeout, and pass/fail rule stated; nothing depends on a paid API, `.secrets/`, AWS access, or a gitignored local data dump. Carry the first grade's four advisory notes forward and say for each whether the brief now settles it or it stays advisory.
+
+Overwrite `QUALITY-CHECK.md` in the package folder per the skill, with PASS or FAIL and the complete findings. Set the status marker as the skill directs (exactly one marker; on PASS leave `STATUS.refined`; on FAIL, `STATUS.refining`, and move the `PRD/work/STATUS.md` board row fully). Do NOT write the README `## Preparation gate` section — the driver owns it. Do not edit `PRD/sections/`, code, `.github/`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, or `GRAPH-RUN.md`.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke-work`), and `git status --porcelain` of the working directory (must be empty).
+
+## Instruction ledger` in `GRAPH-RUN.md` — the driver owns those. Do not edit `PRD/sections/`, code, `.github/`, or any `thejudge-*` skill.
 
 Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
 
