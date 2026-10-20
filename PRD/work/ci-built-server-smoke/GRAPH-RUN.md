@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim, run `graph-20261019-182200`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke` (build half; session root is the linked worktree `.worktrees/session-ci-smoke`)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `plan` (build half, run `graph-20261019-182200`)
+- Current node: `build` (build half, run `graph-20261019-182200`)
 - Next action: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/ci-built-server-smoke/` picks it up
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 17` | PASS, 0 blocking, 4 advisory (per-request + job timeout; fix 30 s deadline as a constant; only card data asserted; ruleset 15384308 has no required checks, re-read with `gh`); all five proposed diffs match `PRD/sections/` once each; `QUALITY-CHECK.md` commit `9d426a91` (= origin tip); README `## Preparation gate` PASS recorded by the driver; run stops at PASS → docs PR, `STATUS.owner-action`, board row moved to owner-action | 2026-10-18 |
 | 4a | gate-review | sonnet | ok | `0 → 20` | build half run `graph-20261019-182200`: docs PR #326 merged (on `origin/main` `06698d0a`); no kickoff worktree to remove (spec-forming half ran in place in `.worktrees/session-ci-smoke`); claim commit `d22fcb58` on `thejudge-auto/ci-built-server-smoke-work` cut from `origin/main` `06698d0a`, pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `0c709531` (= origin tip): 3 accept / 0 edit / 0 reject (NFR-020, REQ-166, NFR-012); `### Brief reconciliation` none (grep for the dropped frontend-build widening found only `DESIGN-BRIEF.md:192`, already agreeing); `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; worktree and launch-checkout porcelain empty | 2026-10-19 |
 | 4 | gate-qc (build half re-grade) | sonnet | ok | `0 → 16` | PASS, 0 blocking, 6 advisory (timeouts and 30 s constant for map-out; card-only and ruleset settled; two harmless brief wording notes); all five diffs re-read against this branch's `PRD/sections/`, each matches once; NFR-020 unused; repo claims confirmed (`deploy.needs` = static, backend, coverage-merge, changes); `QUALITY-CHECK.md` commit `c3b81218` (= origin tip); README `## Preparation gate` PASS recorded by the driver; `STATUS.refined` only marker; porcelain empty | 2026-10-19 |
+| 5 | plan | sonnet | ok | `0 → 22` | commit `a0478fc7` (= origin tip): `GAMEPLAN.md`, one slice `slice-a-built-server-smoke.md` (smoke script + tests, `quality:check` entry, `built-server` CI job on Node 24 with `timeout-minutes: 10`, `deploy.needs`, product truth applied by intent), `slice-a.criteria.json` 13 criteria all `false`, none manual or post-merge; `READY_DEADLINE_MS = 30000` and `REQUEST_TIMEOUT_MS` named; no frontend build step (parity-asserted); `STATUS.active` only marker; board row under active; porcelain empty | 2026-10-19 |
 
 ## Open gate
 
@@ -199,6 +200,38 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, the slices (one plain line each), criteria counts per slice, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke-work`), and `git status --porcelain` of the working directory (must be empty).
+
+### build
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke
+
+You are node 6 (`build`) of build-half graph run `graph-20261019-182200`, attempt 1. Run the `thejudge-implement-all` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke/.claude/skills/thejudge-implement-all/SKILL.md and follow it in its graph-controlled mode) on the package `PRD/work/ci-built-server-smoke/`. Shared branch: `thejudge-auto/ci-built-server-smoke-work` — it is checked out in the working directory above, which is the one build worktree; work in it in place. Create no second worktree and no contributor branch. The GAMEPLAN, slice doc `slice-a-built-server-smoke.md`, `slice-a.criteria.json`, and README `## Autonomous metadata` (`origin/main`) are committed and pushed at the remote tip.
+
+Implement every remaining slice (there is one, slice A). Apply the accepted product truth to `PRD/sections/` by intent, together with the code, in this PR: re-derive each edit from the finalized `GATE-QUESTIONS.md` diff and `DESIGN-BRIEF.md` against current truth, never a blind replay. Use test-driven development for the smoke script. Earn each criterion in `slice-a.criteria.json` by running the command or writing the file its evidence block names; never flip a criterion to `true` without that, and report any flip the hook denies. A criterion proves a command ran, not that it passed, so read every command's output and fix failures before moving on.
+
+Run the full local gate before opening the PR: `npm run quality:check` must pass. Local is macOS arm64 on a newer Node; CI is x86 Linux on Node 22 for the gate jobs and Node 24 for the new job, so avoid anything platform-specific (port handling, signals, paths). Start any server only through the smoke script or the Bash tool's own background option, never a trailing `&` or `nohup`; stop processes by pid with `kill <pid>`, never `pkill`/`killall`; report every port released. Do not call any paid API, do not read `.secrets/`, do not touch AWS, do not run a data refresh.
+
+Open the code PR `thejudge-auto/ci-built-server-smoke-work` → `main` with `gh pr create --base main --head thejudge-auto/ci-built-server-smoke-work`. The PR body opens with a plain-language summary per `PRD/instructions/plain-language-standard.md` (what a player or the owner gets, first), and ends with:
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+https://claude.ai/code/session_01AWwrw8DJYBqJZsWEhZTwF2
+
+End every commit message with these two lines:
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01AWwrw8DJYBqJZsWEhZTwF2
+
+Never merge or close a PR. After pushing, run `gh pr checks <number> --watch` (or poll `gh pr checks`) until every check finishes, and report each check's result; if a check fails, diagnose it from its log, fix it, push, and re-check. When the slice is done and checks are green, set `STATUS.ship-ready` per the skill (exactly one marker), move the `PRD/work/STATUS.md` board row fully, and commit and push.
+
+Do not edit `GRAPH-RUN.md`, the README `## Autonomous metadata` or `## Preparation gate` sections, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, any `thejudge-*` skill, `.claude/settings*.json`, `.claude/graph-profile.json`, or `CLAUDE.md`. Every file you write must lie inside the working directory above.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, every path you wrote (absolute), the criteria file state (each id and true/false), `npm run quality:check` result, the PR URL, each `gh pr checks` result, the status marker, final commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke-work`), ports released, and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger` in `GRAPH-RUN.md` — the driver owns those. Do not edit `PRD/sections/`, code, `.github/`, or any `thejudge-*` skill.
 
