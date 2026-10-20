@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # browser-smoke-suite
 
@@ -12,9 +12,17 @@ A pull request check that builds the site, opens it in a headless browser, and c
 - `evidence/measurements.md` — the live build and browser run (2026-10-18)
 - `QUALITY-CHECK.md` — the quality-check result (PASS, four advisories)
 - `GRAPH-RUN.md` — the graph run ledger
-- `STATUS.refined` — the package status marker
+- `GAMEPLAN.md` — architecture, data flow, verification checklist
+- `slice-a-browser-smoke-check.md`, `slice-a.criteria.json` — the one build slice and its 13 criteria
+- `STATUS.active` — the package status marker
 
-Next: gate answered 2026-10-19 (3 accept); the run resumes at `gate-qc`.
+## Slices
+
+| Slice | Goal | Depends on |
+| --- | --- | --- |
+| A | Browser smoke script, unit tests, CI job, `quality:check` join, accepted PRD text | none |
+
+Next: build slice A (`/thejudge-implement PRD/work/browser-smoke-suite/ slice A`).
 
 ## Autonomous metadata
 

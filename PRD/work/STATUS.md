@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| browser-smoke-suite | Mapped 2026-10-19: one slice (A), 13 criteria; next: build slice A |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| browser-smoke-suite | Gate answered 2026-10-19 (3 accept: NFR-021 new; REQ-166, NFR-012 amended on top of #326's accepted changes); build run resumes at `gate-qc` |
 
 ## refining
 
