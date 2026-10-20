@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-built-server-smoke | Gate answered 2026-10-19 (3 accept: NFR-020, REQ-166, NFR-012) — resumes at gate-qc |
 
 ## refining
 
@@ -34,7 +35,6 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | browser-smoke-suite | Quality-check PASS — answer `GATE-QUESTIONS.md` (NFR-021 new; REQ-166, NFR-012 amended on top of #326's accepted changes), then merge the docs PR to build |
-| ci-built-server-smoke | Quality-check PASS — answer `GATE-QUESTIONS.md` (NFR-020 new; REQ-166, NFR-012 amended), then merge the docs PR to build |
 
 ## deferred
 

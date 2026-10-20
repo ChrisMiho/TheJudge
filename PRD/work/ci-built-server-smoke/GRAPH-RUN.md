@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim, run `graph-20261019-182200`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke` (build half; session root is the linked worktree `.worktrees/session-ci-smoke`)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `owner-action`
+- Current node: `gate-review` (build half, run `graph-20261019-182200`)
 - Next action: answer `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md`, then merge the docs PR to build; `/graph-implement PRD/work/ci-built-server-smoke/` picks it up
 
 ## Node ledger
@@ -25,6 +25,19 @@
 - Evidence: `QUALITY-CHECK.md` (PASS, commit `9d426a91`); `DESIGN-BRIEF.md`; `evidence/measurements.md`.
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/326 (`thejudge-auto/ci-built-server-smoke` → `main`, opened by the driver, not merged).
 - Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/ci-built-server-smoke/`) picks it up.
+- RESOLVED 2026-10-19 (build half, run `graph-20261019-182200`): 3 verdicts read from the answered `GATE-QUESTIONS.md` — 3 accept, 0 edit, 0 reject. Status restored to `refined`; the run resumes at `gate-qc`.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `NFR-020` | accept | "owner took the recommendation, 2026-10-19" (the proposed widening to also run the frontend production build was dropped: every PR already runs it; opening the built site in a browser is the separate NFR-021 proposal) |
+| `REQ-166` | accept | "owner took the recommendation, 2026-10-19" |
+| `NFR-012` | accept | "owner took the recommendation, 2026-10-19" |
+
+### Brief reconciliation
+
+- none. Every verdict is `accept`, so nothing was rewritten. The NFR-020 Reason records a dropped widening (a frontend build check); grep: `grep -nEi 'frontend (production )?build|vite build|built site|browser|widen|NFR-021' DESIGN-BRIEF.md README.md` hit only `DESIGN-BRIEF.md:192` ("No frontend build check (the owner asked about the backend)"), which already agrees with the verdict.
 
 ## Dispatch prompts
 
@@ -126,6 +139,26 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: PASS|FAIL`, the complete findings (blocking and advisory), the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke`), and `git status --porcelain` of the working directory (must be empty).
+
+### gate-review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke
+
+You are the gate-resolution step (`gate-review`) of build-half graph run `graph-20261019-182200`, attempt 1, for the package `PRD/work/ci-built-server-smoke/`. Run the `graph-gate-review` skill: read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/session-ci-smoke/.worktrees/implement-ci-built-server-smoke/.claude/skills/graph-gate-review/SKILL.md and follow it, plus `PRD/instructions/graph-workflow-contract.md` as it asks. Work ONLY inside the working directory above. It is the build worktree on the shared branch `thejudge-auto/ci-built-server-smoke-work`, cut from `origin/main` and already pushed; the claim commit is its tip.
+
+Every verdict comes from the answered `GATE-QUESTIONS.md` in the package and nowhere else. The owner answered all three slots (NFR-020, REQ-166, NFR-012). Apply them inside `GATE-QUESTIONS.md` only, never to `PRD/sections/`.
+
+Reconcile `DESIGN-BRIEF.md`, and the README pointer to any verbatim `intake/` file, to every `edit` or `reject` verdict, bounded to passages that contradict a verdict; `intake/` stays verbatim. Also check whether any verdict Reason line records a scope change the brief still contradicts (for example a widening the owner dropped) and reconcile that passage too. Report the result as a `### Brief reconciliation` list (write `none` with the grep you used if nothing needed changing).
+
+Record the verdicts under `## Gate verdicts` in `GRAPH-RUN.md` per the skill, restore exactly one marker `STATUS.refined`, set the README status line to match, and move the `PRD/work/STATUS.md` board row fully (remove from the old section, add to the refined section). Do not touch the README `## Autonomous metadata` or `## Preparation gate` sections, `## Node ledger`, `## Dispatch prompts`, or `## Instruction ledger` in `GRAPH-RUN.md` — the driver owns those. Do not edit `PRD/sections/`, code, `.github/`, or any `thejudge-*` skill.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, verdict counts (accept/edit/reject) with one plain line per ID, the `### Brief reconciliation` list, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/ci-built-server-smoke-work`), `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` (must be empty), and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
