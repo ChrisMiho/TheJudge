@@ -8,7 +8,7 @@ Add a CI check that starts the built backend and calls `/api/health` plus one ca
 
 | Slice | Doc | Depends on | Status |
 | --- | --- | --- | --- |
-| A | `slice-a-built-server-smoke.md` | none | planned |
+| A | `slice-a-built-server-smoke.md` | none | done |
 
 Plan: `GAMEPLAN.md`. Criteria: `slice-a.criteria.json`.
 

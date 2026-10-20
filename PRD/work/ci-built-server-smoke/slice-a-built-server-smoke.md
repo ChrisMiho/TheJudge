@@ -1,6 +1,6 @@
 # Slice A — Built-server smoke check
 
-## Status: planned
+## Status: done
 
 ## Goal
 
