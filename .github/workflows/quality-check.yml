@@ -97,6 +97,43 @@ jobs:
       - name: Built-server smoke check
         run: npm run smoke:built-server
 
+  # NFR-021: builds the frontend and backend the way the deploy does, opens the
+  # built site in the runner's preinstalled Google Chrome (no browser download)
+  # and makes each tool do its most basic action at phone and desktop width.
+  # Node 24 is the major the deploy builds the frontend with. No secret, no
+  # id-token, no path filter.
+  browser-smoke:
+    name: browser-smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Browser smoke check
+        run: npm run smoke:browser
+
+      - name: Upload browser smoke output
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-smoke
+          path: .tmp/browser-smoke/
+          retention-days: 7
+          if-no-files-found: ignore
+          # `.tmp` is a dotted directory, which the action's glob skips by
+          # default — without this the upload silently finds nothing.
+          include-hidden-files: true
+
   frontend:
     name: frontend-shard ${{ matrix.shard }}/3
     runs-on: ubuntu-24.04
@@ -239,7 +276,7 @@ jobs:
 
   deploy:
     name: deploy
-    needs: [static, backend, built-server, coverage-merge, changes]
+    needs: [static, backend, built-server, browser-smoke, coverage-merge, changes]
     if: >-
       needs.changes.outputs.deploy == 'true' &&
       ((github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch')

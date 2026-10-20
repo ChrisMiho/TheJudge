@@ -22,8 +22,11 @@ unless the user requests it.
 `thejudge-map-out` encodes the exact browser scenarios, viewports,
 observations and measurements, and cleanup checks directly in the affected
 slices' acceptance criteria. Unit and component tests remain required where
-appropriate; Playwright does not replace them. This policy introduces no new
-`@playwright/test` CI harness.
+appropriate; Playwright does not replace them. This policy adds no CI harness
+of its own. The one browser check CI runs is NFR-021's smoke check
+(`npm run smoke:browser`), which proves each tool opens and does its most
+basic action in the built site; it does not replace the slice-level browser
+scenarios this policy requires, and they do not replace it.
 
 ## Runtime ownership and cleanup contract
 
