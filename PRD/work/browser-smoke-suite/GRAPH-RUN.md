@@ -6,7 +6,7 @@
 - Autonomous base: origin/main
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite` (the spec-forming half ran in-place in `.worktrees/session-ci-smoke`, since pruned)
 - Staging: none (no intake files supplied; the request text is recorded verbatim in `IDEA.md`)
-- Current node: `plan` (build half, run `graph-20261019-190721`)
+- Current node: `build` (build half, run `graph-20261019-190721`)
 - Next action: `/graph-implement PRD/work/browser-smoke-suite/` resumes from the marker in the build worktree
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 5 | gate-qc | sonnet | ok (PASS) | `0 → 18` | `PRD/work/browser-smoke-suite/QUALITY-CHECK.md`, commit `6c57627e`, pushed (`git ls-remote` → `6c57627e`); no blocking findings; four advisories recorded in README `## Preparation gate`; porcelain empty. Driver then parked: `STATUS.owner-action`, board row refined → owner-action, README Preparation gate written | 2026-10-19 |
 | 5a | gate-review | sonnet | ok | `0 → 21` | build half run `graph-20261019-190721`: docs PR #338 merged (package on `origin/main` `8bf88d17`, which also carries code PR #339); no kickoff worktree to remove (spec-forming half ran in place in `.worktrees/session-ci-smoke`, since pruned); claim commit `a8985a74` on `thejudge-auto/browser-smoke-suite-work` cut from `origin/main` `8bf88d17`, pushed; lock taken from the launch root; graph canary `nohup true` denied; `graph-gate-review` commit `c8a7a75b` (= origin tip): 3 accept / 0 edit / 0 reject (NFR-021, REQ-166, NFR-012); `### Brief reconciliation` none; `STATUS.refined` only marker; board row under refined; `git diff --stat origin/main HEAD -- PRD/sections apps scripts .github` empty; worktree porcelain empty, launch checkout unchanged (only the pre-existing untracked `PRD/work/probe-codebase-health-pass/`). Driver moved the node's `## Gate verdicts` section out of the middle of `## Open gate` (it had split off the earlier-park history) and fixed the README file list's marker name | 2026-10-19 |
 | 4 | gate-qc (build half re-grade) | sonnet | ok | `0 → 15` | PASS, 0 blocking, 7 advisory (the first grade's four carried, none settled; new: stale pre-#339 narrative superseded, reuse of `scripts/smoke-built-server.mjs` helpers vs accepted NFR-021 no-shared-script text, backend built twice in `quality:check`); every diff's current-text line matches `PRD/sections/` once on `8bf88d17` (REQ-166 `functional-requirements.md:3930`, NFR-012 `non-functional-requirements.md:209`, three system-map lines, the runtime-process-hygiene sentence); NFR-021 unused; `deploy.needs` = static, backend, built-server, coverage-merge, changes; no browser driver in any `package.json`; `QUALITY-CHECK.md` commit `fd508e9b` (= origin tip); `STATUS.refined` only marker; porcelain empty. Driver wrote README `## Preparation gate` PASS with all seven advisories | 2026-10-19 |
+| 5 | plan | sonnet | ok | `0 → 22` | commit `ad4c11e4` (= origin tip): `GAMEPLAN.md`, one slice `slice-a-browser-smoke-check.md` (new `scripts/smoke-browser.mjs` + `scripts/smoke-browser.test.mjs`, exact-pinned `playwright` devDependency with Chrome channel and no browser download, `quality:check` join, `browser-smoke` CI job on Node 24 with `deploy.needs`, product truth applied by intent), `slice-a.criteria.json` 13 criteria all `false`, none manual or post-merge; advisories settled (one absolute output path under `.tmp/browser-smoke/`, clear Chrome-launch failure message, droppable camera assertion, no import from or edit to `scripts/smoke-built-server.mjs`); nothing shipped under `PRD/work/`; `STATUS.active` only marker; board row under active; porcelain empty | 2026-10-19 |
 
 ## Open gate
 
@@ -245,6 +246,34 @@ Commit with explicit paths only, as short separate calls from the working direct
 Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
 
 Return a short report: `outcome: ok|failed`, the slices (one plain line each), criteria counts per slice, where every shipped file will live, the status marker, commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), and `git status --porcelain` of the working directory (must be empty).
+
+### build
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite
+
+You are node 6 (`build`) of build-half graph run `graph-20261019-190721`, attempt 1. Run the `thejudge-implement-all` skill (read /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-browser-smoke-suite/.claude/skills/thejudge-implement-all/SKILL.md and its reference.md, and follow it in its graph-controlled mode) on the package `PRD/work/browser-smoke-suite/`. Shared branch: `thejudge-auto/browser-smoke-suite-work` — it is checked out in the working directory above, which is the one build worktree; work in it in place. Create no second worktree and no contributor branch. The GAMEPLAN, slice doc `slice-a-browser-smoke-check.md`, `slice-a.criteria.json`, and README autonomous metadata (`origin/main`) are committed and pushed at the remote tip.
+
+Implement every remaining slice (there is one, slice A). Apply the accepted product truth to `PRD/sections/` and `PRD/instructions/runtime-process-hygiene.md` by intent, together with the code, in this PR: re-derive each edit from the finalized `GATE-QUESTIONS.md` diff and `DESIGN-BRIEF.md` against current truth, never a blind replay. Use test-driven development for the pure rules in the smoke script. Earn each criterion in `slice-a.criteria.json` by running the command or writing the file its evidence block names; never flip a criterion to `true` without that, and report any flip the hook denies. A criterion proves a command ran, not that it passed, so read every command's output and fix failures before moving on.
+
+Run the full local gate before opening the PR: `npm run quality:check` must pass. Local is macOS arm64 on a newer Node with Google Chrome installed; CI is x86 Linux on Node 22 for the gate jobs and Node 24 for the smoke jobs, so avoid anything platform-specific (ports, signals, paths, Chrome location). Drive the browser only through the `playwright` library inside the smoke script; do not use any browser MCP tool. Start any server only through the smoke script or the Bash tool's own background option, never a trailing `&` or `nohup`; stop processes by pid with `kill <pid>`, never `pkill`/`killall`; report every port released and that no Chrome process from the run remains. Do not call any paid API, do not read `.secrets/`, do not touch AWS, do not run a data refresh. When adding the `playwright` dependency, pick an exact version at least two weeks old and record it.
+
+Open the code PR `thejudge-auto/browser-smoke-suite-work` → `main` with `gh pr create --base main --head thejudge-auto/browser-smoke-suite-work`. Register it exactly as the skill's reference.md requires: the `<!-- thejudge-auto:v1:registered:browser-smoke-suite -->` marker in the body and the `[THEJUDGE-AUTO][...] <Feature name> (browser-smoke-suite)` title, moved to `[READY]` when done. The PR body opens with a plain-language summary per `PRD/instructions/plain-language-standard.md` (what a player or the owner gets, first), and ends with:
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+End every commit message with the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+
+Never merge or close a PR. After pushing, run `gh pr checks <number> --watch` (or poll `gh pr checks`) until every check finishes, and report each check's result, including the new `browser-smoke` job and its run time; if a check fails, diagnose it from its log, fix it, push, and re-check. If the fake-camera assertion is the only thing failing in CI, drop it as the slice doc allows and say so. When the slice is done and checks are green, set `STATUS.ship-ready` per the skill (exactly one marker), move the `PRD/work/STATUS.md` board row fully, and commit and push.
+
+Do not edit `GRAPH-RUN.md`, the README autonomous-metadata or preparation-gate sections, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `scripts/smoke-built-server.mjs`, any `thejudge-*` skill, `.claude/settings*.json`, `.claude/graph-profile.json`, or `CLAUDE.md`. Every file you write must lie inside the working directory above.
+
+Commit with explicit paths only, as short separate calls from the working directory: `git add <each path>`, then `git commit -m ...`, then `git push`. Never `git add -A`/`.`/`--all`. If one path in a `git add` is missing the whole add fails, so check the staged list before committing.
+
+Mechanics: change files with the Write and Edit tools only (no heredocs, no `sed -i`, no long chained Bash). Never retry a denied call verbatim; report it. If you dispatch any subagent, copy the `Working directory:` line above unchanged into its prompt.
+
+Return a short report: `outcome: ok|failed`, every path you wrote (absolute), the criteria file state (each id and true/false), the `playwright` version chosen, `npm run quality:check` result with the browser smoke's run time, the PR URL, each `gh pr checks` result, the status marker, final commit sha, push result (`git ls-remote --heads origin thejudge-auto/browser-smoke-suite-work`), ports released and Chrome processes gone, and `git status --porcelain` of the working directory (must be empty).
 
 ## Instruction ledger
 
