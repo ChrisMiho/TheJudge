@@ -1,53 +1,60 @@
 # Quality check — browser-smoke-suite
 
-**Result: PASS** (graph run `graph-20261019-174628`, node `gate-qc`, attempt 1, 2026-10-19)
+**Result: PASS** (graph run `graph-20261019-190721`, node `gate-qc`, attempt 1 of the build half, the re-grade after the owner's verdicts, 2026-10-19)
 
-Checked: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `evidence/measurements.md`, against `PRD/sections/`, `PRD/work/ci-built-server-smoke/GATE-QUESTIONS.md`, `.github/workflows/quality-check.yml`, `scripts/`, `apps/frontend`, `apps/backend`.
+Checked: `DESIGN-BRIEF.md`, finalized `GATE-QUESTIONS.md` (NFR-021, REQ-166, NFR-012 all accept), `evidence/measurements.md`, the first grade's result (graph run `graph-20261019-174628`), and the gate-verdicts section of `GRAPH-RUN.md`, against `PRD/sections/` and the repository as cut from today's `origin/main` (`8bf88d17`, which carries code PR #339).
 
 ## Blocking findings
 
 None.
 
-## Checks that passed
+## Consistency after the verdicts
 
-Diffs apply cleanly:
-- REQ-166 line (`functional-requirements.md:3930`), NFR-012 note (`non-functional-requirements.md:209`) and the system-map "Deploy and cost guardrails" Lives-in line each match the "today" text and occur exactly once.
-- The "post-#326" text in all three diffs matches character for character what #326's accepted `GATE-QUESTIONS.md` adds (REQ-166 line, NFR-012 line, system-map Summary / Lives in / Backed by).
-- The NFR-021 append anchors on the end of the file. Today that is NFR-019's last Notes line, and #326's accepted NFR-020 block goes after it.
-- `runtime-process-hygiene.md` sentence ("This policy introduces no new `@playwright/test` CI harness.") matches the file today; #326 does not touch it.
+- All three verdicts are accept with a Reason line; no diff was edited or rejected. The README intake note and "Brief reconciliation: none" agree.
+- The NFR-021 Reason (the extra 20–30 s on the local pre-PR check is acceptable) matches the brief's own design step 3 (joins `quality:check`, roughly 20–30 s locally). Nothing in the brief contradicts a verdict or an accepted diff.
+- The two companion edits (system-map, `runtime-process-hygiene.md`) sit inside the accepted NFR-021 block.
 
-IDs:
-- NFR-021 is unused in `PRD/sections/` (grep for `NFR-02[01]` finds nothing, as #326 has not been built). It does not reuse or redefine NFR-020, and says it shares no command, script or job with it.
-- NFR-021, REQ-166 and NFR-012 each have a full diff and their own block. The two companion edits (system-map, runtime-process-hygiene) sit inside the NFR-021 block.
-- Verdict and Reason slots are blank in all three blocks.
+## Diffs against main as it is now (#339 merged)
 
-Plain-language: each block opens with "What this decides", "In plain terms", "What happens if you say no". Cited REQ/NFR/DEC substance is inlined (REQ-237 as "CI never needs AWS or a paid call", REQ-063 as "no mock banner", REQ-166 and NFR-012 explained in the sentence).
+Every line a diff shows as current text now matches `PRD/sections/` (or the instruction file) exactly once, checked with fixed-string counts:
 
-Ordering after #326: the brief and gate file both say the edits go on top of #326's accepted changes, show both texts per diff, and say the build parks and asks if #326's text is missing.
+- REQ-166, `functional-requirements.md:3930`: the diff's "-" line (job list with `built-server`) matches once. The line is already the post-#326 text.
+- NFR-012, `non-functional-requirements.md:209`: the "-" line (7 jobs, "the seventh is NFR-020's `built-server` job", "plus about one minute for `built-server`") matches once.
+- System-map "Deploy and cost guardrails" (`system-map.md:535-538`): Summary, Lives in and Backed by "-" lines each match once.
+- NFR-021 append: the file ends with NFR-020's last Notes line ("measured 2026-10-18 on macOS arm64: build 1.2 s ..."), the exact anchor the diff names. NFR-020 is at line 347.
+- `PRD/instructions/runtime-process-hygiene.md`: the sentence "This policy introduces no new `@playwright/test` CI harness." and the line before it match once (the file lines are 23–25, not the "22–26" the gate file cites; harmless).
+- NFR-021 is unused: it appears nowhere in `PRD/sections/` and nowhere on `origin/main` outside this package's own folder.
+- No line moved or changed wording. What changed is only that the "post-#326" text is now the live text, so each diff's "-" side is what is on the page.
 
-Repository claims verified:
-- One workflow, `.github/workflows/quality-check.yml`, with jobs `static`, `backend`, `frontend`, `coverage-merge`, `changes`, `deploy`; Node 22 on the PR jobs, 24 on `deploy`.
-- `deploy.needs` is `[static, backend, coverage-merge, changes]`.
-- `deploy` is the only job with `id-token: write` (parity test enforces it).
-- `built-server` is not in the workflow yet, as the brief says.
-- The frontend build is `tsc -b && vite build`; the deploy sets `VITE_API_URL` and `VITE_DEBUG_LOGGING=false` (`aws-deploy.sh:118-121`).
-- The backend build is `tsc -p tsconfig.build.json` into `dist/`, started with `node dist/index.js`.
-- CORS: `cors({origin: frontendOrigin})` when set, all origins otherwise (`createApp.ts:47`); production sets `FRONTEND_ORIGIN` (`aws-deploy.sh:108`).
-- All six data files under `apps/frontend/public/data/` are in `git ls-files`; `.tmp/` is gitignored.
-- `scripts/frontend-public-static-files.test.mjs` runs `vite build`, and `test:scripts` is `node --test scripts/*.test.mjs`, which will pick up a new `smoke-browser.test.mjs`.
-- Tool labels exist in source: "Magic question", "Ask TheJudge", "Decrease life for Player 1", "Decrypt Stack", "Send feedback", "Scan a card", "Camera unavailable".
-- The In-Depth destination has no Menu row (`App.tsx` filter), as the brief says.
-- `playwright@1.64.1` exists on the npm registry. `playwright` is not yet a dependency.
+## Repository claims re-verified
 
-Agent-readiness: the command, script path, port picking, build and start commands, environment settings, widths (390 × 844, 1280 × 800), 15 s step limit, pass/fail rule (zero console errors, page errors, failed or 400+ local requests, no retries), CI job shape (runner, Node 24, preinstalled Chrome, artifact upload 7 days) and the headless handling (fake camera with a fallback, mic and feedback not exercised, card images answered locally, other hosts blocked) are all stated. Nothing needs a paid API, `.secrets/`, AWS or the gitignored dump.
+- Workflow `.github/workflows/quality-check.yml`: jobs `static`, `backend`, `built-server`, `frontend`, `coverage-merge`, `changes`, `deploy`. `built-server` runs on `ubuntu-24.04`, Node 24, `npm ci`, `npm run smoke:built-server`, 10-minute timeout, no secret, no `id-token`. `deploy.needs` is `[static, backend, built-server, coverage-merge, changes]`; `deploy` alone has `id-token: write` and Node 24.
+- Root scripts: `quality:check` ends with `npm run smoke:built-server`; `smoke:built-server` is `npm --workspace apps/backend run build && node scripts/smoke-built-server.mjs`; `test:scripts` is `node --test scripts/*.test.mjs scripts/lib/*.test.mjs`, so a new `scripts/smoke-browser.test.mjs` is picked up.
+- Frontend build `tsc -b && vite build`; backend build `tsc -p tsconfig.build.json`; the deploy bakes `VITE_API_URL`, `VITE_DEBUG_LOGGING=false` and `VITE_FEEDBACK_FORMSPREE_ID` (`aws-deploy.sh:118-121`); the site calls the backend directly at `VITE_API_URL` (`env.ts:62`); CORS is single-origin when `FRONTEND_ORIGIN` is set (`createApp.ts:47`, `aws-deploy.sh:108`).
+- Feedback id: a build with `VITE_FEEDBACK_FORMSPREE_ID` unset resolves to `null` and delivery degrades to a no-op (`env.ts` resolver), as the brief says.
+- All six files under `apps/frontend/public/data/` are in `git ls-files`; `.tmp/` is gitignored (`.gitignore:38`).
+- `scripts/frontend-public-static-files.test.mjs` still runs a real `vite build` (REQ-198), so the brief's "every PR compiles the bundle but never opens it" claim holds.
+- No `playwright` entry in any `package.json` or in `package-lock.json`; `playwright@1.64.1` was confirmed on the registry in the first grade.
+- Tool labels and the In-Depth no-Menu-row claim were verified in the first grade and the sources have not changed in the merged diff.
+- The parity guard `scripts/ci-workflow-parity.test.mjs` expands `npm run` references into leaf commands, so a `browser-smoke` job running `npm run smoke:browser` that appears in `quality:check` satisfies it with no decomposition entry.
 
-## Advisory findings (not blocking; the build should settle them)
+## Agent-readiness
 
-1. Output folder path. `npm --workspace apps/frontend run build -- --outDir .tmp/browser-smoke/dist` resolves a relative `--outDir` against the Vite root (`apps/frontend/`), not the repo root. The build would write to `apps/frontend/.tmp/browser-smoke/dist`, while screenshots and the CI artifact upload use root `.tmp/browser-smoke/`. Both are gitignored (`.tmp/` matches at any depth), and `vite preview --outDir` has the same rule. The build should pass one absolute path computed by the script, and the CI artifact path should match.
-2. Preinstalled Chrome on the runner (Chrome 155 on image 20261012) comes from the runner-images readme, not from this repository, and cannot be checked offline. The brief already states the fake-camera fallback; the build should also fail with a clear message if `channel: "chrome"` cannot launch.
-3. The CI timing (about one minute) is an estimate, not measured on x86. The brief says so.
-4. The fake-camera flags were not tried live (the MCP browser's flags are fixed). The conditional "not Camera unavailable" assertion covers this.
+Command and script path, port picking, build and start commands, environment settings (what is set and what is scrubbed), browser (Google Chrome through the `playwright` library), widths (390 × 844 and 1280 × 800), per-step 15 s limit, network blocking (scryfall images answered locally, any other outside host fails), pass/fail rule (zero console errors, page errors, failed or 400+ local requests, no retries), CI job shape (runner, Node 24, preinstalled Chrome, artifact upload kept 7 days, no secrets), and headless limits (fake camera with a fallback, mic and feedback not exercised, card images local) are all stated. Acceptance conditions are measurable. Nothing needs a paid API, `.secrets/`, AWS access or a gitignored dump.
+
+## First grade's four advisories, carried forward
+
+1. Relative `--outDir .tmp/browser-smoke/dist` resolves against `apps/frontend/`, not the repo root. Not settled by the brief; stays advisory for map-out. Pass one absolute path computed by the script to both `vite build` and `vite preview`, and make the CI artifact path match the screenshots path (`.tmp/browser-smoke/` at the repo root).
+2. Preinstalled Chrome on the runner comes from the runner-images readme, not from this repo. Not settled; stays advisory. Map-out should add a clear failure message when `chromium.launch({ channel: "chrome" })` cannot start.
+3. The one-minute CI time is an estimate, not measured on x86. The brief says so; stays advisory (state it in the receipt).
+4. Fake-camera flags were not tried live. The brief's conditional "not Camera unavailable" assertion covers it; stays advisory for map-out to keep that assertion droppable.
+
+## New advisory findings (not blocking)
+
+5. Stale narrative in the brief and gate file. After #339 merged, some sentences are no longer true: the brief's job table lists `deploy.needs` as `[static, backend, coverage-merge, changes]` and six jobs, and says "`built-server` ... is not in the workflow yet (checked 2026-10-19)" (brief lines 62–66); the brief and gate file say #326's build has not written its text into `PRD/sections/` and that NFR-020 is "reserved" and unwritten (brief 220–224, 326–330; gate file 8–19 and each "Today the line reads (#326's diff replaces it)" paragraph). All of that is now written. The diffs themselves are correct and apply; their "-" sides are the live text. Map-out should treat those sentences as superseded and apply each diff's "-" to "+" directly. The brief's park-if-#326-missing rule does not trigger, because the text is present.
+6. Reuse from the merged `scripts/smoke-built-server.mjs`. It exports `pickFreePort`, `isPortFree`, `buildChildEnv` (scrubs `ASK_AI_PROVIDER`, `EMBEDDING_PROVIDER`, `OPENAI_API_KEY`, `NODE_ENV`; sets `PORT`), `spawnBuiltServer` (spawn, output capture, SIGTERM then SIGKILL stop), `waitUntilReady` and `SOL_RING_ORACLE_ID`. The brief's design duplicates port picking, env scrubbing and server start/stop and says it "shares no script" with NFR-020 (the accepted NFR-021 text says "shares no command, script or job"). Map-out should decide: either extract those helpers into a small `scripts/lib/` module both scripts import (keeps the accepted wording true, since neither script imports the other), or duplicate them knowingly. Do not import `smoke-built-server.mjs` from `smoke-browser.mjs` directly. Backend-ready polling on `/api/health` can use `waitUntilReady`.
+7. `quality:check` will run the backend build twice (once in `smoke:built-server`, once in `smoke:browser`). Harmless (about 1 s); map-out may let `smoke:browser` skip the backend build when `apps/backend/dist` is fresh, or accept the duplicate.
 
 ## Status
 
-`STATUS.refined` kept; board row stays under `## refined`. The README `## Preparation gate` section is left to the driver.
+`STATUS.refined` kept (exactly one marker). The `PRD/work/STATUS.md` board row stays under `## refined`. The README `## Preparation gate` section is left to the driver.
