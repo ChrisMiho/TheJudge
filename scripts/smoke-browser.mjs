@@ -321,15 +321,45 @@ async function installRoutes(context, origins, state) {
   });
 }
 
-async function askQuestion(page, base, text) {
-  const box = page.getByRole("textbox", { name: "Magic question" });
-  await box.fill(text);
+/**
+ * Clicks a button and waits for the ask-ai POST it triggers. The response wait is
+ * started before the click, so it is given a handler at once: if the click throws,
+ * the wait can later reject with nobody listening and kill the whole script.
+ */
+export async function clickAndAwaitAskAi(page, button) {
   const answered = page.waitForResponse(
     (res) => res.url().endsWith("/api/ask-ai") && res.request().method() === "POST"
   );
-  await page.getByRole("button", { name: "Ask TheJudge" }).click();
+  answered.catch(() => {});
+  await button.click();
   const res = await answered;
   if (res.status() !== 200) throw new Error(`POST /api/ask-ai answered ${res.status()}`);
+}
+
+/**
+ * Runs `work` against a time budget. The timer is cleared as soon as the work
+ * settles (so a passing run does not hold the process open), and the work's own
+ * promise always has a handler (so a step that fails after the budget ran out
+ * cannot become an unhandled rejection).
+ */
+export async function runWithBudget(work, budgetMs = STEP_BUDGET_MS) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`step did not finish within ${budgetMs} ms`)), budgetMs);
+  });
+  const running = Promise.resolve().then(work);
+  running.catch(() => {});
+  try {
+    return await Promise.race([running, timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export async function askQuestion(page, base, text) {
+  const box = page.getByRole("textbox", { name: "Magic question" });
+  await box.fill(text);
+  await clickAndAwaitAskAi(page, page.getByRole("button", { name: "Ask TheJudge" }));
 }
 
 async function expectAnswerShown(page) {
@@ -425,12 +455,7 @@ async function inDepthWalk(page) {
   await page.getByRole("button", { name: "Add card" }).click();
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("button", { name: "OK — finish context" }).click();
-  const answered = page.waitForResponse(
-    (res) => res.url().endsWith("/api/ask-ai") && res.request().method() === "POST"
-  );
-  await page.getByRole("button", { name: "Decrypt Stack" }).click();
-  const res = await answered;
-  if (res.status() !== 200) throw new Error(`POST /api/ask-ai answered ${res.status()}`);
+  await clickAndAwaitAskAi(page, page.getByRole("button", { name: "Decrypt Stack" }));
   await expectAnswerShown(page);
 }
 
@@ -462,7 +487,7 @@ async function scannerObserve(page, state) {
   if (!verdict.ok) throw new Error(verdict.reasons.join("; "));
 }
 
-async function runStep({ browser, step, viewport, origins, base, outDir }) {
+export async function runStep({ browser, step, viewport, origins, base, outDir }) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
   context.setDefaultTimeout(STEP_BUDGET_MS);
   const page = await context.newPage();
@@ -472,12 +497,7 @@ async function runStep({ browser, step, viewport, origins, base, outDir }) {
   const start = Date.now();
   const problems = [];
   try {
-    await Promise.race([
-      step.run({ page, base, state }),
-      sleep(STEP_BUDGET_MS).then(() => {
-        throw new Error(`step did not finish within ${STEP_BUDGET_MS} ms`);
-      })
-    ]);
+    await runWithBudget(() => step.run({ page, base, state }));
     // Give late console output and requests a moment to arrive before judging.
     await sleep(300);
   } catch (error) {

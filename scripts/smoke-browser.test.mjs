@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
 import net from "node:net";
 import path from "node:path";
 import test from "node:test";
@@ -13,8 +14,11 @@ import {
   buildFrontendBuildArgs,
   buildFrontendEnv,
   buildLaunchFailureMessage,
+  askQuestion,
   buildPreviewArgs,
   checkCameraAvailable,
+  runStep,
+  runWithBudget,
   classifyRequest,
   computeOutputDir,
   evaluateScannerStep,
@@ -212,4 +216,93 @@ test("scanner: the other checks do not depend on the camera assertion", () => {
   );
   assert.equal(missing.ok, false);
   assert.match(missing.reasons.join(" "), /cardScanMap\.json/);
+});
+
+// ------------------------------------------------- a failing step is reported, never fatal
+
+function fakeBrowser({ clickError, responseRejectsAfterMs = 20 }) {
+  const calls = { screenshots: [], contextClosed: 0 };
+  const button = {
+    click: async () => {
+      throw new Error(clickError);
+    }
+  };
+  const page = {
+    on() {},
+    getByRole: () => ({ fill: async () => {}, click: button.click }),
+    waitForResponse: () =>
+      new Promise((_, reject) => setTimeout(() => reject(new Error("page.waitForResponse: Timeout exceeded")), responseRejectsAfterMs)),
+    screenshot: async ({ path: file }) => {
+      calls.screenshots.push(file);
+    }
+  };
+  const context = {
+    setDefaultTimeout() {},
+    route: async () => {},
+    grantPermissions: async () => {},
+    newPage: async () => page,
+    close: async () => {
+      calls.contextClosed += 1;
+    }
+  };
+  return { browser: { newContext: async () => context }, calls };
+}
+
+async function collectUnhandled(work) {
+  const seen = [];
+  const listener = (reason) => seen.push(reason);
+  process.on("unhandledRejection", listener);
+  try {
+    await work();
+    await new Promise((resolve) => setTimeout(resolve, 150));
+  } finally {
+    process.off("unhandledRejection", listener);
+  }
+  return seen;
+}
+
+test("a step whose Ask click fails is reported with a screenshot, closes its page, and leaves no unhandled rejection", async () => {
+  const { browser, calls } = fakeBrowser({ clickError: "locator.click: button is disabled" });
+  const step = { id: "ask-a-question", title: "Ask", run: ({ page, base }) => askQuestion(page, base, "q") };
+  let result;
+  const unhandled = await collectUnhandled(async () => {
+    result = await runStep({
+      browser,
+      step,
+      viewport: { name: "phone", width: 390, height: 844 },
+      origins: ORIGINS,
+      base: ORIGINS[1],
+      outDir: "/out"
+    });
+  });
+  assert.deepEqual(unhandled, []);
+  assert.match(result.problems[0], /button is disabled/);
+  assert.deepEqual(calls.screenshots, [screenshotPath("/out", "phone", "ask-a-question")]);
+  assert.equal(result.screenshot, screenshotPath("/out", "phone", "ask-a-question"));
+  assert.equal(calls.contextClosed, 1);
+});
+
+test("a step that fails after its budget ran out leaves no unhandled rejection", async () => {
+  const unhandled = await collectUnhandled(async () => {
+    await assert.rejects(
+      runWithBudget(
+        () => new Promise((_, reject) => setTimeout(() => reject(new Error("late failure")), 80)),
+        20
+      ),
+      /did not finish within 20 ms/
+    );
+  });
+  assert.deepEqual(unhandled, []);
+});
+
+test("runWithBudget clears its timer when the work settles, so the process can exit at once", async () => {
+  const script = `import { runWithBudget } from ${JSON.stringify(new URL("./smoke-browser.mjs", import.meta.url).href)};
+await runWithBudget(async () => "done", 8000);`;
+  const start = Date.now();
+  await new Promise((resolve, reject) => {
+    const child = spawn(process.execPath, ["--input-type=module", "-e", script], { stdio: "inherit" });
+    child.once("error", reject);
+    child.once("exit", (code) => (code === 0 ? resolve() : reject(new Error(`child exited ${code}`))));
+  });
+  assert.ok(Date.now() - start < 4000, `took ${Date.now() - start} ms`);
 });
