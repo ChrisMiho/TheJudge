@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ci-built-server-smoke | Mapped 2026-10-19: one slice (A), 13 criteria; build next |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| ci-built-server-smoke | Gate answered 2026-10-19 (3 accept: NFR-020, REQ-166, NFR-012) — resumes at gate-qc |
 
 ## refining
 

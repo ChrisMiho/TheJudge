@@ -1,8 +1,16 @@
-status: refined
+status: active
 
 # ci-built-server-smoke
 
 Add a CI check that starts the built backend and calls `/api/health` plus one card lookup, so every PR proves the build boots.
+
+## Slices
+
+| Slice | Doc | Depends on | Status |
+| --- | --- | --- | --- |
+| A | `slice-a-built-server-smoke.md` | none | planned |
+
+Plan: `GAMEPLAN.md`. Criteria: `slice-a.criteria.json`.
 
 - `IDEA.md` — the owner's request, verbatim.
 - `DESIGN-BRIEF.md` — the design: a `built-server` CI job and `npm run smoke:built-server` command that builds the backend, starts it, and requires the health check and a Sol Ring lookup to answer.
