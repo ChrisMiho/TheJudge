@@ -4,7 +4,7 @@
 // that answers it. Scores recall@5 and MRR under a clean query (the question
 // alone) and a query polluted with attached-card text (the condition Slice B
 // fixes), using the exact production lexical retrieval path
-// (`buildQueryTokensFromParts` / `retrieveRulesForQuery`) so this benchmark
+// (`buildRetrievalQuery` / `retrieveRulesForQuery`) so this benchmark
 // measures the same System 3 later steps ship against.
 //
 // No live AI call and no live embedding call: pollution text comes from the
@@ -203,8 +203,9 @@ export type BenchmarkScoreResult = {
 
 /**
  * Score the benchmark corpus with the production lexical retriever, under a
- * clean query (question only) and a card-polluted query (question + fixed
- * card oracle text). Pure and offline: no network, no randomness.
+ * clean query (question only) and a card-polluted query (question plus the
+ * fixed polluting cards, or signal text, in `pollution`). Pure and offline: no
+ * network, no randomness.
  */
 export function scoreBenchmark(
   corpus: BenchmarkCorpus,
