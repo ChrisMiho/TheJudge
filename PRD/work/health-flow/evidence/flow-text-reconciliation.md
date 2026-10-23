@@ -18,6 +18,8 @@ Every "PRD vs live" note from the four flow walks, sorted against the feature sp
 4. FLOW-017: choosing the Draft row while an answered thread is open does nothing (owner: it should open the draft). `user-flows.md:400` already says this, so no text change.
 5. FLOW-006: In-depth Exit scan commits only one of several held cards.
 
+Superseded later by the design brief: FLOW-017 does get one clarifying clause for item 4 (owner decision 8 in `DESIGN-BRIEF.md`, the FLOW-017 gate block), and the fix list grew from these 5 bugs to 10 fixes (`bug-diagnosis.md`).
+
 Out of scope: FLOW-008 and FLOW-012 stub removal.
 
 ## A — flow text stale (10)

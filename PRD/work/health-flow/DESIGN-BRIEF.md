@@ -7,8 +7,8 @@ reviewer pipeline and the merge gate) was split out to
 
 ## What it means for a player
 
-Nothing a player does changes. Ten things that are broken today get fixed
-(listed below), and from then on every player flow is walked in a real
+Nothing a player does changes. Nine things that are broken today get fixed
+(listed below; a tenth waits on blocker question Q-015), and from then on every player flow is walked in a real
 browser on every pull request. A change that breaks something a player relies
 on fails before it can merge or deploy.
 
@@ -45,7 +45,11 @@ the trust Part 2 needs before any fix may merge without the owner.
    FLOW-019 was. Their numbers are never reused.
 7. **Fix the bugs found in the flows before they freeze**, so the tests check
    PRD behavior rather than today's bugs. Seven bugs plus two app-versus-spec
-   fixes (below).
+   fixes (below). *Count note, 2026-10-22:* the table in section 5 lists ten —
+   those nine plus fix 10, the Life Tracker tap parked in open docs PR #341,
+   which this package took in because it sits in FLOW-013. The spec says fix 10
+   is not a bug, so it waits on blocker question Q-015 in `GATE-QUESTIONS.md`
+   (recommended: drop it, leaving nine).
 8. **Choosing "Draft" in Question History while an answered conversation is
    open opens the draft.** The answered conversation is already saved.
 9. **One card image may be committed** so the fake camera can show the
@@ -79,8 +83,13 @@ the trust Part 2 needs before any fix may merge without the owner.
 - `playwright` 1.63.0 is a root dev dependency, but the main checkout's
   `node_modules` lacks it (no `npm ci` since #340). The owner should run
   `npm ci` before the build; the build worktree installs its own.
-- The frontend already imports constants from `apps/backend/src/` (for example
-  `apps/backend/src/constants.js`), which is how a shared cap stays single-sourced.
+- Frontend tests already import from `apps/backend/src/`
+  (`apps/frontend/src/lib/sharedContractLists.test.ts` imports `constants.js`
+  and `validation/askAiRequest.js`); no runtime frontend code does yet.
+  `apps/backend/src/constants.ts` has only a type import, so exporting the two
+  history caps from it and importing them in the client keeps each cap
+  single-sourced without pulling backend runtime code into the bundle
+  (corrected 2026-10-22; see `evidence/bug-diagnosis.md`, bug 6).
 
 ## Live verification
 
@@ -94,7 +103,13 @@ headless Chrome. Two more sorted every difference and diagnosed every bug.
 - `evidence/flow-walks-chrome-life.md` — FLOW-007, 010, 013, 014
 - `evidence/flow-text-reconciliation.md` — every PRD-versus-live difference
   sorted: 10 stale flow text, 4 app-versus-spec, 7 spec gaps, 30 test notes
-- `evidence/bug-diagnosis.md` — root cause, fix sketch and size for each bug
+- `evidence/bug-diagnosis.md` — root cause, file and line evidence, fix
+  sketch, size and the named unit test for each of the ten fixes (bugs 6–10
+  added 2026-10-22 by code reading)
+- `evidence/browser-smoke-followups-pr341.md` — fix 10's source text, copied
+  from open docs PR #341 so the package reads alone
+- `evidence/flow-id-dispositions.md` — every `PRD/sections/` line naming a flow
+  this package rewords, with its disposition (122 hits)
 
 Each walk file holds the per-flow setup, player-worded steps, expected results
 tied to PRD sentences, sizes, must-fail breaks, edge-case include/skip calls,
@@ -179,7 +194,8 @@ and what cannot be asserted. The planner slices from these files.
 
 - One `flow-build` job builds the frontend and backend once and uploads them;
   a `flow-tests` matrix job runs one shard each against that build. Neither job
-  gets `id-token` permission or any secret; `deploy` needs every shard.
+  gets `id-token` permission or any secret; the `deploy` job lists `flow-tests`
+  in `needs:`, so it waits for every shard (same wording in NFR-021 and NFR-022).
 - **Target:** the slowest flow shard finishes no later than the slowest other
   quality-check job, so the flow suite adds no wall time to a pull request.
   The build measures the suite on CI and sets the shard count from that; a
@@ -194,49 +210,81 @@ and what cannot be asserted. The planner slices from these files.
   the build measures and reports the number.
 - `scripts/smoke-browser.mjs`'s six steps retire. Each is a step inside a flow
   test (Ask → FLOW-011, Life Tracker → FLOW-013, Trade → FLOW-009, In-Depth →
-  FLOW-001, Scanner → FLOW-006, feedback → FLOW-014). Its pure rules move to
-  wherever the harness lives, with their unit tests.
+  FLOW-001, Scanner → FLOW-006, feedback → FLOW-014). Its pure rules
+  (request classification, console filtering, env builders, port picking)
+  stay under `scripts/` with their unit tests, run by `npm run test:scripts`;
+  the harness in `e2e/flows/` imports them. That is where NFR-020's and
+  NFR-021's tested rules already live, so NFR-021's constraint saying so stays
+  unchanged. Only the file may be renamed. Whether Part 2's merge gate also
+  shields these rules from the pipeline is Part 2's call.
+- **Checks / skips lists.** Beside each test file sits `flow-NNN-<slug>.md`, a
+  plain list in player words of what the test checks and what it skips
+  (owner decision 5). It lives in the repo, not only in the work folder, so it
+  survives close deleting this package; a check added to or removed from a
+  test changes its list in the same commit (NFR-022).
 
 ### 5. The fixes (code, each with a unit test that would have caught it)
 
-Full causes, file:line evidence and fix sketches: `evidence/bug-diagnosis.md`.
+Full causes, file:line evidence, fix sketches and the named unit test for
+each of the ten: `evidence/bug-diagnosis.md`, bugs 1–10 (numbered as here).
 
 | # | What a player sees today | Fix | Size | Players hit it? |
 | --- | --- | --- | --- | --- |
-| 1 | A follow-up after a very long answer fails with a validation error | Trim each history message to the server's 10,000-character cap before sending; the screen and saved history keep full text; the cap is imported from the backend validation module, not copied | 1 file, ~10 lines | Mock only today (longest real answer 2,556 of 7,557) |
+| 1 | A follow-up after a very long answer fails with a validation error | Trim each history message to the server's 10,000-character cap before sending; the screen and saved history keep full text; the cap is defined once in the backend (`constants.ts`) and imported, not copied | ~10 lines in the hook, plus the shared cap | Mock only today (longest real answer 2,556 of 7,557) |
 | 2 | Sending a follow-up in a reopened conversation wipes the unsent Draft | Clear the Draft only on a conversation's first answer, in both Ask a Question and In-Depth | 3 files, ~6 lines | Yes |
 | 3 | Closing the feedback form leaves keyboard focus on the page, not ☰ Menu | Close the Menu before running a Menu action, so ☰ can take focus | 1 file, ~4 lines | Yes |
 | 4 | Choosing Draft in Question History over an answered conversation does nothing | Leave the thread the way ✎ Edit cards does, then load the Draft; same guard in In-Depth (DEC-138 keeps the two flows matched) | 1–2 files, ~4–8 lines | Yes |
 | 5 | In In-Depth, scanning several cards then Exit scan keeps only one | Read the zone from a live ref, as Trade Balancer does | 1 file, ~8 lines | Yes |
-| 6 | The 11th follow-up in any conversation fails, real AI too | When history would pass the server's 20-message cap, drop the oldest exchanges but keep the opening question and its answer (REQ-246 chooses the rules from the opening question); cap imported, not copied | next to fix 1 | Yes |
-| 7 | Closing Question History leaves focus on the page, not ☰ Menu | Same cause as 3; History opens on a separate path inside the Menu, so it needs its own close-first | ~4 lines | Yes |
-| 8 | Trade Balancer's printing picker has no "N printings" heading | Add the heading the spec already promises ("N printings"; "only printing" for one) | 1 file, small | Yes |
-| 9 | Feedback sent from Ask a Question carries no question, cards or conversation | Register Ask a Question as a snapshot contributor, as In-Depth already does (REQ-088) | small | Yes |
-| 10 | On a phone, tapping the middle of Player 1's − in Life Tracker can land on the counters control | Stop the counters control overlapping the − hit area (REQ-217 near-edge −/+, REQ-205 44 px targets); then the FLOW-013 test taps the centre, not the edge. Parked as item 1 of open docs PR #341 (`PRD/ideasForLater/browser-smoke-followups/IDEA.md`), which carries the proof needed and the REQ-202 screenshot pair | small | Yes |
+| 6 | The 11th follow-up in any conversation fails, real AI too | When history would pass the server's 20-message cap, drop the oldest exchanges but keep the opening question and its answer (REQ-246 chooses the rules from the opening question); cap imported, not copied | 3 files, ~15 lines with fix 1 | Yes |
+| 7 | Closing Question History leaves focus on the page, not ☰ Menu | Close the tray first, focus ☰, then open the sheet. Unlike Send feedback, nothing moves focus to ☰ before History opens, and ☰ is hidden while the tray is open (bug 3's cause) | 1 file, ~5 lines | Yes |
+| 8 | Trade Balancer's printing picker has no "N printings" line | Add the count the spec promises ("N printings"; "only printing" for one) and flip the unit test that pins its absence; it was dropped on purpose on 2026-10-02 to match the mockup (see Material assumptions) | 1 file + its test, ~5 lines | Yes |
+| 9 | Feedback sent from Ask a Question carries no question, cards or conversation | Register Ask a Question as a snapshot contributor, as In-Depth already does (REQ-088), with a new field for its attached cards | 3 files, ~20 lines | Yes |
+| 10 | On a phone, a tap at the centre of Player 1's − half lands on the counters preview | **Waits on Q-015.** The spec says the counters preview takes its own taps inside that half (REQ-217, Life Tracker spec), so this is specified behavior. If Q-015 keeps it: move the preview so no − half has it at its centre, with the REQ-202 screenshot pair and an `elementFromPoint` check in the FLOW-013 test. Source: item 1 of open docs PR #341, copied in `evidence/browser-smoke-followups-pr341.md` | small code, visible layout change | Only by tapping the preview |
 
 Bugs 1, 2, 4, 5 and 6 sit in flows whose PRD text already promises the
 fixed behavior; their PRD changes are limited to correcting wrong numbers
 (REQ-027) and one clarifying clause (FLOW-017). Fixes 8 and 9 implement
 existing spec. Fix 10 was found by the browser smoke build and parked in
-PR #341; it sits in FLOW-013, a flow this package freezes, so decision 7
-brings it in. PR #341's item 2 (a workflow-hook retry trap) is unrelated and
-stays parked.
+PR #341; it sits in FLOW-013, a flow this package freezes, so the package
+brought it in. Reading the code on 2026-10-22 showed the spec already calls
+that tap correct, so fix 10 now waits on blocker question Q-015
+(recommended: drop it). PR #341's item 2 (a workflow-hook retry trap) is
+unrelated and stays parked.
 
 ### 6. Order: one gameplan (owner decision 5; map-out sets the slices)
 
-1. The ten fixes, each with its unit test (fix 10 with its `elementFromPoint` test).
+1. The fixes, each with its unit test named in `evidence/bug-diagnosis.md`:
+   fixes 1–9, plus fix 10 with its `elementFromPoint` check only if Q-015
+   keeps it.
 2. The harness, runner, coverage map and drift check; retire the smoke steps.
 3. The 18 flow tests from the NFR-022 test-case list, each with its recorded
-   must-fail proof and its plain "checks / skips" list.
+   must-fail proof (in its coverage-map row) and its plain checks / skips list
+   (`flow-NNN-<slug>.md` beside the test).
 4. CI jobs and sharding, measured; NFR-012 note filled with real numbers.
-5. Apply the accepted PRD changes with the code (graph contract: apply at
-   build). The graph opens the code PR and stops; it never merges.
-6. **Owner watch, on the open code PR.** The owner runs the suite in
-   Playwright UI mode on the PR's branch and names what is missing or wrong.
-   No mid-build stop is needed: nothing freezes until the PR merges.
-7. Enhancement, on the same PR: add the owner's misses to the flows' existing
-   files, each with its must-fail proof, and update the test-case list in the
-   receipt to match. Repeat 6–7 only if the owner asks. The tests freeze when
+5. **The graph run finishes.** Build applies the accepted PRD changes with the
+   code (graph contract: apply at build) and opens the code PR on
+   `thejudge-auto/health-flow-work`; review checks it. Then close (node 8)
+   runs on that branch, before any merge: it writes the receipt, folds the
+   ledger in, and deletes `PRD/work/health-flow/` — brief, gate file and
+   `evidence/` included. The run ends `COMPLETE` with the code PR open. The
+   graph never merges.
+6. **What close must put in the receipt**, because the package is gone after
+   close: the full NFR-022 test-case list as built (one row per flow), each
+   test's checks / skips list, and each test's must-fail record (the break
+   and the step that failed), plus the walk notes NFR-022's note promises.
+   The checks / skips lists and the must-fail records also live in the repo
+   (`e2e/flows/flow-NNN-<slug>.md` and `coverage-map.json`), so the later
+   round reads them from the PR branch, not from the deleted package.
+7. **Owner watch, on the open code PR, after the run.** The owner checks out
+   the PR branch, runs the suite in Playwright UI mode (the build records the
+   exact command in the receipt), reads each test's checks / skips list, and
+   names what is missing or wrong. Nothing freezes until the PR merges.
+8. **Enhancement, on the same PR.** A direct Claude Code session the owner
+   starts on `thejudge-auto/health-flow-work` (not a graph run, which has
+   ended) adds the misses: each goes into its flow's existing test file with
+   its must-fail proof, its checks / skips line and its coverage-map record,
+   and the receipt's test-case list is updated to match; the session pushes
+   to the same PR. Repeat 7–8 only if the owner asks. The tests freeze when
    the owner merges the code PR.
 
 ## Product truth this needs
@@ -247,8 +295,10 @@ All in `GATE-QUESTIONS.md`, one block each, with the full diff:
   must-fail proof, the change rules, CI and sharding. Appendix: the 18-row
   test-case list the build starts from; the owner enhances it after watching
   a run (decision 5).
-- **NFR-021 (amend):** the browser check's steps and command become NFR-022's
-  suite; harness rules stay.
+- **NFR-021 (amend):** the browser check's title, description, steps and
+  command become NFR-022's suite; its old timings are marked historical;
+  harness rules stay, and so does the constraint that its pass/fail rules are
+  unit-tested under `scripts/`.
 - **NFR-012 (amend):** job count and the flow-shard scaling note.
 - **REQ-166 (amend):** the quality-check job list.
 - **FLOW-008, FLOW-012 (remove):** delete both stubs and repoint the four
@@ -266,6 +316,9 @@ All in `GATE-QUESTIONS.md`, one block each, with the full diff:
   stale flow text brought in line with the feature specs.
 - **FLOW-024 (amend):** the card-detail popup's Price chip, which the app
   shows and no spec mentions.
+- **Blocker question Q-015:** drop fix 10 (recommended), because REQ-217 and
+  the Life Tracker spec say the counters preview takes its own taps inside
+  the "−" half; or keep it and change the Life Tracker layout.
 
 ## Material assumptions
 
@@ -276,6 +329,34 @@ All in `GATE-QUESTIONS.md`, one block each, with the full diff:
 - Sharding target is relative ("no later than the slowest other job") because
   the suite's CI time is unmeasured; the build fills in the numbers
   (`feedback: measure quantitative spec targets`).
+
+Added 2026-10-22 (graph run `graph-20261023-020331`, after quality-check FAIL
+1), each from the assumption ladder in `PRD/instructions/preparation-contract.md`:
+
+- **Who adds the owner's misses: a direct Claude Code session the owner starts
+  on the code PR's branch.** The graph contract ends the build half `COMPLETE`
+  with the code PR open, after close has deleted this package, and no graph
+  node runs after that; `thejudge-amend` needs a live package. A plain session
+  on the PR branch is the smallest step that fits, and the owner may make the
+  edits by hand instead. Not a blocker: it changes no player behavior,
+  contract, data or scope, only who types the commits.
+- **Close carries the test-case list, the checks / skips lists and the
+  must-fail records into the receipt**, and the lists and records also live
+  beside the tests (section 6, step 6), so the enhancement round never needs
+  the deleted package.
+- **Harness pass/fail rules stay under `scripts/`** (section 4): the
+  established place for NFR-020's and NFR-021's tested rules; no new test
+  command; NFR-021's constraint stays true.
+- **Fix 8 reverses a deliberate mockup match.** The `ui-look-translation`
+  build removed the "N printings" line on 2026-10-02 to match the mockup and
+  pinned its absence with a unit test, without amending REQ-065. REQ-065 still
+  promises the count, REQ-070's mockup exception covers guidance copy rather
+  than a count of data, and owner decision 10 says fix the app; so the fix
+  stands and the old test flips. Keeping the mockup look instead would need a
+  REQ-065 amendment block, which this package does not propose.
+- **Fix 10 waits on Q-015**: the spec (REQ-217, `life-tracker/README.md`,
+  DEC-136) calls today's behavior correct while the approved package calls it
+  a bug; that conflict is a genuine blocker (three conditions in Q-015).
 
 ## Non-goals
 
@@ -306,7 +387,13 @@ never edited).
 | | `user-flows.md:285` FLOW-012 stub | delete (FLOW-012 block) |
 | | two receipts | historical, keep |
 | `smoke:browser` / `browser-smoke` | `non-functional-requirements.md:378,388,389,390` NFR-021 | amend (NFR-021 block) |
-| | `non-functional-requirements.md:209` NFR-012 note | amend (NFR-012 block) |
+| | `non-functional-requirements.md:209` NFR-012 note | amend the whole line, both job-name mentions (NFR-012 block) |
+| NFR-021 old-step wording (`most basic action`, `unit-tested under`, `measured 2026-10-18`, `camera recognition`) | `non-functional-requirements.md:376` Description | amend (NFR-021 block) |
+| | `non-functional-requirements.md:387` pass/fail rules unit-tested under `scripts/` | keep — the rules stay under `scripts/` (section 4) |
+| | `non-functional-requirements.md:403` Notes, old six-step timings | amend: marked historical (NFR-021 block) |
+| | `non-functional-requirements.md:405` "what it does not prove" | amend: recognition of the one fixture card is now asserted (NFR-021 block) |
+| | `non-functional-requirements.md:355` NFR-020 rules unit-tested under `scripts/` | keep — NFR-020, unchanged |
+| `FLOW-0NN` for 005, 006, 007, 010, 013, 017, 023, 024 (2026-10-22) | 122 lines, one row each in `evidence/flow-id-dispositions.md` | 13 are the flow's own entry or a sentence already in a block; 109 are citations, keep |
 | | `functional-requirements.md:3930` REQ-166 | amend (REQ-166 block) |
 | | `system-map.md:535–537` deploy guardrails | amend (NFR-021 block) |
 | | `PRD/instructions/runtime-process-hygiene.md:27` | amend (NFR-021 block) |
@@ -323,4 +410,4 @@ never edited).
 - `PRD/work/health-pipeline/IDEA.md` — Part 2
 - `PRD/instructions/receipts/browser-smoke-suite-2026-10-19.md`
 - `PRD/instructions/receipts/ci-built-server-smoke-2026-10-19.md`
-- `PRD/ideasForLater/browser-smoke-followups/IDEA.md` (open docs PR #341, not on `main` yet)
+- `PRD/ideasForLater/browser-smoke-followups/IDEA.md` (open docs PR #341, not on `main` yet; item 1 copied in `evidence/browser-smoke-followups-pr341.md`)

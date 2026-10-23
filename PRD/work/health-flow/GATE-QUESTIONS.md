@@ -3,14 +3,16 @@
 **Decide:** seventeen product-truth changes, one block each. Answer each
 `Verdict:` with accept, edit or reject; a reason is required for edit and
 reject. The design is in `DESIGN-BRIEF.md`; the live walks and the bug
-diagnosis are in `evidence/`. There are no blocker questions.
+diagnosis are in `evidence/`. There is one blocker question at the end
+(Q-015): whether the Life Tracker tap "bug" (fix 10) is a bug at all.
 
 **The test-case list:** the NFR-022 block ends with it, one row per player
 flow. It is where the build starts, not a list you must approve first. The
-build fixes the bugs, builds these tests and opens the code PR; before you
-merge it, you watch them run and name what's missing, and your misses are
-added to that PR. Nothing freezes until you merge. You
-may still edit a row now through NFR-022's verdict.
+build fixes the bugs, builds these tests and opens the code PR, and the run
+ends there. Before you merge, you watch the tests run and name what's
+missing; a Claude Code session you start on that PR's branch adds your
+misses to the same PR. Nothing freezes until you merge. You may still edit a
+row now through NFR-022's verdict.
 
 **How to read the blocks.** The first four set up the flow tests (NFR-022,
 NFR-021, NFR-012, REQ-166). The next two delete the retired flows (FLOW-008,
@@ -18,7 +20,8 @@ FLOW-012). The next four record decisions you already made in the session
 (REQ-027, FLOW-017, REQ-206, REQ-058). The last six bring flow wording up to
 date with what the app already does (FLOW-005, FLOW-006, FLOW-007, FLOW-010,
 FLOW-013, FLOW-023) plus one unmentioned price chip (FLOW-024). Each old text
-was checked on 2026-10-20 to match exactly once in its file.
+was checked on 2026-10-20, and again on 2026-10-22 after the NFR-012 and
+NFR-021 hunks grew, to match exactly once in its file.
 
 ---
 
@@ -37,7 +40,9 @@ promises, never exact AI wording, prices or pixels. A map file lists every
 flow and the test that guards it, plus a fingerprint of the flow's PRD text:
 if anyone edits a flow in the PRD, a check fails until they update its test
 too. Every test must be shown to fail when its feature is broken on purpose,
-so no test is decoration. The tests run on every pull request, split across
+so no test is decoration. Beside each test sits a short plain list of what
+it checks and what it skips, so a gap shows as a missing line. The tests run
+on every pull request, split across
 parallel CI jobs ("shards") so they add no waiting time. Unit tests stay
 editable; these do not, except by you or a feature or bug-fix PR you merge.
 The future code-health pipeline (Part 2) may never touch them. This also
@@ -62,9 +67,10 @@ off.
 +  - the feedback test runs with no Formspree id and routes the Formspree host to fail, so no report can be sent
 +  - `e2e/flows/coverage-map.json` has one row per FLOW id in `user-flows.md`: the guarding test file, its sizes, its must-fail proof and a fingerprint (hash) of the flow's PRD text — or an exemption with its reason. Exempt: FLOW-015 (backend-only combo enrichment, covered by `apps/backend/src/prompt/comboPromptIntegration.test.ts` and the Commander Spellbook prompt goldens); FLOW-020, FLOW-021, FLOW-022 (owner process flows, not player flows)
 +  - a unit-tested script run by `npm run test:scripts` fails when a FLOW in `user-flows.md` has no map row, a row names a missing file, or a flow's PRD text no longer matches its fingerprint; a fingerprint update is an edit inside `e2e/flows/`
++  - beside each test file sits `flow-NNN-<slug>.md`, a plain list in player words of what the test checks and what it deliberately skips; a check added to or removed from the test changes that list in the same commit
 +  - must-fail proof: before a test first merges, the feature it guards is broken on purpose, the test is seen to fail at the expected step, the break is reverted, and the break and failing step are recorded in its map row; no break is ever committed
 +  - changing a flow test: a bug in a covered flow is fixed by first adding a check to that flow's file that fails on the unfixed code; new checks join the flow's existing file and bugs outside any flow get unit tests; a PR that changes a flow's PRD text updates its test and fingerprint in the same PR; the automated code-health pipeline never adds, edits or deletes a file under `e2e/flows/` and may only file an issue to the owner
-+  - CI builds the frontend and backend once in a `flow-build` job and runs the suite in a `flow-tests` matrix of shards against that build; neither job gets `id-token` permission or a secret, and `deploy` needs every shard
++  - CI builds the frontend and backend once in a `flow-build` job and runs the suite in a `flow-tests` matrix of shards against that build; neither job gets `id-token` permission or a secret; the `deploy` job lists `flow-tests` in `needs:`, so it waits for every shard
 +  - the shard count is set from measured CI time so the slowest flow shard finishes no later than the slowest other quality-check job; changing it is the matrix line only (NFR-012)
 +  - every CI run uploads the HTML report — each test's player-worded steps with a screenshot at each checkpoint — as an artifact kept 7 days
 +- Dependencies:
@@ -73,7 +79,7 @@ off.
 +  - REQ-166
 +  - REQ-237
 +- Notes:
-+  - the 18 guarded flows and the test-case list, as enhanced after the owner watched a run, are in the health-flow receipt; live walks of every flow on 2026-10-20 are folded into it at close
++  - the 18 guarded flows, the test-case list and each test's must-fail record are in the health-flow receipt, written at close and updated on the same pull request after the owner watched a run; live walks of every flow on 2026-10-20 are folded into it at close
 +  - the card fixture is one card image the owner approved for the public repo on 2026-10-20
 +  - machine enforcement of "the pipeline never touches `e2e/flows/`" belongs to the merge gate in the health-pipeline package
 ```
@@ -90,13 +96,13 @@ build uses to prove the test can fail.
 | FLOW-002 In-Depth: inspect and remove cards | Adds Sol Ring for Player 1, Sol Ring for Player 2, then Lightning Bolt to Battlefield; removes the first Sol Ring; checks the review; removes the rest; repeats with card images failing | Cards sit in add order with a count of 3; removing one copy leaves the other and the count drops; the review shows the remaining Sol Ring as Player 2's; an empty zone blocks Continue; with images failing each tile shows the card name and still removes; the card menu offers move, order, details and remove | Remove by card instead of by copy (both Sol Rings vanish) |
 | FLOW-003 Failed AI request | The AI request fails with the real error shape; the player waits out the countdown and presses Retry, twice | "Miho is working on it" shows; the question and card stay; Retry counts down then resubmits; a second failure keeps everything; Retry then succeeds | Make the failure branch clear the error |
 | FLOW-004 In-Depth: duplicate stack card blocked | Adds Sol Ring to an empty stack, tries Sol Ring again, then fills the stack to ten and tries an eleventh (eleventh: phone only) | The add button reads "Begin stackening!" then "Add to Stack"; the duplicate is refused with "Duplicate cards are not supported"; count stays 1; BOTTOM/TOP tags; the eleventh card is refused at 10 | Let the duplicate check pass |
-| FLOW-005 Follow-up chat | Asks in In-Depth, opens View context, sends a follow-up after the full-length mock answer, sends one that fails then retries, starts over | Question then answer in order; View context is a bottom sheet on phone and a right drawer on desktop and returns focus on close; the follow-up after a long answer works (fix 1); box stops at 300 characters; Send is off while waiting; Retry resends with the same history; Start over lands on a clean Ask a Question page with the roster kept | Drop the conversation history from the request |
+| FLOW-005 Follow-up chat | Asks in In-Depth, opens View context, sends a follow-up after the full-length mock answer, sends one that fails then retries, then (with short answers) keeps going to an 11th follow-up, starts over | Question then answer in order; View context is a bottom sheet on phone and a right drawer on desktop and returns focus on close; the follow-up after a long answer works (fix 1); the 11th follow-up gets an answer (fix 6); box stops at 300 characters; Send is off while waiting; Retry resends with the same history; Start over lands on a clean Ask a Question page with the roster kept | Drop the conversation history from the request |
 | FLOW-006 Scan cards into a zone | In In-Depth opens Scan on Battlefield with the fake camera showing the fixture card, reads the caution note, removes one held card, toggles mute, scans two, exits | Search and the card list hide while scanning; scan data loads; the caution shows before any card; a recognized card shows "Added <name>" and the count pill; Remove lowers the count; Exit scan adds every held card in order (fix 5) | Delete the add-every-held-card loop on exit |
 | FLOW-007 Color profile | Picks each of the six colors from the Menu, picks Colorless with a custom color, reloads, switches away and back, resets to gray | Six colors in order with White as default; each pick changes the page's color profile and accent; the custom color survives reload and switching away; Reset to gray removes only the custom color; the typed question stays | Stop saving the chosen color |
 | FLOW-009 Trade Balancer: build a trade | Adds Sol Ring to Side A at a chosen printing, raises quantity to 2, adds the same to Side B, adds a cheaper printing, removes one, toggles Foil on a card with no foil price, picks a foil-only printing | Each side shows a total above $0.00; quantity 2 raises the total; equal sides read "Even", unequal name the side ahead and the difference; the picker shows "N printings" (fix 8); no foil price shows $0.00 with a warning; a foil-only printing opens in Foil | Swap the foil and nonfoil price choice |
 | FLOW-010 Switch tools from the Menu | Types a question, opens the Menu, picks the current tool, then Life Tracker, Trade Balancer and back; reloads on Life Tracker; opens a new tab | Menu lists the four tools, Send feedback and Theme with the current one marked; switching keeps the typed question; picking the current tool changes nothing; a reload stays on Life Tracker; a new tab opens on Ask a Question; Esc closes the Menu with focus back on ☰ | Stop remembering the last tool |
 | FLOW-011 Ask a Question, with or without a card | Asks with no card; starts over; attaches Sol Ring and asks with the box empty; opens the card from the Cards strip; goes back with Edit cards; tries an empty box with no card; types 320 characters | The waiting panel replaces the form; the answer follows the question; no card means no Cards strip; an empty box with a card sends "Tell me about Sol Ring."; the strip opens the card's details; Edit cards keeps card and question; Ask is off with no card and an empty box; the box holds 300 | Drop the "Tell me about" fallback |
-| FLOW-013 Life Tracker and hand-off | Sets 3 players at 25 with names Ada and Bo, taps −/+ in the middle of the button (fix 10), sets Bo to 0, flips day/night, adds commander damage and poison, reloads, opens In-Depth from Ask a Question, comes back, resets the game | Starting life seeds each player; taps change life; 0 shows the skull and +1 clears it; day/night flips; commander damage lowers life; everything survives reload; In-Depth gets the names, life and counters but not day/night; the tracker is unchanged on return; Reset asks first, then restores life and keeps names | Stop saving tracker state |
+| FLOW-013 Life Tracker and hand-off | Sets 3 players at 25 with names Ada and Bo, taps the drawn − and + (if Q-015 keeps fix 10: the centre of each − half instead), opens counters from the counters preview, sets Bo to 0, flips day/night, adds commander damage and poison, reloads, opens In-Depth from Ask a Question, comes back, resets the game | Starting life seeds each player; taps change life; 0 shows the skull and +1 clears it; day/night flips; commander damage lowers life; everything survives reload; In-Depth gets the names, life and counters but not day/night; the tracker is unchanged on return; Reset asks first, then restores life and keeps names | Stop saving tracker state |
 | FLOW-014 Send feedback | Types a question, opens Send feedback from the Menu, reads the form, opens the snapshot summary, closes with Esc, reopens, closes with ✕ | The form opens over the current screen without losing the question; three kinds with Bug lit; Send is off with the "delivery isn't configured" hint and nothing leaves the machine; the snapshot lists the typed question and screen (fix 9); after Esc and after ✕ focus is on ☰ Menu (fix 3) | Treat the build as configured (Send turns on) |
 | FLOW-016 Reopen a saved conversation | Makes two saved answers and a Draft, opens Question History, reopens the first (phone: tap; desktop: reading pane then Open conversation), sends a follow-up there | History shows the Draft row and both entries newest first with their details; reopening shows the conversation and its card; the follow-up continues it; the Draft row is still there afterwards (fix 2) | Skip loading the messages on reopen |
 | FLOW-017 Keep a half-typed question | Types a question and attaches a card, leaves via the Menu, comes back, reloads, replaces the text and reloads, empties everything, then chooses Draft over an open answered conversation | The Draft row appears; leaving and reloading keep the work; the newer text wins; emptying everything removes the Draft; choosing Draft over an answered conversation opens the draft (fix 4); History closes with focus back on ☰ (fix 7) | Only save the Draft when the question is non-empty |
@@ -122,9 +128,11 @@ flow tests do all of that and much more, so running both would test the same
 things twice, which NFR-012 forbids ("every test executes exactly once per CI
 run"). This keeps every rule about how the site is built and checked — no
 paid call, no secret, no internet, zero console errors — and makes the flow
-tests the steps. Your local pre-PR check (`npm run quality:check`) runs the
-flow tests instead of the smoke script; it gets slower by the suite's run
-time, which the build measures and reports.
+tests the steps. Its description, its old six-step timings (kept, marked
+historical) and its "what it does not prove" line are reworded to match. Your
+local pre-PR check (`npm run quality:check`) runs the flow tests instead of
+the smoke script; it gets slower by the suite's run time, which the build
+measures and reports.
 
 **What happens if you say no:** both checks run on every pull request, the
 six basic actions are tested twice, and CI uses one more job.
@@ -134,6 +142,11 @@ six basic actions are tested twice, and CI uses one more job.
 ```diff
 -- Title: The built site opens in a real browser and each tool does its most basic action on every pull request
 +- Title: The built site opens in a real browser and every player flow is walked on every pull request
+```
+
+```diff
+-- Description: Every pull request and every push to `main` proves, in a real headless browser, that the frontend the deploy ships — the output of `npm --workspace apps/frontend run build` — loads against the compiled backend and that each tool a player can open does its most basic action. A change that type-checks and passes the source-level tests but leaves the built site blank, a tool unable to load, or a request failing between the built site and the built server, fails before merge and never deploys. Before this, a pull request compiled the production bundle (`npm run typecheck` and the REQ-198 build test) but nothing ever opened it: the frontend tests run source files in jsdom with every tool preloaded and every network call stubbed.
++- Description: Every pull request and every push to `main` proves, in a real headless browser, that the frontend the deploy ships — the output of `npm --workspace apps/frontend run build` — loads against the compiled backend and that every player flow works end to end (NFR-022's flow tests). A change that type-checks and passes the source-level tests but leaves the built site blank, a tool unable to load, a player flow broken, or a request failing between the built site and the built server, fails before merge and never deploys. Before this, a pull request compiled the production bundle (`npm run typecheck` and the REQ-198 build test) but nothing ever opened it: the frontend tests run source files in jsdom with every tool preloaded and every network call stubbed.
 ```
 
 ```diff
@@ -167,9 +180,23 @@ six basic actions are tested twice, and CI uses one more job.
 -  - the `browser-smoke` job gets no `id-token` permission and no secret; only `deploy` may assume AWS credentials (DEC-084)
 -  - `playwright` is a root dev dependency pinned to an exact version; it has no install script, so `npm ci` downloads no browser
 +  - `npm run test:flows` is part of `npm run quality:check`, so the canonical local pre-PR command and CI stay equivalent (NFR-012); locally it needs Google Chrome installed
-+  - CI runs it in the `flow-build` and `flow-tests` jobs in `.github/workflows/quality-check.yml` on every pull request and every push to `main`, with no path filter (REQ-166's no-trigger-filter rule), on Node 24 (the version the deploy builds the frontend with), using the runner's preinstalled Google Chrome so no browser is downloaded; every run uploads the HTML report as an artifact kept 7 days; the `deploy` job needs `flow-tests`
++  - CI runs it in the `flow-build` and `flow-tests` jobs in `.github/workflows/quality-check.yml` on every pull request and every push to `main`, with no path filter (REQ-166's no-trigger-filter rule), on Node 24 (the version the deploy builds the frontend with), using the runner's preinstalled Google Chrome so no browser is downloaded; every run uploads the HTML report as an artifact kept 7 days; the `deploy` job lists `flow-tests` in `needs:`, so it waits for every shard
 +  - the `flow-build` and `flow-tests` jobs get no `id-token` permission and no secret; only `deploy` may assume AWS credentials (DEC-084)
 +  - `playwright` and `@playwright/test` are root dev dependencies pinned to the same exact version; neither has an install script, so `npm ci` downloads no browser
+```
+
+The constraint "its pass/fail rules (request classification, console filtering, port picking) are unit-tested under `scripts/` and run by `npm run test:scripts`" stays as it is, because those rules stay under `scripts/` (`DESIGN-BRIEF.md`, section 4).
+
+NFR-021 Notes:
+
+```diff
+-  - measured 2026-10-18 on macOS arm64 (`PRD/work/browser-smoke-suite/evidence/measurements.md`, folded into the receipt at close): frontend build 3.7–4.8 s, backend build 1.1 s, first paint 164 ms; every step passed by hand in Chrome 155 at both widths with zero console errors. CI time on the x86 runner was estimated at about one minute, in parallel with the frontend shards
++  - historical, for the six-step smoke check this requirement first shipped (retired into NFR-022's flow tests): measured 2026-10-18 on macOS arm64 (`PRD/work/browser-smoke-suite/evidence/measurements.md`, folded into the receipt at close): frontend build 3.7–4.8 s, backend build 1.1 s, first paint 164 ms; every step passed by hand in Chrome 155 at both widths with zero console errors. CI time on the x86 runner was estimated at about one minute, in parallel with the frontend shards. The flow suite's own times are recorded under NFR-012 by the build that adds it
+```
+
+```diff
+-  - what it does not prove: production hosting (S3, CloudFront, domain, headers), the Lambda wrapper, the real AI, camera recognition, exact layout, or speed
++  - what it does not prove: production hosting (S3, CloudFront, domain, headers), the Lambda wrapper, the real AI, camera recognition beyond NFR-022's one fixture card, exact layout, or speed
 ```
 
 `PRD/sections/system-map.md`, Deploy and cost guardrails:
@@ -215,8 +242,9 @@ tests.
 splitting the frontend unit tests into 3 parallel jobs and says when to add
 one. This adds the same rule for the flow tests: they run in parallel with
 everything else, and when they become the slowest job, add a shard. It also
-updates the job count it records (the repo is public, so CI minutes are free;
-the limit is 20 jobs at once).
+updates the job count and the job names in its cost note, which still names
+the retired smoke job (the repo is public, so CI minutes are free; the limit
+is 20 jobs at once).
 
 **What happens if you say no:** the flow tests get no speed rule and may
 lengthen every pull-request check as flows are added.
@@ -224,8 +252,8 @@ lengthen every pull-request check as flows are added.
 `PRD/sections/non-functional-requirements.md`, NFR-012 Notes:
 
 ```diff
--the binding limit is concurrent jobs (20 on the Free plan) against the 8 this workflow uses on a pull request (the seventh is NFR-020's `built-server` job, the eighth NFR-021's `browser-smoke` job).
-+the binding limit is concurrent jobs (20 on the Free plan) against the 7 this workflow uses on a pull request before flow tests (the seventh is NFR-020's `built-server` job) plus NFR-022's `flow-build` job and one job per `flow-tests` shard.
+-  - CI cost exposure: the repository is public, so standard-runner minutes are free and unlimited and shard count carries no minute cost; the binding limit is concurrent jobs (20 on the Free plan) against the 8 this workflow uses on a pull request (the seventh is NFR-020's `built-server` job, the eighth NFR-021's `browser-smoke` job). Actions billing rounds each job up to the nearest minute, so if the repository is ever made private the current 1m58s run bills ~9 minutes rather than 2, plus about one minute each for `built-server` and `browser-smoke` — sharding trades billed minutes for wall time, making it free today and the largest cost multiplier if visibility changes
++  - CI cost exposure: the repository is public, so standard-runner minutes are free and unlimited and shard count carries no minute cost; the binding limit is concurrent jobs (20 on the Free plan) against the 7 this workflow uses on a pull request before flow tests (the seventh is NFR-020's `built-server` job) plus NFR-022's `flow-build` job and one job per `flow-tests` shard. Actions billing rounds each job up to the nearest minute, so if the repository is ever made private the current 1m58s run bills ~9 minutes rather than 2, plus at least one minute each for `built-server`, `flow-build` and every `flow-tests` shard — sharding trades billed minutes for wall time, making it free today and the largest cost multiplier if visibility changes
 ```
 
 ```diff
@@ -363,7 +391,7 @@ keeps three conflicting numbers.
 ```diff
 -  - backend validates `conversationHistory` when present: non-empty array, max 20 turns, max 2000 chars/message, alternating user/assistant roles starting with user, last entry must be assistant
 +  - backend validates `conversationHistory` when present: non-empty array, max 20 messages, max 10,000 chars/message, alternating user/assistant roles starting with user, last entry must be assistant
-+  - the client sends history that always passes that validation: a message over 10,000 characters is cut to fit with a short truncation marker, and when history would pass 20 messages the oldest exchanges are dropped while the opening question and its answer are kept (the backend chooses rules from the opening question, REQ-246); the thread on screen and the saved conversation keep every message in full; both caps are imported from the backend validation module, never copied
++  - the client sends history that always passes that validation: a message over 10,000 characters is cut to fit with a short truncation marker, and when history would pass 20 messages the oldest exchanges are dropped while the opening question and its answer are kept (the backend chooses rules from the opening question, REQ-246); the thread on screen and the saved conversation keep every message in full; both caps are defined once in the backend and imported by the client, never copied
 ```
 
 `PRD/sections/integrations-and-data.md`:
@@ -451,8 +479,10 @@ naming the card (or "2 cards") that opens a bottom sheet on a phone or a side
 drawer on a desktop. The app instead shows a "Cards" strip under the title,
 one small tile per card, and a tap opens that card's details. It was built
 that way on purpose to match the design mockup, and two other requirements
-already call it "the strip" (REQ-213, REQ-209). In-Depth's context button is
-unchanged.
+already call it "the strip": Question History reopens an Ask a Question
+conversation "with its cards in the strip" (REQ-213), and In-Depth's answered
+chat is "the shared workspace with the Cards strip" (REQ-209). In-Depth's
+context button is unchanged.
 
 **What happens if you say no:** the spec and the app keep disagreeing, and
 the flow test cannot check either one.
@@ -734,4 +764,56 @@ spec, and the flow test ignores it.
 
 ## Blocker questions
 
-None.
+### Q-015 — drop Life Tracker fix 10, because the spec says the counters preview takes its own taps?
+
+**What this decides:** whether the build changes the Life Tracker so that a
+tap in the middle of a player's "−" half always lowers life, or leaves the
+Life Tracker as it is, where the small counters preview sitting in that half
+opens counters when tapped.
+
+**In plain terms:** each life card is split into two invisible halves: a tap
+anywhere in the "−" half loses a life, anywhere in the "+" half gains one.
+Three controls sit on top and take their own taps: the life number, the
+counters preview (the little seat map of commander damage) and the life
+input. The spec says exactly this: the halves cover "the whole card except
+its three interactive controls", and those controls "still take their own
+taps" (REQ-217, the rule that puts "−" on the edge nearest each player, and
+the Life Tracker spec). Thin edge strips were tried before and rejected for
+these whole-card halves (DEC-136). In the default four-player layout the
+counters preview sits on the player's side of the life number, inside the
+"−" half. The browser smoke check tapped the exact centre of Player 1's "−"
+half on a phone, hit the counters preview, and opened counters. Open docs PR
+#341 parked that as a bug, and this package listed it as fix 10. A player who
+taps the drawn "−" near the edge, or any empty part of that half, loses a life
+today.
+
+**Recommendation:** accept — drop fix 10. Today's behavior is what the spec
+asks for; a player's thumb aims at the drawn "−", not the middle of an
+invisible half; and the "miss" came from a test tapping a geometric centre
+where a visible control sits. The FLOW-013 test then taps the drawn "−" and
+"+" and checks that the counters preview opens counters. PR #341's item 1 can
+be closed as working as specified. The fix list becomes nine.
+
+**What happens if you say no:** fix 10 stays. The build moves the counters
+preview so no seat's "−" half has it at its centre (for example beside the
+life number rather than below it; moving it into the "+" half would only move
+the problem there), takes the before/after Life Tracker screenshot pair the
+Life Tracker requires for any visible change (REQ-202), and proves it with a
+browser check: at phone size, the element at the centre of each seat's "−"
+half is the "−" button (`elementFromPoint`, inside the FLOW-013 test). It
+changes how every life card looks.
+
+**Why it meets the genuine-blocker test (all three):** (1) the answers differ
+in what a player's tap does on every life card and in how every card looks;
+(2) the PRD (REQ-217, the Life Tracker spec, DEC-136) says today's behavior is
+right, while the package you approved lists it as a bug, so the two
+authorities disagree and no tested behavior or code pattern settles it;
+(3) building either version silently decides the other.
+
+Evidence: `evidence/bug-diagnosis.md`, bug 10; the PR #341 text is copied in
+`evidence/browser-smoke-followups-pr341.md`.
+
+Answer `accept` to drop fix 10 (recommended) or `reject` to keep it.
+
+- Verdict:
+- Reason:
