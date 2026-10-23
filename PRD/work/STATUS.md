@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| health-flow | Frozen Playwright test for each of the 18 player flows + coverage map; fixes 10 flow bugs first; removes retired FLOW-008/012 stubs; 17 gate blocks. Part 1 of the self-healing idea |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| health-flow | Frozen Playwright test for each of the 18 player flows + coverage map; fixes 10 flow bugs first; removes retired FLOW-008/012 stubs; 17 gate blocks. Part 1 of the self-healing idea |
 
 ## ideation
 
