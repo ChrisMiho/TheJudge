@@ -91,7 +91,9 @@ git push origin main
 # or reset main to a known-good SHA and force-push, if appropriate
 ```
 
-The `deploy-aws.yml` gate runs `quality:check` and redeploys the reverted state.
+The `deploy` job in `.github/workflows/quality-check.yml` runs once the
+quality-check jobs pass and redeploys the reverted state (a push to `main` deploys
+only when it changes a code path: `apps/`, `scripts/`, workflows, or package files).
 No orphaned/retained Lambda artifact is needed — the previous good source is the
 rollback target.
 

@@ -60,9 +60,10 @@ keys. The bootstrap creates:
 - A deploy role (`thejudge-github-deploy`) whose trust policy only allows this
   repository's workflows to assume it, and whose permission policy
   (`thejudge-deploy-policy`) is scoped to exactly what a deploy needs:
-  `lambda:UpdateFunctionCode/Configuration` + `GetFunction`/`GetFunctionUrlConfig`
-  on `thejudge-api`, S3 read/write on the frontend bucket, and CloudFront
-  invalidation.
+  `lambda:UpdateFunctionCode/Configuration` + `GetFunction`/`GetFunctionConfiguration`/`GetFunctionUrlConfig`
+  on `thejudge-api`, S3 read/write on the frontend bucket and the Lambda artifact
+  bucket, and CloudFront invalidation (plus `GetDistribution`/`ListDistributions`
+  to find the distribution).
 
 At deploy time the workflow calls `aws-actions/configure-aws-credentials` to
 assume that role for short-lived credentials. There are **no** long-lived AWS
@@ -77,5 +78,5 @@ committed files:
 - **Value:** your 12-digit AWS account ID
 - **Where:** GitHub -> Settings -> Secrets and variables -> Actions -> Variables
 
-`deploy-aws.yml` reads `${{ vars.AWS_ACCOUNT_ID }}` and builds the role ARN and
+The `deploy` job in `.github/workflows/quality-check.yml` reads `${{ vars.AWS_ACCOUNT_ID }}` and builds the role ARN and
 S3 bucket name from it. The scripts fail fast if `AWS_ACCOUNT_ID` is unset.
