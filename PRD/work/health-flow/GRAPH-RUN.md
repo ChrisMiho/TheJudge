@@ -26,7 +26,7 @@ Resume note: the package was refined in direct mode (owner-approved brief and 17
 - Terminal state: PARKED at `owner-action` after `gate-qc` PASS (attempt 2).
 - Question: answer `PRD/work/health-flow/GATE-QUESTIONS.md` — 18 verdict slots: the 17 product-truth blocks (NFR-022 new; NFR-021, NFR-012, REQ-166, REQ-027, FLOW-017, REQ-206, REQ-058, FLOW-005, FLOW-006, FLOW-007, FLOW-010, FLOW-013, FLOW-023, FLOW-024 amended; FLOW-008, FLOW-012 deleted) and blocker Q-015 (drop Life Tracker fix 10 because the spec says the counters preview takes its own taps; recommendation accept). Each slot accept / edit / reject, with a reason for edit or reject.
 - Evidence: `QUALITY-CHECK.md` (PASS, commit `03c77103`); `DESIGN-BRIEF.md`; `evidence/` (flow walks, `bug-diagnosis.md` for all ten fixes, `flow-text-reconciliation.md`, `flow-id-dispositions.md`, `browser-smoke-followups-pr341.md`); `intake/owner-use-cases.md` verbatim.
-- Docs PR: recorded below once opened (`thejudge-auto/health-flow` → `main`, opened by the driver, never merged by it).
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/342 (`thejudge-auto/health-flow` → `main`, opened by the driver, not merged).
 - Resume: answer `GATE-QUESTIONS.md`, then merge the docs PR to build; `graph-implement` (`/graph-implement PRD/work/health-flow/`) picks it up. Per the brief's `### 6. Order`, the build opens the code PR and stops; the owner watches the flow tests in Playwright UI mode on that PR's branch and the misses are added to the same PR before merge.
 - Also on this branch: `PRD/work/health-pipeline/` (Part 2, `STATUS.ideation`), carried so it is not lost; not part of this gate.
 
