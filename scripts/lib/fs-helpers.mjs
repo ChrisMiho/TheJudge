@@ -20,6 +20,11 @@ export function brotliCompress(buffer) {
   });
 }
 
+/** Reads a brotli-compressed UTF-8 JSON file and parses it. */
+export function readBrotliJson(filePath) {
+  return JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(filePath)).toString("utf8"));
+}
+
 /** Creates the folder that will hold `filePath` (and any missing parents). */
 export function ensureParentDirectory(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });

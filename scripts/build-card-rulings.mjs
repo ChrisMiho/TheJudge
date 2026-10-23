@@ -1,8 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import zlib from "node:zlib";
-import { brotliCompress, ensureParentDirectory, formatBytes } from "./lib/fs-helpers.mjs";
+import { brotliCompress, ensureParentDirectory, formatBytes, readBrotliJson } from "./lib/fs-helpers.mjs";
 
 const inputPath = path.resolve("apps/backend/data/scryfall/rulings.json");
 const metadataPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
@@ -116,7 +115,7 @@ function validateExistingArtifact() {
     );
   }
 
-  const artifact = JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(outputPath)).toString("utf8"));
+  const artifact = readBrotliJson(outputPath);
   if (!artifact || Array.isArray(artifact) || typeof artifact !== "object") {
     throw new Error(`Unexpected rulings artifact shape in ${outputPath}; expected an object keyed by oracle_id.`);
   }
