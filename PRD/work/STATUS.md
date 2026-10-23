@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| health-flow | Frozen Playwright test for each of the 18 player flows + coverage map; fixes 9 flow bugs first (a 10th waits on blocker Q-015); removes retired FLOW-008/012 stubs; 17 gate blocks + 1 blocker question. Part 1 of the self-healing idea |
 
 ## refining
 
@@ -35,6 +34,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| health-flow | Docs PR open: answer 18 verdict slots in `GATE-QUESTIONS.md` (17 spec blocks + blocker Q-015, drop Life Tracker fix 10), then merge to build. Frozen Playwright test per player flow (18) + coverage map; 9 flow bugs fixed first; retired FLOW-008/012 stubs removed. Part 1 of the self-healing idea |
 
 ## deferred
 
