@@ -13,12 +13,20 @@ This folder isolates answer-generation providers behind a stable interface so ro
 
 - Provider selection is controlled by the explicit feature flag `ASK_AI_PROVIDER` (`mock` or `openai`).
 - Default behavior is always `ASK_AI_PROVIDER=mock` when the flag is unset; this does not auto-switch based on `NODE_ENV` or deploy target.
-- `ASK_AI_PROVIDER=openai` requires `OPENAI_MODEL`; config fails fast if it is missing.
+- `ASK_AI_PROVIDER=openai` requires both `OPENAI_API_KEY` and `OPENAI_MODEL`; config fails fast, naming whichever is missing.
 - Optional runtime controls for OpenAI mode:
   - `OPENAI_TIMEOUT_MS` (default `30000`): the overall answer budget across every attempt of one request
   - `OPENAI_MAX_RETRIES` (default `1`; `0` means never retry): retries only start inside the budget
 - Route handlers remain provider-agnostic. OpenAI SDK wiring lives in provider/factory composition only.
 - Error middleware returns the centralized API error shape (`{ code, message, metadata?, retryAfterSeconds? }`) regardless of provider mode.
+
+### Embedding providers
+
+- `embeddingProvider.ts` defines `EmbeddingProvider.embed(text)`, used by rule retrieval; `createEmbeddingProvider.ts` selects one from runtime config.
+- Selection is controlled by `EMBEDDING_PROVIDER` (`mock`, `local`, or `openai`), defaulting to `mock` when unset; like `ASK_AI_PROVIDER`, it never auto-switches on `NODE_ENV` or deploy target.
+  - `mockEmbeddingProvider.ts`: the default.
+  - `localEmbeddingProvider.ts`: the bundled MiniLM model run in-process from `apps/backend/data/models/`, named by the committed embedding-model manifest (the stock `Xenova/all-MiniLM-L6-v2` when none is committed).
+  - `openAiEmbeddingProvider.ts`: `text-embedding-3-small` via the OpenAI API, using `OPENAI_API_KEY`.
 
 ## Interface Contract
 
@@ -40,4 +48,4 @@ Troubleshooting note: if OpenAI mode reports missing `OPENAI_MODEL`, ensure `app
 
 ## Product reference
 
-Provider and contract rules: `PRD/sections/decisions/providers-and-contract.md` (`DEC-020`, indexed from `PRD/sections/decisions.md`) and `PRD/sections/integrations-and-data.md`.
+Provider and contract rules: `PRD/sections/integrations-and-data.md`; the original provider-flag decision is the retired `DEC-020` row in `PRD/sections/decisions.md`.
