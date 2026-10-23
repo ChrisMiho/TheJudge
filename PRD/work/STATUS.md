@@ -28,11 +28,13 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| health-pipeline | Part 2: finder files issues, reviewers approve, builder fixes, CI gate auto-merges small fixes that keep the flow tests green. Waits on health-flow |
 
 ## owner-action
 
 | Package | Note |
 | --- | --- |
+| health-flow | Docs PR open: answer 18 verdict slots in `GATE-QUESTIONS.md` (17 spec blocks + blocker Q-015, drop Life Tracker fix 10), then merge to build. Frozen Playwright test per player flow (18) + coverage map; 9 flow bugs fixed first; retired FLOW-008/012 stubs removed. Part 1 of the self-healing idea |
 
 ## deferred
 
