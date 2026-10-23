@@ -123,8 +123,8 @@ export async function fetchJsonWithRetry(url, options = {}) {
 
 /**
  * Same retry/backoff behavior as `fetchJsonWithRetry`, but returns the raw
- * response bytes rather than calling `response.json()` — `parseBulkExportBytes`
- * decides how to interpret them.
+ * response bytes rather than calling `response.json()` — the refresh writes them
+ * to `variants.json` untouched and `extractEnvelopeMetadata` reads the envelope.
  */
 export async function fetchBufferWithRetry(url, options = {}) {
   const {

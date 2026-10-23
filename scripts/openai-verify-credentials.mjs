@@ -49,7 +49,7 @@ function mergeLocalOpenAiEnv(baseEnv) {
   return { merged, root, backendEnvPath, secretsEnvPath };
 }
 
-/** Matches apps/backend/src/config.ts parseOptionalPositiveInteger */
+/** Matches apps/backend/src/config/index.ts parseOptionalPositiveInteger */
 function parseOptionalPositiveInteger(rawValue, envName, minimum = 1) {
   if (rawValue == null || String(rawValue).trim() === "") {
     return undefined;
