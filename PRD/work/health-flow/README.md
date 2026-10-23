@@ -9,3 +9,9 @@ Next: `/thejudge-quality-check PRD/work/health-flow/`
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/health-flow
+
+## Preparation gate
+
+- Quality-check: FAIL
+- Checked artifact: `PRD/work/health-flow/DESIGN-BRIEF.md`
+- Findings: 4 blocking — (1) NFR-012 diff leaves the retired `built-server` / `browser-smoke` job names in the second half of `non-functional-requirements.md:209`; (2) NFR-021 Description (line 376), Constraint line 387 (`unit-tested under scripts/`) and Notes line 403 still describe the old six smoke steps; (3) fixes 6–10 have no diagnosis, file list or named unit test in `evidence/bug-diagnosis.md`, and fix 10 depends on PR #341 text not on this branch; (4) `### 6. Order` steps 6–7 happen after the graph `close` node has deleted the package, and the brief does not say who adds the owner misses or that the receipt must carry the test-case list, the checks/skips lists and the must-fail records. 5 advisory (decision 7 count, reconciliation supersede note, disposition rows for the other flow ids, REQ-206 cite substance, deploy-needs wording). Full report: `PRD/work/health-flow/QUALITY-CHECK.md` (commit `022a7ff5`).
